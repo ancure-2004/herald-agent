@@ -26,6 +26,7 @@ import {
   Bug,
   Calendar,
   ChevronRight,
+  ChevronDown,
   Phone,
   AtSign,
   Eye,
@@ -48,6 +49,9 @@ import {
   ArrowRight,
   TrendingUp,
   BarChart3,
+  PanelLeftClose,
+  PanelLeft,
+  CornerDownLeft,
 } from "lucide-react";
 import {
   API_BASE,
@@ -100,8 +104,13 @@ export default function PersonalOSCRM() {
 
   // Modals & Interactive states
   const [cmdKOpen, setCmdKOpen] = useState<boolean>(false);
+  const [cmdSearchQuery, setCmdSearchQuery] = useState<string>("");
   const [newLeadModalOpen, setNewLeadModalOpen] = useState<boolean>(false);
   const [problemModalOpen, setProblemModalOpen] = useState<boolean>(false);
+
+  // Sidebar Collapsible & File Tree Expansion states
+  const [pipelineBoardExpanded, setPipelineBoardExpanded] = useState<boolean>(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
 
   // Modal Task Completion state (Pipedrive Next-Step Rule)
   const [completedNote, setCompletedNote] = useState<string>("");
@@ -164,7 +173,27 @@ export default function PersonalOSCRM() {
       if (tabParam && ["dashboard", "board", "table", "sprint", "autopilot", "settings"].includes(tabParam)) {
         setActiveTab(tabParam);
       }
+      if (params.get("sidebar") === "collapsed") {
+        setSidebarCollapsed(true);
+      }
+      if (params.get("cmdk") === "true") {
+        setCmdKOpen(true);
+      }
     }
+  }, []);
+
+  // Global Keydown Listener for ⌘K / Ctrl+K & Escape (Claude-style Command Palette)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCmdKOpen((prev) => !prev);
+      } else if (e.key === "Escape") {
+        setCmdKOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const toggleDarkMode = () => {
@@ -515,6 +544,136 @@ export default function PersonalOSCRM() {
     return leads.filter((l) => !l.do_not_contact).slice(0, 5);
   }, [leads, dashScheduleFilter]);
 
+  // Claude-Style Quick Actions List
+  const quickActions = useMemo(
+    () => [
+      {
+        id: "add_lead",
+        title: "Add New Lead",
+        subtitle: "Register clinic prospect into pipeline",
+        icon: Plus,
+        badge: "Action",
+        run: () => setNewLeadModalOpen(true),
+      },
+      {
+        id: "run_refill",
+        title: "Run Stock Refill Batch",
+        subtitle: "Execute 7-step acquisition pipeline",
+        icon: Play,
+        badge: "Autopilot",
+        run: () => handleTriggerRefill(),
+      },
+      {
+        id: "verify_links",
+        title: "Verify Links & Sync batch.json",
+        subtitle: "Run HTTP 200 checks on demo previews",
+        icon: CheckCircle2,
+        badge: "Autopilot",
+        run: () => handleSyncBatchLinks(),
+      },
+      {
+        id: "view_board",
+        title: "Pipeline Kanban Board",
+        subtitle: "CustomerGo drag & drop pipeline view",
+        icon: LayoutGrid,
+        badge: "Navigation",
+        run: () => {
+          setActiveTab("board");
+          setPipelineBoardExpanded(true);
+        },
+      },
+      {
+        id: "view_dashboard",
+        title: "Executive Dashboard",
+        subtitle: "Homies Lab metrics & daily command center",
+        icon: LayoutDashboard,
+        badge: "Navigation",
+        run: () => setActiveTab("dashboard"),
+      },
+      {
+        id: "view_table",
+        title: "Full Leads Table",
+        subtitle: "Inspect all leads with data attributes",
+        icon: TableIcon,
+        badge: "Navigation",
+        run: () => setActiveTab("table"),
+      },
+      {
+        id: "view_sprint",
+        title: "Evening Sprint Mode",
+        subtitle: "90-minute focused closing buffer",
+        icon: Zap,
+        badge: "Navigation",
+        run: () => setActiveTab("sprint"),
+      },
+      {
+        id: "view_autopilot",
+        title: "Autopilot Traces & CLI Console",
+        subtitle: "View logs, metrics, and Telegram CLI",
+        icon: Activity,
+        badge: "Navigation",
+        run: () => setActiveTab("autopilot"),
+      },
+      {
+        id: "toggle_theme",
+        title: isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode",
+        subtitle: "Toggle between Homies Lab Cream and Obsidian Carbon",
+        icon: isDarkMode ? Sun : Moon,
+        badge: "Preference",
+        run: () => toggleDarkMode(),
+      },
+      {
+        id: "export_csv",
+        title: "Export Leads to CSV",
+        subtitle: "Download full pipeline data snapshot",
+        icon: Download,
+        badge: "Data",
+        run: () => {
+          window.open(`${API_BASE}/api/leads/export/csv?hustle_id=${activeHustleId}`, "_blank");
+        },
+      },
+      {
+        id: "report_problem",
+        title: "Report Diagnostic Problem",
+        subtitle: "Capture trace and report issue",
+        icon: Bug,
+        badge: "Help",
+        run: () => {
+          setProblemBriefResult("");
+          setProblemModalOpen(true);
+        },
+      },
+    ],
+    [isDarkMode, activeHustleId]
+  );
+
+  const filteredQuickActions = useMemo(() => {
+    if (!cmdSearchQuery.trim()) return quickActions;
+    const q = cmdSearchQuery.toLowerCase();
+    return quickActions.filter(
+      (a) =>
+        a.title.toLowerCase().includes(q) ||
+        a.subtitle.toLowerCase().includes(q) ||
+        a.badge.toLowerCase().includes(q)
+    );
+  }, [quickActions, cmdSearchQuery]);
+
+  const filteredSearchLeads = useMemo(() => {
+    if (!cmdSearchQuery.trim()) return [];
+    const q = cmdSearchQuery.toLowerCase();
+    return leads
+      .filter(
+        (l) =>
+          l.name.toLowerCase().includes(q) ||
+          (l.doctor_name && l.doctor_name.toLowerCase().includes(q)) ||
+          (l.locality && l.locality.toLowerCase().includes(q)) ||
+          (l.city && l.city.toLowerCase().includes(q)) ||
+          (l.primary_phone && l.primary_phone.includes(q)) ||
+          (l.next_action && l.next_action.toLowerCase().includes(q))
+      )
+      .slice(0, 8);
+  }, [leads, cmdSearchQuery]);
+
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#FAF9F6] dark:bg-[#0B0C10] text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Toast Notification Banner */}
@@ -531,10 +690,22 @@ export default function PersonalOSCRM() {
         </div>
       )}
 
-      {/* CLEAN MINIMAL TOP HEADER (CustomerGo Style: Logo, Centered Search, Profile & Add Button) */}
+      {/* CLEAN MINIMAL TOP HEADER (CustomerGo Style: Logo, Collapsible Trigger, Centered Search, Profile & Add Button) */}
       <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#0F1117]/95 backdrop-blur-md px-6 flex items-center justify-between gap-6 sticky top-0 z-30 transition-colors">
-        {/* Left: Brand Identity & Compact Hustle Selector */}
+        {/* Left: Brand Identity, Sidebar Collapse Button & Compact Hustle Selector */}
         <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
+            title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {sidebarCollapsed ? (
+              <PanelLeft className="w-5 h-5 text-indigo-500" />
+            ) : (
+              <PanelLeftClose className="w-5 h-5 text-slate-400" />
+            )}
+          </button>
+
           <div className="w-9 h-9 rounded-2xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-600/25 text-sm">
             OS
           </div>
@@ -555,17 +726,20 @@ export default function PersonalOSCRM() {
           </div>
         </div>
 
-        {/* Center: Global Search Bar (CustomerGo style with ⌘K) */}
+        {/* Center: Global Search Bar (Claude & CustomerGo style with ⌘K) */}
         <div className="flex-1 max-w-md hidden md:block">
           <div
-            onClick={() => setCmdKOpen(true)}
-            className="flex items-center justify-between px-3.5 py-2 rounded-2xl bg-slate-100/80 hover:bg-slate-200/70 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-white/[0.08] text-xs text-slate-400 cursor-pointer transition-all"
+            onClick={() => {
+              setCmdSearchQuery("");
+              setCmdKOpen(true);
+            }}
+            className="flex items-center justify-between px-3.5 py-2 rounded-2xl bg-slate-100/80 hover:bg-slate-200/70 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] border border-slate-200/80 dark:border-white/[0.08] text-xs text-slate-400 cursor-pointer transition-all shadow-xs"
           >
             <div className="flex items-center gap-2.5">
-              <Search className="w-4 h-4 text-slate-400" />
-              <span>Search leads, doctors, tasks...</span>
+              <Search className="w-4 h-4 text-indigo-500" />
+              <span>Search leads, doctors, tasks, commands...</span>
             </div>
-            <kbd className="px-2 py-0.5 text-[10px] bg-white dark:bg-[#141721] rounded-lg border border-slate-200 dark:border-slate-700 font-mono text-slate-500 shadow-2xs">
+            <kbd className="px-2 py-0.5 text-[10px] bg-white dark:bg-[#141721] rounded-lg border border-slate-200 dark:border-white/[0.1] font-mono text-slate-500 dark:text-slate-400 shadow-2xs">
               ⌘K
             </kbd>
           </div>
@@ -576,7 +750,7 @@ export default function PersonalOSCRM() {
           {/* Light / Dark Mode Toggle Switch (CustomerGo Exact Style) */}
           <button
             onClick={toggleDarkMode}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
             title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
             {isDarkMode ? (
@@ -595,7 +769,7 @@ export default function PersonalOSCRM() {
           {/* Notifications Bell */}
           <button
             onClick={() => notify("All systems operational. No unhandled alerts.")}
-            className="relative p-2 rounded-xl text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="relative p-2 rounded-xl text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
@@ -626,103 +800,217 @@ export default function PersonalOSCRM() {
 
       {/* Main Layout: Left Sidebar + Center Workspace */}
       <div className="flex-1 flex overflow-hidden min-h-0 min-w-0">
-        {/* Left Navigation Sidebar (Homies Lab & CustomerGo Style) */}
-        <aside className="w-64 shrink-0 h-full border-r border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0F1117] backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto transition-colors z-20">
-          <div className="space-y-6">
-            {/* Main Navigation Menu */}
-            <div>
-              <div className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                Menu
+        {/* Left Navigation Sidebar: Fully Collapsible from Width AND Height */}
+        {sidebarCollapsed ? (
+          /* COLLAPSED FLOATING DOCK: Fits height to icons, big centered icons */
+          <aside className="w-20 shrink-0 self-start m-3 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#0F1117]/95 backdrop-blur-md shadow-xl p-2.5 flex flex-col items-center gap-2.5 transition-all duration-200 z-20">
+            {/* Expand Toggle */}
+            <button
+              onClick={() => setSidebarCollapsed(false)}
+              className="w-11 h-11 rounded-2xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+              title="Expand Sidebar"
+            >
+              <PanelLeft className="w-5 h-5 text-indigo-500" />
+            </button>
+
+            <div className="w-8 h-px bg-slate-200 dark:bg-white/[0.08]" />
+
+            {/* Big Icons Navigation */}
+            <nav className="flex flex-col items-center gap-2">
+              {[
+                { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+                { id: "board", label: "Pipeline Board", icon: LayoutGrid },
+                { id: "table", label: "Leads Table", icon: TableIcon },
+                { id: "sprint", label: "Evening Sprint", icon: Zap },
+                { id: "autopilot", label: "Autopilot & Traces", icon: Activity },
+                { id: "settings", label: "Hustle Settings", icon: Settings },
+              ].map((item) => {
+                const Icon = item.icon;
+                const active = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id as MainTab);
+                      if (item.id === "board") setPipelineBoardExpanded(true);
+                    }}
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all cursor-pointer relative group ${
+                      active
+                        ? "bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-lg shadow-slate-900/25 dark:shadow-indigo-600/35 scale-105"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+                    }`}
+                    title={item.label}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {active && (
+                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-5 rounded-full bg-indigo-500" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="w-8 h-px bg-slate-200 dark:bg-white/[0.08]" />
+
+            {/* Mini Autopilot Indicator */}
+            <button
+              onClick={() => setActiveTab("autopilot")}
+              className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/50 dark:border-indigo-800/50 flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform"
+              title={`Autopilot Engine: ONLINE (${bufferHealthPct}% buffer health)`}
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            </button>
+          </aside>
+        ) : (
+          /* EXPANDED FULL SIDEBAR: Menu with File-Tree Smart Queues under Pipeline Board */
+          <aside className="w-64 shrink-0 h-full border-r border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0F1117] backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto transition-all duration-200 z-20">
+            <div className="space-y-6">
+              {/* Main Navigation Menu */}
+              <div>
+                <div className="px-2 pb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <span>Menu</span>
+                  <button
+                    onClick={() => setSidebarCollapsed(true)}
+                    className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
+                    title="Collapse Sidebar"
+                  >
+                    <PanelLeftClose className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <nav className="space-y-1">
+                  {[
+                    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+                    { id: "board", label: "Pipeline Board", icon: LayoutGrid },
+                    { id: "table", label: "Leads Table", icon: TableIcon },
+                    { id: "sprint", label: "Evening Sprint", icon: Zap },
+                    { id: "autopilot", label: "Autopilot & Traces", icon: Activity },
+                    { id: "settings", label: "Hustle Settings", icon: Settings },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    const active = activeTab === item.id;
+
+                    // Specialized Subtree for Pipeline Board (File-Tree Structure with Smart Queues)
+                    if (item.id === "board") {
+                      return (
+                        <div key="board" className="space-y-1">
+                          <button
+                            onClick={() => {
+                              setActiveTab("board");
+                              setPipelineBoardExpanded((prev) => (activeTab === "board" ? !prev : true));
+                            }}
+                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                              active
+                                ? "bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-md shadow-slate-900/20 dark:shadow-indigo-600/30"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Icon className="w-4 h-4" />
+                              <span>{item.label}</span>
+                            </div>
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPipelineBoardExpanded(!pipelineBoardExpanded);
+                              }}
+                              className="p-1 rounded-md hover:bg-white/10 transition-colors"
+                            >
+                              {pipelineBoardExpanded ? (
+                                <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                              ) : (
+                                <ChevronRight className="w-3.5 h-3.5 opacity-70" />
+                              )}
+                            </div>
+                          </button>
+
+                          {/* Dragdown Subpart: File Structure of Smart Queues */}
+                          {pipelineBoardExpanded && (
+                            <div className="ml-5 pl-3 border-l-2 border-slate-200 dark:border-white/[0.1] space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                              {[
+                                { slug: "all_active", label: "All Active Pipeline", icon: LayoutGrid, color: "text-indigo-500" },
+                                { slug: "review_tray", label: "Review Tray (Ready)", icon: CheckCircle2, color: "text-emerald-500" },
+                                { slug: "due_today", label: "Due Today & Overdue", icon: Clock, color: "text-amber-500" },
+                                { slug: "hot_intent", label: "Hot Demo Viewers", icon: Flame, color: "text-rose-500" },
+                                { slug: "replied_warm", label: "Active Replies", icon: MessageSquare, color: "text-blue-500" },
+                                { slug: "archived", label: "Archived & DNC", icon: Archive, color: "text-slate-400" },
+                              ].map((v) => {
+                                const SubIcon = v.icon;
+                                const isSubActive = activeTab === "board" && activeSmartView === v.slug;
+                                return (
+                                  <button
+                                    key={v.slug}
+                                    onClick={() => {
+                                      setActiveSmartView(v.slug);
+                                      setActiveTab("board");
+                                    }}
+                                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer relative group ${
+                                      isSubActive
+                                        ? "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-500/30"
+                                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05]"
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2 truncate">
+                                      <span
+                                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                          isSubActive ? "bg-indigo-500 scale-125" : "bg-slate-300 dark:bg-slate-600"
+                                        }`}
+                                      />
+                                      <SubIcon className={`w-3.5 h-3.5 ${v.color} shrink-0`} />
+                                      <span className="truncate">{v.label}</span>
+                                    </div>
+                                    {isSubActive && (
+                                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id as MainTab)}
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                          active
+                            ? "bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-md shadow-slate-900/20 dark:shadow-indigo-600/30"
+                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
               </div>
-              <nav className="space-y-1">
-                {[
-                  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-                  { id: "board", label: "Pipeline Board", icon: LayoutGrid },
-                  { id: "table", label: "Leads Table", icon: TableIcon },
-                  { id: "sprint", label: "Evening Sprint", icon: Zap },
-                  { id: "autopilot", label: "Autopilot & Traces", icon: Activity },
-                  { id: "settings", label: "Hustle Settings", icon: Settings },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  const active = activeTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id as MainTab)}
-                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                        active
-                          ? "bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-md shadow-slate-900/20 dark:shadow-indigo-600/30"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
             </div>
 
-            {/* Spaces / Smart Views (CustomerGo Style) */}
-            <div>
-              <div className="px-2 pb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                <span>Spaces</span>
-                <span className="text-[9px] text-slate-400">Smart Queues</span>
+            {/* Autopilot Status Card in Sidebar (CustomerGo "Unlock More Feature" card style) */}
+            <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-[#12141D] border border-indigo-100 dark:border-white/[0.08] space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Autopilot Engine</span>
+                </span>
+                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">ONLINE</span>
               </div>
-              <nav className="space-y-1">
-                {[
-                  { slug: "all_active", label: "All Active Pipeline", icon: LayoutGrid, color: "text-indigo-500" },
-                  { slug: "review_tray", label: "Review Tray (Ready)", icon: CheckCircle2, color: "text-emerald-500" },
-                  { slug: "due_today", label: "Due Today & Overdue", icon: Clock, color: "text-amber-500" },
-                  { slug: "hot_intent", label: "Hot Demo Viewers", icon: Flame, color: "text-rose-500" },
-                  { slug: "replied_warm", label: "Active Replies", icon: MessageSquare, color: "text-blue-500" },
-                  { slug: "archived", label: "Archived & DNC", icon: Archive, color: "text-slate-400" },
-                ].map((v) => {
-                  const Icon = v.icon;
-                  const active = activeSmartView === v.slug;
-                  return (
-                    <button
-                      key={v.slug}
-                      onClick={() => {
-                        setActiveSmartView(v.slug);
-                        if (activeTab === "dashboard") setActiveTab("board");
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                        active
-                          ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-500/20"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40"
-                      }`}
-                    >
-                      <Icon className={`w-3.5 h-3.5 ${v.color}`} />
-                      <span>{v.label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                7-step verification active. Enforcing no-website and 2-source check.
+              </p>
+              <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: `${bufferHealthPct}%` }}></div>
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                <span>Stock Buffer</span>
+                <span className="font-mono">{bufferHealthPct}% full</span>
+              </div>
             </div>
-          </div>
-
-          {/* Autopilot Status Card in Sidebar (CustomerGo "Unlock More Feature" card style) */}
-          <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-[#12141D] border border-indigo-100 dark:border-white/[0.08] space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Autopilot Engine</span>
-              </span>
-              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">ONLINE</span>
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-              7-step verification active. Enforcing no-website and 2-source check.
-            </p>
-            <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: `${bufferHealthPct}%` }}></div>
-            </div>
-            <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
-              <span>Stock Buffer</span>
-              <span className="font-mono">{bufferHealthPct}% full</span>
-            </div>
-          </div>
-        </aside>
+          </aside>
+        )}
 
         {/* Center Workspace Content */}
         <main className="flex-1 h-full overflow-y-auto p-6 space-y-6 min-w-0">
@@ -2369,6 +2657,168 @@ export default function PersonalOSCRM() {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* CLAUDE-INSPIRED GLOBAL SEARCH & COMMAND PALETTE MODAL     */}
+        {/* ======================================================== */}
+        {cmdKOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-start justify-center pt-16 sm:pt-24 px-4 animate-in fade-in duration-150"
+            onClick={() => setCmdKOpen(false)}
+          >
+            <div
+              className="w-full max-w-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.12] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[82vh] animate-in zoom-in-95 duration-150"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Search Input Bar */}
+              <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-white/[0.08] flex items-center gap-3 bg-slate-50/50 dark:bg-[#10121A]/80">
+                <Search className="w-5 h-5 text-indigo-500 shrink-0" />
+                <input
+                  autoFocus
+                  type="text"
+                  value={cmdSearchQuery}
+                  onChange={(e) => setCmdSearchQuery(e.target.value)}
+                  placeholder="Type a command or search leads, doctors, localities..."
+                  className="flex-1 bg-transparent text-sm sm:text-base font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+                />
+                {cmdSearchQuery ? (
+                  <button
+                    onClick={() => setCmdSearchQuery("")}
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <kbd className="px-2 py-0.5 text-[10px] bg-slate-200/60 dark:bg-white/[0.08] text-slate-500 dark:text-slate-400 rounded-lg border border-slate-300/60 dark:border-white/[0.08] font-mono">
+                    ESC
+                  </kbd>
+                )}
+              </div>
+
+              {/* Results / Quick Actions Body */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-5">
+                {/* If matching leads exist */}
+                {filteredSearchLeads.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 flex items-center justify-between">
+                      <span>Matching Leads & Clinics</span>
+                      <span className="font-mono text-indigo-500 font-semibold">{filteredSearchLeads.length} results</span>
+                    </div>
+                    <div className="space-y-1">
+                      {filteredSearchLeads.map((lead) => (
+                        <div
+                          key={lead.id}
+                          onClick={() => {
+                            setSelectedLeadId(lead.id);
+                            setCmdKOpen(false);
+                            setCmdSearchQuery("");
+                          }}
+                          className="p-3 rounded-2xl hover:bg-indigo-50/80 dark:hover:bg-white/[0.05] border border-transparent hover:border-indigo-200 dark:hover:border-white/[0.08] flex items-center justify-between gap-3 cursor-pointer transition-all group"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-xs text-indigo-600 dark:text-indigo-400 shrink-0">
+                              {lead.name.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="min-w-0 space-y-0.5">
+                              <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 truncate">
+                                {lead.name}
+                              </div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 truncate">
+                                <span>{lead.doctor_name || "Doctor"}</span>
+                                <span>•</span>
+                                <span className="flex items-center gap-0.5">
+                                  <MapPin className="w-3 h-3 text-slate-400" />
+                                  {lead.locality || lead.city}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 font-bold">
+                              ₹{lead.deal_value_inr || 25000}
+                            </span>
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-semibold">
+                              {lead.fit_score}% Fit
+                            </span>
+                            <ChevronRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quick Actions (Claude style) */}
+                <div className="space-y-2">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2">
+                    <span>{cmdSearchQuery ? "Matching Actions & Commands" : "Quick Actions"}</span>
+                  </div>
+                  <div className="space-y-1">
+                    {filteredQuickActions.length === 0 && filteredSearchLeads.length === 0 ? (
+                      <div className="py-10 text-center text-xs text-slate-400">
+                        No matching leads or actions found for "{cmdSearchQuery}".
+                      </div>
+                    ) : (
+                      filteredQuickActions.map((action) => {
+                        const Icon = action.icon;
+                        return (
+                          <div
+                            key={action.id}
+                            onClick={() => {
+                              action.run();
+                              setCmdKOpen(false);
+                              setCmdSearchQuery("");
+                            }}
+                            className="p-3 rounded-2xl hover:bg-slate-100/80 dark:hover:bg-white/[0.05] border border-transparent hover:border-slate-200 dark:hover:border-white/[0.08] flex items-center justify-between gap-3 cursor-pointer transition-all group"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 flex items-center justify-center shrink-0 transition-colors">
+                                <Icon className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                                  {action.title}
+                                </div>
+                                <div className="text-[11px] text-slate-400">
+                                  {action.subtitle}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-slate-400 font-mono">
+                                {action.badge}
+                              </span>
+                              <CornerDownLeft className="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Navigation Hints */}
+              <div className="p-3.5 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#10121A]/80 flex items-center justify-between text-[11px] text-slate-400 px-4">
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1">
+                    <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/[0.08] font-mono text-[9px]">ESC</kbd>
+                    <span>to close</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/[0.08] font-mono text-[9px]">↵</kbd>
+                    <span>to select</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-[10px] text-slate-500">
+                  <span>CustomerGo Command Palette</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
