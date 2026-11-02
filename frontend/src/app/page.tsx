@@ -94,6 +94,10 @@ export default function PersonalOSCRM() {
   // Dashboard Schedule filter state
   const [dashScheduleFilter, setDashScheduleFilter] = useState<"all" | "today" | "hot">("all");
 
+  // Drag and Drop State for Kanban Cards
+  const [draggingLeadId, setDraggingLeadId] = useState<number | null>(null);
+  const [dragOverStageId, setDragOverStageId] = useState<number | null>(null);
+
   // Modals & Interactive states
   const [cmdKOpen, setCmdKOpen] = useState<boolean>(false);
   const [newLeadModalOpen, setNewLeadModalOpen] = useState<boolean>(false);
@@ -274,6 +278,13 @@ export default function PersonalOSCRM() {
 
   // Handlers for Stage changes (drag / dropdown)
   const handleStageChange = async (lead: Lead, newStageId: number) => {
+    if (lead.stage_id === newStageId) return;
+
+    // Instant optimistic update
+    setLeads((prev) =>
+      prev.map((l) => (l.id === lead.id ? { ...l, stage_id: newStageId } : l))
+    );
+
     try {
       await apiFetch(`/api/leads/${lead.id}`, {
         method: "PATCH",
@@ -283,6 +294,7 @@ export default function PersonalOSCRM() {
       loadAll();
     } catch (err) {
       notify(err instanceof Error ? err.message : "Failed to update stage", "err");
+      loadAll();
     }
   };
 
@@ -1333,7 +1345,33 @@ export default function PersonalOSCRM() {
                       return (
                         <div
                           key={stage.id}
-                          className="w-80 shrink-0 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.08] flex flex-col max-h-[calc(100vh-210px)] shadow-xs transition-colors"
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = "move";
+                            if (dragOverStageId !== stage.id) {
+                              setDragOverStageId(stage.id);
+                            }
+                          }}
+                          onDragLeave={(e) => {
+                            if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+                            setDragOverStageId(null);
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            setDragOverStageId(null);
+                            const leadIdStr = e.dataTransfer.getData("text/plain");
+                            const leadId = Number(leadIdStr) || draggingLeadId;
+                            if (!leadId) return;
+                            const targetLead = leads.find((l) => l.id === leadId);
+                            if (targetLead && targetLead.stage_id !== stage.id) {
+                              handleStageChange(targetLead, stage.id);
+                            }
+                          }}
+                          className={`w-80 shrink-0 rounded-2xl backdrop-blur-xl border flex flex-col max-h-[calc(100vh-210px)] shadow-xs transition-all ${
+                            dragOverStageId === stage.id
+                              ? "bg-indigo-50/50 dark:bg-indigo-950/40 border-indigo-500 ring-2 ring-indigo-500/40 shadow-md"
+                              : "bg-slate-100/70 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/[0.08]"
+                          }`}
                         >
                           {/* Column Header (CustomerGo Style) */}
                           <div className="p-3.5 border-b border-slate-200/80 dark:border-white/[0.06] bg-white/60 dark:bg-slate-900/80 flex items-center justify-between rounded-t-2xl">
@@ -1372,9 +1410,23 @@ export default function PersonalOSCRM() {
                                 return (
                                   <div
                                     key={lead.id}
-                                    onClick={() => setSelectedLeadId(lead.id)}
-                                    className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer space-y-3 group ${
-                                      isSelected
+                                    draggable
+                                    onDragStart={(e) => {
+                                      setDraggingLeadId(lead.id);
+                                      e.dataTransfer.setData("text/plain", String(lead.id));
+                                      e.dataTransfer.effectAllowed = "move";
+                                    }}
+                                    onDragEnd={() => {
+                                      setDraggingLeadId(null);
+                                      setDragOverStageId(null);
+                                    }}
+                                    onClick={() => {
+                                      if (!draggingLeadId) setSelectedLeadId(lead.id);
+                                    }}
+                                    className={`p-4 rounded-2xl border transition-all duration-200 cursor-grab active:cursor-grabbing space-y-3 group ${
+                                      draggingLeadId === lead.id
+                                        ? "border-2 border-dashed border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 opacity-60 scale-95 shadow-none"
+                                        : isSelected
                                         ? "bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500 shadow-md ring-2 ring-indigo-500/40"
                                         : "bg-white dark:bg-[#151E32] hover:bg-slate-50/90 dark:hover:bg-[#1C2640] border-slate-200/90 dark:border-white/[0.08] hover:border-indigo-400 dark:hover:border-indigo-500/50 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-card hover:-translate-y-0.5"
                                     }`}
