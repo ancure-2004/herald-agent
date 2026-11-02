@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
+  LayoutDashboard,
   LayoutGrid,
   Table as TableIcon,
   Zap,
@@ -43,6 +44,10 @@ import {
   Check,
   User,
   Building,
+  Bell,
+  ArrowRight,
+  TrendingUp,
+  BarChart3,
 } from "lucide-react";
 import {
   API_BASE,
@@ -55,12 +60,12 @@ import {
   CopilotSuggestion,
 } from "@/lib/api";
 
-type MainTab = "board" | "table" | "sprint" | "autopilot" | "settings";
+type MainTab = "dashboard" | "board" | "table" | "sprint" | "autopilot" | "settings";
 
 export default function PersonalOSCRM() {
   const [hustles, setHustles] = useState<Hustle[]>([]);
   const [activeHustleId, setActiveHustleId] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<MainTab>("board");
+  const [activeTab, setActiveTab] = useState<MainTab>("dashboard");
   const [activeSmartView, setActiveSmartView] = useState<string>("all_active");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -85,6 +90,9 @@ export default function PersonalOSCRM() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [filterMinFit, setFilterMinFit] = useState<number>(0);
   const [filterVerifiedOnly, setFilterVerifiedOnly] = useState<boolean>(false);
+
+  // Dashboard Schedule filter state
+  const [dashScheduleFilter, setDashScheduleFilter] = useState<"all" | "today" | "hot">("all");
 
   // Modals & Interactive states
   const [cmdKOpen, setCmdKOpen] = useState<boolean>(false);
@@ -116,6 +124,23 @@ export default function PersonalOSCRM() {
   // Problem Report Form state
   const [problemText, setProblemText] = useState<string>("");
   const [problemBriefResult, setProblemBriefResult] = useState<string>("");
+
+  // Dynamic Greeting based on current time
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning, Captain";
+    if (hour < 18) return "Good Afternoon, Captain";
+    return "Good Evening, Captain";
+  }, []);
+
+  const formattedDate = useMemo(() => {
+    return new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }, []);
 
   // Theme Initializer
   useEffect(() => {
@@ -209,19 +234,18 @@ export default function PersonalOSCRM() {
           const line = `[${new Date().toLocaleTimeString()}] ${data.type}: ${data.title || data.message || "Event"}`;
           setLiveFeed((prev) => [line, ...prev].slice(0, 30));
 
-          // If tracking view event or reply, refresh leads data
           if (["tracking_view", "reply_received", "run_complete", "outreach_sent"].includes(data.type)) {
             loadAll();
           }
         } catch {
-          // ignore parse errors
+          // ignore
         }
       };
       es.onerror = () => {
         // SSE disconnected, will retry automatically
       };
     } catch {
-      // ignore setup errors
+      // ignore
     }
     return () => {
       es?.close();
@@ -457,13 +481,27 @@ export default function PersonalOSCRM() {
   const waSentToday = stockPlan?.today_channel_sends?.whatsapp ?? 0;
   const waDailyLimit = stockPlan?.channel_limits?.whatsapp ?? 15;
   const todayMode = stockPlan?.upcoming_schedule?.[0]?.mode ?? "normal";
+  const bufferHealthPct = stockPlan?.required_ready_packages
+    ? Math.min(100, Math.round(((stockPlan.current_ready_packages ?? 0) / stockPlan.required_ready_packages) * 100))
+    : 100;
+
+  // Filtered leads for the Dashboard schedule view
+  const dashboardScheduleLeads = useMemo(() => {
+    if (dashScheduleFilter === "today") {
+      return leads.filter((l) => l.next_action && !l.do_not_contact).slice(0, 5);
+    }
+    if (dashScheduleFilter === "hot") {
+      return leads.filter((l) => l.intent_score > 60 || (l.events && l.events.length > 0)).slice(0, 5);
+    }
+    return leads.filter((l) => !l.do_not_contact).slice(0, 5);
+  }, [leads, dashScheduleFilter]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-[#FAF9F6] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Toast Notification Banner */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 border ${
+          className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 border ${
             toast.type === "ok"
               ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-900/30"
               : "bg-rose-600 text-white border-rose-500 shadow-rose-900/30"
@@ -474,82 +512,52 @@ export default function PersonalOSCRM() {
         </div>
       )}
 
-      {/* TOP HEADER: Breadcrumbs, Light/Dark Switcher, Quick Actions */}
-      <header className="h-14 border-b border-slate-200 dark:border-white/[0.08] bg-white/90 dark:bg-[#0E1526]/90 backdrop-blur-md px-4 flex items-center justify-between gap-4 sticky top-0 z-30 transition-colors">
-        {/* Left: Brand Identity & Hustle Switcher */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-600/30 text-xs">
+      {/* CLEAN MINIMAL TOP HEADER (CustomerGo Style: Logo, Centered Search, Profile & Add Button) */}
+      <header className="h-16 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#0E1526]/90 backdrop-blur-md px-6 flex items-center justify-between gap-6 sticky top-0 z-30 transition-colors">
+        {/* Left: Brand Identity & Compact Hustle Selector */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="w-9 h-9 rounded-2xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-600/25 text-sm">
             OS
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white">Personal OS</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 font-semibold">
-                {activeHustle?.autonomy_mode === "autopilot" ? "Autopilot Mode" : "Copilot Mode"}
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">CustomerGo</span>
+            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">/</span>
+            <select
+              value={activeHustleId}
+              onChange={(e) => setActiveHustleId(Number(e.target.value))}
+              className="bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none cursor-pointer"
+            >
+              {hustles.map((h) => (
+                <option key={h.id} value={h.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">
+                  {h.name}
+                </option>
+              ))}
+            </select>
           </div>
+        </div>
 
-          {/* Hustle Switcher */}
-          <select
-            value={activeHustleId}
-            onChange={(e) => setActiveHustleId(Number(e.target.value))}
-            className="ml-2 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-white/[0.08] rounded-xl px-3 py-1.5 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+        {/* Center: Global Search Bar (CustomerGo style with ⌘K) */}
+        <div className="flex-1 max-w-md hidden md:block">
+          <div
+            onClick={() => setCmdKOpen(true)}
+            className="flex items-center justify-between px-3.5 py-2 rounded-2xl bg-slate-100/80 hover:bg-slate-200/70 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-white/[0.08] text-xs text-slate-400 cursor-pointer transition-all"
           >
-            {hustles.map((h) => (
-              <option key={h.id} value={h.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">
-                Hustle: {h.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Center Status Pills: Stock Level, WhatsApp Daily Limit, Day Mode */}
-        <div className="hidden xl:flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-white/[0.08] text-xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-slate-500 dark:text-slate-400">Stock:</span>
-            <span className="font-semibold text-slate-900 dark:text-white">
-              {stockPlan?.current_ready_packages ?? 0} / {stockPlan?.required_ready_packages ?? 45} ready
-            </span>
-            <span className="text-[11px] text-slate-400">({stockPlan?.effective_buffer_days ?? 3}d buffer)</span>
-          </div>
-
-          <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-white/[0.08] text-xs">
-            <Send className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 font-medium" />
-            <span className="text-slate-500 dark:text-slate-400">WA Today:</span>
-            <span className="font-semibold text-slate-900 dark:text-white">
-              {waSentToday} / {waDailyLimit}
-            </span>
-          </div>
-
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-white/[0.08] rounded-xl p-0.5 text-xs">
-            {(["normal", "away", "off"] as const).map((m) => (
-              <button
-                key={m}
-                onClick={() => handleDayModeChange(m)}
-                className={`px-2.5 py-1 rounded-lg capitalize font-medium transition-all ${
-                  todayMode === m
-                    ? m === "off"
-                      ? "bg-rose-600 text-white shadow-sm"
-                      : m === "away"
-                      ? "bg-amber-600 text-white shadow-sm"
-                      : "bg-indigo-600 text-white shadow-sm"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-              >
-                {m}
-              </button>
-            ))}
+            <div className="flex items-center gap-2.5">
+              <Search className="w-4 h-4 text-slate-400" />
+              <span>Search leads, doctors, tasks...</span>
+            </div>
+            <kbd className="px-2 py-0.5 text-[10px] bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 font-mono text-slate-500 shadow-2xs">
+              ⌘K
+            </kbd>
           </div>
         </div>
 
-        {/* Right Actions: Light/Dark Mode, Search / Cmd+K, New Lead, CSV Export, Report Problem */}
-        <div className="flex items-center gap-2">
-          {/* Light / Dark Mode Toggle (CustomerGo Style) */}
+        {/* Right: Light/Dark Mode Switcher, Notifications, Captain Profile, Add Lead */}
+        <div className="flex items-center gap-3 shrink-0">
+          {/* Light / Dark Mode Toggle Switch (CustomerGo Exact Style) */}
           <button
             onClick={toggleDarkMode}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
             title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
             {isDarkMode ? (
@@ -565,61 +573,54 @@ export default function PersonalOSCRM() {
             )}
           </button>
 
+          {/* Notifications Bell */}
           <button
-            onClick={() => setCmdKOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-700 dark:text-slate-300 transition-colors"
+            onClick={() => notify("All systems operational. No unhandled alerts.")}
+            className="relative p-2 rounded-xl text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            title="Notifications"
           >
-            <Search className="w-3.5 h-3.5 text-slate-400" />
-            <span className="hidden md:inline">Jump / Command...</span>
-            <kbd className="px-1.5 py-0.5 text-[10px] bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700 text-slate-500 font-mono">⌘K</kbd>
+            <Bell className="w-4 h-4" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-[#0E1526]"></span>
           </button>
 
+          {/* User Profile Chip (CustomerGo Style) */}
+          <div className="hidden sm:flex items-center gap-2.5 pl-2 border-l border-slate-200 dark:border-white/[0.08]">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-xs shadow-sm">
+              C
+            </div>
+            <div className="text-left">
+              <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">Captain</div>
+              <div className="text-[10px] text-slate-400 font-medium">Lead Operator</div>
+            </div>
+          </div>
+
+          {/* "+ Add Lead" Primary Action Button (CustomerGo Style) */}
           <button
             onClick={() => setNewLeadModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all cursor-pointer active:scale-95"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             <span>Add Lead</span>
-          </button>
-
-          <a
-            href={`${API_BASE}/api/leads/export/csv?hustle_id=${activeHustleId}`}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-700 dark:text-slate-300 transition-colors"
-            title="Download CSV export"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-            <span className="hidden sm:inline">CSV</span>
-          </a>
-
-          <button
-            onClick={() => {
-              setProblemBriefResult("");
-              setProblemModalOpen(true);
-            }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/50 text-xs text-rose-700 dark:text-rose-300 transition-colors"
-            title="Capture run trace & diagnostic brief"
-          >
-            <Bug className="w-3.5 h-3.5 text-rose-500" />
-            <span className="hidden sm:inline">Report Problem</span>
           </button>
         </div>
       </header>
 
       {/* Main Layout: Left Sidebar + Center Workspace */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Navigation & Smart Views Sidebar */}
-        <aside className="w-64 border-r border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0E1526]/80 backdrop-blur-md p-3 flex flex-col justify-between overflow-y-auto transition-colors">
+        {/* Left Navigation Sidebar (Homies Lab & CustomerGo Style) */}
+        <aside className="w-64 border-r border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0E1526]/80 backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto transition-colors">
           <div className="space-y-6">
-            {/* Main Workspace Tabs */}
+            {/* Main Navigation Menu */}
             <div>
               <div className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                Workspace
+                Menu
               </div>
               <nav className="space-y-1">
                 {[
+                  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
                   { id: "board", label: "Pipeline Board", icon: LayoutGrid },
                   { id: "table", label: "Leads Table", icon: TableIcon },
-                  { id: "sprint", label: "Evening Sprint (75m)", icon: Zap },
+                  { id: "sprint", label: "Evening Sprint", icon: Zap },
                   { id: "autopilot", label: "Autopilot & Traces", icon: Activity },
                   { id: "settings", label: "Hustle Settings", icon: Settings },
                 ].map((item) => {
@@ -629,9 +630,9 @@ export default function PersonalOSCRM() {
                     <button
                       key={item.id}
                       onClick={() => setActiveTab(item.id as MainTab)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
                         active
-                          ? "bg-indigo-50 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 shadow-sm"
+                          ? "bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-md shadow-slate-900/20 dark:shadow-indigo-600/30"
                           : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50"
                       }`}
                     >
@@ -643,35 +644,37 @@ export default function PersonalOSCRM() {
               </nav>
             </div>
 
-            {/* Pinned Smart Views (CustomerGo / Close style saved queues) */}
+            {/* Spaces / Smart Views (CustomerGo Style) */}
             <div>
               <div className="px-2 pb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                <span>Smart Views</span>
-                <span className="text-[9px] text-slate-400">Live Filters</span>
+                <span>Spaces</span>
+                <span className="text-[9px] text-slate-400">Smart Queues</span>
               </div>
               <nav className="space-y-1">
                 {[
-                  { slug: "all_active", label: "All Active Pipeline", icon: LayoutGrid },
-                  { slug: "review_tray", label: "Review Tray (Ready)", icon: CheckCircle2 },
-                  { slug: "due_today", label: "Due Today & Overdue", icon: Clock },
-                  { slug: "hot_intent", label: "Hot Demo Viewers", icon: Flame },
-                  { slug: "replied_warm", label: "Active Replies", icon: MessageSquare },
-                  { slug: "no_reply_5d", label: "Follow-up Queue", icon: RefreshCw },
-                  { slug: "archived", label: "Archived & DNC", icon: Archive },
+                  { slug: "all_active", label: "All Active Pipeline", icon: LayoutGrid, color: "text-indigo-500" },
+                  { slug: "review_tray", label: "Review Tray (Ready)", icon: CheckCircle2, color: "text-emerald-500" },
+                  { slug: "due_today", label: "Due Today & Overdue", icon: Clock, color: "text-amber-500" },
+                  { slug: "hot_intent", label: "Hot Demo Viewers", icon: Flame, color: "text-rose-500" },
+                  { slug: "replied_warm", label: "Active Replies", icon: MessageSquare, color: "text-blue-500" },
+                  { slug: "archived", label: "Archived & DNC", icon: Archive, color: "text-slate-400" },
                 ].map((v) => {
                   const Icon = v.icon;
                   const active = activeSmartView === v.slug;
                   return (
                     <button
                       key={v.slug}
-                      onClick={() => setActiveSmartView(v.slug)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                      onClick={() => {
+                        setActiveSmartView(v.slug);
+                        if (activeTab === "dashboard") setActiveTab("board");
+                      }}
+                      className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                         active
                           ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-500/20"
                           : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40"
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className={`w-3.5 h-3.5 ${v.color}`} />
                       <span>{v.label}</span>
                     </button>
                   );
@@ -680,69 +683,491 @@ export default function PersonalOSCRM() {
             </div>
           </div>
 
-          {/* Real-time Telemetry Live Feed (Homies Lab style activity ticker) */}
-          <div className="pt-4 border-t border-slate-200 dark:border-white/[0.08] space-y-2">
-            <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          {/* Autopilot Status Card in Sidebar (CustomerGo "Unlock More Feature" card style) */}
+          <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-slate-900/90 border border-indigo-100 dark:border-white/[0.08] space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Live Telemetry</span>
+                <span>Autopilot Engine</span>
               </span>
-              <span className="text-[9px] font-mono text-slate-400">SSE</span>
+              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">ONLINE</span>
             </div>
-            <div className="h-28 overflow-y-auto space-y-1.5 text-[11px] font-mono rounded-xl p-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06]">
-              {liveFeed.length === 0 ? (
-                <div className="text-slate-400 dark:text-slate-500">Listening for demo views, replies & runs...</div>
-              ) : (
-                liveFeed.map((item, i) => (
-                  <div key={i} className="truncate text-slate-600 dark:text-slate-300">
-                    {item}
-                  </div>
-                ))
-              )}
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+              7-step verification active. Enforcing no-website and 2-source check.
+            </p>
+            <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: `${bufferHealthPct}%` }}></div>
+            </div>
+            <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+              <span>Stock Buffer</span>
+              <span className="font-mono">{bufferHealthPct}% full</span>
             </div>
           </div>
         </aside>
 
         {/* Center Workspace Content */}
-        <main className="flex-1 overflow-y-auto p-5 space-y-5">
-          {/* Subheader Search & Filter Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                {activeTab === "board" && "Pipeline Kanban Board"}
-                {activeTab === "table" && "Fast Leads Table"}
-                {activeTab === "sprint" && "Evening Sprint Planner (75-Min Time Budget)"}
-                {activeTab === "autopilot" && "Autopilot Stock Planner, 7-Step Gates & Run Traces"}
-                {activeTab === "settings" && "Hustle Configuration & Database Rules"}
-                <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
-                  ({leads.length} {leads.length === 1 ? "lead" : "leads"} in view)
-                </span>
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Filter clinic, doctor, locality, phone..."
-                  className="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-white/[0.08] rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-64 shadow-sm"
-                />
-              </div>
-            </div>
-          </div>
-
+        <main className="flex-1 overflow-y-auto p-6 space-y-6">
           {loading ? (
-            <div className="p-12 text-center text-sm text-slate-500 dark:text-slate-400">Loading Personal OS CRM...</div>
+            <div className="p-16 text-center text-sm text-slate-500 dark:text-slate-400">Loading Personal OS CRM...</div>
           ) : (
             <>
-              {/* TAB 1: PIPELINE KANBAN BOARD (CustomerGo Inspired) */}
+              {/* ======================================================== */}
+              {/* TAB 0: HOMIES LAB DEDICATED DASHBOARD OVERVIEW           */}
+              {/* ======================================================== */}
+              {activeTab === "dashboard" && (
+                <div className="space-y-6">
+                  {/* Dashboard Header: Greeting, Date, Day Mode Switcher & Quick Actions */}
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="text-xs font-medium text-slate-400 dark:text-slate-500">Home / Dashboard</div>
+                      <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <span>{greeting}</span>
+                      </h1>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {formattedDate} • Side Hustle Autopilot & Command Center
+                      </p>
+                    </div>
+
+                    {/* Controls relocated from top bar: Day Mode Switcher & Tools */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-1 text-xs shadow-sm">
+                        {(["normal", "away", "off"] as const).map((m) => (
+                          <button
+                            key={m}
+                            onClick={() => handleDayModeChange(m)}
+                            className={`px-3 py-1.5 rounded-xl capitalize font-semibold transition-all cursor-pointer ${
+                              todayMode === m
+                                ? m === "off"
+                                  ? "bg-rose-600 text-white shadow-sm"
+                                  : m === "away"
+                                  ? "bg-amber-600 text-white shadow-sm"
+                                  : "bg-indigo-600 text-white shadow-sm"
+                                : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            {m}
+                          </button>
+                        ))}
+                      </div>
+
+                      <a
+                        href={`${API_BASE}/api/leads/export/csv?hustle_id=${activeHustleId}`}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+                        title="Export CRM data to CSV"
+                      >
+                        <Download className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Export CSV</span>
+                      </a>
+
+                      <button
+                        onClick={() => {
+                          setProblemBriefResult("");
+                          setProblemModalOpen(true);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/50 text-xs font-semibold text-rose-700 dark:text-rose-300 transition-colors shadow-sm cursor-pointer"
+                        title="Capture run trace & diagnostic brief"
+                      >
+                        <Bug className="w-3.5 h-3.5 text-rose-500" />
+                        <span>Report Problem</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Top Stats Overview (Homies Lab Exact Layout: 4 Stat Blocks + Large Circular Gauge) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    {/* Stat 1: Active Leads */}
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span className="text-xs font-semibold uppercase tracking-wider">Active Leads</span>
+                        <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                          <Building className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="text-3xl font-black text-slate-900 dark:text-white pt-1">{leads.length}</div>
+                      <div className="text-[11px] text-slate-400">Clinics currently in pipeline</div>
+                    </div>
+
+                    {/* Stat 2: Pipeline Target Value */}
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span className="text-xs font-semibold uppercase tracking-wider">Pipeline Value</span>
+                        <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                          <ShieldCheck className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 pt-1">
+                        ₹{(leads.length * 25).toLocaleString()},000
+                      </div>
+                      <div className="text-[11px] text-slate-400">Estimated close potential</div>
+                    </div>
+
+                    {/* Stat 3: WhatsApp Sent Today */}
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span className="text-xs font-semibold uppercase tracking-wider">WA Outreach</span>
+                        <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                          <Send className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="text-3xl font-black text-slate-900 dark:text-white pt-1">
+                        {waSentToday} <span className="text-base font-normal text-slate-400">/ {waDailyLimit}</span>
+                      </div>
+                      <div className="text-[11px] text-slate-400">Daily channel safety limit</div>
+                    </div>
+
+                    {/* Stat 4: Proof Packages Ready */}
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span className="text-xs font-semibold uppercase tracking-wider">Ready Demos</span>
+                        <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                          <Eye className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="text-3xl font-black text-slate-900 dark:text-white pt-1">
+                        {stockPlan?.current_ready_packages ?? 0}
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        {stockPlan?.effective_buffer_days ?? 3}-day buffer active
+                      </div>
+                    </div>
+
+                    {/* Stat 5: Homies Lab Big Circular Meter */}
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">Buffer Health</div>
+                        <div className="text-2xl font-black text-slate-900 dark:text-white">{bufferHealthPct}%</div>
+                        <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Stock Protected</div>
+                      </div>
+
+                      {/* Homies Lab Circular Meter SVG */}
+                      <div className="relative w-18 h-18 flex items-center justify-center shrink-0">
+                        <svg className="w-18 h-18 -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            className="text-slate-100 dark:text-slate-800"
+                            strokeWidth="3.5"
+                            stroke="currentColor"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path
+                            className="text-amber-500 dark:text-amber-400"
+                            strokeDasharray={`${bufferHealthPct}, 100`}
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                            stroke="currentColor"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                        </svg>
+                        <div className="absolute text-center">
+                          <span className="text-[10px] font-black font-mono text-slate-800 dark:text-white">KPI</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Middle Section: Homies Lab Schedule Card + Autopilot & Outreach Velocity */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left: Homies Lab Schedule Card with Filter Tabs & Warm Highlight */}
+                    <div className="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-5">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-indigo-500" />
+                            <span>Outreach Schedule & Action Queue</span>
+                          </h2>
+                          <p className="text-xs text-slate-400">Pipedrive mandatory next steps ordered by urgency</p>
+                        </div>
+
+                        {/* Filter Tabs (Homies Lab style: Meetings, Tasks, Events) */}
+                        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/60 text-xs">
+                          {[
+                            { id: "all", label: "All Tasks" },
+                            { id: "today", label: "Due Today" },
+                            { id: "hot", label: "Hot Viewers" },
+                          ].map((tab) => (
+                            <button
+                              key={tab.id}
+                              onClick={() => setDashScheduleFilter(tab.id as any)}
+                              className={`px-3 py-1.5 rounded-xl font-semibold transition-all cursor-pointer ${
+                                dashScheduleFilter === tab.id
+                                  ? "bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-xs"
+                                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                              }`}
+                            >
+                              {tab.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Featured Urgent Lead (Homies Lab Warm Highlight Card) */}
+                      {dashboardScheduleLeads.length > 0 && (
+                        <div
+                          onClick={() => setSelectedLeadId(dashboardScheduleLeads[0].id)}
+                          className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/30 dark:border-amber-500/20 space-y-3 cursor-pointer hover:border-amber-500 transition-all shadow-xs"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider">
+                                  Priority Next Step
+                                </span>
+                                <span className="text-xs text-slate-400">
+                                  {dashboardScheduleLeads[0].doctor_name || "Doctor"} • {dashboardScheduleLeads[0].locality}
+                                </span>
+                              </div>
+                              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                                {dashboardScheduleLeads[0].name}
+                              </h3>
+                              <p className="text-xs text-slate-600 dark:text-slate-300">
+                                {dashboardScheduleLeads[0].next_action || "Send personalized walkthrough & demo preview links"}
+                              </p>
+                            </div>
+
+                            <div className="text-right shrink-0">
+                              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
+                                ₹{dashboardScheduleLeads[0].deal_value_inr || 25000}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-amber-500/20 text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300 font-medium">
+                                WhatsApp Outreach
+                              </span>
+                              <span className="text-slate-400 font-mono text-[11px]">Fit Score: {dashboardScheduleLeads[0].fit_score}%</span>
+                            </div>
+                            <span className="text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1 group">
+                              <span>Inspect Deal</span>
+                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Queued Action List */}
+                      <div className="space-y-2">
+                        {dashboardScheduleLeads.slice(1).map((lead) => (
+                          <div
+                            key={lead.id}
+                            onClick={() => setSelectedLeadId(lead.id)}
+                            className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-4 cursor-pointer transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                {lead.name.slice(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="font-bold text-xs text-slate-900 dark:text-white">{lead.name}</div>
+                                <div className="text-[11px] text-slate-400 truncate max-w-sm">
+                                  {lead.next_action || "Schedule initial pitch"}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 shrink-0">
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 font-bold">
+                                {lead.fit_score}% Fit
+                              </span>
+                              <ChevronRight className="w-4 h-4 text-slate-400" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right: Autopilot Performance & Channel Limits (Homies Lab KPI Card) */}
+                    <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex flex-col justify-between space-y-5">
+                      <div>
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/[0.06]">
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <Activity className="w-4 h-4 text-indigo-500" />
+                            <span>Channel Safety & Autopilot</span>
+                          </h3>
+                          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">SAFE</span>
+                        </div>
+
+                        {/* Channel Send Bars */}
+                        <div className="space-y-3.5 pt-4">
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">WhatsApp Dispatch</span>
+                              <span className="font-mono text-slate-500 dark:text-slate-400">
+                                {waSentToday} / {waDailyLimit}
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                              <div
+                                className="bg-emerald-500 h-2 rounded-full"
+                                style={{ width: `${Math.min(100, (waSentToday / waDailyLimit) * 100)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">Instagram Outreach</span>
+                              <span className="font-mono text-slate-500 dark:text-slate-400">0 / 20</span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                              <div className="bg-pink-500 h-2 rounded-full" style={{ width: `0%` }}></div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">Email Warmups</span>
+                              <span className="font-mono text-slate-500 dark:text-slate-400">0 / 50</span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                              <div className="bg-blue-500 h-2 rounded-full" style={{ width: `0%` }}></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 7-Step Gate Indicators */}
+                        <div className="pt-5 space-y-2">
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Enforced Invariants</div>
+                          <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04] text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              <span>No Website Rule</span>
+                            </div>
+                            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04] text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              <span>2-Source Facts</span>
+                            </div>
+                            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04] text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              <span>Idempotent Send</span>
+                            </div>
+                            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04] text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              <span>Live HTTP 200</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Autopilot Quick Triggers */}
+                      <div className="space-y-2 pt-2">
+                        <button
+                          onClick={handleTriggerRefill}
+                          className="w-full py-2.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md shadow-indigo-600/25 transition-all cursor-pointer active:scale-95"
+                        >
+                          <Play className="w-3.5 h-3.5" />
+                          <span>Run Stock Refill Batch</span>
+                        </button>
+                        <button
+                          onClick={handleSyncBatchLinks}
+                          className="w-full py-2.5 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Verify Live HTTP Links</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom: Homies Lab "List Employee" Style Table for Active Clinics */}
+                  <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-base font-bold text-slate-900 dark:text-white">Active Priority Clinics</h2>
+                        <p className="text-xs text-slate-400">Targeted prospects currently in active conversation stages</p>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab("table")}
+                        className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>View Full Leads Table ({leads.length})</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="border-b border-slate-100 dark:border-white/[0.06] text-slate-400 font-semibold text-[11px] uppercase tracking-wider pb-3">
+                            <th className="py-3 px-3">Clinic & Doctor</th>
+                            <th className="py-3 px-3">Locality</th>
+                            <th className="py-3 px-3">Fit / Intent</th>
+                            <th className="py-3 px-3">Mandatory Next Step</th>
+                            <th className="py-3 px-3">Deal Potential</th>
+                            <th className="py-3 px-3 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
+                          {leads.slice(0, 6).map((lead) => (
+                            <tr
+                              key={lead.id}
+                              onClick={() => setSelectedLeadId(lead.id)}
+                              className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
+                            >
+                              <td className="py-3.5 px-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0">
+                                    {lead.name.slice(0, 2).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <div className="font-bold text-slate-900 dark:text-white">{lead.name}</div>
+                                    <div className="text-[11px] text-slate-400">{lead.doctor_name || "Doctor"}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300">
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>{lead.locality || lead.city}</span>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-3">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 font-semibold font-mono text-[10px]">
+                                    Fit {lead.fit_score}%
+                                  </span>
+                                  <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 font-semibold font-mono text-[10px]">
+                                    Intent {lead.intent_score}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                                {lead.next_action || "None scheduled"}
+                              </td>
+                              <td className="py-3.5 px-3">
+                                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                                  ₹{lead.deal_value_inr || 25000}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-3 text-right">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedLeadId(lead.id);
+                                  }}
+                                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium cursor-pointer transition-colors"
+                                >
+                                  Inspect
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ======================================================== */}
+              {/* TAB 1: PIPELINE KANBAN BOARD (CustomerGo Exact Aesthetic)*/}
+              {/* ======================================================== */}
               {activeTab === "board" && activeHustle && (
                 <div className="space-y-4">
                   {/* Top Bar with Filter, Sort and Pipeline Stats */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm relative">
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-xs relative">
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-600/15 border border-indigo-200 dark:border-indigo-500/30 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
                         <LayoutGrid className="w-3.5 h-3.5" />
@@ -758,7 +1183,7 @@ export default function PersonalOSCRM() {
                           }}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                             filterPopoverOpen || filterMinFit > 0 || filterVerifiedOnly
-                              ? "bg-indigo-600 text-white border-indigo-500 shadow-sm"
+                              ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
                               : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-700 border-slate-200 dark:border-white/[0.06] text-slate-700 dark:text-slate-300"
                           }`}
                         >
@@ -819,7 +1244,7 @@ export default function PersonalOSCRM() {
                           }}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                             sortPopoverOpen
-                              ? "bg-indigo-600 text-white border-indigo-500 shadow-sm"
+                              ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
                               : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-700 border-slate-200 dark:border-white/[0.06] text-slate-700 dark:text-slate-300"
                           }`}
                         >
@@ -908,7 +1333,7 @@ export default function PersonalOSCRM() {
                       return (
                         <div
                           key={stage.id}
-                          className="w-80 shrink-0 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.08] flex flex-col max-h-[calc(100vh-210px)] shadow-sm transition-colors"
+                          className="w-80 shrink-0 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.08] flex flex-col max-h-[calc(100vh-210px)] shadow-xs transition-colors"
                         >
                           {/* Column Header (CustomerGo Style) */}
                           <div className="p-3.5 border-b border-slate-200/80 dark:border-white/[0.06] bg-white/60 dark:bg-slate-900/80 flex items-center justify-between rounded-t-2xl">
@@ -1077,9 +1502,11 @@ export default function PersonalOSCRM() {
                 </div>
               )}
 
+              {/* ======================================================== */}
               {/* TAB 2: FAST LEADS TABLE (Homies Lab Employee Table Style) */}
+              {/* ======================================================== */}
               {activeTab === "table" && (
-                <div className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-slate-900/60 overflow-hidden shadow-sm transition-colors">
+                <div className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-slate-900/60 overflow-hidden shadow-xs transition-colors">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="border-b border-slate-200 dark:border-white/[0.06] bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
@@ -1154,11 +1581,13 @@ export default function PersonalOSCRM() {
                 </div>
               )}
 
-              {/* TAB 3: EVENING SPRINT PLANNER (Homies Lab KPI Gauges) */}
+              {/* ======================================================== */}
+              {/* TAB 3: EVENING SPRINT PLANNER (Homies Lab KPI Gauges)    */}
+              {/* ======================================================== */}
               {activeTab === "sprint" && sprintPlan && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] shadow-sm flex items-center justify-between">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
                       <div>
                         <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Time Budget Allocated</div>
                         <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
@@ -1171,7 +1600,7 @@ export default function PersonalOSCRM() {
                       </div>
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] shadow-sm flex items-center justify-between">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
                       <div>
                         <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Expected Pipeline Value</div>
                         <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
@@ -1184,7 +1613,7 @@ export default function PersonalOSCRM() {
                       </div>
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] shadow-sm flex items-center justify-between">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
                       <div>
                         <div className="text-xs font-bold uppercase tracking-wider text-slate-400">High-Priority Tasks</div>
                         <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">
@@ -1203,7 +1632,7 @@ export default function PersonalOSCRM() {
                       <div
                         key={t.lead_id}
                         onClick={() => setSelectedLeadId(t.lead_id)}
-                        className="p-4 rounded-2xl bg-white dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-800/70 border border-slate-200 dark:border-white/[0.08] flex items-center justify-between gap-4 cursor-pointer transition-all shadow-sm"
+                        className="p-4 rounded-2xl bg-white dark:bg-[#111827] hover:bg-slate-50 dark:hover:bg-slate-800/70 border border-slate-200 dark:border-white/[0.08] flex items-center justify-between gap-4 cursor-pointer transition-all shadow-xs"
                       >
                         <div className="flex items-center gap-3.5">
                           <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs">
@@ -1234,11 +1663,13 @@ export default function PersonalOSCRM() {
                 </div>
               )}
 
-              {/* TAB 4: AUTOPILOT & RUN TRACES + TELEGRAM CONSOLE */}
+              {/* ======================================================== */}
+              {/* TAB 4: AUTOPILOT & RUN TRACES + TELEGRAM CONSOLE         */}
+              {/* ======================================================== */}
               {activeTab === "autopilot" && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                   <div className="lg:col-span-2 space-y-4">
-                    <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <h2 className="text-sm font-bold text-slate-900 dark:text-white">7-Step Clinic Autopilot & Stock Planner</h2>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -1266,7 +1697,7 @@ export default function PersonalOSCRM() {
                     {/* Run Trace Logs */}
                     <div className="space-y-3">
                       {runs.map((r) => (
-                        <div key={r.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] shadow-sm space-y-2.5">
+                        <div key={r.id} className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-2.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-slate-900 dark:text-white">Run #{r.id}: {r.job_type}</span>
@@ -1304,7 +1735,7 @@ export default function PersonalOSCRM() {
                   </div>
 
                   {/* Telegram Remote CLI Simulator Console */}
-                  <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] shadow-sm space-y-4">
+                  <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-4">
                     <div className="flex items-center gap-2">
                       <Terminal className="w-4 h-4 text-indigo-500" />
                       <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
@@ -1336,18 +1767,20 @@ export default function PersonalOSCRM() {
                 </div>
               )}
 
-              {/* TAB 5: HUSTLE SETTINGS */}
+              {/* ======================================================== */}
+              {/* TAB 5: HUSTLE SETTINGS                                   */}
+              {/* ======================================================== */}
               {activeTab === "settings" && activeHustle && (
                 <div className="max-w-3xl space-y-5">
-                  <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] shadow-sm space-y-3">
+                  <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-3">
                     <h2 className="text-sm font-bold text-slate-900 dark:text-white">Active Hustle Blueprint: {activeHustle.name}</h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400">{activeHustle.description}</p>
                     <div className="pt-2 grid grid-cols-2 gap-3 text-xs">
-                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
+                      <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
                         <div className="text-slate-400">Proof Asset Type:</div>
                         <div className="font-semibold text-slate-900 dark:text-white mt-0.5">{activeHustle.proof_asset_type}</div>
                       </div>
-                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
+                      <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
                         <div className="text-slate-400">Minimum Buffer Days:</div>
                         <div className="font-semibold text-slate-900 dark:text-white mt-0.5">{activeHustle.minimum_stock_days} days</div>
                       </div>
@@ -1359,7 +1792,9 @@ export default function PersonalOSCRM() {
           )}
         </main>
 
-        {/* FLOATING LEAD DETAIL MODAL (Spacious Dialog inspired by Homies Lab & CustomerGo) */}
+        {/* ======================================================== */}
+        {/* FLOATING LEAD DETAIL MODAL                               */}
+        {/* ======================================================== */}
         {selectedLead && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/75 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in zoom-in-95 duration-200">
             <div className="w-full max-w-5xl max-h-[92vh] bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.12] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
@@ -1418,7 +1853,7 @@ export default function PersonalOSCRM() {
 
                 <div className="flex items-center gap-3">
                   {/* Pipeline Stage Dropdown */}
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] shadow-sm">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] shadow-xs">
                     <span className="text-xs text-slate-500 dark:text-slate-400">Stage:</span>
                     <select
                       value={selectedLead.stage_id}
@@ -1442,13 +1877,12 @@ export default function PersonalOSCRM() {
                 </div>
               </div>
 
-              {/* Modal Body - 2 Spacious Columns (Info & Actions) */}
+              {/* Modal Body - 2 Spacious Columns */}
               <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 dark:bg-transparent">
-                
-                {/* Left Column: Context, Intelligence & History */}
+                {/* Left Column: Intelligence, Facts & History */}
                 <div className="space-y-4">
                   {/* AI Fit & Intent Match (Homies Lab Circular Gauge Style) */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] flex items-center justify-between gap-4 shadow-sm">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] flex items-center justify-between gap-4 shadow-xs">
                     <div className="space-y-1">
                       <div className="text-xs font-bold text-slate-900 dark:text-white">AI Acquisition Intelligence</div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
@@ -1464,7 +1898,7 @@ export default function PersonalOSCRM() {
                       </div>
                     </div>
 
-                    {/* Circular Percentage Meter (Homies Lab Style) */}
+                    {/* Circular Percentage Meter */}
                     <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
                       <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
                         <path
@@ -1495,7 +1929,7 @@ export default function PersonalOSCRM() {
 
                   {/* Lightfield "What Changed Since Last Time" Summary */}
                   {selectedLead.what_changed_summary && (
-                    <div className="p-4 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-500/30 text-xs space-y-1.5 shadow-sm">
+                    <div className="p-4 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-500/30 text-xs space-y-1.5 shadow-xs">
                       <div className="font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-indigo-500" />
                         <span>What Changed Since Last Time</span>
@@ -1504,8 +1938,8 @@ export default function PersonalOSCRM() {
                     </div>
                   )}
 
-                  {/* Verified Facts Dossier (2-Source Verification Rule) */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-2.5 shadow-sm">
+                  {/* Verified Facts Dossier */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-2.5 shadow-xs">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
                       <span className="flex items-center gap-1.5">
                         <ShieldCheck className="w-4 h-4 text-emerald-500" />
@@ -1532,9 +1966,9 @@ export default function PersonalOSCRM() {
                     </div>
                   </div>
 
-                  {/* Client Proof Package: 3 Template Demos */}
+                  {/* Client Proof Package */}
                   {selectedLead.packages.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-sm">
+                    <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-xs">
                       <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
                         <span className="flex items-center gap-1.5">
                           <Eye className="w-3.5 h-3.5 text-indigo-500" />
@@ -1560,7 +1994,7 @@ export default function PersonalOSCRM() {
                   )}
 
                   {/* Activity History Timeline */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-sm">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-xs">
                     <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-slate-400" />
                       <span>Activity Log & Messages</span>
@@ -1586,7 +2020,7 @@ export default function PersonalOSCRM() {
                 {/* Right Column: Next Action Enforcement & Message Dispatch */}
                 <div className="space-y-4">
                   {/* Pipedrive Mandatory Next Step Form */}
-                  <form onSubmit={handleCompleteTask} className="p-4 rounded-2xl bg-white dark:bg-slate-950/80 border border-indigo-200 dark:border-indigo-500/30 space-y-3 shadow-sm">
+                  <form onSubmit={handleCompleteTask} className="p-4 rounded-2xl bg-white dark:bg-slate-950/80 border border-indigo-200 dark:border-indigo-500/30 space-y-3 shadow-xs">
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
                         <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -1641,7 +2075,7 @@ export default function PersonalOSCRM() {
                   </form>
 
                   {/* Log Note or Message */}
-                  <form onSubmit={handleAppendMessage} className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-sm">
+                  <form onSubmit={handleAppendMessage} className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-xs">
                     <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                       <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
                       <span>Log Message or Internal Note</span>
@@ -1689,7 +2123,7 @@ export default function PersonalOSCRM() {
 
                   {/* AI Reply Copilot Suggestions */}
                   {copilotSuggestions.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-500/30 space-y-2.5 shadow-sm">
+                    <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-500/30 space-y-2.5 shadow-xs">
                       <div className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
                         <span>AI Reply Copilot Suggestions</span>
