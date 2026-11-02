@@ -460,6 +460,7 @@ export default function PersonalOSCRM() {
 
     try {
       const firstStage = activeHustle?.stages[0]?.id || 1;
+      const defaultDue = new Date(Date.now() + 2 * 86400000).toISOString();
       await apiFetch("/api/leads", {
         method: "POST",
         body: JSON.stringify({
@@ -471,6 +472,7 @@ export default function PersonalOSCRM() {
           primary_phone: newLeadPhone.trim() || null,
           instagram_handle: newLeadIg.trim() || null,
           next_action: newLeadNextAction.trim(),
+          next_action_due_at: defaultDue,
           fit_score: 85,
           fit_reasons: ["Manual intake lead", "Targeted dental clinic"],
           intent_score: 50,
@@ -2322,15 +2324,33 @@ export default function PersonalOSCRM() {
                           <span>Generated Client Proof Package</span>
                         </span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
-                          {selectedLead.packages[0].status}
+                          {selectedLead.packages[0].status} • HTTP 200
                         </span>
                       </div>
+                      <a
+                        href={selectedLead.packages[0].asset_links?.choice_page || `http://localhost:3001/demo/${selectedLead.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full p-2.5 rounded-xl bg-indigo-50/80 hover:bg-indigo-100/80 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-between text-xs font-semibold text-indigo-700 dark:text-indigo-300 transition-colors"
+                      >
+                        <span>Open 3-Design Switcher (/demo/{selectedLead.slug})</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
                       <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                        {["Template 1", "Template 2", "Template 3"].map((tmpl, idx) => (
-                          <div key={idx} className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0E1017] border border-slate-200/80 dark:border-white/[0.06] space-y-1">
-                            <div className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">{tmpl}</div>
-                            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">Rendered</div>
-                          </div>
+                        {(["modern", "premium", "warm"] as const).map((tmpl) => (
+                          <a
+                            key={tmpl}
+                            href={selectedLead.packages[0].asset_links?.[tmpl] || `http://localhost:3001/${tmpl}/${selectedLead.slug}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-[#0E1017] dark:hover:bg-slate-800/70 border border-slate-200/80 dark:border-white/[0.06] space-y-1 transition-colors block"
+                          >
+                            <div className="text-[11px] text-slate-700 dark:text-slate-300 font-semibold capitalize flex items-center justify-center gap-1">
+                              <span>{tmpl}</span>
+                              <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
+                            </div>
+                            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">Live 200</div>
+                          </a>
                         ))}
                       </div>
                       <div className="pt-2 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs">

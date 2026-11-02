@@ -1275,6 +1275,7 @@ def create_problem_report(payload: ProblemReportCreate, db: Session = Depends(ge
 
 
 @app.get("/api/events/stream")
+@app.get("/api/events")
 async def sse_stream():
     """Server-Sent Events stream for real-time CRM & Autopilot updates."""
     q: asyncio.Queue = asyncio.Queue()
@@ -1282,7 +1283,7 @@ async def sse_stream():
 
     async def event_generator():
         try:
-            yield f"data: {json.dumps({'event': 'connected', 'ts': datetime.now(timezone.utc).isoformat()})}\n\n"
+            yield f"data: {json.dumps({'type': 'connected', 'event': 'connected', 'title': 'Real-time SSE connected', 'ts': datetime.now(timezone.utc).isoformat()})}\n\n"
             while True:
                 try:
                     msg = await asyncio.wait_for(q.get(), timeout=25.0)
@@ -1294,3 +1295,83 @@ async def sse_stream():
                 SSE_SUBSCRIBERS.remove(q)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+# ---------------------------------------------------------------------------
+# 9. UI COMPATIBILITY ALIAS ENDPOINTS (CustomerGo / Homies Lab Redesigned UI)
+# ---------------------------------------------------------------------------
+@app.get("/api/leads/{lead_id}/reply-copilot")
+def get_reply_copilot_list(lead_id: int, db: Session = Depends(get_db)):
+    res = get_reply_copilot(lead_id=lead_id, db=db)
+    return res.get("suggestions", [])
+
+
+@app.post("/api/leads/{lead_id}/approve-send")
+def approve_and_send_lead_shortcut(lead_id: int, payload: Dict[str, Any], db: Session = Depends(get_db)):
+    lead = db.query(Lead).filter(Lead.id == lead_id).first()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found.")
+    channel = payload.get("channel") or lead.preferred_channel or "whatsapp"
+    demo_url = f"http://localhost:3001/demo/{lead.slug}"
+    if lead.packages and lead.packages[-1].asset_links:
+        demo_url = lead.packages[-1].asset_links.get("choice_page") or demo_url
+    pitch_text = (
+        f"Hi {lead.doctor_name or 'Doctor'}, we built 3 custom mobile website previews for {lead.name} "
+        f"({lead.locality}): {demo_url}"
+    )
+    req = OutboxApproveRequest(
+        lead_id=lead.id,
+        channel=channel,
+        text=pitch_text,
+        step_tag="initial_pitch",
+        send_immediately=True,
+    )
+    return approve_and_send_pitch(payload=req, db=db)
+
+
+@app.post("/api/autopilot/run-refill")
+def run_refill_alias(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    hustle_id = int(payload.get("hustle_id", 1))
+    batch_size = int(payload.get("batch_size", 2))
+    res = trigger_autopilot_refill(hustle_id=hustle_id, batch_size=batch_size, db=db)
+    return {"run_id": res["run_id"], "message": f"Built {res['passed']} verified clinic packages", **res}
+
+
+@app.post("/api/packages/sync-batch-json")
+@app.post("/api/autopilot/sync-batch-links")
+def sync_batch_json_alias(payload: Optional[Dict[str, Any]] = None, db: Session = Depends(get_db)):
+    report = verify_and_sync_links_to_batch(db=db)
+    total = report["verified_count"] + report["failed_count"]
+    return {
+        "verified": report["verified_count"],
+        "total": total,
+        **report,
+    }
+
+
+@app.post("/api/schedule/day-mode")
+def schedule_day_mode_alias(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    mode = payload.get("mode", "normal")
+    today_str = datetime.now(timezone.utc).date().isoformat()
+    req = AvailabilitySetRequest(date_str=today_str, mode=mode, note="Updated from Dashboard Day Mode switcher")
+    return set_availability_mode(payload=req, db=db)
+
+
+@app.post("/api/telegram/simulate")
+def simulate_telegram_alias(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    cmd = payload.get("command") or payload.get("command_text") or "/stock"
+    req = TelegramCommandRequest(command_text=cmd)
+    return handle_telegram_command(payload=req, db=db)
+
+
+@app.post("/api/diagnostics/capture-problem-brief")
+def capture_problem_brief_alias(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    req = ProblemReportCreate(
+        page=payload.get("page", "dashboard"),
+        element=payload.get("element", "UI"),
+        user_description=payload.get("description", "Diagnostic capture"),
+        lead_id=payload.get("lead_id"),
+    )
+    res = create_problem_report(payload=req, db=db)
+    return {"id": res["id"], "brief": json.dumps(res["context_brief"], indent=2)}
+
