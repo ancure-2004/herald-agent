@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+
+  /* Design system tokens - Light Mode (CustomerGo & Homies Lab) */
+  --color-primary: #4f46e5;
+  --color-on-primary: #ffffff;
+  --color-secondary: #6366f1;
+  --color-accent: #ea580c;
+  --color-on-accent: #ffffff;
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-border: #e2e8f0;
+  --color-destructive: #ef4444;
+  --color-on-destructive: #ffffff;
+  --color-ring: #4f46e5;
+
+  /* Spacing Scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Typography Scale */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* Design system tokens - Dark Mode */
+  --color-primary: #6366f1;
+  --color-on-primary: #ffffff;
+  --color-secondary: #818cf8;
+  --color-accent: #ea580c;
+  --color-on-accent: #ffffff;
+  --color-background: #0b0f19;
+  --color-foreground: #f8fafc;
+  --color-card: #151e32;
+  --color-card-foreground: #f8fafc;
+  --color-muted: #111827;
+  --color-muted-foreground: #94a3b8;
+  --color-border: #1e293b;
+  --color-destructive: #ef4444;
+  --color-on-destructive: #ffffff;
+  --color-ring: #6366f1;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #090d16;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Base interactive defaults */
+@layer base {
+  button, a, input, select, textarea {
+    @apply transition-colors duration-150;
+  }
+}
