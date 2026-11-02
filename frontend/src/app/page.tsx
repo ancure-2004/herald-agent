@@ -497,7 +497,7 @@ export default function PersonalOSCRM() {
   }, [leads, dashScheduleFilter]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#FAF9F6] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Toast Notification Banner */}
       {toast && (
         <div
@@ -513,7 +513,7 @@ export default function PersonalOSCRM() {
       )}
 
       {/* CLEAN MINIMAL TOP HEADER (CustomerGo Style: Logo, Centered Search, Profile & Add Button) */}
-      <header className="h-16 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#0E1526]/90 backdrop-blur-md px-6 flex items-center justify-between gap-6 sticky top-0 z-30 transition-colors">
+      <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#0E1526]/90 backdrop-blur-md px-6 flex items-center justify-between gap-6 sticky top-0 z-30 transition-colors">
         {/* Left: Brand Identity & Compact Hustle Selector */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="w-9 h-9 rounded-2xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-600/25 text-sm">
@@ -606,9 +606,9 @@ export default function PersonalOSCRM() {
       </header>
 
       {/* Main Layout: Left Sidebar + Center Workspace */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0 min-w-0">
         {/* Left Navigation Sidebar (Homies Lab & CustomerGo Style) */}
-        <aside className="w-64 border-r border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0E1526]/80 backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto transition-colors">
+        <aside className="w-64 shrink-0 h-full border-r border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0E1526]/80 backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto transition-colors z-20">
           <div className="space-y-6">
             {/* Main Navigation Menu */}
             <div>
@@ -706,7 +706,7 @@ export default function PersonalOSCRM() {
         </aside>
 
         {/* Center Workspace Content */}
-        <main className="flex-1 overflow-y-auto p-6 space-y-6">
+        <main className="flex-1 h-full overflow-y-auto p-6 space-y-6 min-w-0">
           {loading ? (
             <div className="p-16 text-center text-sm text-slate-500 dark:text-slate-400">Loading Personal OS CRM...</div>
           ) : (
