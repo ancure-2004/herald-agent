@@ -11,13 +11,13 @@ const config: Config = {
     extend: {
       colors: {
         crm: {
-          bg: "#0B0F19",
-          surface: "#111827",
-          card: "#151E32",
-          cardHover: "#1C2640",
-          cardBorder: "#23304B",
-          border: "#1F293D",
-          muted: "#1E293B",
+          bg: "#0B0C10",
+          surface: "#0F1117",
+          card: "#151722",
+          cardHover: "#1A1D2B",
+          cardBorder: "rgba(255, 255, 255, 0.08)",
+          border: "rgba(255, 255, 255, 0.07)",
+          muted: "#12141D",
           primary: "#6366F1",
           primaryHover: "#4F46E5",
           accent: "#F59E0B",
@@ -25,8 +25,8 @@ const config: Config = {
           success: "#10B981",
           warning: "#F59E0B",
           destructive: "#EF4444",
-          kanbanBg: "#0F1626",
-          kanbanCol: "#131C2E",
+          kanbanBg: "#0B0C10",
+          kanbanCol: "#0E1017",
         },
       },
       fontFamily: {

@@ -7,17 +7,17 @@
 :root {
   color-scheme: light;
 
-  /* Design system tokens - Light Mode (CustomerGo & Homies Lab) */
+  /* Design system tokens - Light Mode (CustomerGo & Homies Lab Warm Theme) */
   --color-primary: #4f46e5;
   --color-on-primary: #ffffff;
   --color-secondary: #6366f1;
-  --color-accent: #ea580c;
+  --color-accent: #f59e0b;
   --color-on-accent: #ffffff;
-  --color-background: #f8fafc;
+  --color-background: #faf8f5;
   --color-foreground: #0f172a;
   --color-card: #ffffff;
   --color-card-foreground: #0f172a;
-  --color-muted: #f1f5f9;
+  --color-muted: #f4efe9;
   --color-muted-foreground: #64748b;
   --color-border: #e2e8f0;
   --color-destructive: #ef4444;
@@ -40,19 +40,19 @@
 .dark {
   color-scheme: dark;
 
-  /* Design system tokens - Dark Mode */
+  /* Design system tokens - Dark Mode (Obsidian & Gold / Indigo High-Contrast) */
   --color-primary: #6366f1;
   --color-on-primary: #ffffff;
   --color-secondary: #818cf8;
-  --color-accent: #ea580c;
+  --color-accent: #f59e0b;
   --color-on-accent: #ffffff;
-  --color-background: #0b0f19;
+  --color-background: #0b0c10;
   --color-foreground: #f8fafc;
-  --color-card: #151e32;
+  --color-card: #141721;
   --color-card-foreground: #f8fafc;
-  --color-muted: #111827;
+  --color-muted: #10131b;
   --color-muted-foreground: #94a3b8;
-  --color-border: #1e293b;
+  --color-border: #202538;
   --color-destructive: #ef4444;
   --color-on-destructive: #ffffff;
   --color-ring: #6366f1;
@@ -75,21 +75,21 @@ body {
   background: #f1f5f9;
 }
 .dark ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #0b0c10;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #202538;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #333c57;
 }
 
 /* Base interactive defaults */

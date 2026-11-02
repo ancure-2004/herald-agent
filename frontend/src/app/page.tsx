@@ -146,7 +146,7 @@ export default function PersonalOSCRM() {
     });
   }, []);
 
-  // Theme Initializer
+  // Theme & URL Param Initializer
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("crm_theme");
@@ -156,6 +156,13 @@ export default function PersonalOSCRM() {
       } else {
         setIsDarkMode(true);
         document.documentElement.classList.add("dark");
+      }
+
+      // Allow URL param to switch tab directly (e.g. ?tab=board)
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab") as MainTab;
+      if (tabParam && ["dashboard", "board", "table", "sprint", "autopilot", "settings"].includes(tabParam)) {
+        setActiveTab(tabParam);
       }
     }
   }, []);
@@ -509,7 +516,7 @@ export default function PersonalOSCRM() {
   }, [leads, dashScheduleFilter]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#FAF9F6] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#FAF9F6] dark:bg-[#0B0C10] text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Toast Notification Banner */}
       {toast && (
         <div
@@ -525,7 +532,7 @@ export default function PersonalOSCRM() {
       )}
 
       {/* CLEAN MINIMAL TOP HEADER (CustomerGo Style: Logo, Centered Search, Profile & Add Button) */}
-      <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#0E1526]/90 backdrop-blur-md px-6 flex items-center justify-between gap-6 sticky top-0 z-30 transition-colors">
+      <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#0F1117]/95 backdrop-blur-md px-6 flex items-center justify-between gap-6 sticky top-0 z-30 transition-colors">
         {/* Left: Brand Identity & Compact Hustle Selector */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="w-9 h-9 rounded-2xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-600/25 text-sm">
@@ -540,7 +547,7 @@ export default function PersonalOSCRM() {
               className="bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none cursor-pointer"
             >
               {hustles.map((h) => (
-                <option key={h.id} value={h.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">
+                <option key={h.id} value={h.id} className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">
                   {h.name}
                 </option>
               ))}
@@ -558,7 +565,7 @@ export default function PersonalOSCRM() {
               <Search className="w-4 h-4 text-slate-400" />
               <span>Search leads, doctors, tasks...</span>
             </div>
-            <kbd className="px-2 py-0.5 text-[10px] bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 font-mono text-slate-500 shadow-2xs">
+            <kbd className="px-2 py-0.5 text-[10px] bg-white dark:bg-[#141721] rounded-lg border border-slate-200 dark:border-slate-700 font-mono text-slate-500 shadow-2xs">
               ⌘K
             </kbd>
           </div>
@@ -592,7 +599,7 @@ export default function PersonalOSCRM() {
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-[#0E1526]"></span>
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-[#0F1117]"></span>
           </button>
 
           {/* User Profile Chip (CustomerGo Style) */}
@@ -620,7 +627,7 @@ export default function PersonalOSCRM() {
       {/* Main Layout: Left Sidebar + Center Workspace */}
       <div className="flex-1 flex overflow-hidden min-h-0 min-w-0">
         {/* Left Navigation Sidebar (Homies Lab & CustomerGo Style) */}
-        <aside className="w-64 shrink-0 h-full border-r border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0E1526]/80 backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto transition-colors z-20">
+        <aside className="w-64 shrink-0 h-full border-r border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0F1117] backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto transition-colors z-20">
           <div className="space-y-6">
             {/* Main Navigation Menu */}
             <div>
@@ -696,7 +703,7 @@ export default function PersonalOSCRM() {
           </div>
 
           {/* Autopilot Status Card in Sidebar (CustomerGo "Unlock More Feature" card style) */}
-          <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-slate-900/90 border border-indigo-100 dark:border-white/[0.08] space-y-2">
+          <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-[#12141D] border border-indigo-100 dark:border-white/[0.08] space-y-2">
             <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -788,7 +795,7 @@ export default function PersonalOSCRM() {
                   {/* Top Stats Overview (Homies Lab Exact Layout: 4 Stat Blocks + Large Circular Gauge) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     {/* Stat 1: Active Leads */}
-                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
                       <div className="flex items-center justify-between text-slate-400">
                         <span className="text-xs font-semibold uppercase tracking-wider">Active Leads</span>
                         <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
@@ -800,7 +807,7 @@ export default function PersonalOSCRM() {
                     </div>
 
                     {/* Stat 2: Pipeline Target Value */}
-                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
                       <div className="flex items-center justify-between text-slate-400">
                         <span className="text-xs font-semibold uppercase tracking-wider">Pipeline Value</span>
                         <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
@@ -814,7 +821,7 @@ export default function PersonalOSCRM() {
                     </div>
 
                     {/* Stat 3: WhatsApp Sent Today */}
-                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
                       <div className="flex items-center justify-between text-slate-400">
                         <span className="text-xs font-semibold uppercase tracking-wider">WA Outreach</span>
                         <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
@@ -828,7 +835,7 @@ export default function PersonalOSCRM() {
                     </div>
 
                     {/* Stat 4: Proof Packages Ready */}
-                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
                       <div className="flex items-center justify-between text-slate-400">
                         <span className="text-xs font-semibold uppercase tracking-wider">Ready Demos</span>
                         <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
@@ -844,7 +851,7 @@ export default function PersonalOSCRM() {
                     </div>
 
                     {/* Stat 5: Homies Lab Big Circular Meter */}
-                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex items-center justify-between gap-4">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex items-center justify-between gap-4">
                       <div className="space-y-1">
                         <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">Buffer Health</div>
                         <div className="text-2xl font-black text-slate-900 dark:text-white">{bufferHealthPct}%</div>
@@ -881,7 +888,7 @@ export default function PersonalOSCRM() {
                   {/* Middle Section: Homies Lab Schedule Card + Autopilot & Outreach Velocity */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left: Homies Lab Schedule Card with Filter Tabs & Warm Highlight */}
-                    <div className="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-5">
+                    <div className="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-5">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -946,7 +953,7 @@ export default function PersonalOSCRM() {
 
                           <div className="flex items-center justify-between pt-2 border-t border-amber-500/20 text-xs">
                             <div className="flex items-center gap-2">
-                              <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300 font-medium">
+                              <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-[#141721] border border-amber-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300 font-medium">
                                 WhatsApp Outreach
                               </span>
                               <span className="text-slate-400 font-mono text-[11px]">Fit Score: {dashboardScheduleLeads[0].fit_score}%</span>
@@ -965,7 +972,7 @@ export default function PersonalOSCRM() {
                           <div
                             key={lead.id}
                             onClick={() => setSelectedLeadId(lead.id)}
-                            className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-4 cursor-pointer transition-colors"
+                            className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#0E1017] hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-4 cursor-pointer transition-colors"
                           >
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
@@ -991,7 +998,7 @@ export default function PersonalOSCRM() {
                     </div>
 
                     {/* Right: Autopilot Performance & Channel Limits (Homies Lab KPI Card) */}
-                    <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex flex-col justify-between space-y-5">
+                    <div className="p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex flex-col justify-between space-y-5">
                       <div>
                         <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/[0.06]">
                           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -1084,7 +1091,7 @@ export default function PersonalOSCRM() {
                   </div>
 
                   {/* Bottom: Homies Lab "List Employee" Style Table for Active Clinics */}
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-4">
+                  <div className="p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <h2 className="text-base font-bold text-slate-900 dark:text-white">Active Priority Clinics</h2>
@@ -1179,7 +1186,7 @@ export default function PersonalOSCRM() {
               {activeTab === "board" && activeHustle && (
                 <div className="space-y-4">
                   {/* Top Bar with Filter, Sort and Pipeline Stats */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-xs relative">
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-xs relative">
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-600/15 border border-indigo-200 dark:border-indigo-500/30 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
                         <LayoutGrid className="w-3.5 h-3.5" />
@@ -1207,7 +1214,7 @@ export default function PersonalOSCRM() {
                         </button>
 
                         {filterPopoverOpen && (
-                          <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.12] shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
+                          <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.12] shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
                             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/[0.06]">
                               <span className="text-xs font-bold text-slate-900 dark:text-white">Quick Filters</span>
                               <button
@@ -1265,7 +1272,7 @@ export default function PersonalOSCRM() {
                         </button>
 
                         {sortPopoverOpen && (
-                          <div className="absolute left-0 mt-2 w-80 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.12] shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
+                          <div className="absolute left-0 mt-2 w-80 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.12] shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
                             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/[0.06]">
                               <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                 <span>Sort Options</span>
@@ -1284,19 +1291,19 @@ export default function PersonalOSCRM() {
                                   onChange={(e) => setSortBy(e.target.value as any)}
                                   className="flex-1 bg-transparent text-xs font-medium text-slate-800 dark:text-white focus:outline-none cursor-pointer"
                                 >
-                                  <option value="fit" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">AI Fit Score</option>
-                                  <option value="intent" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">Buyer Intent Score</option>
-                                  <option value="deal" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">Projected Deal Value</option>
-                                  <option value="name" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">Clinic / Lead Name</option>
-                                  <option value="due" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">Next Action Due Date</option>
+                                  <option value="fit" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">AI Fit Score</option>
+                                  <option value="intent" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Buyer Intent Score</option>
+                                  <option value="deal" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Projected Deal Value</option>
+                                  <option value="name" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Clinic / Lead Name</option>
+                                  <option value="due" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Next Action Due Date</option>
                                 </select>
                                 <select
                                   value={sortOrder}
                                   onChange={(e) => setSortOrder(e.target.value as any)}
                                   className="bg-transparent text-xs font-semibold text-indigo-600 dark:text-indigo-400 focus:outline-none cursor-pointer"
                                 >
-                                  <option value="desc" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">Descending ↓</option>
-                                  <option value="asc" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">Ascending ↑</option>
+                                  <option value="desc" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Descending ↓</option>
+                                  <option value="asc" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Ascending ↑</option>
                                 </select>
                               </div>
                             </div>
@@ -1370,11 +1377,11 @@ export default function PersonalOSCRM() {
                           className={`w-80 shrink-0 rounded-2xl backdrop-blur-xl border flex flex-col max-h-[calc(100vh-210px)] shadow-xs transition-all ${
                             dragOverStageId === stage.id
                               ? "bg-indigo-50/50 dark:bg-indigo-950/40 border-indigo-500 ring-2 ring-indigo-500/40 shadow-md"
-                              : "bg-slate-100/70 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/[0.08]"
+                              : "bg-slate-100/70 dark:bg-[#0E1017] border-slate-200/80 dark:border-white/[0.06]"
                           }`}
                         >
                           {/* Column Header (CustomerGo Style) */}
-                          <div className="p-3.5 border-b border-slate-200/80 dark:border-white/[0.06] bg-white/60 dark:bg-slate-900/80 flex items-center justify-between rounded-t-2xl">
+                          <div className="p-3.5 border-b border-slate-200/80 dark:border-white/[0.06] bg-white/60 dark:bg-[#12141D] flex items-center justify-between rounded-t-2xl">
                             <div className="flex items-center gap-2">
                               <span className={`w-2.5 h-2.5 rounded-full ${dotColor.split(' ')[0]}`}></span>
                               <span className="text-xs font-bold text-slate-800 dark:text-slate-100 tracking-wide">{stage.name}</span>
@@ -1428,7 +1435,7 @@ export default function PersonalOSCRM() {
                                         ? "border-2 border-dashed border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 opacity-60 scale-95 shadow-none"
                                         : isSelected
                                         ? "bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500 shadow-md ring-2 ring-indigo-500/40"
-                                        : "bg-white dark:bg-[#151E32] hover:bg-slate-50/90 dark:hover:bg-[#1C2640] border-slate-200/90 dark:border-white/[0.08] hover:border-indigo-400 dark:hover:border-indigo-500/50 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-card hover:-translate-y-0.5"
+                                        : "bg-white dark:bg-[#181B26] hover:bg-slate-50/90 dark:hover:bg-[#1F2332] border-slate-200/90 dark:border-white/[0.08] hover:border-indigo-400 dark:hover:border-indigo-500/50 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-card hover:-translate-y-0.5"
                                     }`}
                                   >
                                     {/* Lead Header & Estimated Deal Value */}
@@ -1496,7 +1503,7 @@ export default function PersonalOSCRM() {
 
                                     {/* Next Action Box */}
                                     {lead.next_action && (
-                                      <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200/80 dark:border-white/[0.06] text-[11px] text-slate-700 dark:text-slate-300 flex items-start gap-1.5">
+                                      <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#10121A] border border-slate-200/80 dark:border-white/[0.06] text-[11px] text-slate-700 dark:text-slate-300 flex items-start gap-1.5">
                                         <Clock className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
                                         <div className="leading-relaxed">
                                           <span className="text-indigo-600 dark:text-indigo-400 font-semibold">Next: </span>
@@ -1558,10 +1565,10 @@ export default function PersonalOSCRM() {
               {/* TAB 2: FAST LEADS TABLE (Homies Lab Employee Table Style) */}
               {/* ======================================================== */}
               {activeTab === "table" && (
-                <div className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-slate-900/60 overflow-hidden shadow-xs transition-colors">
+                <div className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0E1017] overflow-hidden shadow-xs transition-colors">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="border-b border-slate-200 dark:border-white/[0.06] bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
+                      <tr className="border-b border-slate-200 dark:border-white/[0.06] bg-slate-50 dark:bg-[#12141D] text-slate-500 dark:text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
                         <th className="py-3.5 px-4">Clinic & Doctor</th>
                         <th className="py-3.5 px-3">Locality & City</th>
                         <th className="py-3.5 px-3">Contacts</th>
@@ -1639,7 +1646,7 @@ export default function PersonalOSCRM() {
               {activeTab === "sprint" && sprintPlan && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
                       <div>
                         <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Time Budget Allocated</div>
                         <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
@@ -1652,7 +1659,7 @@ export default function PersonalOSCRM() {
                       </div>
                     </div>
 
-                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
                       <div>
                         <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Expected Pipeline Value</div>
                         <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
@@ -1665,7 +1672,7 @@ export default function PersonalOSCRM() {
                       </div>
                     </div>
 
-                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
                       <div>
                         <div className="text-xs font-bold uppercase tracking-wider text-slate-400">High-Priority Tasks</div>
                         <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">
@@ -1684,7 +1691,7 @@ export default function PersonalOSCRM() {
                       <div
                         key={t.lead_id}
                         onClick={() => setSelectedLeadId(t.lead_id)}
-                        className="p-4 rounded-2xl bg-white dark:bg-[#111827] hover:bg-slate-50 dark:hover:bg-slate-800/70 border border-slate-200 dark:border-white/[0.08] flex items-center justify-between gap-4 cursor-pointer transition-all shadow-xs"
+                        className="p-4 rounded-2xl bg-white dark:bg-[#141721] hover:bg-slate-50 dark:hover:bg-slate-800/70 border border-slate-200 dark:border-white/[0.08] flex items-center justify-between gap-4 cursor-pointer transition-all shadow-xs"
                       >
                         <div className="flex items-center gap-3.5">
                           <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs">
@@ -1721,7 +1728,7 @@ export default function PersonalOSCRM() {
               {activeTab === "autopilot" && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                   <div className="lg:col-span-2 space-y-4">
-                    <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-wrap items-center justify-between gap-3">
+                    <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <h2 className="text-sm font-bold text-slate-900 dark:text-white">7-Step Clinic Autopilot & Stock Planner</h2>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -1749,7 +1756,7 @@ export default function PersonalOSCRM() {
                     {/* Run Trace Logs */}
                     <div className="space-y-3">
                       {runs.map((r) => (
-                        <div key={r.id} className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-2.5">
+                        <div key={r.id} className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-2.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-slate-900 dark:text-white">Run #{r.id}: {r.job_type}</span>
@@ -1787,7 +1794,7 @@ export default function PersonalOSCRM() {
                   </div>
 
                   {/* Telegram Remote CLI Simulator Console */}
-                  <div className="p-5 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-4">
+                  <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-4">
                     <div className="flex items-center gap-2">
                       <Terminal className="w-4 h-4 text-indigo-500" />
                       <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
@@ -1800,7 +1807,7 @@ export default function PersonalOSCRM() {
                         value={telegramCmd}
                         onChange={(e) => setTelegramCmd(e.target.value)}
                         placeholder="Try: /stock, /sprint, /today, /refill..."
-                        className="w-full bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-white/[0.08] rounded-xl px-3 py-2 text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3 py-2 text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
                       />
                       <button
                         type="submit"
@@ -1824,7 +1831,7 @@ export default function PersonalOSCRM() {
               {/* ======================================================== */}
               {activeTab === "settings" && activeHustle && (
                 <div className="max-w-3xl space-y-5">
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-3">
+                  <div className="p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-3">
                     <h2 className="text-sm font-bold text-slate-900 dark:text-white">Active Hustle Blueprint: {activeHustle.name}</h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400">{activeHustle.description}</p>
                     <div className="pt-2 grid grid-cols-2 gap-3 text-xs">
@@ -1849,10 +1856,10 @@ export default function PersonalOSCRM() {
         {/* ======================================================== */}
         {selectedLead && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/75 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in zoom-in-95 duration-200">
-            <div className="w-full max-w-5xl max-h-[92vh] bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.12] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="w-full max-w-5xl max-h-[92vh] bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.12] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
               
               {/* Modal Top Bar */}
-              <div className="p-5 border-b border-slate-100 dark:border-white/[0.08] bg-slate-50/80 dark:bg-slate-900/90 flex items-start justify-between gap-4">
+              <div className="p-5 border-b border-slate-100 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#12141D] flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center font-bold text-base text-indigo-600 dark:text-indigo-400">
@@ -1913,7 +1920,7 @@ export default function PersonalOSCRM() {
                       className="bg-transparent text-xs font-semibold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
                     >
                       {activeHustle?.stages.map((st) => (
-                        <option key={st.id} value={st.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">
+                        <option key={st.id} value={st.id} className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">
                           {st.name}
                         </option>
                       ))}
@@ -1934,7 +1941,7 @@ export default function PersonalOSCRM() {
                 {/* Left Column: Intelligence, Facts & History */}
                 <div className="space-y-4">
                   {/* AI Fit & Intent Match (Homies Lab Circular Gauge Style) */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] flex items-center justify-between gap-4 shadow-xs">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.08] flex items-center justify-between gap-4 shadow-xs">
                     <div className="space-y-1">
                       <div className="text-xs font-bold text-slate-900 dark:text-white">AI Acquisition Intelligence</div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
@@ -1991,7 +1998,7 @@ export default function PersonalOSCRM() {
                   )}
 
                   {/* Verified Facts Dossier */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-2.5 shadow-xs">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.08] space-y-2.5 shadow-xs">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
                       <span className="flex items-center gap-1.5">
                         <ShieldCheck className="w-4 h-4 text-emerald-500" />
@@ -2004,7 +2011,7 @@ export default function PersonalOSCRM() {
                         <div className="text-[11px] text-slate-400">No verified facts recorded yet</div>
                       ) : (
                         selectedLead.facts.map((f) => (
-                          <div key={f.id} className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-100 dark:border-white/[0.04] text-xs flex items-center justify-between gap-2">
+                          <div key={f.id} className="p-2 rounded-xl bg-slate-50 dark:bg-[#12141D] border border-slate-100 dark:border-white/[0.04] text-xs flex items-center justify-between gap-2">
                             <div>
                               <span className="font-semibold text-slate-700 dark:text-slate-300">{f.field}: </span>
                               <span className="text-slate-600 dark:text-slate-400">{f.value}</span>
@@ -2020,7 +2027,7 @@ export default function PersonalOSCRM() {
 
                   {/* Client Proof Package */}
                   {selectedLead.packages.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-xs">
+                    <div className="p-4 rounded-2xl bg-white dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-xs">
                       <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
                         <span className="flex items-center gap-1.5">
                           <Eye className="w-3.5 h-3.5 text-indigo-500" />
@@ -2032,7 +2039,7 @@ export default function PersonalOSCRM() {
                       </div>
                       <div className="grid grid-cols-3 gap-2 text-center text-xs">
                         {["Template 1", "Template 2", "Template 3"].map((tmpl, idx) => (
-                          <div key={idx} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.06] space-y-1">
+                          <div key={idx} className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0E1017] border border-slate-200/80 dark:border-white/[0.06] space-y-1">
                             <div className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">{tmpl}</div>
                             <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">Rendered</div>
                           </div>
@@ -2046,7 +2053,7 @@ export default function PersonalOSCRM() {
                   )}
 
                   {/* Activity History Timeline */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-xs">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-xs">
                     <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-slate-400" />
                       <span>Activity Log & Messages</span>
@@ -2056,7 +2063,7 @@ export default function PersonalOSCRM() {
                         <div className="text-[11px] text-slate-400 py-3 text-center">No messages logged yet</div>
                       ) : (
                         selectedLead.messages.map((m) => (
-                          <div key={m.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-100 dark:border-white/[0.04] text-xs space-y-1">
+                          <div key={m.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#12141D] border border-slate-100 dark:border-white/[0.04] text-xs space-y-1">
                             <div className="flex items-center justify-between text-[10px] text-slate-400">
                               <span className="font-semibold text-indigo-600 dark:text-indigo-400 uppercase">{m.channel} • {m.direction}</span>
                               <span className="font-mono">{new Date(m.created_at).toLocaleDateString()}</span>
@@ -2072,7 +2079,7 @@ export default function PersonalOSCRM() {
                 {/* Right Column: Next Action Enforcement & Message Dispatch */}
                 <div className="space-y-4">
                   {/* Pipedrive Mandatory Next Step Form */}
-                  <form onSubmit={handleCompleteTask} className="p-4 rounded-2xl bg-white dark:bg-slate-950/80 border border-indigo-200 dark:border-indigo-500/30 space-y-3 shadow-xs">
+                  <form onSubmit={handleCompleteTask} className="p-4 rounded-2xl bg-white dark:bg-[#10121A] border border-indigo-200 dark:border-indigo-500/30 space-y-3 shadow-xs">
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
                         <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -2088,7 +2095,7 @@ export default function PersonalOSCRM() {
                         value={completedNote}
                         onChange={(e) => setCompletedNote(e.target.value)}
                         placeholder="e.g. Sent personalized WhatsApp pitch with demo link"
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
 
@@ -2099,7 +2106,7 @@ export default function PersonalOSCRM() {
                         value={nextActionInput}
                         onChange={(e) => setNextActionInput(e.target.value)}
                         placeholder="e.g. Follow up if no reply in 2 days"
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
 
@@ -2112,7 +2119,7 @@ export default function PersonalOSCRM() {
                           max={30}
                           value={nextDueDays}
                           onChange={(e) => setNextDueDays(Number(e.target.value))}
-                          className="w-14 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-white text-center font-mono"
+                          className="w-14 bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-white text-center font-mono"
                         />
                         <span>days</span>
                       </div>
@@ -2127,7 +2134,7 @@ export default function PersonalOSCRM() {
                   </form>
 
                   {/* Log Note or Message */}
-                  <form onSubmit={handleAppendMessage} className="p-4 rounded-2xl bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-xs">
+                  <form onSubmit={handleAppendMessage} className="p-4 rounded-2xl bg-white dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-xs">
                     <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                       <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
                       <span>Log Message or Internal Note</span>
@@ -2137,7 +2144,7 @@ export default function PersonalOSCRM() {
                       <select
                         value={messageChannel}
                         onChange={(e) => setMessageChannel(e.target.value)}
-                        className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 cursor-pointer"
+                        className="bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 cursor-pointer"
                       >
                         <option value="whatsapp">WhatsApp</option>
                         <option value="instagram">Instagram</option>
@@ -2149,7 +2156,7 @@ export default function PersonalOSCRM() {
                       <select
                         value={messageDirection}
                         onChange={(e) => setMessageDirection(e.target.value as any)}
-                        className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 cursor-pointer"
+                        className="bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 cursor-pointer"
                       >
                         <option value="internal_note">Internal Note</option>
                         <option value="outbound">Outbound (Sent)</option>
@@ -2162,7 +2169,7 @@ export default function PersonalOSCRM() {
                       value={messageInput}
                       onChange={(e) => setMessageInput(e.target.value)}
                       placeholder="Type note or paste message text..."
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
                     />
 
                     <button
@@ -2185,7 +2192,7 @@ export default function PersonalOSCRM() {
                           <div
                             key={idx}
                             onClick={() => setMessageInput(sugg.text)}
-                            className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-indigo-100 dark:border-white/[0.06] text-xs space-y-1 cursor-pointer hover:border-indigo-400 transition-colors"
+                            className="p-2.5 rounded-xl bg-white dark:bg-[#141721] border border-indigo-100 dark:border-white/[0.06] text-xs space-y-1 cursor-pointer hover:border-indigo-400 transition-colors"
                           >
                             <div className="flex items-center justify-between text-[10px] text-slate-400">
                               <span className="font-semibold text-indigo-600 dark:text-indigo-400">{sugg.objection_label} ({sugg.wins} wins)</span>
@@ -2206,7 +2213,7 @@ export default function PersonalOSCRM() {
         {/* MODAL: Add New Lead Form */}
         {newLeadModalOpen && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.12] rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="w-full max-w-md bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.12] rounded-3xl p-6 shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add New Clinic Lead</h3>
                 <button onClick={() => setNewLeadModalOpen(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer">
@@ -2223,7 +2230,7 @@ export default function PersonalOSCRM() {
                     value={newLeadName}
                     onChange={(e) => setNewLeadName(e.target.value)}
                     placeholder="e.g. Apex Dental Studio"
-                    className="w-full mt-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full mt-1 bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
@@ -2235,7 +2242,7 @@ export default function PersonalOSCRM() {
                       value={newLeadDoctor}
                       onChange={(e) => setNewLeadDoctor(e.target.value)}
                       placeholder="Dr. Sharma"
-                      className="w-full mt-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full mt-1 bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                   <div>
@@ -2245,7 +2252,7 @@ export default function PersonalOSCRM() {
                       value={newLeadLocality}
                       onChange={(e) => setNewLeadLocality(e.target.value)}
                       placeholder="Indiranagar, BLR"
-                      className="w-full mt-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full mt-1 bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                 </div>
@@ -2258,7 +2265,7 @@ export default function PersonalOSCRM() {
                       value={newLeadPhone}
                       onChange={(e) => setNewLeadPhone(e.target.value)}
                       placeholder="+91..."
-                      className="w-full mt-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full mt-1 bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                   <div>
@@ -2268,7 +2275,7 @@ export default function PersonalOSCRM() {
                       value={newLeadIg}
                       onChange={(e) => setNewLeadIg(e.target.value)}
                       placeholder="apexdental_blr"
-                      className="w-full mt-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full mt-1 bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                 </div>
@@ -2279,7 +2286,7 @@ export default function PersonalOSCRM() {
                     type="text"
                     value={newLeadNextAction}
                     onChange={(e) => setNewLeadNextAction(e.target.value)}
-                    className="w-full mt-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full mt-1 bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
@@ -2306,7 +2313,7 @@ export default function PersonalOSCRM() {
         {/* MODAL: Report Problem Brief */}
         {problemModalOpen && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="w-full max-w-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.12] rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="w-full max-w-lg bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.12] rounded-3xl p-6 shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bug className="w-4 h-4 text-rose-500" />
@@ -2328,7 +2335,7 @@ export default function PersonalOSCRM() {
                     value={problemText}
                     onChange={(e) => setProblemText(e.target.value)}
                     placeholder="e.g. Run #14 failed on step 6: template preview HTTP 500 error on clinic xyz..."
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.1] rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-rose-500"
+                    className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-rose-500"
                   />
                   <div className="flex justify-end gap-2">
                     <button
