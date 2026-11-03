@@ -139,3 +139,11 @@ Instead of a plain form or cluttered tabs, opening a lead launches a modern, two
 | **WhatsApp Rate Limits** | Daily channel safety caps (20 sends/day/channel). Once hit, outbox items are safely queued for the next normal day. |
 | **Link Expiry** | 7-day expiration timer starts automatically on the day of pitch send. Expired links return HTTP 410 with a friendly WhatsApp reconnect prompt. |
 | **Double Contacting** | Phone numbers and Instagram handles are normalized and strictly enforced unique across the database. |
+| **High-Volume Search & Ingestion** | Composite B-Tree indexing on normalized phone, Instagram handle, and locality/name enables logarithmic binary search lookups (`O(log N)`), preventing slowdowns when checking duplicate leads. |
+| **Heavy Database Read Latency** | Distributed Redis caching layer with write-invalidation caches hot sprint stats, pipeline summaries, and lead profiles. |
+| **Slow Blocking Jobs** | Autopilot batch runs, external web searches, and video recordings offloaded to an asynchronous background worker queue. |
+| **External API Flakiness** | Hard 5-8s timeouts, randomized exponential backoff, and circuit breakers on external search APIs (Google Places, Serper, Brave). |
+| **N+1 Query Inefficiencies** | Enforced eager loading (`joinedload` / `selectinload`) and API cursor/limit pagination for large lead datasets. |
+| **DOM & Browser Memory Bloat** | Large lists (Kanban columns, full table, terminal logs) virtualized using `@tanstack/react-virtual`, rendering only visible items. |
+| **Unnecessary UI Re-renders** | Decoupled high-frequency terminal/event streams from main CRM state; strategic `React.memo` and `useCallback` optimization. |
+| **AI Assistant Knowledge Grounding** | Hybrid RAG architecture: real-time structured metrics queried directly via SQL, while doctor objection notes and sales playbooks are retrieved via vector embeddings. |
