@@ -14,7 +14,6 @@ Executes the 7-step pipeline for Dental Clinics (and configurable hustles):
 import json
 import os
 import re
-import subprocess
 import time
 import urllib.parse
 import urllib.request
@@ -24,9 +23,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
-from .models import Hustle, Job, Lead, LeadFact, Package, RunLog, Stage
-from .safety import compute_fit_score, normalize_ig_handle, normalize_phone
-
+from .models import Hustle, Lead, LeadFact, Package, RunLog, Stage
+from .safety import compute_fit_score, normalize_phone
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 BATCH_RECORDER_DIR = PROJECT_ROOT / "Side hustle (Building Website)" / "dental-batch-recorder"
@@ -280,7 +278,9 @@ def build_canonical_clinic_payload(
         "phoneRaw": phone_raw,
         "whatsapp": whatsapp,
         "rating": str(rating).replace("★", "").strip() or "4.9",
-        "reviewCount": review_count if str(review_count).endswith("+") else f"{re.sub(r'[^0-9]', '', str(review_count)) or '50'}+",
+        "reviewCount": review_count
+        if str(review_count).endswith("+")
+        else f"{re.sub(r'[^0-9]', '', str(review_count)) or '50'}+",
         "consultationFee": consultation_fee,
         "mapEmbedUrl": f"https://maps.google.com/maps?q={q_encoded}&t=&z=16&ie=UTF8&iwloc=&output=embed",
         "directionsUrl": f"https://maps.google.com/?q={q_encoded}",
@@ -292,11 +292,36 @@ def build_canonical_clinic_payload(
 
     claims_obj = {
         "claims": [
-            {"id": "claim-rating", "text": f"{clinic_obj['rating']} ★ Google Verified Rating", "status": "VERIFIED", "source": "Google Business Profile"},
-            {"id": "claim-reviews", "text": f"{clinic_obj['reviewCount']} authentic patient evaluations", "status": "VERIFIED", "source": "Google Business Profile"},
-            {"id": "claim-fee", "text": f"{consultation_fee} consultation policy", "status": "VERIFIED", "source": "Clinic Fee Schedule"},
-            {"id": "claim-painless", "text": "Gentle local numbing and unhurried clinical care", "status": "SAFE_TO_GENERATE", "source": "Standard Clinical Procedure"},
-            {"id": "claim-sterilization", "text": "Multi-tier vacuum autoclave sterilization protocols", "status": "SAFE_TO_GENERATE", "source": "Standard Clinical Procedure"},
+            {
+                "id": "claim-rating",
+                "text": f"{clinic_obj['rating']} ★ Google Verified Rating",
+                "status": "VERIFIED",
+                "source": "Google Business Profile",
+            },
+            {
+                "id": "claim-reviews",
+                "text": f"{clinic_obj['reviewCount']} authentic patient evaluations",
+                "status": "VERIFIED",
+                "source": "Google Business Profile",
+            },
+            {
+                "id": "claim-fee",
+                "text": f"{consultation_fee} consultation policy",
+                "status": "VERIFIED",
+                "source": "Clinic Fee Schedule",
+            },
+            {
+                "id": "claim-painless",
+                "text": "Gentle local numbing and unhurried clinical care",
+                "status": "SAFE_TO_GENERATE",
+                "source": "Standard Clinical Procedure",
+            },
+            {
+                "id": "claim-sterilization",
+                "text": "Multi-tier vacuum autoclave sterilization protocols",
+                "status": "SAFE_TO_GENERATE",
+                "source": "Standard Clinical Procedure",
+            },
         ]
     }
 
@@ -339,40 +364,136 @@ def build_canonical_clinic_payload(
 
     modern_obj = {
         "heroMetrics": [
-            {"number": f"{clinic_obj['rating']} ★", "label": "Google Rating", "note": f"{clinic_obj['reviewCount']} patient reviews"},
+            {
+                "number": f"{clinic_obj['rating']} ★",
+                "label": "Google Rating",
+                "note": f"{clinic_obj['reviewCount']} patient reviews",
+            },
             {"number": consultation_fee, "label": "OPD Consultation", "note": "Transparent upfront standard fee"},
             {"number": "Verified", "label": "Clinical Practice", "note": f"{clean_doc} ({quals.split(',')[0]})"},
         ],
         "alignerJourney": [
-            {"step": "01", "title": "3D Digital Smile Scan", "duration": "15 Mins", "description": "High-resolution intraoral assessment to map tooth alignment accurately."},
-            {"step": "02", "title": "Custom Treatment Map", "duration": "2 - 3 Days", "description": "Clear step-by-step alignment plan reviewed with you before starting."},
-            {"step": "03", "title": "Precision Aligner Series", "duration": "Bi-weekly trays", "description": "Custom-fitted transparent aligners gently guide teeth with minimal pressure."},
-            {"step": "04", "title": "Smile Lock & Retention", "duration": "Final visit", "description": "Custom retainers preserve your new alignment for long-term stability."},
+            {
+                "step": "01",
+                "title": "3D Digital Smile Scan",
+                "duration": "15 Mins",
+                "description": "High-resolution intraoral assessment to map tooth alignment accurately.",
+            },
+            {
+                "step": "02",
+                "title": "Custom Treatment Map",
+                "duration": "2 - 3 Days",
+                "description": "Clear step-by-step alignment plan reviewed with you before starting.",
+            },
+            {
+                "step": "03",
+                "title": "Precision Aligner Series",
+                "duration": "Bi-weekly trays",
+                "description": "Custom-fitted transparent aligners gently guide teeth with minimal pressure.",
+            },
+            {
+                "step": "04",
+                "title": "Smile Lock & Retention",
+                "duration": "Final visit",
+                "description": "Custom retainers preserve your new alignment for long-term stability.",
+            },
         ],
     }
 
     premium_obj = {
         "sanctuaryTitle": f"{area} Dental Sanctuary",
         "sanctuaryFeatures": [
-            {"title": "Private Treatment Suite", "description": f"Calm, unhurried clinical appointments in {area}.", "amenity": "Calming Patient Environment", "icon": "✨"},
-            {"title": "Multi-Tier Sterilization", "description": "Rigorous autoclave cycles with sealed chairside pouches.", "amenity": "Strict Hygiene Standards", "icon": "🛡️"},
-            {"title": "Targeted Local Numbing", "description": "Gentle topical pre-numbing protocols for comfortable restorations.", "amenity": "Anxiety-Free Comfort", "icon": "🌿"},
-            {"title": "Transparent OPD Standard", "description": "Clear treatment plans with ethical, upfront guidance.", "amenity": "Ethical Care", "icon": "💎"},
+            {
+                "title": "Private Treatment Suite",
+                "description": f"Calm, unhurried clinical appointments in {area}.",
+                "amenity": "Calming Patient Environment",
+                "icon": "✨",
+            },
+            {
+                "title": "Multi-Tier Sterilization",
+                "description": "Rigorous autoclave cycles with sealed chairside pouches.",
+                "amenity": "Strict Hygiene Standards",
+                "icon": "🛡️",
+            },
+            {
+                "title": "Targeted Local Numbing",
+                "description": "Gentle topical pre-numbing protocols for comfortable restorations.",
+                "amenity": "Anxiety-Free Comfort",
+                "icon": "🌿",
+            },
+            {
+                "title": "Transparent OPD Standard",
+                "description": "Clear treatment plans with ethical, upfront guidance.",
+                "amenity": "Ethical Care",
+                "icon": "💎",
+            },
         ],
     }
 
     warm_obj = {
         "comfortPhases": [
-            {"step": "01", "title": "Unhurried Clinical Review", "subtitle": "Personal Consultation", "description": f"{clean_doc} listens carefully to your dental goals in a welcoming setting.", "duration": "10 - 15 Mins", "sensoryNote": "Friendly and relaxed conversation.", "keySafeguard": "Comprehensive clinical exam."},
-            {"step": "02", "title": "Gentle Topical Pre-Numb", "subtitle": "Zero-Sting Delivery", "description": "A soothing topical gel gently numbs the gum surface before treatment.", "duration": "5 Mins", "sensoryNote": "Soothing mild numbness.", "keySafeguard": "Comfort-first delivery."},
-            {"step": "03", "title": "Precision Conservative Care", "subtitle": "Unhurried Mastery", "description": "Treatments proceed with micro-instruments and regular comfort check-ins.", "duration": "20 - 40 Mins", "sensoryNote": "Gentle pacing.", "keySafeguard": "Continuous patient comfort."},
-            {"step": "04", "title": "Clear Recovery & Guidance", "subtitle": "Direct WhatsApp Line", "description": f"Straightforward aftercare guidance and WhatsApp support from {clinic_name}.", "duration": "10 Mins", "sensoryNote": "Well-supported recovery.", "keySafeguard": "Direct post-treatment line."},
+            {
+                "step": "01",
+                "title": "Unhurried Clinical Review",
+                "subtitle": "Personal Consultation",
+                "description": f"{clean_doc} listens carefully to your dental goals in a welcoming setting.",
+                "duration": "10 - 15 Mins",
+                "sensoryNote": "Friendly and relaxed conversation.",
+                "keySafeguard": "Comprehensive clinical exam.",
+            },
+            {
+                "step": "02",
+                "title": "Gentle Topical Pre-Numb",
+                "subtitle": "Zero-Sting Delivery",
+                "description": "A soothing topical gel gently numbs the gum surface before treatment.",
+                "duration": "5 Mins",
+                "sensoryNote": "Soothing mild numbness.",
+                "keySafeguard": "Comfort-first delivery.",
+            },
+            {
+                "step": "03",
+                "title": "Precision Conservative Care",
+                "subtitle": "Unhurried Mastery",
+                "description": "Treatments proceed with micro-instruments and regular comfort check-ins.",
+                "duration": "20 - 40 Mins",
+                "sensoryNote": "Gentle pacing.",
+                "keySafeguard": "Continuous patient comfort.",
+            },
+            {
+                "step": "04",
+                "title": "Clear Recovery & Guidance",
+                "subtitle": "Direct WhatsApp Line",
+                "description": f"Straightforward aftercare guidance and WhatsApp support from {clinic_name}.",
+                "duration": "10 Mins",
+                "sensoryNote": "Well-supported recovery.",
+                "keySafeguard": "Direct post-treatment line.",
+            },
         ],
         "dentureComparison": [
-            {"feature": "Retention & Stability", "conventional": "May shift while speaking", "bpsPrecision": "Precision-contoured anatomical suction fit", "benefit": "Speak and smile with confidence"},
-            {"feature": "Chewing Comfort", "conventional": "Often limited to softer foods", "bpsPrecision": "Balanced bite distribution for daily meals", "benefit": "Enjoy everyday dining"},
-            {"feature": "Gum Pressure", "conventional": "Rigid acrylic can cause sore spots", "bpsPrecision": "Smooth polished anatomical contours", "benefit": "Comfortable all-day wear"},
-            {"feature": "Aesthetic Naturalism", "conventional": "Uniform opaque tooth appearance", "bpsPrecision": "Natural multi-shaded tooth moulds", "benefit": "Authentic, natural smile"},
+            {
+                "feature": "Retention & Stability",
+                "conventional": "May shift while speaking",
+                "bpsPrecision": "Precision-contoured anatomical suction fit",
+                "benefit": "Speak and smile with confidence",
+            },
+            {
+                "feature": "Chewing Comfort",
+                "conventional": "Often limited to softer foods",
+                "bpsPrecision": "Balanced bite distribution for daily meals",
+                "benefit": "Enjoy everyday dining",
+            },
+            {
+                "feature": "Gum Pressure",
+                "conventional": "Rigid acrylic can cause sore spots",
+                "bpsPrecision": "Smooth polished anatomical contours",
+                "benefit": "Comfortable all-day wear",
+            },
+            {
+                "feature": "Aesthetic Naturalism",
+                "conventional": "Uniform opaque tooth appearance",
+                "bpsPrecision": "Natural multi-shaded tooth moulds",
+                "benefit": "Authentic, natural smile",
+            },
         ],
     }
 
@@ -452,6 +573,7 @@ def sync_verified_links_to_batch_json(
     Checks all ready/sent packages, verifies their live links are working (HTTP 200),
     and writes the verified links into `dental-batch-recorder/batch.json` for walkthrough recording.
     """
+
     def _emit(msg: str) -> None:
         if log_cb:
             try:
@@ -503,7 +625,9 @@ def sync_verified_links_to_batch_json(
         pkg.self_check_report = {**(pkg.self_check_report or {}), "live_link_verification": check_details}
 
         if links_ok:
-            _emit(f"[HTTP 200 OK] Verified all 4 live routes (/demo, /modern, /premium, /warm) for '{lead.name}' (slug={slug})")
+            _emit(
+                f"[HTTP 200 OK] Verified all 4 live routes (/demo, /modern, /premium, /warm) for '{lead.name}' (slug={slug})"
+            )
             pkg.asset_links = {
                 "choice_page": f"{base}/demo/{slug}",
                 "modern": f"{base}/modern/{slug}",
@@ -625,7 +749,9 @@ def serper_maps_search(query: str, api_key: str) -> List[Dict[str, Any]]:
 
 
 def brave_web_search(query: str, api_key: str) -> List[Dict[str, Any]]:
-    encoded_q = urllib.request.quote_plus(query) if hasattr(urllib.request, "quote_plus") else urllib.parse.quote_plus(query)
+    encoded_q = (
+        urllib.request.quote_plus(query) if hasattr(urllib.request, "quote_plus") else urllib.parse.quote_plus(query)
+    )
     req = urllib.request.Request(
         f"https://api.search.brave.com/res/v1/web/search?q={encoded_q}&count=8",
         headers={"X-Subscription-Token": api_key, "Accept": "application/json"},
@@ -695,7 +821,8 @@ def playwright_maps_fallback_pool(query: str) -> List[Dict[str, Any]]:
                         {
                             "place_id": item.get("place_id", ""),
                             "title": item.get("name") or item.get("title") or "",
-                            "address": item.get("address") or f"{item.get('locality') or item.get('area', 'Delhi NCR')}, Delhi NCR",
+                            "address": item.get("address")
+                            or f"{item.get('locality') or item.get('area', 'Delhi NCR')}, Delhi NCR",
                             "locality": item.get("locality") or item.get("area") or "",
                             "phoneNumber": item.get("phone") or item.get("phoneNumber") or "",
                             "rating": item.get("rating", 4.9),
@@ -801,7 +928,10 @@ def extract_doctor_from_results(clinic_name: str, organic_results: List[Dict[str
         for m in re.finditer(r"\bDr\.?\s+([A-Z][a-z]{2,15}(?:\s+[A-Z][a-z]{2,15})?)", blob):
             raw_doc = m.group(1).strip()
             # Filter out generic words
-            if any(w in raw_doc.lower() for w in ["dental", "clinic", "care", "hospital", "center", "centre", "ortho", "implant"]):
+            if any(
+                w in raw_doc.lower()
+                for w in ["dental", "clinic", "care", "hospital", "center", "centre", "ortho", "implant"]
+            ):
                 continue
             full_doc = f"Dr. {raw_doc}"
             candidates[full_doc] = candidates.get(full_doc, 0) + 1
@@ -853,15 +983,13 @@ def run_live_autopilot_discovery(
             except Exception:
                 pass
 
-    package_ready_stage = (
-        db.query(Stage)
-        .filter(Stage.hustle_id == hustle.id, Stage.slug == "package_ready")
-        .first()
-    )
+    package_ready_stage = db.query(Stage).filter(Stage.hustle_id == hustle.id, Stage.slug == "package_ready").first()
 
     # Check if Instagram discovery is enabled for this hustle (explicitly False for Dental Clinics)
     is_dental = "dental" in (hustle.slug or "").lower() or "dental" in (hustle.name or "").lower()
-    ig_discovery_enabled = False if is_dental else bool((hustle.pipeline_config or {}).get("enable_instagram_discovery", False))
+    ig_discovery_enabled = (
+        False if is_dental else bool((hustle.pipeline_config or {}).get("enable_instagram_discovery", False))
+    )
     emit(
         f"[CONFIG] Hustle='{hustle.name}' | Instagram Lead Discovery={'ENABLED' if ig_discovery_enabled else 'DISABLED (Maps/Web 4-Tier Waterfall Only)'}"
     )
@@ -887,9 +1015,13 @@ def run_live_autopilot_discovery(
                 tiers_used.append("Tier 1: Google Places API")
                 emit(f"[TIER 1] Google Places API returned {len(g_places)} candidates.")
             else:
-                emit("[TIER 1] Google Places API returned 0 results or quota reached -> failing over to Tier 2 (Serper Maps)...")
+                emit(
+                    "[TIER 1] Google Places API returned 0 results or quota reached -> failing over to Tier 2 (Serper Maps)..."
+                )
         except Exception as e:
-            emit(f"[TIER 1] Google Places API unavailable/quota reached ({e}) -> failing over to Tier 2 (Serper Maps)...")
+            emit(
+                f"[TIER 1] Google Places API unavailable/quota reached ({e}) -> failing over to Tier 2 (Serper Maps)..."
+            )
 
     # Tier 2: Serper Maps API
     if len(places) < target_count * 4 and serper_key:
@@ -935,7 +1067,9 @@ def run_live_autopilot_discovery(
         # 1. Check if clinic name is already in our database (BEFORE spending detail API calls!)
         full_clean_name = re.sub(r"[^a-z0-9]", "", title.lower())
         short_clean_name = re.sub(r"[^a-z0-9]", "", re.split(r"[-|:]", title)[0].lower())
-        if (full_clean_name and full_clean_name in seen_names) or (len(short_clean_name) >= 6 and short_clean_name in seen_names):
+        if (full_clean_name and full_clean_name in seen_names) or (
+            len(short_clean_name) >= 6 and short_clean_name in seen_names
+        ):
             drop_counts["already_in_db"] = drop_counts.get("already_in_db", 0) + 1
             dropped_items_summary.append(
                 {"name": title, "reason": "already_in_db", "detail": "Clinic name already exists in CRM database"}
@@ -974,7 +1108,11 @@ def run_live_autopilot_discovery(
         if not norm_phone or len(norm_phone) != 13 or norm_phone[3] not in "6789":
             drop_counts["no_mobile_whatsapp"] = drop_counts.get("no_mobile_whatsapp", 0) + 1
             dropped_items_summary.append(
-                {"name": title, "reason": "no_mobile_whatsapp", "detail": f"Invalid/landline phone: {raw_phone or 'none'}"}
+                {
+                    "name": title,
+                    "reason": "no_mobile_whatsapp",
+                    "detail": f"Invalid/landline phone: {raw_phone or 'none'}",
+                }
             )
             emit(f"[SKIP] '{title}' -> No valid Indian WhatsApp mobile number")
             continue
@@ -984,13 +1122,20 @@ def run_live_autopilot_discovery(
         if ten_digit in seen_phones or db.query(Lead).filter(Lead.primary_phone == norm_phone).first():
             drop_counts["already_in_db"] = drop_counts.get("already_in_db", 0) + 1
             dropped_items_summary.append(
-                {"name": title, "phone": norm_phone, "reason": "already_in_db", "detail": f"Phone {norm_phone} already in CRM database"}
+                {
+                    "name": title,
+                    "phone": norm_phone,
+                    "reason": "already_in_db",
+                    "detail": f"Phone {norm_phone} already in CRM database",
+                }
             )
             emit(f"[SKIP - DB DUPLICATE] '{title}' ({norm_phone}) -> Phone already in CRM database")
             continue
 
         address = str(place.get("address", "Delhi NCR")).strip()
-        locality = str(place.get("locality") or (address.split(",")[-2].strip() if "," in address else "Delhi NCR")).strip()
+        locality = str(
+            place.get("locality") or (address.split(",")[-2].strip() if "," in address else "Delhi NCR")
+        ).strip()
 
         emit(f"Step 2/7 [NO-WEBSITE CHECK]: Auditing web domains for '{title}' ({locality}) via Serper/Brave...")
         # Step 2B & Step 3: Web search to confirm no official domain and extract 2-source doctor name
@@ -1003,7 +1148,12 @@ def run_live_autopilot_discovery(
         if official_domain:
             drop_counts["has_official_domain"] = drop_counts.get("has_official_domain", 0) + 1
             dropped_items_summary.append(
-                {"name": title, "phone": norm_phone, "reason": "has_official_domain", "detail": f"Found active domain: {official_domain}"}
+                {
+                    "name": title,
+                    "phone": norm_phone,
+                    "reason": "has_official_domain",
+                    "detail": f"Found active domain: {official_domain}",
+                }
             )
             emit(f"Dropped '{title}' -> Found existing domain: {official_domain}")
             continue
@@ -1041,7 +1191,12 @@ def run_live_autopilot_discovery(
         if not gate_ok:
             drop_counts["failed_self_check"] = drop_counts.get("failed_self_check", 0) + 1
             dropped_items_summary.append(
-                {"name": title, "phone": norm_phone, "reason": "failed_self_check", "detail": "Failed Step 6 medical compliance gate"}
+                {
+                    "name": title,
+                    "phone": norm_phone,
+                    "reason": "failed_self_check",
+                    "detail": "Failed Step 6 medical compliance gate",
+                }
             )
             emit(f"[DROP] '{title}' failed Step 6 Self-Check Gate")
             continue
@@ -1087,13 +1242,41 @@ def run_live_autopilot_discovery(
         seen_slugs.add(slug)
 
         facts = [
-            LeadFact(lead_id=lead.id, field="google_rating", value=f"{rating}★", source=source_tier, confidence=1.0, verified_by_two_sources=True),
-            LeadFact(lead_id=lead.id, field="review_count", value=f"{reviews} reviews", source=source_tier, confidence=1.0, verified_by_two_sources=True),
-            LeadFact(lead_id=lead.id, field="website_check", value="Confirmed zero official domain", source="Serper + Brave", confidence=0.98, verified_by_two_sources=True),
+            LeadFact(
+                lead_id=lead.id,
+                field="google_rating",
+                value=f"{rating}★",
+                source=source_tier,
+                confidence=1.0,
+                verified_by_two_sources=True,
+            ),
+            LeadFact(
+                lead_id=lead.id,
+                field="review_count",
+                value=f"{reviews} reviews",
+                source=source_tier,
+                confidence=1.0,
+                verified_by_two_sources=True,
+            ),
+            LeadFact(
+                lead_id=lead.id,
+                field="website_check",
+                value="Confirmed zero official domain",
+                source="Serper + Brave",
+                confidence=0.98,
+                verified_by_two_sources=True,
+            ),
         ]
         if doc_sources >= 2:
             facts.append(
-                LeadFact(lead_id=lead.id, field="doctor_name", value=f"{doc_name} ({degrees})", source=f"Verified across {doc_sources} sources", confidence=0.95, verified_by_two_sources=True)
+                LeadFact(
+                    lead_id=lead.id,
+                    field="doctor_name",
+                    value=f"{doc_name} ({degrees})",
+                    source=f"Verified across {doc_sources} sources",
+                    confidence=0.95,
+                    verified_by_two_sources=True,
+                )
             )
         for f in facts:
             db.add(f)

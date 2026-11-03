@@ -13,22 +13,20 @@ import shutil
 import subprocess
 import urllib.parse
 import urllib.request
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from sqlalchemy.orm import Session, joinedload
 
 from .autopilot import (
-    BATCH_JSON_PATH,
     BATCH_RECORDER_DIR,
     PROJECT_ROOT,
     run_live_autopilot_discovery,
     sync_verified_links_to_batch_json,
 )
-from .models import Hustle, Job, Lead, LeadFact, Message, OutboxItem, Package, RunLog, Stage
-from .safety import compute_fit_score, compute_intent_score, normalize_ig_handle
-
+from .models import Hustle, Lead, Package, RunLog, Stage
+from .safety import compute_fit_score, normalize_ig_handle
 
 DISPATCH_COCKPIT_DIR = PROJECT_ROOT / "Side hustle (Building Website)" / "dispatch-cockpit"
 SCRAPES_DIR = PROJECT_ROOT / "Side hustle (Building Website)" / "scrapes"
@@ -110,6 +108,7 @@ def run_scout_agent(
     2. Enriches existing & newly discovered leads with Instagram handles, email addresses,
        and AI-refined specialty/doctor facts (using Gemini Flash free tier if configured, or deterministic rules).
     """
+
     def _emit(msg: str) -> None:
         if log_cb:
             try:
@@ -127,7 +126,9 @@ def run_scout_agent(
     )
 
     is_dental = "dental" in (hustle.slug or "").lower() or "dental" in (hustle.name or "").lower()
-    allow_ig_research = False if is_dental else bool((hustle.pipeline_config or {}).get("enable_instagram_discovery", False))
+    allow_ig_research = (
+        False if is_dental else bool((hustle.pipeline_config or {}).get("enable_instagram_discovery", False))
+    )
 
     enrichment_lookup = _load_local_enrichment_Lookup()
     leads = (
@@ -187,7 +188,9 @@ def run_scout_agent(
             extra_logs.append(msg)
             _emit(msg)
 
-    summary_line = f"[SCOUT] Completed: {discovery_res['passed']} new clinics built, {enriched_count} clinic dossiers enriched."
+    summary_line = (
+        f"[SCOUT] Completed: {discovery_res['passed']} new clinics built, {enriched_count} clinic dossiers enriched."
+    )
     extra_logs.append(summary_line)
     _emit(summary_line)
 

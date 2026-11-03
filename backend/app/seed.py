@@ -1,18 +1,19 @@
 from datetime import datetime, timedelta, timezone
+
 from sqlalchemy.orm import Session
 
 from .models import (
+    AvailabilityDay,
     Hustle,
-    Stage,
-    SmartView,
-    Objection,
     Lead,
     LeadFact,
-    Package,
     Message,
-    TrackingEvent,
+    Objection,
+    Package,
     RunLog,
-    AvailabilityDay,
+    SmartView,
+    Stage,
+    TrackingEvent,
 )
 from .safety import compute_fit_score, compute_intent_score
 
@@ -56,9 +57,18 @@ def seed_initial_data(db: Session, include_demo_leads: bool = True) -> Hustle:
             {"day_offset": 7, "step": "followup_2", "label": "Link Expiry Reminder"},
         ],
         ai_field_questions=[
-            {"key": "multi_doctor_or_implant_center", "question": "Is this a multi-doctor or specialist implant center?"},
-            {"key": "has_active_instagram_reels", "question": "Does the clinic actively post patient transformations on Instagram?"},
-            {"key": "primary_specialty", "question": "What is the lead doctor's primary MDS specialty (Endodontics, Orthodontics, Prosthodontics, General)?"},
+            {
+                "key": "multi_doctor_or_implant_center",
+                "question": "Is this a multi-doctor or specialist implant center?",
+            },
+            {
+                "key": "has_active_instagram_reels",
+                "question": "Does the clinic actively post patient transformations on Instagram?",
+            },
+            {
+                "key": "primary_specialty",
+                "question": "What is the lead doctor's primary MDS specialty (Endodontics, Orthodontics, Prosthodontics, General)?",
+            },
         ],
         custom_field_defs=[
             {"key": "degrees", "label": "Doctor Degrees", "type": "text"},
@@ -433,7 +443,10 @@ def seed_initial_data(db: Session, include_demo_leads: bool = True) -> Hustle:
                     "locality": lead.locality,
                     "city": lead.city,
                     "phone": lead.primary_phone,
-                    "hours": {"verified": True, "schedule": item["custom_fields"].get("operating_hours", "Mon-Sat 10 AM - 8 PM")},
+                    "hours": {
+                        "verified": True,
+                        "schedule": item["custom_fields"].get("operating_hours", "Mon-Sat 10 AM - 8 PM"),
+                    },
                 },
                 quality_score=98,
                 self_check_passed=True,

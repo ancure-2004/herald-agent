@@ -1,0 +1,89 @@
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, Depends, Query, Response
+from sqlalchemy.orm import Session
+
+from app.api.deps import get_db
+from app.controllers.lead_controller import LeadController
+from app.schemas.lead import CompleteTaskRequest, LeadCreate, LeadOut, LeadUpdate
+
+router = APIRouter(tags=["Leads"])
+
+
+@router.get("/leads", response_model=List[LeadOut])
+def list_leads(
+    hustle_id: Optional[int] = Query(None),
+    stage_slug: Optional[str] = Query(None),
+    smart_view: Optional[str] = Query(None),
+    include_archived: bool = Query(False),
+    search: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    return LeadController.list_leads(
+        db=db,
+        hustle_id=hustle_id,
+        stage_slug=stage_slug,
+        smart_view=smart_view,
+        include_archived=include_archived,
+        search=search,
+    )
+
+
+@router.post("/leads", response_model=LeadOut, status_code=201)
+def create_lead(payload: LeadCreate, db: Session = Depends(get_db)):
+    return LeadController.create_lead(db, payload)
+
+
+@router.patch("/leads/{lead_id}", response_model=LeadOut)
+def update_lead(lead_id: int, payload: LeadUpdate, db: Session = Depends(get_db)):
+    return LeadController.update_lead(db, lead_id, payload)
+
+
+@router.post("/leads/{lead_id}/complete-task", response_model=LeadOut)
+def complete_lead_task(lead_id: int, payload: CompleteTaskRequest, db: Session = Depends(get_db)):
+    return LeadController.complete_task(db, lead_id, payload)
+
+
+@router.delete("/leads/{lead_id}")
+def delete_lead_blocked():
+    LeadController.delete_lead_blocked()
+
+
+@router.post("/leads/{lead_id}/archive", response_model=LeadOut)
+def archive_lead(lead_id: int, reason: str = Query("Archived by user"), db: Session = Depends(get_db)):
+    return LeadController.archive_lead(db, lead_id, reason)
+
+
+@router.get("/leads/export/csv")
+def export_leads_csv(hustle_id: Optional[int] = Query(None), db: Session = Depends(get_db)):
+    output = LeadController.export_csv(db, hustle_id)
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=leads_export.csv"},
+    )
+
+
+@router.get("/leads/{lead_id}/copilot")
+def get_reply_copilot(lead_id: int, db: Session = Depends(get_db)):
+    return LeadController.get_copilot(db, lead_id)
+
+
+@router.get("/leads/{lead_id}/reply-copilot")
+def get_reply_copilot_list(lead_id: int, db: Session = Depends(get_db)):
+    return LeadController.get_reply_copilot_list(db, lead_id)
+
+
+@router.post("/leads/{lead_id}/approve-send")
+def approve_and_send_lead_shortcut(lead_id: int, payload: Dict[str, Any], db: Session = Depends(get_db)):
+    return LeadController.approve_and_send_shortcut(db, lead_id, payload)
+
+
+@router.post("/leads/{lead_id}/post-call-draft")
+def generate_post_call_draft(lead_id: int, payload: Dict[str, Any], db: Session = Depends(get_db)):
+    return LeadController.post_call_draft(db, lead_id, payload)
+
+
+@router.post("/admin/wipe-leads")
+def wipe_leads(db: Session = Depends(get_db)):
+    return LeadController.wipe_leads(db)
