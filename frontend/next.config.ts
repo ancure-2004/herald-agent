@@ -25,6 +25,21 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        ...config.watchOptions,
+        ignored: [
+          "**/.git/**",
+          "**/node_modules/**",
+          "**/.next/**",
+          "/mnt/database/.Trash*/**",
+          "/mnt/database/.Trash-1000",
+        ],
+      };
+    }
+    return config;
+  },
   async headers() {
     return [
       {
