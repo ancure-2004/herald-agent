@@ -318,10 +318,22 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   }, [terminalLogs]);
 
   // Wire up SSE
+  const handleTerminalLog = useCallback(
+    (line: string) => appendTerminalLines([line]),
+    [appendTerminalLines]
+  );
+  const handleLiveEvent = useCallback(
+    (line: string) => setLiveFeed((prev) => [line, ...prev].slice(0, 30)),
+    []
+  );
+  const handleRefreshTrigger = useCallback(() => {
+    loadAll();
+  }, [loadAll]);
+
   useSSE({
-    onTerminalLog: (line) => appendTerminalLines([line]),
-    onLiveEvent: (line) => setLiveFeed((prev) => [line, ...prev].slice(0, 30)),
-    onRefreshTrigger: () => loadAll(),
+    onTerminalLog: handleTerminalLog,
+    onLiveEvent: handleLiveEvent,
+    onRefreshTrigger: handleRefreshTrigger,
   });
 
   // Action Handlers
