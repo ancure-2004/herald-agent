@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
   LayoutDashboard,
   LayoutGrid,
@@ -27,6 +27,8 @@ import {
   Calendar,
   ChevronRight,
   ChevronDown,
+  ChevronUp,
+  Copy,
   Phone,
   AtSign,
   Eye,
@@ -263,7 +265,88 @@ export default function PersonalOSCRM() {
       .catch(() => setCopilotSuggestions([]));
   }, [selectedLeadId]);
 
-  // Real-time EventSource connection for live demo views, replies, runs
+  // Unified Live Execution Terminal state (Refill Batch + Verify Links + Scout + Auditor + Closer)
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([
+    "[SYSTEM] Unified Live Execution Terminal ready. Trigger 'Run Refill Batch Now', 'Verify Links', or any Sub-Agent (1. Scout / 2. Auditor / 3. Closer) to stream live logs here...",
+  ]);
+  const [activeTerminalJob, setActiveTerminalJob] = useState<string | null>(null);
+  const [copiedLast20, setCopiedLast20] = useState<boolean>(false);
+  const [showPreviousRuns, setShowPreviousRuns] = useState<boolean>(false);
+  const terminalContainerRef = useRef<HTMLDivElement | null>(null);
+  const lastLogSeqRef = useRef<number>(0);
+
+  const appendTerminalLines = useCallback((lines: string[]) => {
+    if (!lines.length) return;
+    setTerminalLogs((prev) => {
+      const next = [...prev];
+      for (const l of lines) {
+        if (l && next[next.length - 1] !== l) {
+          next.push(l);
+        }
+      }
+      return next.slice(-300);
+    });
+  }, []);
+
+  const syncTerminalLogs = useCallback(async () => {
+    try {
+      const res = await apiFetch<{
+        logs: Array<{ seq: number; line: string }>;
+        latest_seq: number;
+      }>(`/api/terminal/logs?since_seq=${lastLogSeqRef.current}`);
+      if (res.logs && res.logs.length > 0) {
+        const newLines: string[] = [];
+        for (const item of res.logs) {
+          if (item.seq > lastLogSeqRef.current) {
+            lastLogSeqRef.current = item.seq;
+            newLines.push(item.line);
+          }
+        }
+        appendTerminalLines(newLines);
+      }
+    } catch {
+      // ignore
+    }
+  }, [appendTerminalLines]);
+
+  useEffect(() => {
+    syncTerminalLogs();
+  }, [syncTerminalLogs]);
+
+  // Poll buffered terminal logs every 350ms while any job/agent is actively running
+  useEffect(() => {
+    if (!activeTerminalJob) return;
+    const timer = setInterval(() => {
+      syncTerminalLogs();
+    }, 350);
+    return () => clearInterval(timer);
+  }, [activeTerminalJob, syncTerminalLogs]);
+
+  // Auto-scroll terminal to bottom when new log lines arrive
+  useEffect(() => {
+    if (terminalContainerRef.current) {
+      terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight;
+    }
+  }, [terminalLogs]);
+
+  const handleCopyLast20Logs = async () => {
+    const last20 = terminalLogs.slice(-20).join("\n");
+    try {
+      await navigator.clipboard.writeText(last20);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = last20;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setCopiedLast20(true);
+    notify(`Copied last ${Math.min(20, terminalLogs.length)} terminal logs to clipboard`);
+    setTimeout(() => setCopiedLast20(false), 2000);
+  };
+
+  // Real-time EventSource connection for live demo views, replies, runs & terminal logs
   useEffect(() => {
     let es: EventSource | null = null;
     try {
@@ -271,10 +354,29 @@ export default function PersonalOSCRM() {
       es.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          if (data.type === "terminal_log" && data.line) {
+            if (typeof data.seq === "number" && data.seq > lastLogSeqRef.current) {
+              lastLogSeqRef.current = data.seq;
+            }
+            appendTerminalLines([data.line]);
+            return;
+          }
+
           const line = `[${new Date().toLocaleTimeString()}] ${data.type}: ${data.title || data.message || "Event"}`;
           setLiveFeed((prev) => [line, ...prev].slice(0, 30));
 
-          if (["tracking_view", "reply_received", "run_complete", "outreach_sent"].includes(data.type)) {
+          if (
+            [
+              "tracking_view",
+              "reply_received",
+              "run_complete",
+              "outreach_sent",
+              "autopilot_run",
+              "scout_complete",
+              "auditor_complete",
+              "closer_complete",
+            ].includes(data.type)
+          ) {
             loadAll();
           }
         } catch {
@@ -290,7 +392,7 @@ export default function PersonalOSCRM() {
     return () => {
       es?.close();
     };
-  }, [loadAll]);
+  }, [loadAll, appendTerminalLines]);
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -408,16 +510,29 @@ export default function PersonalOSCRM() {
 
   // Handler for Triggering Autopilot Refill Batch
   const handleTriggerRefill = async () => {
+    setActiveTerminalJob("7-Step Refill Batch");
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Run Refill Batch Now' (7-step pipeline)...`,
+    ]);
     try {
-      notify("Triggering 7-step Autopilot run in background...");
-      const res = await apiFetch<{ run_id: number; message: string }>("/api/autopilot/run-refill", {
-        method: "POST",
-        body: JSON.stringify({ hustle_id: activeHustleId }),
-      });
-      notify(`Refill initiated: Run #${res.run_id}`);
+      notify("Running 7-step Autopilot Refill Batch (live logs streaming in terminal)...");
+      const res = await apiFetch<{ run_id: number; message: string; trace_logs?: string[] }>(
+        "/api/autopilot/run-refill",
+        {
+          method: "POST",
+          body: JSON.stringify({ hustle_id: activeHustleId, batch_size: 2 }),
+        }
+      );
+      await syncTerminalLogs();
+      notify(`Refill completed: Run #${res.run_id} (${res.message})`);
       loadAll();
     } catch (err) {
+      appendTerminalLines([
+        `[${new Date().toLocaleTimeString()}] [ERROR] Refill failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+      ]);
       notify(err instanceof Error ? err.message : "Failed to trigger refill", "err");
+    } finally {
+      setActiveTerminalJob(null);
     }
   };
 
@@ -514,16 +629,334 @@ export default function PersonalOSCRM() {
 
   // Handler for Syncing Batch JSON links
   const handleSyncBatchLinks = async () => {
+    setActiveTerminalJob("Verify Links & Sync batch.json");
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Verify Links & Sync batch.json'...`,
+    ]);
     try {
-      notify("Verifying HTTP 200 on all 3 client templates...");
+      notify("Verifying HTTP 200 on all 4 client routes...");
       const res = await apiFetch<{ verified: number; total: number }>("/api/packages/sync-batch-json", {
         method: "POST",
         body: JSON.stringify({ hustle_id: activeHustleId }),
       });
+      await syncTerminalLogs();
       notify(`Self-check passed: ${res.verified}/${res.total} templates verified live & synced`);
       loadAll();
     } catch (err) {
+      appendTerminalLines([
+        `[${new Date().toLocaleTimeString()}] [ERROR] Link verification failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+      ]);
       notify(err instanceof Error ? err.message : "Failed to verify links", "err");
+    } finally {
+      setActiveTerminalJob(null);
+    }
+  };
+
+  // Phase 3 Specialized Sub-Agent Handlers (Scout / Auditor / Closer)
+  const handleRunScout = async () => {
+    setActiveTerminalJob("1. Scout Agent");
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '1. Scout Agent' (Discovery + IG/Email Enrichment)...`,
+    ]);
+    try {
+      notify("Scout Agent running: Discovering no-website clinics & enriching IG/Email dossiers...");
+      const res = await apiFetch<{ discovered_new: number; enriched_leads: number; trace_logs: string[] }>(
+        "/api/agents/scout/run",
+        {
+          method: "POST",
+          body: JSON.stringify({ hustle_id: activeHustleId, batch_size: 2 }),
+        }
+      );
+      await syncTerminalLogs();
+      notify(`Scout complete: ${res.discovered_new} new clinics built, ${res.enriched_leads} dossiers enriched!`);
+      loadAll();
+    } catch (err) {
+      appendTerminalLines([
+        `[${new Date().toLocaleTimeString()}] [ERROR] Scout Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+      ]);
+      notify(err instanceof Error ? err.message : "Scout Agent failed", "err");
+    } finally {
+      setActiveTerminalJob(null);
+    }
+  };
+
+  const handleRunAuditor = async (recordVideo: boolean = false) => {
+    setActiveTerminalJob(recordVideo ? "2. Auditor Agent (QA + Record MP4)" : "2. Auditor Agent (HTTP 200 + Link MP4)");
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '2. Auditor Agent' (${recordVideo ? "HTTP 200 Check + Playwright MP4 Recording" : "HTTP 200 Audit + Link MP4s"})...`,
+    ]);
+    try {
+      notify(
+        recordVideo
+          ? "Auditor Agent running: Verifying HTTP 200 + recording MP4 walkthrough..."
+          : "Auditor Agent running: Auditing all 4 routes & attaching MP4 videos..."
+      );
+      const res = await apiFetch<{
+        verified_links_count: number;
+        attached_videos_count: number;
+        video_files: string[];
+        recorder_log: string;
+      }>("/api/agents/auditor/run", {
+        method: "POST",
+        body: JSON.stringify({ hustle_id: activeHustleId, record_video: recordVideo }),
+      });
+      await syncTerminalLogs();
+      notify(`Auditor complete: ${res.verified_links_count} verified & ${res.attached_videos_count} MP4s linked!`);
+      loadAll();
+    } catch (err) {
+      appendTerminalLines([
+        `[${new Date().toLocaleTimeString()}] [ERROR] Auditor Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+      ]);
+      notify(err instanceof Error ? err.message : "Auditor Agent failed", "err");
+    } finally {
+      setActiveTerminalJob(null);
+    }
+  };
+
+  const handleRunCloser = async (channel: "whatsapp" | "instagram" | "email", dryRun: boolean = true) => {
+    setActiveTerminalJob(`3. Closer Agent (${channel.toUpperCase()} • ${dryRun ? "Dry-Run" : "LIVE"})`);
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '3. Closer Agent' (${channel.toUpperCase()} • ${dryRun ? "Dry-Run Safe Test" : "LIVE"})...`,
+    ]);
+    try {
+      notify(`Closer Agent dispatching (${channel.toUpperCase()} • ${dryRun ? "Dry-Run Safe Test" : "LIVE"})...`);
+      const res = await apiFetch<{
+        channel: string;
+        dry_run: boolean;
+        drafted_hot_followups: number;
+        dispatch_log: string;
+      }>("/api/agents/closer/run", {
+        method: "POST",
+        body: JSON.stringify({ hustle_id: activeHustleId, channel, dry_run: dryRun }),
+      });
+      await syncTerminalLogs();
+      notify(
+        `Closer (${channel.toUpperCase()}) finished & drafted ${res.drafted_hot_followups} hot-viewer follow-ups!`
+      );
+      loadAll();
+    } catch (err) {
+      appendTerminalLines([
+        `[${new Date().toLocaleTimeString()}] [ERROR] Closer Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+      ]);
+      notify(err instanceof Error ? err.message : "Closer Agent failed", "err");
+    } finally {
+      setActiveTerminalJob(null);
+    }
+  };
+
+  // Phase 3 & 4 Controls: Closer Dry-Run Toggle, Hustle Settings, Post-Call Drafter & Ask-and-Do AI Assistant
+  const [closerDryRun, setCloserDryRun] = useState<boolean>(true);
+  const [settingsAutonomy, setSettingsAutonomy] = useState<"copilot" | "autopilot">("copilot");
+  const [settingsQuery, setSettingsQuery] = useState<string>("");
+  const [settingsMinDays, setSettingsMinDays] = useState<number>(3);
+  const [settingsWaLimit, setSettingsWaLimit] = useState<number>(15);
+  const [settingsIgLimit, setSettingsIgLimit] = useState<number>(15);
+  const [settingsEmailLimit, setSettingsEmailLimit] = useState<number>(30);
+  const [settingsIgDiscovery, setSettingsIgDiscovery] = useState<boolean>(false);
+
+  // Sync Hustle Settings state when activeHustle loads
+  useEffect(() => {
+    if (!activeHustle) return;
+    setSettingsAutonomy(activeHustle.autonomy_mode || "copilot");
+    setSettingsQuery(activeHustle.search_query || "dental clinic in South Delhi");
+    setSettingsMinDays(activeHustle.minimum_stock_days || 3);
+    setSettingsWaLimit(activeHustle.channel_limits?.whatsapp ?? 15);
+    setSettingsIgLimit(activeHustle.channel_limits?.instagram ?? 15);
+    setSettingsEmailLimit(activeHustle.channel_limits?.email ?? 30);
+    const isDental =
+      activeHustle.slug.includes("dental") || activeHustle.name.toLowerCase().includes("dental");
+    setSettingsIgDiscovery(
+      isDental ? false : (activeHustle.pipeline_steps || []).includes("find_instagram")
+    );
+  }, [activeHustle]);
+
+  const handleSaveHustleSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeHustle) return;
+    const isDental =
+      activeHustle.slug.includes("dental") || activeHustle.name.toLowerCase().includes("dental");
+    const baseSteps = [
+      "find_maps_4tier",
+      "verify_no_website",
+      "research_2source",
+      "channel_check",
+      "build_3_demos",
+      "verify_http_200",
+      "sync_batch_json",
+    ];
+    if (!isDental && settingsIgDiscovery) {
+      baseSteps.unshift("find_instagram");
+    }
+    try {
+      await apiFetch(`/api/hustles/${activeHustle.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          autonomy_mode: settingsAutonomy,
+          search_query: settingsQuery,
+          minimum_stock_days: Number(settingsMinDays),
+          channel_limits: {
+            whatsapp: Number(settingsWaLimit),
+            instagram: Number(settingsIgLimit),
+            email: Number(settingsEmailLimit),
+          },
+          pipeline_steps: baseSteps,
+        }),
+      });
+      notify(
+        isDental
+          ? "Saved Hustle Settings (4-Tier Maps/Web Waterfall active; Instagram lead discovery disabled for Dental Clinics)"
+          : "Saved Hustle Settings"
+      );
+      loadAll();
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Failed to save hustle settings", "err");
+    }
+  };
+
+  // Phase 4: 1-Tap Commitment Confirmation
+  const handleConfirmCommitment = async (commitmentId: number) => {
+    try {
+      await apiFetch(`/api/commitments/${commitmentId}/confirm`, {
+        method: "POST",
+      });
+      notify("1-Tap Commitment confirmed & scheduled on calendar!");
+      loadAll();
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Failed to confirm commitment", "err");
+    }
+  };
+
+  // Phase 4: Post-Call / Voice-Note Follow-Up Drafter
+  const [callNoteInput, setCallNoteInput] = useState<string>("");
+  const [callOutcomeInput, setCallOutcomeInput] = useState<string>("interested");
+  const [postCallLoading, setPostCallLoading] = useState<boolean>(false);
+
+  const handlePostCallDraft = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedLead || !callNoteInput.trim()) return;
+    setPostCallLoading(true);
+    try {
+      const res = await apiFetch<{
+        lead_id: number;
+        draft_message: string;
+        next_action: string;
+        next_action_due_at: string;
+      }>(`/api/leads/${selectedLead.id}/post-call-draft`, {
+        method: "POST",
+        body: JSON.stringify({
+          call_note: callNoteInput.trim(),
+          outcome: callOutcomeInput,
+          duration_seconds: 120,
+        }),
+      });
+      setMessageChannel("whatsapp");
+      setMessageDirection("outbound");
+      setMessageInput(res.draft_message);
+      setNextActionInput(res.next_action);
+      setNextDueDays(1);
+      setCallNoteInput("");
+      notify("Post-call summary logged, next action locked, and WhatsApp follow-up drafted!");
+      loadAll();
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Failed to generate post-call draft", "err");
+    } finally {
+      setPostCallLoading(false);
+    }
+  };
+
+  // Phase 4: In-App Ask & Do AI Assistant Drawer with 1-Click Undo
+  const [assistantOpen, setAssistantOpen] = useState<boolean>(false);
+  const [assistantMode, setAssistantMode] = useState<"ask" | "do">("ask");
+  const [assistantPrompt, setAssistantPrompt] = useState<string>("");
+  const [assistantLoading, setAssistantLoading] = useState<boolean>(false);
+  const [assistantHistory, setAssistantHistory] = useState<
+    Array<{
+      id: string;
+      mode: string;
+      prompt: string;
+      reply: string;
+      matched_leads: Array<{
+        id: number;
+        name: string;
+        doctor: string;
+        locality: string;
+        stage_id: number;
+        fit_score: number;
+        intent_score: number;
+        phone: string | null;
+      }>;
+      undo_available: boolean;
+      undo_id: string | null;
+      undone?: boolean;
+    }>
+  >([]);
+
+  const handleAskDoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!assistantPrompt.trim()) return;
+    setAssistantLoading(true);
+    const currentPrompt = assistantPrompt.trim();
+    try {
+      const res = await apiFetch<{
+        mode: string;
+        action_taken: string;
+        reply: string;
+        matched_leads: Array<{
+          id: number;
+          name: string;
+          doctor: string;
+          locality: string;
+          stage_id: number;
+          fit_score: number;
+          intent_score: number;
+          phone: string | null;
+        }>;
+        undo_available: boolean;
+        undo_id: string | null;
+      }>("/api/assistant/ask-do", {
+        method: "POST",
+        body: JSON.stringify({
+          prompt: currentPrompt,
+          hustle_id: activeHustleId,
+          mode: assistantMode,
+        }),
+      });
+      setAssistantHistory((prev) => [
+        {
+          id: `${Date.now()}`,
+          mode: res.mode,
+          prompt: currentPrompt,
+          reply: res.reply,
+          matched_leads: res.matched_leads || [],
+          undo_available: res.undo_available,
+          undo_id: res.undo_id,
+        },
+        ...prev,
+      ]);
+      setAssistantPrompt("");
+      if (res.mode === "do") {
+        loadAll();
+      }
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Assistant request failed", "err");
+    } finally {
+      setAssistantLoading(false);
+    }
+  };
+
+  const handleAssistantUndo = async (undoId: string | null, entryId: string) => {
+    try {
+      const res = await apiFetch<{ ok: boolean; message: string }>("/api/assistant/undo", {
+        method: "POST",
+        body: JSON.stringify({ undo_id: undoId }),
+      });
+      notify(res.message || "Action undone!");
+      setAssistantHistory((prev) =>
+        prev.map((item) => (item.id === entryId ? { ...item, undone: true, undo_available: false } : item))
+      );
+      loadAll();
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Failed to undo action", "err");
     }
   };
 
@@ -2019,10 +2452,20 @@ export default function PersonalOSCRM() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                   <div className="lg:col-span-2 space-y-4">
                     <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <h2 className="text-sm font-bold text-slate-900 dark:text-white">7-Step Clinic Autopilot & Stock Planner</h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          Find (Maps/IG) → Verify No Website → Research (2-Source Rule) → Channel Check → Build 3 Demos → Verify Live HTTP 200 → Sync batch.json
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                            7-Step Clinic Autopilot &amp; 4-Tier Lead Discovery Waterfall
+                          </h2>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold">
+                            Strict DB Dedup Active
+                          </span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold">
+                            IG Discovery: OFF (Dental Rule)
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Tier 1: Google Places API &rarr; Tier 2: Serper Maps &rarr; Tier 3: Brave Search &rarr; Tier 4: Playwright Maps &bull; No-Website Filter &bull; 3 Live Demos &bull; Sync batch.json
                         </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -2031,7 +2474,7 @@ export default function PersonalOSCRM() {
                           className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-600/20 dark:hover:bg-emerald-600/30 border border-emerald-200 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Verify Links & Sync batch.json</span>
+                          <span>Verify Links &amp; Sync batch.json</span>
                         </button>
                         <button
                           onClick={handleTriggerRefill}
@@ -2043,48 +2486,510 @@ export default function PersonalOSCRM() {
                       </div>
                     </div>
 
-                    {/* Run Trace Logs */}
-                    <div className="space-y-3">
-                      {runs.map((r) => (
-                        <div key={r.id} className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-2.5">
+                    {/* Phase 3 Specialized Sub-Agents Control Deck (Scout -> Auditor -> Closer) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                      {/* 1. Scout Agent */}
+                      <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-3">
+                        <div className="space-y-1">
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-slate-900 dark:text-white">Run #{r.id}: {r.job_type}</span>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold font-mono">
-                                {r.status}
-                              </span>
-                            </div>
-                            <span className="text-[11px] text-slate-400 font-mono">
-                              {new Date(r.started_at).toLocaleTimeString()}
+                            <span className="text-xs font-bold text-slate-900 dark:text-white">1. Scout Agent</span>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300">
+                              4-Tier Maps + Dossier
                             </span>
                           </div>
-                          <div className="text-xs text-slate-600 dark:text-slate-300 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                              <div className="text-[10px] text-slate-400">Found</div>
-                              <div className="font-bold font-mono text-slate-800 dark:text-white">{r.count_found}</div>
-                            </div>
-                            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                              <div className="text-[10px] text-slate-400">Passed</div>
-                              <div className="font-bold font-mono text-slate-800 dark:text-white">{r.count_passed}</div>
-                            </div>
-                            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                              <div className="text-[10px] text-slate-400">Dropped</div>
-                              <div className="font-bold font-mono text-amber-600 dark:text-amber-400">{r.count_dropped}</div>
-                            </div>
-                            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                              <div className="text-[10px] text-slate-400">Duration</div>
-                              <div className="font-bold font-mono text-slate-800 dark:text-white">
-                                {r.finished_at ? `${Math.max(1, Math.round((new Date(r.finished_at).getTime() - new Date(r.started_at).getTime()) / 1000))}s` : "active"}
-                              </div>
-                            </div>
-                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Finds new no-website clinics via 4-Tier Waterfall (Places &rarr; Serper &rarr; Brave &rarr; Playwright), skips existing DB leads &amp; enriches Doctor/Email.
+                          </p>
                         </div>
-                      ))}
+                        <button
+                          onClick={handleRunScout}
+                          className="w-full py-2 px-3 rounded-xl bg-indigo-600/15 hover:bg-indigo-600/25 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold cursor-pointer transition-colors"
+                        >
+                          Run Scout Agent
+                        </button>
+                      </div>
+
+                      {/* 2. Auditor Agent */}
+                      <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-900 dark:text-white">2. Auditor Agent</span>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                              QA + Video Recorder
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Verifies HTTP 200 across all 4 demo routes, syncs batch.json, and links MP4 walkthroughs.
+                          </p>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={() => handleRunAuditor(false)}
+                            className="flex-1 py-2 px-2.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold cursor-pointer transition-colors"
+                          >
+                            Audit &amp; Link MP4
+                          </button>
+                          <button
+                            onClick={() => handleRunAuditor(true)}
+                            className="py-2 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold cursor-pointer transition-colors"
+                            title="Run Playwright record-batch.mjs on 1 verified clinic"
+                          >
+                            Record 1
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 3. Closer Agent */}
+                      <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-xs font-bold text-slate-900 dark:text-white">3. Closer Agent</span>
+                            <button
+                              type="button"
+                              onClick={() => setCloserDryRun((prev) => !prev)}
+                              className={`text-[10px] font-mono px-2 py-0.5 rounded border cursor-pointer transition-colors ${
+                                closerDryRun
+                                  ? "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/30"
+                                  : "bg-rose-50 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-500/40 font-bold"
+                              }`}
+                              title="Toggle between Dry-Run Safe Preview and LIVE Send"
+                            >
+                              {closerDryRun ? "Mode: DRY-RUN" : "Mode: LIVE SEND"}
+                            </button>
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Feeds CRM Outbox to wa_autopilot.mjs, ig_autopilot.mjs &amp; email_autopilot.py + drafts hot follow-ups.
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1.5">
+                          <button
+                            onClick={() => handleRunCloser("whatsapp", closerDryRun)}
+                            className="py-2 px-2 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold cursor-pointer"
+                            title="Run wa_autopilot.mjs against CRM Outbox"
+                          >
+                            {closerDryRun ? "WA Dry" : "WA Live"}
+                          </button>
+                          <button
+                            onClick={() => handleRunCloser("instagram", closerDryRun)}
+                            className="py-2 px-2 rounded-xl bg-pink-600/15 hover:bg-pink-600/25 border border-pink-500/30 text-pink-700 dark:text-pink-300 text-[11px] font-semibold cursor-pointer"
+                            title="Run ig_autopilot.mjs against CRM Outbox"
+                          >
+                            {closerDryRun ? "IG Dry" : "IG Live"}
+                          </button>
+                          <button
+                            onClick={() => handleRunCloser("email", closerDryRun)}
+                            className="py-2 px-2 rounded-xl bg-blue-600/15 hover:bg-blue-600/25 border border-blue-500/30 text-blue-700 dark:text-blue-300 text-[11px] font-semibold cursor-pointer"
+                            title="Run email_autopilot.py against CRM Outbox"
+                          >
+                            {closerDryRun ? "Mail Dry" : "Mail Live"}
+                          </button>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Unified Live Execution Terminal (Refill Batch + Verify Links + Scout + Auditor + Closer) */}
+                    <div className="rounded-3xl bg-[#0B0D14] border border-slate-800/90 shadow-xl overflow-hidden">
+                      <div className="px-4 py-3 bg-[#121521] border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                          </div>
+                          <div className="flex items-center gap-2 pl-1">
+                            <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="text-xs font-bold font-mono text-slate-100 tracking-wide">
+                              Live Execution Terminal
+                            </span>
+                          </div>
+                          {activeTerminalJob ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                              RUNNING: {activeTerminalJob}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono text-slate-400 bg-slate-800/70 border border-slate-700/60">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                              STREAM READY ({terminalLogs.length} lines)
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleCopyLast20Logs}
+                            className="px-2.5 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-[11px] font-mono font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                            title="Copy the last 20 log lines from this terminal"
+                          >
+                            {copiedLast20 ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                <span className="text-emerald-300">Copied Last 20!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5" />
+                                <span>Copy Last 20 Logs</span>
+                              </>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setTerminalLogs([
+                                `[${new Date().toLocaleTimeString()}] [SYSTEM] Terminal cleared. Ready for next Refill Batch or Sub-Agent run...`,
+                              ])
+                            }
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 text-[11px] font-mono transition-colors cursor-pointer"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+
+                      <div
+                        ref={terminalContainerRef}
+                        className="p-4 h-72 overflow-y-auto font-mono text-xs leading-relaxed space-y-1.5 select-text"
+                      >
+                        {terminalLogs.map((line, idx) => {
+                          const isError = line.includes("[ERROR]") || line.includes("[HTTP FAIL]") || line.includes("[DROP]");
+                          const isSkip = line.includes("[SKIP]");
+                          const isScout = line.includes("[1.SCOUT-AGENT]") || line.includes("[SCOUT]");
+                          const isAuditor = line.includes("[2.AUDITOR-AGENT]") || line.includes("[AUDITOR]") || line.includes("[HTTP 200 OK]");
+                          const isCloser = line.includes("[3.CLOSER") || line.includes("[CLOSER]");
+                          const isRefill = line.includes("[REFILL-BATCH]") || line.includes("[VERIFY-LINKS]");
+
+                          let textColor = "text-slate-300";
+                          if (isError) textColor = "text-rose-400";
+                          else if (isSkip) textColor = "text-amber-300/90";
+                          else if (isAuditor) textColor = "text-emerald-300";
+                          else if (isScout) textColor = "text-indigo-300";
+                          else if (isCloser) textColor = "text-cyan-300";
+                          else if (isRefill) textColor = "text-emerald-400";
+
+                          return (
+                            <div key={idx} className={`${textColor} break-words whitespace-pre-wrap`}>
+                              <span className="text-slate-600 select-none mr-2">
+                                {String(idx + 1).padStart(2, "0")}
+                              </span>
+                              {line}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Structured Latest Run Result + Option to Expand Previous Runs */}
+                    {runs.length > 0 && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between px-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                              Latest Run Result (Structured Report)
+                            </span>
+                            <span className="text-[11px] font-mono text-slate-400">
+                              (Showing latest 1 of {runs.length} runs)
+                            </span>
+                          </div>
+                          {runs.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setShowPreviousRuns((prev) => !prev)}
+                              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <span>
+                                {showPreviousRuns
+                                  ? "Hide Previous Runs"
+                                  : `Show Previous Runs (${runs.length - 1})`}
+                              </span>
+                              {showPreviousRuns ? (
+                                <ChevronUp className="w-3.5 h-3.5" />
+                              ) : (
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Latest Run Card (runs[0]) */}
+                        {[runs[0]].map((r) => {
+                          const struct = r.drop_reasons?._structured;
+                          const builtLeads = struct?.built_leads || [];
+                          const droppedItems = struct?.dropped_items || [];
+                          const tiersUsed = struct?.tiers_used || [];
+                          const dropCounts = Object.entries(r.drop_reasons || {}).filter(
+                            ([k, v]) => k !== "_structured" && typeof v === "number"
+                          ) as Array<[string, number]>;
+
+                          return (
+                            <div
+                              key={r.id}
+                              className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-indigo-200/80 dark:border-indigo-500/30 shadow-xs space-y-3.5"
+                            >
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold uppercase tracking-wider">
+                                    Latest
+                                  </span>
+                                  <span className="text-xs font-bold text-slate-900 dark:text-white">
+                                    Run #{r.id}: {r.job_type}
+                                  </span>
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold font-mono">
+                                    {r.status}
+                                  </span>
+                                  {tiersUsed.map((t, i) => (
+                                    <span
+                                      key={i}
+                                      className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30 font-mono"
+                                    >
+                                      {t}
+                                    </span>
+                                  ))}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {r.trace_logs && r.trace_logs.length > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        appendTerminalLines([
+                                          `--- Loaded Trace Logs from Run #${r.id} (${r.job_type}) ---`,
+                                          ...(r.trace_logs || []),
+                                        ])
+                                      }
+                                      className="text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer"
+                                    >
+                                      Replay in Terminal
+                                    </button>
+                                  )}
+                                  <span className="text-[11px] text-slate-400 font-mono">
+                                    {new Date(r.started_at).toLocaleTimeString()}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Summary KPI Grid */}
+                              <div className="text-xs text-slate-600 dark:text-slate-300 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
+                                  <div className="text-[10px] text-slate-400">Candidates Scanned</div>
+                                  <div className="font-bold font-mono text-slate-800 dark:text-white">{r.count_found}</div>
+                                </div>
+                                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
+                                  <div className="text-[10px] text-slate-400">Passed &amp; Built</div>
+                                  <div className="font-bold font-mono text-emerald-600 dark:text-emerald-400">{r.count_passed}</div>
+                                </div>
+                                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
+                                  <div className="text-[10px] text-slate-400">Filtered / Deduped</div>
+                                  <div className="font-bold font-mono text-amber-600 dark:text-amber-400">{r.count_dropped}</div>
+                                </div>
+                                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
+                                  <div className="text-[10px] text-slate-400">Duration</div>
+                                  <div className="font-bold font-mono text-slate-800 dark:text-white">
+                                    {r.finished_at
+                                      ? `${Math.max(1, Math.round((new Date(r.finished_at).getTime() - new Date(r.started_at).getTime()) / 1000))}s`
+                                      : "active"}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Structured Table of Built / Verified / Targeted Clinics */}
+                              {builtLeads.length > 0 && (
+                                <div className="space-y-1.5">
+                                  <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                                    <span>Structured Run Output ({builtLeads.length} Clinics Processed)</span>
+                                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                                      100% Deduplicated vs. CRM Database
+                                    </span>
+                                  </div>
+                                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/[0.08]">
+                                    <table className="w-full text-left text-xs">
+                                      <thead className="bg-slate-50 dark:bg-[#10121A] text-[10px] uppercase text-slate-400 font-semibold border-b border-slate-200 dark:border-white/[0.06]">
+                                        <tr>
+                                          <th className="py-2 px-2.5">Clinic &amp; Doctor</th>
+                                          <th className="py-2 px-2.5">Locality</th>
+                                          <th className="py-2 px-2.5">Phone</th>
+                                          <th className="py-2 px-2.5">Fit</th>
+                                          <th className="py-2 px-2.5">Source / Status</th>
+                                          <th className="py-2 px-2.5 text-right">Actions</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
+                                        {builtLeads.map((item) => (
+                                          <tr key={item.id} className="hover:bg-slate-50/70 dark:hover:bg-white/[0.02]">
+                                            <td className="py-2 px-2.5">
+                                              <div className="font-bold text-slate-900 dark:text-white">{item.name}</div>
+                                              <div className="text-[10px] text-slate-400">{item.doctor || "Doctor"}</div>
+                                            </td>
+                                            <td className="py-2 px-2.5 text-[11px] text-slate-600 dark:text-slate-300">
+                                              {item.locality}
+                                            </td>
+                                            <td className="py-2 px-2.5 font-mono text-[11px] text-slate-600 dark:text-slate-300">
+                                              {item.phone || "-"}
+                                            </td>
+                                            <td className="py-2 px-2.5">
+                                              <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] font-bold">
+                                                {item.fit_score}/100
+                                              </span>
+                                            </td>
+                                            <td className="py-2 px-2.5">
+                                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300">
+                                                {item.source_tier}
+                                              </span>
+                                            </td>
+                                            <td className="py-2 px-2.5 text-right space-x-1.5">
+                                              {(item.choice_url || item.demo_url) && (
+                                                <a
+                                                  href={item.choice_url || item.demo_url}
+                                                  target="_blank"
+                                                  rel="noreferrer"
+                                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold hover:bg-emerald-100"
+                                                >
+                                                  <span>/demo/{item.slug}</span>
+                                                  <ExternalLink className="w-2.5 h-2.5" />
+                                                </a>
+                                              )}
+                                              <button
+                                                type="button"
+                                                onClick={() => setSelectedLeadId(item.id)}
+                                                className="inline-flex items-center px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10px] font-semibold cursor-pointer hover:bg-slate-200"
+                                              >
+                                                Dossier
+                                              </button>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Structured Drop / Deduplication Breakdown */}
+                              {(dropCounts.length > 0 || droppedItems.length > 0) && (
+                                <div className="space-y-1.5 pt-1">
+                                  <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                                    <span>Filter &amp; Database Deduplication Gate Breakdown:</span>
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      {dropCounts.map(([reason, count]) => (
+                                        <span
+                                          key={reason}
+                                          className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-200/70 dark:border-amber-500/20"
+                                        >
+                                          {reason}: {count}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  {droppedItems.length > 0 && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-28 overflow-y-auto pr-1">
+                                      {droppedItems.map((d, i) => (
+                                        <div
+                                          key={i}
+                                          className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-[#10121A] border border-slate-200/70 dark:border-white/[0.05] text-[11px] flex items-center justify-between gap-2"
+                                        >
+                                          <span className="font-medium text-slate-700 dark:text-slate-300 truncate">
+                                            {d.name}
+                                          </span>
+                                          <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 shrink-0">
+                                            {d.reason}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+
+                        {/* Collapsible Previous Runs List (runs.slice(1)) */}
+                        {showPreviousRuns && runs.length > 1 && (
+                          <div className="space-y-2.5 pt-1 max-h-96 overflow-y-auto pr-1">
+                            {runs.slice(1).map((r) => {
+                              const struct = r.drop_reasons?._structured;
+                              const builtLeads = struct?.built_leads || [];
+                              return (
+                                <div
+                                  key={r.id}
+                                  className="p-3.5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-2"
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                                        Run #{r.id}: {r.job_type}
+                                      </span>
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold font-mono">
+                                        {r.status}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      {r.trace_logs && r.trace_logs.length > 0 && (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            appendTerminalLines([
+                                              `--- Loaded Trace Logs from Run #${r.id} (${r.job_type}) ---`,
+                                              ...(r.trace_logs || []),
+                                            ])
+                                          }
+                                          className="text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer"
+                                        >
+                                          Replay in Terminal
+                                        </button>
+                                      )}
+                                      <span className="text-[11px] text-slate-400 font-mono">
+                                        {new Date(r.started_at).toLocaleTimeString()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="text-xs text-slate-600 dark:text-slate-300 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                                    <div className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
+                                      <div className="text-[10px] text-slate-400">Found</div>
+                                      <div className="font-bold font-mono text-slate-800 dark:text-white">{r.count_found}</div>
+                                    </div>
+                                    <div className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
+                                      <div className="text-[10px] text-slate-400">Passed</div>
+                                      <div className="font-bold font-mono text-slate-800 dark:text-white">{r.count_passed}</div>
+                                    </div>
+                                    <div className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
+                                      <div className="text-[10px] text-slate-400">Dropped</div>
+                                      <div className="font-bold font-mono text-amber-600 dark:text-amber-400">{r.count_dropped}</div>
+                                    </div>
+                                    <div className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
+                                      <div className="text-[10px] text-slate-400">Duration</div>
+                                      <div className="font-bold font-mono text-slate-800 dark:text-white">
+                                        {r.finished_at
+                                          ? `${Math.max(1, Math.round((new Date(r.finished_at).getTime() - new Date(r.started_at).getTime()) / 1000))}s`
+                                          : "active"}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {builtLeads.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 pt-1">
+                                      {builtLeads.map((bl) => (
+                                        <button
+                                          key={bl.id}
+                                          type="button"
+                                          onClick={() => setSelectedLeadId(bl.id)}
+                                          className="text-[10px] font-mono px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 cursor-pointer"
+                                        >
+                                          {bl.name} ({bl.locality}) &rarr;
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Telegram Remote CLI Simulator Console */}
-                  <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-4">
+                  {/* Telegram Remote CLI Simulator Console (Compact self-start height) */}
+                  <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-3.5 self-start h-fit">
                     <div className="flex items-center gap-2">
                       <Terminal className="w-4 h-4 text-indigo-500" />
                       <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
@@ -2117,24 +3022,168 @@ export default function PersonalOSCRM() {
               )}
 
               {/* ======================================================== */}
-              {/* TAB 5: HUSTLE SETTINGS                                   */}
+              {/* TAB 5: HUSTLE SETTINGS (Editable Autonomy & Waterfall)   */}
               {/* ======================================================== */}
               {activeTab === "settings" && activeHustle && (
-                <div className="max-w-3xl space-y-5">
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-3">
-                    <h2 className="text-sm font-bold text-slate-900 dark:text-white">Active Hustle Blueprint: {activeHustle.name}</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{activeHustle.description}</p>
-                    <div className="pt-2 grid grid-cols-2 gap-3 text-xs">
-                      <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                        <div className="text-slate-400">Proof Asset Type:</div>
-                        <div className="font-semibold text-slate-900 dark:text-white mt-0.5">{activeHustle.proof_asset_type}</div>
+                <div className="max-w-4xl space-y-5">
+                  <form
+                    onSubmit={handleSaveHustleSettings}
+                    className="p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-5"
+                  >
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      <div>
+                        <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                          Hustle Blueprint &amp; Autonomy Settings: {activeHustle.name}
+                        </h2>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          {activeHustle.description}
+                        </p>
                       </div>
-                      <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                        <div className="text-slate-400">Minimum Buffer Days:</div>
-                        <div className="font-semibold text-slate-900 dark:text-white mt-0.5">{activeHustle.minimum_stock_days} days</div>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 cursor-pointer transition-all"
+                      >
+                        Save Hustle Settings
+                      </button>
+                    </div>
+
+                    {/* 4-Tier Lead Discovery Waterfall Overview Card */}
+                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.06] space-y-2.5">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                          Lead Discovery Waterfall Order (Strict Database Deduplication Enabled)
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30">
+                          Zero DB Re-Use Guarantee
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+                        <div className="p-2.5 rounded-xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.06]">
+                          <div className="text-[10px] font-mono text-indigo-500 font-bold">TIER 1 (PRIMARY)</div>
+                          <div className="font-semibold text-slate-900 dark:text-white mt-0.5">Google Places API</div>
+                          <div className="text-[10px] text-slate-400">Official Maps Search + No-Website Filter</div>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.06]">
+                          <div className="text-[10px] font-mono text-blue-500 font-bold">TIER 2 (FALLBACK)</div>
+                          <div className="font-semibold text-slate-900 dark:text-white mt-0.5">Serper Maps API</div>
+                          <div className="text-[10px] text-slate-400">Used if Places quota is reached</div>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.06]">
+                          <div className="text-[10px] font-mono text-amber-500 font-bold">TIER 3 (WEB)</div>
+                          <div className="font-semibold text-slate-900 dark:text-white mt-0.5">Brave Search API</div>
+                          <div className="text-[10px] text-slate-400">Directory &amp; Practo/Justdial cross-check</div>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.06]">
+                          <div className="text-[10px] font-mono text-emerald-500 font-bold">TIER 4 (BROWSER)</div>
+                          <div className="font-semibold text-slate-900 dark:text-white mt-0.5">Playwright Maps</div>
+                          <div className="text-[10px] text-slate-400">Direct Maps scraper &amp; verified pool</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+
+                    {/* Instagram Discovery Rule Toggle (Explicitly OFF for Dental Clinics, configurable for other CRM hustles) */}
+                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.06] flex items-center justify-between gap-4">
+                      <div className="space-y-0.5">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>CRM Instagram Lead Discovery &amp; Research</span>
+                          {(activeHustle.slug.includes("dental") ||
+                            activeHustle.name.toLowerCase().includes("dental")) && (
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30">
+                              Disabled for Dental Clinic Hustle
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Instagram research remains built into the CRM for other hustles, but is strictly turned OFF for finding Dental Clinic leads (which use the 4-tier Maps/Web waterfall above).
+                        </p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={settingsIgDiscovery}
+                        disabled={
+                          activeHustle.slug.includes("dental") ||
+                          activeHustle.name.toLowerCase().includes("dental")
+                        }
+                        onChange={(e) => setSettingsIgDiscovery(e.target.checked)}
+                        className="w-4 h-4 accent-indigo-600 cursor-pointer disabled:opacity-50"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                      <div className="space-y-1.5">
+                        <label className="font-semibold text-slate-700 dark:text-slate-300">
+                          Autonomy Mode (Copilot vs. Autopilot)
+                        </label>
+                        <select
+                          value={settingsAutonomy}
+                          onChange={(e) => setSettingsAutonomy(e.target.value as "copilot" | "autopilot")}
+                          className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white"
+                        >
+                          <option value="copilot">Copilot (Human Review Tray before Send)</option>
+                          <option value="autopilot">Autopilot (Auto-Dispatch within Daily Caps)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="font-semibold text-slate-700 dark:text-slate-300">
+                          Default Discovery Search Query
+                        </label>
+                        <input
+                          type="text"
+                          value={settingsQuery}
+                          onChange={(e) => setSettingsQuery(e.target.value)}
+                          className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                      <div className="space-y-1">
+                        <label className="text-slate-500 dark:text-slate-400">Minimum Buffer Days</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={14}
+                          value={settingsMinDays}
+                          onChange={(e) => setSettingsMinDays(Number(e.target.value))}
+                          className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-slate-500 dark:text-slate-400">Daily WhatsApp Cap</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={100}
+                          value={settingsWaLimit}
+                          onChange={(e) => setSettingsWaLimit(Number(e.target.value))}
+                          className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-slate-500 dark:text-slate-400">Daily Instagram Cap</label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={settingsIgLimit}
+                          onChange={(e) => setSettingsIgLimit(Number(e.target.value))}
+                          className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-slate-500 dark:text-slate-400">Daily Email Cap</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={200}
+                          value={settingsEmailLimit}
+                          onChange={(e) => setSettingsEmailLimit(Number(e.target.value))}
+                          className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                  </form>
                 </div>
               )}
             </>
@@ -2512,6 +3561,80 @@ export default function PersonalOSCRM() {
                       </div>
                     </div>
                   )}
+
+                  {/* Phase 4: 1-Tap Commitment / Snooze Confirmation */}
+                  {selectedLead.commitments && selectedLead.commitments.length > 0 && (
+                    <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/30 space-y-2.5 shadow-xs">
+                      <div className="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center justify-between">
+                        <span>Detected Promises &amp; Commitments</span>
+                        <span className="text-[10px] font-mono">1-Tap Lock</span>
+                      </div>
+                      <div className="space-y-2">
+                        {selectedLead.commitments.map((c) => (
+                          <div
+                            key={c.id}
+                            className="p-2.5 rounded-xl bg-white dark:bg-[#141721] border border-amber-200/70 dark:border-white/[0.06] text-xs flex items-center justify-between gap-2"
+                          >
+                            <div>
+                              <div className="font-semibold text-slate-900 dark:text-white">{c.what}</div>
+                              <div className="text-[10px] text-slate-400 font-mono">
+                                Due: {new Date(c.due_at).toLocaleDateString()} &bull; Status: {c.status}
+                              </div>
+                            </div>
+                            {c.status !== "confirmed" ? (
+                              <button
+                                type="button"
+                                onClick={() => handleConfirmCommitment(c.id)}
+                                className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-semibold cursor-pointer shrink-0"
+                              >
+                                Confirm 1-Tap
+                              </button>
+                            ) : (
+                              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                                Confirmed
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Phase 4: Post-Call / Voice-Note Follow-Up Drafter */}
+                  <form
+                    onSubmit={handlePostCallDraft}
+                    className="p-4 rounded-2xl bg-white dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.08] space-y-2.5 shadow-xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Post-Call Follow-Up Drafter</span>
+                      </div>
+                      <select
+                        value={callOutcomeInput}
+                        onChange={(e) => setCallOutcomeInput(e.target.value)}
+                        className="bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-lg px-2 py-1 text-[10px] text-slate-800 dark:text-slate-200"
+                      >
+                        <option value="interested">Outcome: Interested</option>
+                        <option value="callback">Outcome: Call Later</option>
+                        <option value="busy">Outcome: Busy / Reception</option>
+                      </select>
+                    </div>
+                    <input
+                      type="text"
+                      value={callNoteInput}
+                      onChange={(e) => setCallNoteInput(e.target.value)}
+                      placeholder="Quick call summary (e.g. Spoke to Dr., liked Design 2, send pricing on WA)..."
+                      className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={postCallLoading}
+                      className="w-full py-2 px-3 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold cursor-pointer transition-colors"
+                    >
+                      {postCallLoading ? "Drafting..." : "Log Call, Lock Next Step & Draft WhatsApp"}
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>
@@ -2842,6 +3965,158 @@ export default function PersonalOSCRM() {
             </div>
           </div>
         )}
+
+        {/* ======================================================== */}
+        {/* PHASE 4: FLOATING "ASK & DO" AI ASSISTANT + 1-CLICK UNDO */}
+        {/* ======================================================== */}
+        <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2">
+          {assistantOpen && (
+            <div className="w-[360px] sm:w-[410px] max-h-[520px] rounded-3xl bg-white dark:bg-[#141721] border border-indigo-200 dark:border-indigo-500/30 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-4 py-3 bg-slate-50 dark:bg-[#10121A] border-b border-slate-200 dark:border-white/[0.08] flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-indigo-500" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">
+                    Ask &amp; Do CRM Copilot
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setAssistantMode("ask")}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold cursor-pointer ${
+                      assistantMode === "ask"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                    }`}
+                  >
+                    Ask (Query)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAssistantMode("do")}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold cursor-pointer ${
+                      assistantMode === "do"
+                        ? "bg-emerald-600 text-white"
+                        : "bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                    }`}
+                  >
+                    Do (Action + Undo)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAssistantOpen(false)}
+                    className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3.5 flex-1 overflow-y-auto space-y-3 text-xs max-h-80">
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { label: "Hot South Delhi leads", mode: "ask" as const, q: "Show hot leads in South Delhi" },
+                    { label: "Snooze stale 2 days", mode: "do" as const, q: "Snooze stale leads for 2 days" },
+                    { label: "Confirm all promises", mode: "do" as const, q: "Confirm all pending commitments" },
+                  ].map((chip, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setAssistantMode(chip.mode);
+                        setAssistantPrompt(chip.q);
+                      }}
+                      className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-[10px] text-slate-600 dark:text-slate-300 cursor-pointer"
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
+
+                {assistantHistory.length === 0 ? (
+                  <div className="py-6 text-center text-[11px] text-slate-400">
+                    Ask anything about your pipeline or switch to <strong>Do</strong> mode to bulk-move, snooze, or confirm tasks with 1-click Undo.
+                  </div>
+                ) : (
+                  assistantHistory.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="p-3 rounded-2xl bg-slate-50 dark:bg-[#10121A] border border-slate-200/80 dark:border-white/[0.06] space-y-2"
+                    >
+                      <div className="flex items-center justify-between text-[10px] text-slate-400">
+                        <span className="font-mono uppercase text-indigo-500 font-semibold">
+                          {entry.mode}: {entry.prompt}
+                        </span>
+                        {entry.undo_available && !entry.undone && (
+                          <button
+                            type="button"
+                            onClick={() => handleAssistantUndo(entry.undo_id, entry.id)}
+                            className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30 font-mono font-semibold cursor-pointer"
+                          >
+                            Undo 1-Click
+                          </button>
+                        )}
+                        {entry.undone && (
+                          <span className="text-emerald-500 font-mono">Reverted</span>
+                        )}
+                      </div>
+                      <div className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
+                        {entry.reply}
+                      </div>
+                      {entry.matched_leads.length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-1">
+                          {entry.matched_leads.slice(0, 5).map((ml) => (
+                            <button
+                              key={ml.id}
+                              type="button"
+                              onClick={() => setSelectedLeadId(ml.id)}
+                              className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 text-[10px] font-medium cursor-pointer"
+                            >
+                              {ml.name} ({ml.fit_score}%)
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <form
+                onSubmit={handleAskDoSubmit}
+                className="p-3 border-t border-slate-200 dark:border-white/[0.08] bg-slate-50/70 dark:bg-[#10121A] flex items-center gap-2"
+              >
+                <input
+                  type="text"
+                  value={assistantPrompt}
+                  onChange={(e) => setAssistantPrompt(e.target.value)}
+                  placeholder={
+                    assistantMode === "ask"
+                      ? "Ask e.g. Hot leads in South Delhi..."
+                      : "Do e.g. Snooze stale leads for 2 days..."
+                  }
+                  className="flex-1 bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                />
+                <button
+                  type="submit"
+                  disabled={assistantLoading}
+                  className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer"
+                >
+                  {assistantLoading ? "..." : assistantMode === "ask" ? "Ask" : "Run"}
+                </button>
+              </form>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setAssistantOpen((prev) => !prev)}
+            className="px-4 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-xl shadow-indigo-600/30 flex items-center gap-2 cursor-pointer transition-all active:scale-95"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Ask &amp; Do AI</span>
+          </button>
+        </div>
       </div>
     </div>
   );

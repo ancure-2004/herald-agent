@@ -182,6 +182,39 @@ export interface SprintPlan {
   tasks: SprintTask[];
 }
 
+export interface StructuredBuiltLead {
+  id: number;
+  name: string;
+  slug: string;
+  doctor: string;
+  locality: string;
+  phone: string;
+  email?: string | null;
+  fit_score: number;
+  source_tier: string;
+  choice_url?: string;
+  demo_url?: string;
+  verified_live?: boolean;
+  http_200?: boolean;
+  video_attached?: boolean;
+}
+
+export interface StructuredDroppedItem {
+  name: string;
+  reason: string;
+  detail: string;
+  tier: string;
+}
+
+export interface StructuredRunData {
+  tiers_used?: string[];
+  instagram_discovery_enabled?: boolean;
+  built_leads?: StructuredBuiltLead[];
+  dropped_items?: StructuredDroppedItem[];
+  drop_counts?: Record<string, number>;
+  verified_in_batch_json?: number;
+}
+
 export interface RunLog {
   id: number;
   hustle_id: number;
@@ -191,7 +224,7 @@ export interface RunLog {
   count_found: number;
   count_passed: number;
   count_dropped: number;
-  drop_reasons: Record<string, number>;
+  drop_reasons: Record<string, any> & { _structured?: StructuredRunData };
   errors: string[];
   trace_logs: string[];
   started_at: string;

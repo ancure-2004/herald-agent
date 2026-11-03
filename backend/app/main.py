@@ -58,20 +58,63 @@ from .schemas import (
 )
 from .seed import seed_initial_data
 from .autopilot import run_live_autopilot_discovery, sync_verified_links_to_batch_json
+from .agents import (
+    build_cockpit_batch_payload,
+    run_auditor_agent,
+    run_closer_agent,
+    run_scout_agent,
+)
 import os
 
 
-# Global in-memory SSE event subscribers
+# Global in-memory SSE event subscribers & live terminal log ring buffer
 SSE_SUBSCRIBERS: List[asyncio.Queue] = []
+MAIN_EVENT_LOOP: Optional[asyncio.AbstractEventLoop] = None
+TERMINAL_LOG_BUFFER: List[Dict[str, Any]] = []
+TERMINAL_LOG_SEQ: int = 0
 
 
 def broadcast_sse(event_name: str, payload: Dict[str, Any]) -> None:
-    msg = {"event": event_name, "data": payload, "ts": datetime.now(timezone.utc).isoformat()}
+    msg = {
+        "type": event_name,
+        "event": event_name,
+        "data": payload,
+        **payload,
+        "ts": datetime.now(timezone.utc).isoformat(),
+    }
     for q in list(SSE_SUBSCRIBERS):
         try:
-            q.put_nowait(msg)
+            if MAIN_EVENT_LOOP and MAIN_EVENT_LOOP.is_running():
+                MAIN_EVENT_LOOP.call_soon_threadsafe(q.put_nowait, msg)
+            else:
+                q.put_nowait(msg)
         except Exception:
             pass
+
+
+def emit_terminal_log(source: str, message: str) -> str:
+    global TERMINAL_LOG_SEQ
+    TERMINAL_LOG_SEQ += 1
+    ts_str = datetime.now().strftime("%H:%M:%S")
+    clean_msg = message.strip()
+    # Avoid double timestamp if message already starts with [HH:MM:SS]
+    if re.match(r"^\[\d{2}:\d{2}:\d{2}\]", clean_msg):
+        formatted = f"{clean_msg[:10]} [{source}] {clean_msg[10:].lstrip()}"
+    else:
+        formatted = f"[{ts_str}] [{source}] {clean_msg}"
+
+    entry = {
+        "seq": TERMINAL_LOG_SEQ,
+        "ts": ts_str,
+        "source": source,
+        "line": formatted,
+    }
+    TERMINAL_LOG_BUFFER.append(entry)
+    if len(TERMINAL_LOG_BUFFER) > 250:
+        del TERMINAL_LOG_BUFFER[:-250]
+
+    broadcast_sse("terminal_log", {"seq": TERMINAL_LOG_SEQ, "source": source, "line": formatted, "title": formatted})
+    return formatted
 
 
 def slugify(value: str) -> str:
@@ -161,12 +204,15 @@ def classify_inbound_reply(text: str) -> str:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global MAIN_EVENT_LOOP
+    MAIN_EVENT_LOOP = asyncio.get_running_loop()
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
         seed_initial_data(db, include_demo_leads=True)
     finally:
         db.close()
+    emit_terminal_log("SYSTEM", "Personal OS & CRM Backend initialized. Live Execution Terminal ready.")
     yield
 
 
@@ -860,10 +906,12 @@ def get_public_demo_package(slug: str, db: Session = Depends(get_db)):
 
 
 @app.post("/api/public/track")
+@app.post("/api/tracking/event")
 def track_demo_event(payload: TrackingEventCreate, db: Session = Depends(get_db)):
     """
     Logs section views, design choices, and WhatsApp button taps from the demo page,
-    ignoring link-preview bots and updating the lead's Intent score in real time.
+    ignoring link-preview bots, updating the lead's Intent score in real time,
+    and pushing a real-time Hot-Lead Alert to Telegram & SSE.
     """
     lead = None
     if payload.lead_id:
@@ -899,6 +947,8 @@ def track_demo_event(payload: TrackingEventCreate, db: Session = Depends(get_db)
             lead.what_changed_summary = f"Doctor chose the '{payload.design_chosen.title()}' layout on the demo page!"
         elif payload.event_type == "whatsapp_tap":
             lead.what_changed_summary = "Doctor tapped the WhatsApp CTA button inside the live demo!"
+        else:
+            lead.what_changed_summary = f"Hot view detected on /demo/{lead.slug} ({payload.section or 'hero'}) - Intent Score: {intent}"
 
         viewed_stage = (
             db.query(Stage)
@@ -909,8 +959,25 @@ def track_demo_event(payload: TrackingEventCreate, db: Session = Depends(get_db)
             lead.stage_id = viewed_stage.id
 
     db.commit()
+
+    alert_title = f"HOT VIEW: {lead.name} ({payload.event_type}{': ' + payload.design_chosen if payload.design_chosen else ''}) • Intent {lead.intent_score}"
+    if not is_bot:
+        emit_terminal_log("HOT-LEAD-ALERT", alert_title)
+        # Optional Real Telegram Push Notification if TELEGRAM_BOT_TOKEN & TELEGRAM_CHAT_ID are configured
+        tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+        tg_chat = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+        if tg_token and tg_chat:
+            try:
+                import urllib.request
+                tg_url = f"https://api.telegram.org/bot{tg_token}/sendMessage"
+                tg_body = json.dumps({"chat_id": tg_chat, "text": f"🔥 {alert_title}\nClinic: {lead.name} ({lead.locality})\nPhone: {lead.primary_phone or 'N/A'}"}).encode("utf-8")
+                req = urllib.request.Request(tg_url, data=tg_body, headers={"Content-Type": "application/json"}, method="POST")
+                urllib.request.urlopen(req, timeout=5)
+            except Exception:
+                pass
+
     broadcast_sse(
-        "demo_event",
+        "tracking_view",
         {
             "lead_id": lead.id,
             "lead_name": lead.name,
@@ -918,6 +985,7 @@ def track_demo_event(payload: TrackingEventCreate, db: Session = Depends(get_db)
             "design_chosen": payload.design_chosen,
             "intent_score": lead.intent_score,
             "is_bot": is_bot,
+            "title": alert_title,
         },
     )
     return {"logged": True, "is_bot": is_bot, "intent_score": lead.intent_score}
@@ -1104,13 +1172,25 @@ def trigger_autopilot_refill(hustle_id: int = Query(1), batch_size: int = Query(
         raise HTTPException(status_code=404, detail="Hustle not found.")
 
     base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001")
-    result = run_live_autopilot_discovery(db=db, hustle=hustle, target_count=batch_size, base_url=base_url)
+    emit_terminal_log("REFILL-BATCH", f"Starting 7-Step Autopilot Refill Batch (target_count={batch_size})...")
+    result = run_live_autopilot_discovery(
+        db=db,
+        hustle=hustle,
+        target_count=batch_size,
+        base_url=base_url,
+        log_cb=lambda msg: emit_terminal_log("REFILL-BATCH", msg),
+    )
+    emit_terminal_log(
+        "REFILL-BATCH",
+        f"Run #{result['run_id']} finished: {result['passed']} built, {result['batch_sync']['verified_count']} live URLs synced to batch.json.",
+    )
     broadcast_sse(
         "autopilot_run",
         {
             "run_id": result["run_id"],
             "passed": result["passed"],
             "verified_in_batch_json": result["batch_sync"]["verified_count"],
+            "title": f"Refill Run #{result['run_id']} finished ({result['passed']} built)",
         },
     )
     return result
@@ -1120,8 +1200,17 @@ def trigger_autopilot_refill(hustle_id: int = Query(1), batch_size: int = Query(
 def verify_and_sync_links_to_batch(db: Session = Depends(get_db)):
     """Checks that all ready package links return HTTP 200 and writes working URLs to dental-batch-recorder/batch.json."""
     base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001")
-    report = sync_verified_links_to_batch_json(db=db, base_url=base_url)
-    broadcast_sse("links_verified", {"verified_count": report["verified_count"]})
+    emit_terminal_log("VERIFY-LINKS", f"Starting HTTP 200 verification on {base_url}...")
+    report = sync_verified_links_to_batch_json(
+        db=db,
+        base_url=base_url,
+        log_cb=lambda msg: emit_terminal_log("VERIFY-LINKS", msg),
+    )
+    emit_terminal_log(
+        "VERIFY-LINKS",
+        f"Completed: {report['verified_count']} passed HTTP 200, {report['failed_count']} failed.",
+    )
+    broadcast_sse("links_verified", {"verified_count": report["verified_count"], "title": f"Verified {report['verified_count']} live links"})
     return report
 
 
@@ -1278,6 +1367,8 @@ def create_problem_report(payload: ProblemReportCreate, db: Session = Depends(ge
 @app.get("/api/events")
 async def sse_stream():
     """Server-Sent Events stream for real-time CRM & Autopilot updates."""
+    global MAIN_EVENT_LOOP
+    MAIN_EVENT_LOOP = asyncio.get_running_loop()
     q: asyncio.Queue = asyncio.Queue()
     SSE_SUBSCRIBERS.append(q)
 
@@ -1295,6 +1386,13 @@ async def sse_stream():
                 SSE_SUBSCRIBERS.remove(q)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@app.get("/api/terminal/logs")
+def get_terminal_logs(since_seq: int = Query(0)):
+    """Returns buffered live terminal logs with seq > since_seq so UI never misses a line."""
+    filtered = [item for item in TERMINAL_LOG_BUFFER if item["seq"] > since_seq]
+    return {"logs": filtered, "latest_seq": TERMINAL_LOG_SEQ}
 
 
 # ---------------------------------------------------------------------------
@@ -1374,4 +1472,463 @@ def capture_problem_brief_alias(payload: Dict[str, Any], db: Session = Depends(g
     )
     res = create_problem_report(payload=req, db=db)
     return {"id": res["id"], "brief": json.dumps(res["context_brief"], indent=2)}
+
+
+# ---------------------------------------------------------------------------
+# 10. PHASE 3: SPECIALIZED SUB-AGENTS (Scout / Auditor / Closer) & COCKPIT BRIDGE
+# ---------------------------------------------------------------------------
+@app.post("/api/agents/scout/run")
+def execute_scout_agent(payload: Optional[Dict[str, Any]] = None, db: Session = Depends(get_db)):
+    """Runs the Scout Agent: discovers no-website clinics + enriches IG/email/doctor dossiers."""
+    body = payload or {}
+    hustle_id = int(body.get("hustle_id", 1))
+    batch_size = int(body.get("batch_size", 2))
+    hustle = db.query(Hustle).filter(Hustle.id == hustle_id).first()
+    if not hustle:
+        raise HTTPException(status_code=404, detail="Hustle not found.")
+    base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001")
+    res = run_scout_agent(
+        db=db,
+        hustle=hustle,
+        batch_size=batch_size,
+        base_url=base_url,
+        log_cb=lambda msg: emit_terminal_log("1.SCOUT-AGENT", msg),
+    )
+    broadcast_sse("scout_complete", {"discovered_new": res["discovered_new"], "enriched_leads": res["enriched_leads"], "title": f"Scout finished ({res['discovered_new']} new, {res['enriched_leads']} enriched)"})
+    return res
+
+
+@app.post("/api/agents/auditor/run")
+def execute_auditor_agent(payload: Optional[Dict[str, Any]] = None, db: Session = Depends(get_db)):
+    """Runs the Auditor Agent: verifies HTTP 200 on all 4 demo routes, syncs batch.json, and attaches MP4 walkthroughs."""
+    body = payload or {}
+    hustle_id = int(body.get("hustle_id", 1))
+    record_video = bool(body.get("record_video", False))
+    clinic_id = body.get("clinic_id")
+    hustle = db.query(Hustle).filter(Hustle.id == hustle_id).first()
+    if not hustle:
+        raise HTTPException(status_code=404, detail="Hustle not found.")
+    base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001")
+    res = run_auditor_agent(
+        db=db,
+        hustle=hustle,
+        base_url=base_url,
+        record_video=record_video,
+        clinic_id=int(clinic_id) if clinic_id is not None else None,
+        log_cb=lambda msg: emit_terminal_log("2.AUDITOR-AGENT", msg),
+    )
+    broadcast_sse("auditor_complete", {"verified": res["verified_links_count"], "videos": res["attached_videos_count"], "title": f"Auditor finished ({res['verified_links_count']} verified, {res['attached_videos_count']} MP4s)"})
+    return res
+
+
+@app.post("/api/agents/closer/run")
+def execute_closer_agent(payload: Optional[Dict[str, Any]] = None, db: Session = Depends(get_db)):
+    """Runs the Closer Agent: dispatches WA/IG/Email via Playwright scripts and drafts follow-ups for hot viewers."""
+    body = payload or {}
+    hustle_id = int(body.get("hustle_id", 1))
+    channel = str(body.get("channel", "whatsapp"))
+    dry_run = bool(body.get("dry_run", True))
+    clinic_id = body.get("clinic_id")
+    hustle = db.query(Hustle).filter(Hustle.id == hustle_id).first()
+    if not hustle:
+        raise HTTPException(status_code=404, detail="Hustle not found.")
+    res = run_closer_agent(
+        db=db,
+        hustle=hustle,
+        channel=channel,
+        dry_run=dry_run,
+        clinic_id=int(clinic_id) if clinic_id is not None else None,
+        log_cb=lambda msg: emit_terminal_log(f"3.CLOSER-{channel.upper()}", msg),
+    )
+    broadcast_sse("closer_complete", {"channel": channel, "dry_run": dry_run, "followups": res["drafted_hot_followups"], "title": f"Closer ({channel.upper()}) finished"})
+    return res
+
+
+@app.get("/api/batch")
+def get_dispatch_cockpit_batch(hustle_id: int = Query(1), db: Session = Depends(get_db)):
+    """
+    Native compatibility bridge for `dispatch-cockpit/wa_autopilot.mjs`,
+    `ig_autopilot.mjs`, and `email_autopilot.py`.
+    """
+    return build_cockpit_batch_payload(db=db, hustle_id=hustle_id)
+
+
+@app.post("/api/mark-sent")
+def mark_cockpit_sent(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    """Called by `wa_autopilot.mjs`, `ig_autopilot.mjs`, and `email_autopilot.py` after live delivery."""
+    lead_id = int(payload.get("id") or 0)
+    channel = str(payload.get("channel") or "whatsapp").lower()
+    lead = db.query(Lead).filter(Lead.id == lead_id).first()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found.")
+
+    demo_url = f"http://localhost:3001/demo/{lead.slug}"
+    if lead.packages and lead.packages[-1].asset_links:
+        demo_url = lead.packages[-1].asset_links.get("choice_page") or demo_url
+
+    req = OutboxApproveRequest(
+        lead_id=lead.id,
+        channel=channel,
+        text=f"Dispatched 3-template dental studio pitch + video via {channel.upper()} Autopilot: {demo_url}",
+        step_tag="initial_pitch",
+        send_immediately=True,
+    )
+    try:
+        return approve_and_send_pitch(payload=req, db=db)
+    except HTTPException as exc:
+        if exc.status_code == 409:
+            return {"status": "already_recorded", "lead_id": lead.id}
+        raise
+
+
+@app.post("/api/mark-unreachable")
+def mark_cockpit_unreachable(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    """Called by `wa_autopilot.mjs` or `ig_autopilot.mjs` when a phone is not on WA or IG DMs are closed."""
+    lead_id = int(payload.get("id") or 0)
+    reason = str(payload.get("reason") or "Channel unreachable")
+    lead = db.query(Lead).filter(Lead.id == lead_id).first()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found.")
+
+    # Automatic channel fallback: WA -> IG -> Email
+    if lead.preferred_channel == "whatsapp" and lead.instagram_handle:
+        lead.preferred_channel = "instagram"
+    elif lead.email:
+        lead.preferred_channel = "email"
+
+    lead.what_changed_summary = f"Channel fallback triggered ({reason}) -> switched preferred channel to {lead.preferred_channel}."
+    db.add(
+        Message(
+            lead_id=lead.id,
+            channel="system",
+            direction="internal_note",
+            text=lead.what_changed_summary,
+        )
+    )
+    db.commit()
+    return {"status": "fallback_applied", "lead_id": lead.id, "preferred_channel": lead.preferred_channel}
+
+
+# ---------------------------------------------------------------------------
+# 11. PHASE 4: SMART LAYER (Post-Call Drafter + Ask & Do Assistant with Undo)
+# ---------------------------------------------------------------------------
+ASSISTANT_UNDO_STACK: List[Dict[str, Any]] = []
+
+
+@app.post("/api/leads/{lead_id}/post-call-draft")
+def generate_post_call_draft(lead_id: int, payload: Dict[str, Any], db: Session = Depends(get_db)):
+    """
+    Phase 4 Post-Call / Voice-Note Follow-Up Drafter (Page 10 of Build Plan):
+    Takes a quick call note (e.g. 'Spoke to receptionist, doctor free tomorrow after 7pm, liked Warm layout'),
+    logs it to the immutable timeline, parses any date/snooze commitments, locks the next action,
+    and returns a ready-to-send WhatsApp follow-up message.
+    """
+    lead = db.query(Lead).options(joinedload(Lead.packages)).filter(Lead.id == lead_id).first()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found.")
+
+    call_note = str(payload.get("call_note") or "").strip()
+    if not call_note:
+        raise HTTPException(status_code=422, detail="call_note is required.")
+
+    now = datetime.now(timezone.utc)
+    db.add(
+        Message(
+            lead_id=lead.id,
+            channel="phone_call",
+            direction="internal_note",
+            text=f"[Post-Call Log] {call_note}",
+            created_at=now,
+        )
+    )
+
+    proposals = parse_promises_and_snoozes(lead.id, call_note, "outbound", now)
+    for p in proposals:
+        p.status = "confirmed"
+        db.add(p)
+
+    due_at = proposals[0].due_at if proposals else (now + timedelta(days=1)).replace(hour=18, minute=0, second=0, microsecond=0)
+    next_act = proposals[0].what if proposals else f"Send post-call WhatsApp follow-up ({call_note[:45]})"
+
+    base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001").rstrip("/")
+    demo_url = f"{base_url}/demo/{lead.slug}"
+    if lead.packages and lead.packages[-1].asset_links:
+        demo_url = lead.packages[-1].asset_links.get("choice_page") or demo_url
+
+    doc = lead.doctor_name or "Doctor"
+    chosen = "Modern"
+    low_note = call_note.lower()
+    if "warm" in low_note:
+        chosen = "Warm Family Care"
+    elif "premium" in low_note or "luxury" in low_note:
+        chosen = "Luxury Implant Studio"
+
+    draft_msg = (
+        f"Namaste {doc} Ji, thank you for speaking with me today regarding *{lead.name}* ({lead.locality})!\n\n"
+        f"As discussed ({call_note}), here is the direct link to your 3 custom website previews "
+        f"(especially the {chosen} layout):\n{demo_url}\n\n"
+        f"Shall I connect with you at the scheduled time to finalize your preferred layout?"
+    )
+
+    lead.next_action = next_act
+    lead.next_action_due_at = due_at
+    lead.what_changed_summary = f"Post-call follow-up drafted & task scheduled for {due_at.strftime('%d %b %H:%M')}."
+    db.commit()
+
+    emit_terminal_log("POST-CALL-DRAFT", f"Drafted follow-up & locked task for '{lead.name}' -> {next_act}")
+    return {
+        "lead_id": lead.id,
+        "draft_message": draft_msg,
+        "next_action": next_act,
+        "next_action_due_at": due_at.isoformat(),
+        "commitments_created": len(proposals),
+    }
+
+
+@app.post("/api/assistant/ask-do")
+def assistant_ask_or_do(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    """
+    Phase 4 In-App AI Assistant: Ask & Do Modes (Page 11 of Build Plan).
+    - Ask Mode: Queries leads, demo views, stages, and stock plan in plain English and returns matching records.
+    - Do Mode: Performs safe CRM mutations (moving lead stage, snoozing lead, updating daily limit or autonomy mode)
+      and pushes an undo snapshot onto `ASSISTANT_UNDO_STACK` so the user can 1-click undo.
+    """
+    mode = str(payload.get("mode") or "ask").lower().strip()
+    prompt = str(payload.get("prompt") or "").strip()
+    hustle_id = int(payload.get("hustle_id") or 1)
+    if not prompt:
+        raise HTTPException(status_code=422, detail="prompt is required.")
+
+    hustle = db.query(Hustle).filter(Hustle.id == hustle_id).first()
+    leads = (
+        db.query(Lead)
+        .options(joinedload(Lead.stage_rel), joinedload(Lead.events), joinedload(Lead.commitments))
+        .filter(Lead.hustle_id == hustle_id, Lead.is_archived == False)  # noqa: E712
+        .all()
+    )
+    low = prompt.lower()
+
+    if mode == "do":
+        # 1. Check if changing daily limit: e.g. "set daily whatsapp limit to 20"
+        m_limit = re.search(r"(?:limit|cap).*?(\d+)", low)
+        if m_limit and hustle:
+            new_limit = int(m_limit.group(1))
+            ch = "instagram" if "insta" in low or "ig" in low else ("email" if "email" in low else "whatsapp")
+            old_limits = dict(hustle.channel_limits or {})
+            undo_id = len(ASSISTANT_UNDO_STACK) + 1
+            ASSISTANT_UNDO_STACK.append(
+                {"undo_id": undo_id, "type": "hustle_limits", "hustle_id": hustle.id, "old_limits": old_limits}
+            )
+            updated_limits = dict(old_limits)
+            updated_limits[ch] = new_limit
+            hustle.channel_limits = updated_limits
+            db.commit()
+            emit_terminal_log("AI-DO", f"Updated {ch.upper()} daily limit -> {new_limit}/day (Undo #{undo_id})")
+            return {
+                "mode": "do",
+                "reply": f"Updated {ch.upper()} daily send limit to {new_limit}/day.",
+                "undo_id": undo_id,
+                "matched_leads": [],
+            }
+
+        # 2. Check if toggling autonomy mode: e.g. "switch to autopilot" or "switch to copilot"
+        if ("autopilot" in low or "copilot" in low) and hustle and any(w in low for w in ["switch", "set", "mode", "turn"]):
+            new_mode = "autopilot" if "autopilot" in low else "copilot"
+            old_mode = hustle.autonomy_mode
+            undo_id = len(ASSISTANT_UNDO_STACK) + 1
+            ASSISTANT_UNDO_STACK.append(
+                {"undo_id": undo_id, "type": "autonomy_mode", "hustle_id": hustle.id, "old_mode": old_mode}
+            )
+            hustle.autonomy_mode = new_mode
+            db.commit()
+            emit_terminal_log("AI-DO", f"Switched Hustle autonomy mode -> {new_mode.upper()} (Undo #{undo_id})")
+            return {
+                "mode": "do",
+                "reply": f"Switched '{hustle.name}' autonomy mode from {old_mode.upper()} to {new_mode.upper()}.",
+                "undo_id": undo_id,
+                "matched_leads": [],
+            }
+
+        # 3. Match target lead by name or ID
+        target_lead: Optional[Lead] = None
+        for l in leads:
+            short_n = re.split(r"[-|:]", l.name)[0].strip().lower()
+            if short_n and short_n in low:
+                target_lead = l
+                break
+            for word in short_n.split():
+                if len(word) >= 4 and word not in ("dental", "clinic", "care", "doctor", "dr") and word in low:
+                    target_lead = l
+                    break
+            if target_lead:
+                break
+
+        if not target_lead and leads:
+            target_lead = leads[0]
+
+        if target_lead:
+            old_stage_id = target_lead.stage_id
+            old_next_action = target_lead.next_action
+            old_due = target_lead.next_action_due_at
+
+            # Check stage move
+            stages = db.query(Stage).filter(Stage.hustle_id == hustle_id).all()
+            matched_stage: Optional[Stage] = None
+            for st in stages:
+                if st.slug.replace("_", " ") in low or st.name.lower() in low or st.slug in low:
+                    matched_stage = st
+                    break
+            if not matched_stage:
+                if "replied" in low or "warm" in low:
+                    matched_stage = next((s for s in stages if s.slug == "replied"), None)
+                elif "viewed" in low or "hot" in low:
+                    matched_stage = next((s for s in stages if s.slug == "viewed_demo"), None)
+                elif "contacted" in low or "sent" in low:
+                    matched_stage = next((s for s in stages if s.slug == "contacted"), None)
+                elif "won" in low:
+                    matched_stage = next((s for s in stages if s.is_won), None)
+
+            m_days = re.search(r"(\d+)\s*day", low)
+            snooze_days = int(m_days.group(1)) if m_days else (1 if "tomorrow" in low else 0)
+
+            undo_id = len(ASSISTANT_UNDO_STACK) + 1
+            ASSISTANT_UNDO_STACK.append(
+                {
+                    "undo_id": undo_id,
+                    "type": "lead_mutation",
+                    "lead_id": target_lead.id,
+                    "old_stage_id": old_stage_id,
+                    "old_next_action": old_next_action,
+                    "old_due": old_due,
+                }
+            )
+
+            changes_desc: List[str] = []
+            if matched_stage:
+                target_lead.stage_id = matched_stage.id
+                changes_desc.append(f"moved to stage '{matched_stage.name}'")
+            if snooze_days > 0:
+                new_due = datetime.now(timezone.utc) + timedelta(days=snooze_days)
+                target_lead.next_action_due_at = new_due
+                target_lead.next_action = f"Follow up after {snooze_days}d snooze"
+                changes_desc.append(f"snoozed for {snooze_days} days")
+            if not changes_desc:
+                target_lead.next_action = prompt
+                target_lead.next_action_due_at = datetime.now(timezone.utc) + timedelta(days=1)
+                changes_desc.append(f"updated next step to '{prompt}'")
+
+            target_lead.what_changed_summary = f"AI Do: {', '.join(changes_desc)}."
+            db.commit()
+            emit_terminal_log("AI-DO", f"Updated '{target_lead.name}': {', '.join(changes_desc)} (Undo #{undo_id})")
+            return {
+                "mode": "do",
+                "reply": f"Done! '{target_lead.name}' {', '.join(changes_desc)}.",
+                "undo_id": undo_id,
+                "matched_leads": [
+                    {
+                        "id": target_lead.id,
+                        "name": target_lead.name,
+                        "locality": target_lead.locality,
+                        "stage": matched_stage.name if matched_stage else (target_lead.stage_rel.name if target_lead.stage_rel else ""),
+                        "fit_score": target_lead.fit_score,
+                        "intent_score": target_lead.intent_score,
+                    }
+                ],
+            }
+
+    # ASK MODE: Search & filter leads + answer question
+    matched: List[Lead] = []
+    if "warm" in low or "modern" in low or "premium" in low:
+        design_q = "warm" if "warm" in low else ("premium" if "premium" in low else "modern")
+        matched = [
+            l for l in leads if any((e.design_chosen or "").lower() == design_q for e in (l.events or []))
+        ]
+        if not matched:
+            matched = [l for l in leads if l.intent_score > 0]
+    elif "hot" in low or "view" in low or "intent" in low:
+        matched = sorted([l for l in leads if l.intent_score > 0 or (l.events and len(l.events) > 0)], key=lambda x: x.intent_score, reverse=True)
+    elif "ready" in low or "review" in low or "stock" in low:
+        matched = [l for l in leads if l.stage_rel and l.stage_rel.slug == "package_ready"]
+    elif "replied" in low:
+        matched = [l for l in leads if l.stage_rel and l.stage_rel.slug == "replied"]
+    else:
+        # Match by locality, doctor, or clinic name keywords
+        keywords = [w for w in re.findall(r"[a-z0-9]+", low) if len(w) >= 3 and w not in ("which", "show", "leads", "clinics", "the", "with", "what", "who", "are", "all", "for")]
+        if keywords:
+            matched = [
+                l
+                for l in leads
+                if any(kw in f"{l.name} {l.locality} {l.doctor_name}".lower() for kw in keywords)
+            ]
+        if not matched:
+            matched = sorted(leads, key=lambda x: (x.intent_score + x.fit_score), reverse=True)[:5]
+
+    plan = compute_stock_plan(db, hustle) if hustle else {}
+    reply_text = (
+        f"Found {len(matched)} matching clinic(s) out of {len(leads)} active leads in '{hustle.name if hustle else 'Pipeline'}'. "
+        f"Current Ready Buffer: {plan.get('current_ready_packages', 0)}/{plan.get('required_ready_packages', 0)} packages."
+    )
+
+    return {
+        "mode": "ask",
+        "reply": reply_text,
+        "undo_id": None,
+        "matched_leads": [
+            {
+                "id": l.id,
+                "name": l.name,
+                "doctor_name": l.doctor_name,
+                "locality": l.locality,
+                "stage": l.stage_rel.name if l.stage_rel else "",
+                "fit_score": l.fit_score,
+                "intent_score": l.intent_score,
+                "next_action": l.next_action,
+            }
+            for l in matched[:6]
+        ],
+    }
+
+
+@app.post("/api/assistant/undo")
+def assistant_undo_last_action(payload: Optional[Dict[str, Any]] = None, db: Session = Depends(get_db)):
+    """Reverts the most recent (or specified `undo_id`) Do-mode mutation."""
+    if not ASSISTANT_UNDO_STACK:
+        raise HTTPException(status_code=404, detail="No assistant actions to undo.")
+
+    target_id = (payload or {}).get("undo_id")
+    item = None
+    if target_id:
+        for idx, entry in enumerate(ASSISTANT_UNDO_STACK):
+            if entry["undo_id"] == target_id:
+                item = ASSISTANT_UNDO_STACK.pop(idx)
+                break
+    if not item:
+        item = ASSISTANT_UNDO_STACK.pop()
+
+    if item["type"] == "hustle_limits":
+        h = db.query(Hustle).filter(Hustle.id == item["hustle_id"]).first()
+        if h:
+            h.channel_limits = item["old_limits"]
+            db.commit()
+            return {"status": "undone", "message": "Reverted channel daily limits."}
+
+    if item["type"] == "autonomy_mode":
+        h = db.query(Hustle).filter(Hustle.id == item["hustle_id"]).first()
+        if h:
+            h.autonomy_mode = item["old_mode"]
+            db.commit()
+            return {"status": "undone", "message": f"Reverted autonomy mode back to {item['old_mode'].upper()}."}
+
+    if item["type"] == "lead_mutation":
+        l = db.query(Lead).filter(Lead.id == item["lead_id"]).first()
+        if l:
+            l.stage_id = item["old_stage_id"]
+            l.next_action = item["old_next_action"]
+            l.next_action_due_at = item["old_due"]
+            db.commit()
+            return {"status": "undone", "message": f"Reverted changes on '{l.name}'."}
+
+    return {"status": "undone", "message": "Action reverted."}
+
+
 
