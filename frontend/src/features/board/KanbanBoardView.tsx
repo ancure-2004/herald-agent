@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import {
+  ArrowRight,
   ArrowUpDown,
   Calendar,
   CheckCircle2,
@@ -52,7 +53,105 @@ export function KanbanBoardView() {
 
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const totalInView = useMemo(() => {
+  const isAllActive = activeSmartView === "all_active";
+
+  // Smart view metadata configuration
+  const smartViewConfig: Record<
+    string,
+    { label: string; icon: React.ComponentType<{ className?: string }>; color: string; description: string }
+  > = {
+    all_active: {
+      label: "All Active Pipeline",
+      icon: LayoutGrid,
+      color: "text-indigo-500",
+      description: "Full-scale pipeline overview across all active deal stages",
+    },
+    review_tray: {
+      label: "Review Tray (Ready to Pitch)",
+      icon: CheckCircle2,
+      color: "text-emerald-500",
+      description: "Clinics with completed demo packages staged and awaiting pitch dispatch",
+    },
+    due_today: {
+      label: "Due Today & Overdue",
+      icon: Clock,
+      color: "text-amber-500",
+      description: "High-priority outreach and follow-up tasks scheduled for today",
+    },
+    hot_intent: {
+      label: "Hot Demo Viewers",
+      icon: Flame,
+      color: "text-rose-500",
+      description: "Clinics showing strong buying intent and active demo engagement",
+    },
+    replied_warm: {
+      label: "Active Replies",
+      icon: MessageSquare,
+      color: "text-blue-500",
+      description: "Interested dental clinics with active inbound replies",
+    },
+  };
+
+  const currentViewInfo = smartViewConfig[activeSmartView] || {
+    label: activeSmartView.replace(/_/g, " ").toUpperCase(),
+    icon: LayoutGrid,
+    color: "text-indigo-500",
+    description: "Filtered subset of pipeline leads",
+  };
+  const CurrentViewIcon = currentViewInfo.icon;
+
+  // Filtered leads for the focused list view
+  const focusedLeads = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    const candidateLeads = leads.filter((lead) => {
+      if (activeSmartView === "review_tray") {
+        const stage = activeHustle?.stages.find((s) => s.id === lead.stage_id);
+        if (stage && stage.slug !== "package_ready" && stage.slug !== "review_tray") return false;
+      } else if (activeSmartView === "due_today") {
+        if (!lead.next_action_due_at) return false;
+        const due = new Date(lead.next_action_due_at).getTime();
+        if (due > Date.now() + 24 * 3600 * 1000) return false;
+      } else if (activeSmartView === "hot_intent") {
+        const hasViews = ((lead as any).demo_views_count ?? lead.events?.length ?? 0) > 0;
+        if (lead.intent_score < 40 && !hasViews) return false;
+      } else if (activeSmartView === "replied_warm") {
+        const stage = activeHustle?.stages.find((s) => s.id === lead.stage_id);
+        if (stage && stage.slug !== "replied") return false;
+      }
+      return true;
+    });
+
+    // If client filter was stricter than backend-returned dataset, fallback to leads
+    const baseSet = candidateLeads.length > 0 || isAllActive ? candidateLeads : leads;
+
+    return baseSet
+      .filter((l) => (filterMinFit > 0 ? l.fit_score >= filterMinFit : true))
+      .filter((l) => (filterVerifiedOnly ? l.facts?.some((f) => f.verified_by_two_sources) : true))
+      .filter((l) => {
+        if (!query) return true;
+        return (
+          l.name.toLowerCase().includes(query) ||
+          (l.doctor_name && l.doctor_name.toLowerCase().includes(query)) ||
+          (l.locality && l.locality.toLowerCase().includes(query))
+        );
+      })
+      .sort((a, b) => {
+        if (sortBy === "fit") return sortOrder === "asc" ? a.fit_score - b.fit_score : b.fit_score - a.fit_score;
+        if (sortBy === "intent") return sortOrder === "asc" ? a.intent_score - b.intent_score : b.intent_score - a.intent_score;
+        if (sortBy === "deal") return sortOrder === "asc" ? (a.deal_value_inr || 25000) - (b.deal_value_inr || 25000) : (b.deal_value_inr || 25000) - (a.deal_value_inr || 25000);
+        if (sortBy === "name") return sortOrder === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+        if (sortBy === "due") {
+          const dA = a.next_action_due_at ? new Date(a.next_action_due_at).getTime() : 0;
+          const dB = b.next_action_due_at ? new Date(b.next_action_due_at).getTime() : 0;
+          return sortOrder === "asc" ? dA - dB : dB - dA;
+        }
+        return 0;
+      });
+  }, [leads, activeSmartView, activeHustle?.stages, isAllActive, filterMinFit, filterVerifiedOnly, searchQuery, sortBy, sortOrder]);
+
+  // Overall count for Total in View badge
+  const totalCount = useMemo(() => {
+    if (!isAllActive) return focusedLeads.length;
     const query = searchQuery.trim().toLowerCase();
     return leads.filter((l) => {
       if (filterMinFit > 0 && l.fit_score < filterMinFit) return false;
@@ -65,7 +164,7 @@ export function KanbanBoardView() {
       }
       return true;
     }).length;
-  }, [leads, filterMinFit, filterVerifiedOnly, searchQuery]);
+  }, [leads, isAllActive, focusedLeads.length, filterMinFit, filterVerifiedOnly, searchQuery]);
 
   if (!activeHustle) return null;
 
@@ -244,259 +343,404 @@ export function KanbanBoardView() {
         {/* Total In View Badge */}
         <div className="flex items-center gap-2 text-xs">
           <div className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 font-medium">
-            Total in view: <strong className="text-slate-900 dark:text-white font-mono font-bold">{totalInView}</strong>
+            Total in view: <strong className="text-slate-900 dark:text-white font-mono font-bold">{totalCount}</strong>
           </div>
         </div>
       </div>
 
-      {/* Kanban Columns */}
-      <div className="flex gap-4 overflow-x-auto pb-6">
-        {activeHustle.stages.map((stage, sIdx) => {
-          const stageLeads = leads.filter((l) => l.stage_id === stage.id);
-          const query = searchQuery.trim().toLowerCase();
-          const filteredLeads = stageLeads
-            .filter((l) => (filterMinFit > 0 ? l.fit_score >= filterMinFit : true))
-            .filter((l) => (filterVerifiedOnly ? l.facts?.some((f) => f.verified_by_two_sources) : true))
-            .filter((l) => {
-              if (!query) return true;
-              return (
-                l.name.toLowerCase().includes(query) ||
-                (l.doctor_name && l.doctor_name.toLowerCase().includes(query)) ||
-                (l.locality && l.locality.toLowerCase().includes(query))
-              );
-            })
-            .sort((a, b) => {
-              if (sortBy === "fit") return sortOrder === "asc" ? a.fit_score - b.fit_score : b.fit_score - a.fit_score;
-              if (sortBy === "intent") return sortOrder === "asc" ? a.intent_score - b.intent_score : b.intent_score - a.intent_score;
-              if (sortBy === "deal") return sortOrder === "asc" ? (a.deal_value_inr || 25000) - (b.deal_value_inr || 25000) : (b.deal_value_inr || 25000) - (a.deal_value_inr || 25000);
-              if (sortBy === "name") return sortOrder === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
-              if (sortBy === "due") {
-                const dA = a.next_action_due_at ? new Date(a.next_action_due_at).getTime() : 0;
-                const dB = b.next_action_due_at ? new Date(b.next_action_due_at).getTime() : 0;
-                return sortOrder === "asc" ? dA - dB : dB - dA;
-              }
-              return 0;
-            });
-
-          const stageColors = [
-            "bg-indigo-500 text-indigo-500",
-            "bg-amber-500 text-amber-500",
-            "bg-emerald-500 text-emerald-500",
-            "bg-blue-500 text-blue-500",
-            "bg-purple-500 text-purple-500",
-            "bg-rose-500 text-rose-500",
-          ];
-          const dotColor = stageColors[sIdx % stageColors.length];
-
-          return (
-            <div
-              key={stage.id}
-              onDragOver={(e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = "move";
-                if (dragOverStageId !== stage.id) {
-                  setDragOverStageId(stage.id);
+      {/* DUAL DISPLAY MODE: Full-Scale Kanban for All Active vs Focused List View for Smart Filters */}
+      {isAllActive ? (
+        /* ==================== 1. FULL-SCALE KANBAN COLUMNS ==================== */
+        <div className="flex gap-4 overflow-x-auto pb-6">
+          {activeHustle.stages.map((stage, sIdx) => {
+            const stageLeads = leads.filter((l) => l.stage_id === stage.id);
+            const query = searchQuery.trim().toLowerCase();
+            const filteredLeads = stageLeads
+              .filter((l) => (filterMinFit > 0 ? l.fit_score >= filterMinFit : true))
+              .filter((l) => (filterVerifiedOnly ? l.facts?.some((f) => f.verified_by_two_sources) : true))
+              .filter((l) => {
+                if (!query) return true;
+                return (
+                  l.name.toLowerCase().includes(query) ||
+                  (l.doctor_name && l.doctor_name.toLowerCase().includes(query)) ||
+                  (l.locality && l.locality.toLowerCase().includes(query))
+                );
+              })
+              .sort((a, b) => {
+                if (sortBy === "fit") return sortOrder === "asc" ? a.fit_score - b.fit_score : b.fit_score - a.fit_score;
+                if (sortBy === "intent") return sortOrder === "asc" ? a.intent_score - b.intent_score : b.intent_score - a.intent_score;
+                if (sortBy === "deal") return sortOrder === "asc" ? (a.deal_value_inr || 25000) - (b.deal_value_inr || 25000) : (b.deal_value_inr || 25000) - (a.deal_value_inr || 25000);
+                if (sortBy === "name") return sortOrder === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+                if (sortBy === "due") {
+                  const dA = a.next_action_due_at ? new Date(a.next_action_due_at).getTime() : 0;
+                  const dB = b.next_action_due_at ? new Date(b.next_action_due_at).getTime() : 0;
+                  return sortOrder === "asc" ? dA - dB : dB - dA;
                 }
-              }}
-              onDragLeave={(e) => {
-                if (e.currentTarget.contains(e.relatedTarget as Node)) return;
-                setDragOverStageId(null);
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDragOverStageId(null);
-                const leadIdStr = e.dataTransfer.getData("text/plain");
-                const leadId = Number(leadIdStr) || draggingLeadId;
-                if (!leadId) return;
-                const targetLead = leads.find((l) => l.id === leadId);
-                if (targetLead && targetLead.stage_id !== stage.id) {
-                  handleStageChange(targetLead, stage.id);
-                }
-              }}
-              className={`w-80 shrink-0 rounded-2xl backdrop-blur-xl border flex flex-col max-h-[calc(100vh-210px)] shadow-xs transition-all ${
-                dragOverStageId === stage.id
-                  ? "bg-indigo-50/50 dark:bg-indigo-950/40 border-indigo-500 ring-2 ring-indigo-500/40 shadow-md"
-                  : "bg-slate-100/70 dark:bg-[#0E1017] border-slate-200/80 dark:border-white/[0.06]"
-              }`}
-            >
-              {/* Column Header (CustomerGo Style) */}
-              <div className="p-3.5 border-b border-slate-200/80 dark:border-white/[0.06] bg-white/60 dark:bg-[#12141D] flex items-center justify-between rounded-t-2xl">
-                <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${dotColor.split(" ")[0]}`}></span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-100 tracking-wide">{stage.name}</span>
+                return 0;
+              });
+
+            const stageColors = [
+              "bg-indigo-500 text-indigo-500",
+              "bg-amber-500 text-amber-500",
+              "bg-emerald-500 text-emerald-500",
+              "bg-blue-500 text-blue-500",
+              "bg-purple-500 text-purple-500",
+              "bg-rose-500 text-rose-500",
+            ];
+            const dotColor = stageColors[sIdx % stageColors.length];
+
+            return (
+              <div
+                key={stage.id}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  if (dragOverStageId !== stage.id) {
+                    setDragOverStageId(stage.id);
+                  }
+                }}
+                onDragLeave={(e) => {
+                  if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+                  setDragOverStageId(null);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOverStageId(null);
+                  const leadIdStr = e.dataTransfer.getData("text/plain");
+                  const leadId = Number(leadIdStr) || draggingLeadId;
+                  if (!leadId) return;
+                  const targetLead = leads.find((l) => l.id === leadId);
+                  if (targetLead && targetLead.stage_id !== stage.id) {
+                    handleStageChange(targetLead, stage.id);
+                  }
+                }}
+                className={`w-80 shrink-0 rounded-2xl backdrop-blur-xl border flex flex-col max-h-[calc(100vh-210px)] shadow-xs transition-all ${
+                  dragOverStageId === stage.id
+                    ? "bg-indigo-50/50 dark:bg-indigo-950/40 border-indigo-500 ring-2 ring-indigo-500/40 shadow-md"
+                    : "bg-slate-100/70 dark:bg-[#0E1017] border-slate-200/80 dark:border-white/[0.06]"
+                }`}
+              >
+                {/* Column Header (CustomerGo Style) */}
+                <div className="p-3.5 border-b border-slate-200/80 dark:border-white/[0.06] bg-white/60 dark:bg-[#12141D] flex items-center justify-between rounded-t-2xl">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${dotColor.split(" ")[0]}`}></span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-100 tracking-wide">{stage.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/[0.08]">
+                      {filteredLeads.length}
+                    </span>
+                    <button
+                      onClick={() => setNewLeadModalOpen(true)}
+                      className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
+                      title="Add lead to this stage"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/[0.08]">
-                    {filteredLeads.length}
-                  </span>
-                  <button
-                    onClick={() => setNewLeadModalOpen(true)}
-                    className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
-                    title="Add lead to this stage"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
+
+                {/* Column Cards Container */}
+                <div className="p-3 space-y-3 overflow-y-auto flex-1">
+                  {filteredLeads.length === 0 ? (
+                    <div className="py-12 text-center text-xs text-slate-400 dark:text-slate-500 flex flex-col items-center justify-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-slate-200/60 dark:bg-slate-800/40 flex items-center justify-center border border-slate-300/40 dark:border-white/[0.04]">
+                        <Plus className="w-4 h-4 text-slate-400" />
+                      </div>
+                      <span>No leads in this stage</span>
+                    </div>
+                  ) : (
+                    filteredLeads.map((lead) => {
+                      const isSelected = selectedLeadId === lead.id;
+                      const stars = Math.min(5, Math.max(1, Math.round(lead.fit_score / 20)));
+
+                      return (
+                        <div
+                          key={lead.id}
+                          draggable
+                          onDragStart={(e) => {
+                            setDraggingLeadId(lead.id);
+                            e.dataTransfer.setData("text/plain", String(lead.id));
+                            e.dataTransfer.effectAllowed = "move";
+                          }}
+                          onDragEnd={() => {
+                            setDraggingLeadId(null);
+                            setDragOverStageId(null);
+                          }}
+                          onClick={() => {
+                            if (!draggingLeadId) setSelectedLeadId(lead.id);
+                          }}
+                          className={`p-4 rounded-2xl border transition-all duration-200 cursor-grab active:cursor-grabbing space-y-3 group ${
+                            draggingLeadId === lead.id
+                              ? "border-2 border-dashed border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 opacity-60 scale-95 shadow-none"
+                              : isSelected
+                              ? "bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500 shadow-md ring-2 ring-indigo-500/40"
+                              : "bg-white dark:bg-[#181B26] hover:bg-slate-50/90 dark:hover:bg-[#1F2332] border-slate-200/90 dark:border-white/[0.08] hover:border-indigo-400 dark:hover:border-indigo-500/50 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-card hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {/* Lead Header & Estimated Deal Value */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-xs text-indigo-600 dark:text-indigo-400 shrink-0">
+                                {lead.name.slice(0, 2).toUpperCase()}
+                              </div>
+                              <div className="space-y-0.5">
+                                <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">
+                                  {lead.name}
+                                </div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                  <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                                  <span className="truncate max-w-[150px]">{lead.locality || lead.city}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2 py-0.5 rounded-lg">
+                                ₹{lead.deal_value_inr || 25000}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* CustomerGo Pastel Pill Tags */}
+                          <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                            <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20 font-semibold">
+                              Dental Clinic
+                            </span>
+                            {lead.doctor_name && (
+                              <span className="px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/20 font-medium truncate max-w-[120px]">
+                                {lead.doctor_name}
+                              </span>
+                            )}
+                            {lead.do_not_contact ? (
+                              <span className="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/20 font-bold">
+                                DNC
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 font-medium">
+                                Verified
+                              </span>
+                            )}
+                          </div>
+
+                          {/* 5-Star Rating & Fit Score */}
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-white/[0.04]">
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <Star
+                                  key={s}
+                                  className={`w-3 h-3 ${
+                                    s <= stars
+                                      ? "text-amber-400 fill-amber-400"
+                                      : "text-slate-300 dark:text-slate-700"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                              Fit: <strong className="text-slate-800 dark:text-slate-200">{lead.fit_score}%</strong>
+                            </span>
+                          </div>
+
+                          {/* Next Action Box */}
+                          {lead.next_action && (
+                            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#10121A] border border-slate-200/80 dark:border-white/[0.06] text-[11px] text-slate-700 dark:text-slate-300 flex items-start gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                              <div className="leading-relaxed">
+                                <span className="text-indigo-600 dark:text-indigo-400 font-semibold">Next: </span>
+                                {lead.next_action}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Card Footer: Metadata Counters */}
+                          <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400 dark:text-slate-500">
+                            <div className="flex items-center gap-3">
+                              <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
+                                <MessageSquare className="w-3 h-3" />
+                                <span>{lead.messages?.length || 0}</span>
+                              </span>
+                              <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
+                                <Eye className="w-3 h-3" />
+                                <span>{((lead as any).demo_views_count ?? lead.events?.length ?? 0)}</span>
+                              </span>
+                              <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
+                                <ShieldCheck className="w-3 h-3" />
+                                <span>{lead.facts?.length || 0}</span>
+                              </span>
+                            </div>
+                            {lead.next_action_due_at && (
+                              <span className="flex items-center gap-1 font-mono text-[10px]">
+                                <Calendar className="w-3 h-3 text-slate-400" />
+                                <span>{new Date(lead.next_action_due_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Quick Review Tray Approve Button if in package_ready */}
+                          {stage.slug === "package_ready" && !lead.do_not_contact && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleApproveAndSend(lead);
+                              }}
+                              className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all cursor-pointer"
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              <span>Approve & Send Pitch</span>
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
-
-              {/* Column Cards Container */}
-              <div className="p-3 space-y-3 overflow-y-auto flex-1">
-                {filteredLeads.length === 0 ? (
-                  <div className="py-12 text-center text-xs text-slate-400 dark:text-slate-500 flex flex-col items-center justify-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-slate-200/60 dark:bg-slate-800/40 flex items-center justify-center border border-slate-300/40 dark:border-white/[0.04]">
-                      <Plus className="w-4 h-4 text-slate-400" />
-                    </div>
-                    <span>No leads in this stage</span>
-                  </div>
-                ) : (
-                  filteredLeads.map((lead) => {
-                    const isSelected = selectedLeadId === lead.id;
-                    const stars = Math.min(5, Math.max(1, Math.round(lead.fit_score / 20)));
-
-                    return (
-                      <div
-                        key={lead.id}
-                        draggable
-                        onDragStart={(e) => {
-                          setDraggingLeadId(lead.id);
-                          e.dataTransfer.setData("text/plain", String(lead.id));
-                          e.dataTransfer.effectAllowed = "move";
-                        }}
-                        onDragEnd={() => {
-                          setDraggingLeadId(null);
-                          setDragOverStageId(null);
-                        }}
-                        onClick={() => {
-                          if (!draggingLeadId) setSelectedLeadId(lead.id);
-                        }}
-                        className={`p-4 rounded-2xl border transition-all duration-200 cursor-grab active:cursor-grabbing space-y-3 group ${
-                          draggingLeadId === lead.id
-                            ? "border-2 border-dashed border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 opacity-60 scale-95 shadow-none"
-                            : isSelected
-                            ? "bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500 shadow-md ring-2 ring-indigo-500/40"
-                            : "bg-white dark:bg-[#181B26] hover:bg-slate-50/90 dark:hover:bg-[#1F2332] border-slate-200/90 dark:border-white/[0.08] hover:border-indigo-400 dark:hover:border-indigo-500/50 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-card hover:-translate-y-0.5"
-                        }`}
-                      >
-                        {/* Lead Header & Estimated Deal Value */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-start gap-2.5">
-                            <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-xs text-indigo-600 dark:text-indigo-400 shrink-0">
-                              {lead.name.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div className="space-y-0.5">
-                              <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">
-                                {lead.name}
-                              </div>
-                              <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                                <span className="truncate max-w-[150px]">{lead.locality || lead.city}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2 py-0.5 rounded-lg">
-                              ₹{lead.deal_value_inr || 25000}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* CustomerGo Pastel Pill Tags */}
-                        <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
-                          <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20 font-semibold">
-                            Dental Clinic
-                          </span>
-                          {lead.doctor_name && (
-                            <span className="px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/20 font-medium truncate max-w-[120px]">
-                              {lead.doctor_name}
-                            </span>
-                          )}
-                          {lead.do_not_contact ? (
-                            <span className="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/20 font-bold">
-                              DNC
-                            </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 font-medium">
-                              Verified
-                            </span>
-                          )}
-                        </div>
-
-                        {/* 5-Star Rating & Fit Score */}
-                        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-white/[0.04]">
-                          <div className="flex items-center gap-0.5">
-                            {[1, 2, 3, 4, 5].map((s) => (
-                              <Star
-                                key={s}
-                                className={`w-3 h-3 ${
-                                  s <= stars
-                                    ? "text-amber-400 fill-amber-400"
-                                    : "text-slate-300 dark:text-slate-700"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
-                            Fit: <strong className="text-slate-800 dark:text-slate-200">{lead.fit_score}%</strong>
-                          </span>
-                        </div>
-
-                        {/* Next Action Box */}
-                        {lead.next_action && (
-                          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#10121A] border border-slate-200/80 dark:border-white/[0.06] text-[11px] text-slate-700 dark:text-slate-300 flex items-start gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
-                            <div className="leading-relaxed">
-                              <span className="text-indigo-600 dark:text-indigo-400 font-semibold">Next: </span>
-                              {lead.next_action}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Card Footer: Metadata Counters (like CustomerGo's [2] [2] [2]) */}
-                        <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400 dark:text-slate-500">
-                          <div className="flex items-center gap-3">
-                            <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>{lead.messages?.length || 0}</span>
-                            </span>
-                            <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
-                              <Eye className="w-3 h-3" />
-                              <span>{((lead as any).demo_views_count ?? lead.events?.length ?? 0)}</span>
-                            </span>
-                            <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
-                              <ShieldCheck className="w-3 h-3" />
-                              <span>{lead.facts?.length || 0}</span>
-                            </span>
-                          </div>
-                          {lead.next_action_due_at && (
-                            <span className="flex items-center gap-1 font-mono text-[10px]">
-                              <Calendar className="w-3 h-3 text-slate-400" />
-                              <span>{new Date(lead.next_action_due_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Quick Review Tray Approve Button if in package_ready */}
-                        {stage.slug === "package_ready" && !lead.do_not_contact && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleApproveAndSend(lead);
-                            }}
-                            className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all cursor-pointer"
-                          >
-                            <Send className="w-3.5 h-3.5" />
-                            <span>Approve & Send Pitch</span>
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
+            );
+          })}
+        </div>
+      ) : (
+        /* ==================== 2. FOCUSED LIST VIEW FOR SMART FILTERS ==================== */
+        <div className="space-y-4 pb-6">
+          {/* Header Banner / Chip */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-white/90 dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs backdrop-blur-md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] flex items-center justify-center">
+                <CurrentViewIcon className={`w-5 h-5 ${currentViewInfo.color}`} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    {currentViewInfo.label}
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20">
+                    {focusedLeads.length} in queue
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {currentViewInfo.description}
+                </p>
               </div>
             </div>
-          );
-        })}
-      </div>
+
+            <button
+              onClick={() => setActiveSmartView("all_active")}
+              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <span>← Back to All Active Kanban</span>
+            </button>
+          </div>
+
+          {/* Focused List Rows / Empty State */}
+          {focusedLeads.length === 0 ? (
+            <div className="p-12 text-center rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+                <CurrentViewIcon className="w-6 h-6" />
+              </div>
+              <div className="text-sm font-bold text-slate-900 dark:text-white">
+                No leads found in &quot;{currentViewInfo.label}&quot;
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                There are currently no active leads matching this smart view filter or search criteria.
+              </p>
+              <button
+                onClick={() => setActiveSmartView("all_active")}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-indigo-600/20"
+              >
+                View All Active Pipeline
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {focusedLeads.map((lead) => {
+                const stage = activeHustle.stages.find((s) => s.id === lead.stage_id);
+                return (
+                  <div
+                    key={lead.id}
+                    onClick={() => setSelectedLeadId(lead.id)}
+                    className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-400 dark:hover:border-indigo-500/50 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                  >
+                    {/* Left: Clinic / Doctor info */}
+                    <div className="flex items-start gap-3 min-w-0 md:w-1/3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-xs text-indigo-600 dark:text-indigo-400 shrink-0">
+                        {lead.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
+                          {lead.name}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
+                          {lead.doctor_name && (
+                            <span className="font-medium text-slate-700 dark:text-slate-300">
+                              {lead.doctor_name} &bull;
+                            </span>
+                          )}
+                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate">{lead.locality || lead.city}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Middle: Stage & Scores & Next Action */}
+                    <div className="flex flex-wrap items-center gap-2 md:gap-4 flex-1">
+                      {/* Current Stage Badge */}
+                      <span className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/[0.06] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-white/[0.08]">
+                        {stage?.name || "Pipeline Lead"}
+                      </span>
+
+                      {/* AI Fit & Intent Badges */}
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-lg text-[11px] font-mono font-bold bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20">
+                          Fit: {lead.fit_score}%
+                        </span>
+                        <span className="px-2 py-0.5 rounded-lg text-[11px] font-mono font-bold bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/20">
+                          Intent: {lead.intent_score}%
+                        </span>
+                      </div>
+
+                      {/* Next Action & Due Date */}
+                      {lead.next_action && (
+                        <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1.5 max-w-xs truncate">
+                          <Clock className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                          <span className="truncate">
+                            <strong className="text-slate-800 dark:text-slate-200">Next: </strong>
+                            {lead.next_action}
+                          </span>
+                          {lead.next_action_due_at && (
+                            <span className="text-[10px] font-mono text-slate-400 shrink-0">
+                              ({new Date(lead.next_action_due_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })})
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right: Deal Value & Action Button */}
+                    <div className="flex items-center justify-between md:justify-end gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-white/[0.06]">
+                      <div className="text-right">
+                        <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2.5 py-1 rounded-xl">
+                          ₹{(lead.deal_value_inr || 25000).toLocaleString()}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedLeadId(lead.id);
+                        }}
+                        className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1 shadow-md shadow-indigo-600/25 transition-all cursor-pointer group-hover:scale-105"
+                      >
+                        <span>Inspect Deal</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
