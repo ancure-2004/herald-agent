@@ -13,7 +13,6 @@ import {
   MessageSquare,
   PanelLeft,
   PanelLeftClose,
-  Settings,
   Table as TableIcon,
   Zap,
 } from "lucide-react";
@@ -54,7 +53,6 @@ export function Sidebar() {
                 { id: "board", label: "Pipeline Board", icon: LayoutGrid },
                 { id: "table", label: "Leads Table", icon: TableIcon },
                 { id: "sprint", label: "Evening Sprint", icon: Zap },
-                { id: "settings", label: "Hustle Settings", icon: Settings },
               ].map((item) => {
                 const Icon = item.icon;
                 const active = activeTab === item.id;
@@ -116,7 +114,6 @@ export function Sidebar() {
                     { id: "board", label: "Pipeline Board", icon: LayoutGrid },
                     { id: "table", label: "Leads Table", icon: TableIcon },
                     { id: "sprint", label: "Evening Sprint", icon: Zap },
-                    { id: "settings", label: "Hustle Settings", icon: Settings },
                   ].map((item) => {
                     const Icon = item.icon;
                     const active = activeTab === item.id;
