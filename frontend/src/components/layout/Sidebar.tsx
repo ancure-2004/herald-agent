@@ -2,7 +2,6 @@
 
 import React from "react";
 import {
-  Activity,
   Archive,
   CheckCircle2,
   ChevronDown,
@@ -55,7 +54,6 @@ export function Sidebar() {
                 { id: "board", label: "Pipeline Board", icon: LayoutGrid },
                 { id: "table", label: "Leads Table", icon: TableIcon },
                 { id: "sprint", label: "Evening Sprint", icon: Zap },
-                { id: "autopilot", label: "Cockpit", icon: Activity },
                 { id: "settings", label: "Hustle Settings", icon: Settings },
               ].map((item) => {
                 const Icon = item.icon;
@@ -118,7 +116,6 @@ export function Sidebar() {
                     { id: "board", label: "Pipeline Board", icon: LayoutGrid },
                     { id: "table", label: "Leads Table", icon: TableIcon },
                     { id: "sprint", label: "Evening Sprint", icon: Zap },
-                    { id: "autopilot", label: "Cockpit", icon: Activity },
                     { id: "settings", label: "Hustle Settings", icon: Settings },
                   ].map((item) => {
                     const Icon = item.icon;
