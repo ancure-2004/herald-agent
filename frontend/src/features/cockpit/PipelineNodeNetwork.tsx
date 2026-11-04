@@ -34,8 +34,8 @@ export function PipelineNodeNetwork({
         );
       case "RUNNING":
         return (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping" />
             RUN
           </span>
         );
@@ -75,57 +75,153 @@ export function PipelineNodeNetwork({
     }
   };
 
+  // n8n-style vertical zig-zag offset classes
+  const getZigZagClass = (stepNumber: number) => {
+    switch (stepNumber) {
+      case 1:
+        return "xl:translate-y-0";
+      case 2:
+        return "xl:translate-y-8";
+      case 3:
+        return "xl:-translate-y-3";
+      case 4:
+        return "xl:translate-y-10";
+      case 5:
+        return "xl:-translate-y-2";
+      case 6:
+        return "xl:translate-y-6";
+      default:
+        return "xl:translate-y-0";
+    }
+  };
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 relative">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 relative py-3 xl:py-7">
       {nodes.map((node, idx) => {
         const isSelected = selectedNodeId === node.id;
+        const isRunning = node.status === "RUNNING";
+        const isSuccess = node.status === "SUCCESS";
+        const isFailed = node.status === "FAILED";
+
         return (
-          <div key={node.id} className="relative flex items-center">
+          <div
+            key={node.id}
+            className={`relative flex items-center transition-transform duration-300 ${getZigZagClass(node.stepNumber)}`}
+          >
             <div
               onClick={() => onSelectNode(node)}
-              className={`w-full p-3 rounded-2xl bg-white/90 dark:bg-[#141721]/90 backdrop-blur-md shadow-md border transition-all duration-200 cursor-pointer text-left select-none relative group ${
+              className={`w-full relative rounded-2xl cursor-pointer text-left select-none group transition-all duration-200 ${
                 isSelected
-                  ? "border-indigo-500 dark:border-indigo-400 shadow-indigo-500/10 scale-[1.02] ring-2 ring-indigo-500/20"
-                  : "border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-400/60 dark:hover:border-white/[0.18]"
+                  ? "scale-[1.02] ring-2 ring-indigo-500 shadow-xl shadow-indigo-500/15"
+                  : "hover:scale-[1.01]"
               }`}
             >
-              {/* Header: Icon + Stage Title + Status Pill */}
-              <div className="flex items-center justify-between gap-1 mb-1.5">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <div className="p-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.06] shrink-0">
-                    {getNodeIcon(node.stepNumber)}
-                  </div>
-                  <div className="truncate">
-                    <span className="text-[11px] font-black text-slate-900 dark:text-white truncate block">
-                      {node.stepNumber}. {node.name}
-                    </span>
-                  </div>
+              {/* Rotating Loading Ring Animation for Active RUNNING Nodes */}
+              {isRunning && (
+                <div className="absolute -inset-[2px] rounded-2xl overflow-hidden pointer-events-none z-0">
+                  <div
+                    className="w-[200%] h-[200%] -left-[50%] -top-[50%] absolute animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0_270deg,#6366f1_360deg)] opacity-100"
+                  />
                 </div>
-                {renderStatusPill(node.status)}
-              </div>
+              )}
 
-              {/* Subtitle / Tools */}
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate mb-2 font-medium">
-                {node.subtitle || node.tools}
-              </div>
+              {/* Input Port Dot (Left) */}
+              {node.stepNumber > 1 && (
+                <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-[#141721] flex items-center justify-center z-20 shadow-xs">
+                  <div
+                    className={`w-1 h-1 rounded-full ${
+                      isRunning
+                        ? "bg-amber-400 animate-ping"
+                        : isSuccess
+                        ? "bg-emerald-400"
+                        : "bg-slate-400"
+                    }`}
+                  />
+                </div>
+              )}
 
-              {/* Footer: Count badge + Inspect indicator */}
-              <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-white/[0.06] text-xs">
-                <span className="font-mono text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate max-w-[85px]">
-                  {node.badge}
-                </span>
-                <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 group-hover:underline flex items-center gap-0.5 shrink-0">
-                  Inspect →
-                </span>
+              {/* Output Port Dot (Right) */}
+              {node.stepNumber < 6 && (
+                <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-[#141721] flex items-center justify-center z-20 shadow-xs">
+                  <div
+                    className={`w-1 h-1 rounded-full ${
+                      isRunning
+                        ? "bg-amber-400"
+                        : isSuccess
+                        ? "bg-emerald-400"
+                        : "bg-slate-400"
+                    }`}
+                  />
+                </div>
+              )}
+
+              {/* Main Card Body */}
+              <div
+                className={`relative z-10 w-full p-3 rounded-2xl backdrop-blur-md shadow-md border transition-all ${
+                  isRunning
+                    ? "bg-white/95 dark:bg-[#141721]/95 border-transparent shadow-indigo-500/10"
+                    : isSuccess
+                    ? "bg-white/90 dark:bg-[#141721]/90 border-emerald-500/60 dark:border-emerald-500/50 shadow-xs shadow-emerald-500/10"
+                    : isFailed
+                    ? "bg-white/90 dark:bg-[#141721]/90 border-rose-500/60 dark:border-rose-500/50"
+                    : "bg-white/90 dark:bg-[#141721]/90 border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-400/50 dark:hover:border-white/[0.18]"
+                }`}
+              >
+                {/* Header: Icon + Stage Title + Status Pill */}
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <div className="p-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.06] shrink-0">
+                      {getNodeIcon(node.stepNumber)}
+                    </div>
+                    <div className="truncate">
+                      <span className="text-[11px] font-black text-slate-900 dark:text-white truncate block">
+                        {node.stepNumber}. {node.name}
+                      </span>
+                    </div>
+                  </div>
+                  {renderStatusPill(node.status)}
+                </div>
+
+                {/* Subtitle / Tools */}
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate mb-2 font-medium">
+                  {node.subtitle || node.tools}
+                </div>
+
+                {/* Footer: Count badge + Inspect indicator */}
+                <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-white/[0.06] text-xs">
+                  <span className="font-mono text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate max-w-[85px]">
+                    {node.badge}
+                  </span>
+                  <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 group-hover:underline flex items-center gap-0.5 shrink-0">
+                    Inspect →
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Connecting flow line to next node */}
+            {/* n8n-style port connector curve to next node */}
             {idx < nodes.length - 1 && (
-              <div className="hidden xl:flex absolute -right-3 z-10 w-3 items-center justify-center pointer-events-none">
-                <div className="w-full h-0.5 bg-indigo-500/30 dark:bg-indigo-400/30 relative">
-                  <span className="absolute -top-1 right-0 w-2 h-2 rounded-full bg-indigo-500 animate-ping opacity-75" />
-                </div>
+              <div className="hidden xl:block absolute -right-3 top-1/2 -translate-y-1/2 w-3 pointer-events-none z-10">
+                <svg className="w-3 h-12 overflow-visible" viewBox="0 0 12 40">
+                  <path
+                    d={
+                      idx === 0
+                        ? "M 0 20 C 6 20, 6 52, 12 52"
+                        : idx === 1
+                        ? "M 0 20 C 6 20, 6 -24, 12 -24"
+                        : idx === 2
+                        ? "M 0 20 C 6 20, 6 72, 12 72"
+                        : idx === 3
+                        ? "M 0 20 C 6 20, 6 -28, 12 -28"
+                        : "M 0 20 C 6 20, 6 52, 12 52"
+                    }
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeDasharray="3 3"
+                    className="text-indigo-500/40 dark:text-indigo-400/40 animate-pulse"
+                  />
+                </svg>
               </div>
             )}
           </div>
