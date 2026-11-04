@@ -61,6 +61,7 @@ export function AutopilotCockpitView() {
   const [targetLeads, setTargetLeads] = useState<number>(25);
   const [selectedLocality, setSelectedLocality] = useState<string>("Delhi NCR / Noida");
   const [isRunningPipeline, setIsRunningPipeline] = useState<boolean>(false);
+  const [runnerExpanded, setRunnerExpanded] = useState<boolean>(false);
 
   // Inspection Drawer State
   const [inspectingNode, setInspectingNode] = useState<NodeInspectionData | null>(null);
@@ -392,38 +393,19 @@ export function AutopilotCockpitView() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Cockpit Header & Dual Sub-Page Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <h1 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              <span>⚡ AUTOPILOT COCKPIT</span>
-            </h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold">
-              ACTIVE
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Autonomous Factory Control Room &bull; Multi-Channel Dental Telemetry &bull; Real-Time Logs
-          </p>
-        </div>
-
-        {/* Dual Sub-Page Switcher Buttons */}
-        <div className="flex items-center p-1 rounded-2xl bg-slate-100/90 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] shadow-inner">
+      {/* 1. Sleek Floating Sub-Page Tabs */}
+      <div className="flex items-center justify-center pt-1">
+        <div className="inline-flex items-center p-1 rounded-2xl bg-white/90 dark:bg-[#141721]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
           <button
             onClick={() => setActiveSubPage("factory")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
               activeSubPage === "factory"
                 ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.04]"
             }`}
           >
-            <span role="img" aria-label="Lead Pipeline Factory">🏭</span>
-            <span>1. Lead Pipeline Factory</span>
-            {activeSubPage === "factory" && (
-              <span className="w-1.5 h-1.5 rounded-full bg-white" />
-            )}
+            <span role="img" aria-label="Lead Factory">🏭</span>
+            <span>Lead Factory</span>
           </button>
 
           <button
@@ -431,14 +413,11 @@ export function AutopilotCockpitView() {
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
               activeSubPage === "outreach"
                 ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.04]"
             }`}
           >
             <span role="img" aria-label="Outreach Hub">🚀</span>
-            <span>2. Outreach Hub</span>
-            {activeSubPage === "outreach" && (
-              <span className="w-1.5 h-1.5 rounded-full bg-white" />
-            )}
+            <span>Outreach Hub</span>
           </button>
         </div>
       </div>
@@ -450,127 +429,149 @@ export function AutopilotCockpitView() {
       ) : (
         /* ==================== SUB-PAGE 1: LEAD PIPELINE FACTORY ==================== */
         <div className="space-y-6">
-          {/* 1. Factory Runner Controls */}
-          <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
-                  <Zap className="w-4 h-4 text-amber-500" />
+          {/* 1. Collapsible Compact Factory Runner Card */}
+          <div className="p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card transition-all duration-200">
+            {/* Collapsed Header / Toggler Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setRunnerExpanded((prev) => !prev)}
+                className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors cursor-pointer text-left"
+                title={runnerExpanded ? "Collapse Runner Controls" : "Expand Runner Controls"}
+              >
+                <div className="w-7 h-7 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center font-bold">
+                  <Zap className="w-3.5 h-3.5 text-amber-500" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>Factory Runner Controls</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold">
-                      Strict No-Website Filter
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-black text-slate-900 dark:text-white">
+                      ⚡ {targetLeads} Leads Needed
                     </span>
-                  </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Configure batch lead targets, target locality, and trigger autonomous pipeline refills
-                  </p>
+                    {runnerExpanded ? (
+                      <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-medium">
+                    {selectedLocality} &bull; Strict No-Website Rule
+                  </div>
                 </div>
-              </div>
+              </button>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <button
-                  type="button"
-                  onClick={handleSyncBatchLinks}
-                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                  title="Verify live HTTP 200 on all 4 demo routes and sync batch.json"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Verify Links</span>
-                </button>
+              <div className="flex items-center gap-2">
+                {!runnerExpanded && (
+                  <button
+                    type="button"
+                    onClick={handleSyncBatchLinks}
+                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                    title="Verify live HTTP 200 on all 4 demo routes and sync batch.json"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  </button>
+                )}
 
                 {isRunningPipeline ? (
                   <button
                     type="button"
                     onClick={handleStopPipeline}
-                    className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-900/30 transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-900/30 transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <AlertOctagon className="w-3.5 h-3.5" />
-                    <span>Stop Pipeline</span>
+                    <span>Stop</span>
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={handleRunRefillWithTarget}
-                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                    className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
                   >
                     <Play className="w-3.5 h-3.5" />
-                    <span>RUN REFILL BATCH ({targetLeads} Leads)</span>
+                    <span>RUN REFILL ({targetLeads})</span>
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Inputs: Target Leads, Locality, Mode */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 dark:border-white/[0.06]">
-              {/* Target Leads Needed */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  Target Leads Needed:
-                </label>
-                <div className="flex items-center gap-1.5">
-                  {[10, 25, 30].map((num) => (
+            {/* Expanded Controls Drawer */}
+            {runnerExpanded && (
+              <div className="pt-3 mt-3 border-t border-slate-100 dark:border-white/[0.06] grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs animate-in fade-in duration-200">
+                {/* Presets and custom numeric input */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Lead Target Presets:
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    {[10, 25, 30].map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setTargetLeads(num)}
+                        className={`px-2.5 py-1 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                          targetLeads === num
+                            ? "bg-indigo-600 text-white shadow-xs"
+                            : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                        }`}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                    <div className="relative flex-1">
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={targetLeads}
+                        onChange={(e) => setTargetLeads(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2 py-1 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 text-center focus:outline-none focus:border-indigo-500"
+                        placeholder="Custom"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Locality Selector */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Target Locality:
+                  </label>
+                  <select
+                    value={selectedLocality}
+                    onChange={(e) => setSelectedLocality(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  >
+                    <option value="Delhi NCR / Noida">Delhi NCR / Noida (Sector 76-78)</option>
+                    <option value="South Delhi / Saket">South Delhi / Saket &amp; Malviya Nagar</option>
+                    <option value="Gurugram / Cyber Hub">Gurugram / Cyber Hub &amp; DLF Phase 1-5</option>
+                    <option value="West Delhi / Rajouri Garden">West Delhi / Rajouri Garden</option>
+                    <option value="Bengaluru / Indiranagar">Bengaluru / Indiranagar &amp; Koramangala</option>
+                  </select>
+                </div>
+
+                {/* Actions & Collapse */}
+                <div className="space-y-1.5 flex flex-col justify-end">
+                  <div className="flex items-center gap-2">
                     <button
-                      key={num}
                       type="button"
-                      onClick={() => setTargetLeads(num)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
-                        targetLeads === num
-                          ? "bg-indigo-600 text-white shadow-xs"
-                          : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                      }`}
+                      onClick={handleSyncBatchLinks}
+                      className="flex-1 py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
-                      {num}
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Verify Links</span>
                     </button>
-                  ))}
-                  <div className="relative flex-1">
-                    <input
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={targetLeads}
-                      onChange={(e) => setTargetLeads(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 text-center focus:outline-none focus:border-indigo-500"
-                      placeholder="Custom"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setRunnerExpanded(false)}
+                      className="p-1.5 rounded-xl border border-slate-200 dark:border-white/[0.08] text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
+                      title="Collapse Controls"
+                    >
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               </div>
-
-              {/* Locality Selector */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  Target Locality / Radius:
-                </label>
-                <select
-                  value={selectedLocality}
-                  onChange={(e) => setSelectedLocality(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
-                >
-                  <option value="Delhi NCR / Noida">Delhi NCR / Noida (Sector 76-78)</option>
-                  <option value="South Delhi / Saket">South Delhi / Saket &amp; Malviya Nagar</option>
-                  <option value="Gurugram / Cyber Hub">Gurugram / Cyber Hub &amp; DLF Phase 1-5</option>
-                  <option value="West Delhi / Rajouri Garden">West Delhi / Rajouri Garden</option>
-                  <option value="Bengaluru / Indiranagar">Bengaluru / Indiranagar &amp; Koramangala</option>
-                </select>
-              </div>
-
-              {/* Mode Rule */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  Discovery &amp; QA Rule:
-                </label>
-                <div className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] text-xs font-medium text-slate-600 dark:text-slate-300 flex items-center justify-between">
-                  <span>Strict No-Website (4-Tier)</span>
-                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                    ENFORCED
-                  </span>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* 2. Visual n8n-Style Pipeline Network */}
