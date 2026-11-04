@@ -19,6 +19,7 @@ import { AssistantDrawer } from "@/features/modals/AssistantDrawer";
 
 function CRMContent() {
   const { activeTab, loading, toast } = useCRM();
+  const isCockpit = activeTab === "autopilot";
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#FAF9F6] dark:bg-[#0B0C10] text-slate-900 dark:text-slate-100 transition-colors duration-200">
@@ -43,12 +44,12 @@ function CRMContent() {
       {/* Top Header */}
       <Header />
 
-      {/* Main Layout: Left Sidebar + Center Workspace */}
+      {/* Main Layout: Left Sidebar (isolated from Cockpit) + Center Workspace */}
       <div className="flex-1 flex overflow-hidden min-h-0 min-w-0">
-        <Sidebar />
+        {!isCockpit && <Sidebar />}
 
         {/* Center Workspace Content */}
-        <main className="flex-1 h-full overflow-y-auto p-6 space-y-6 min-w-0">
+        <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 space-y-6 min-w-0">
           {loading ? (
             <div className="p-16 text-center text-sm text-slate-500 dark:text-slate-400">
               Loading Personal OS CRM...
@@ -71,7 +72,7 @@ function CRMContent() {
       <AddLeadModal />
       <ProblemReportModal />
       <CommandPaletteModal />
-      <AssistantDrawer />
+      {!isCockpit && <AssistantDrawer />}
     </div>
   );
 }
