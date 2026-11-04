@@ -821,16 +821,16 @@ export function AutopilotCockpitView() {
               </div>
             </div>
           </div>
-
-          {/* 4. Dedicated Cockpit Factory Supervisor Agent UI Space (Docked at bottom) */}
-          <CockpitSupervisorBar
-            status={isRunningPipeline ? "RUNNING" : "MONITORING"}
-            currentIntent="Monitoring Step 2... 14 clinics verified. Brave Search fallback ready if Serper encounters 429 rate limit."
-            onSendCommand={handleSupervisorCommand}
-            onEmergencyStop={handleStopPipeline}
-          />
         </div>
       )}
+
+      {/* Floating Cockpit Factory Agent Controller */}
+      <CockpitSupervisorBar
+        status={isRunningPipeline ? "RUNNING" : "MONITORING"}
+        currentIntent="Monitoring Step 2... 14 clinics verified. Brave Search fallback ready if Serper encounters 429 rate limit."
+        onSendCommand={handleSupervisorCommand}
+        onEmergencyStop={handleStopPipeline}
+      />
 
       {/* Slide-over Node Inspection Drawer */}
       <NodeInspectionDrawer
