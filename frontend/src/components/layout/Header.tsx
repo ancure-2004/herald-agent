@@ -14,6 +14,8 @@ import { useCRM } from "@/context/CRMContext";
 
 export function Header() {
   const {
+    activeTab,
+    setActiveTab,
     sidebarCollapsed,
     setSidebarCollapsed,
     activeHustleId,
@@ -26,6 +28,9 @@ export function Header() {
     notify,
     setNewLeadModalOpen,
   } = useCRM();
+
+  const isCockpitActive = activeTab === "autopilot";
+  const isCommandActive = activeTab !== "autopilot";
 
   return (
       <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#0F1117]/95 backdrop-blur-md px-6 flex items-center justify-between gap-6 sticky top-0 z-30 transition-colors">
@@ -47,7 +52,10 @@ export function Header() {
             OS
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">CustomerGo</span>
+            <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
+              <span className="hidden xl:inline">Personal OS & CRM</span>
+              <span className="xl:hidden">Personal OS</span>
+            </span>
             <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">/</span>
             <select
               value={activeHustleId}
@@ -63,8 +71,49 @@ export function Header() {
           </div>
         </div>
 
-        {/* Center: Global Search Bar (Claude & CustomerGo style with ⌘K) */}
-        <div className="flex-1 max-w-md hidden md:block">
+        {/* Center: Dual-Surface Switcher (Command Dashboard vs Autopilot Cockpit) */}
+        <div className="flex items-center p-1 rounded-2xl bg-slate-100/90 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] shadow-inner shrink-0">
+          {/* Surface 1: Command Dashboard */}
+          <button
+            onClick={() => setActiveTab("dashboard")}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer relative ${
+              isCommandActive
+                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25 dark:bg-indigo-600 dark:text-white"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]"
+            }`}
+            title="Switch to Command Dashboard (High-level KPI control, daily sprint tasks, review tray, and Kanban)"
+          >
+            <span className="text-sm leading-none" role="img" aria-label="Command Dashboard">📊</span>
+            <span className="hidden sm:inline">Command Dashboard</span>
+            {isCommandActive && (
+              <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-xs" />
+            )}
+          </button>
+
+          {/* Surface 2: Autopilot Cockpit */}
+          <button
+            onClick={() => setActiveTab("autopilot")}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer relative ${
+              isCockpitActive
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 dark:bg-emerald-600 dark:text-white"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]"
+            }`}
+            title="Switch to Autopilot Cockpit (Visual pipeline cards, live terminal stream & multi-channel outreach engine)"
+          >
+            <span className="text-sm leading-none" role="img" aria-label="Autopilot Cockpit">⚡</span>
+            <span className="hidden sm:inline">Autopilot Cockpit</span>
+            <span
+              className={`w-2 h-2 rounded-full shrink-0 ${
+                isCockpitActive
+                  ? "bg-white animate-pulse shadow-sm shadow-white/50"
+                  : "bg-emerald-500"
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Global Search Bar (Claude & CustomerGo style with ⌘K) */}
+        <div className="flex-1 max-w-xs xl:max-w-sm hidden lg:block">
           <div
             onClick={() => {
               setCmdSearchQuery("");
