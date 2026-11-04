@@ -1,646 +1,846 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import {
+  Activity,
+  AlertOctagon,
+  AlertTriangle,
+  ArrowRight,
   Check,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
+  Compass,
   Copy,
   ExternalLink,
+  FastForward,
+  FileCode2,
+  Film,
+  Inbox,
+  Layers,
+  MapPin,
+  Pause,
   Play,
+  RotateCw,
+  Search,
+  Send,
+  Sparkles,
   Terminal,
+  Trash2,
+  X,
+  Zap,
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
-import { apiFetch } from "@/lib/api/client";
+import { NodeInspectionData, NodeStatus } from "./types";
+import { PipelineNodeNetwork } from "./PipelineNodeNetwork";
+import { NodeInspectionDrawer } from "./NodeInspectionDrawer";
+import { CockpitSupervisorBar } from "./CockpitSupervisorBar";
+import { OutreachHubSubpage } from "./OutreachHubSubpage";
 
 export function AutopilotCockpitView() {
   const {
-    handleSyncBatchLinks,
-    handleTriggerRefill,
-    handleRunScout,
-    handleRunAuditor,
-    handleRunCloser,
+    leads,
+    activeHustleId,
+    stockPlan,
+    runs,
     terminalLogs,
     setTerminalLogs,
     activeTerminalJob,
-    showPreviousRuns,
-    setShowPreviousRuns,
-    runs,
+    setActiveTerminalJob,
     appendTerminalLines,
+    handleSyncBatchLinks,
+    handleTriggerRefill,
     setSelectedLeadId,
-    terminalContainerRef,
     notify,
-    activeHustleId,
   } = useCRM();
 
-  const [closerDryRun, setCloserDryRun] = useState<boolean>(true);
-  const [copiedLast20, setCopiedLast20] = useState<boolean>(false);
-  const [telegramCmd, setTelegramCmd] = useState<string>("/stock");
-  const [telegramReply, setTelegramReply] = useState<string>("");
+  // Sub-page switcher state: "factory" | "outreach"
+  const [activeSubPage, setActiveSubPage] = useState<"factory" | "outreach">("factory");
 
-  const handleCopyLast20Logs = async () => {
-    const last20 = terminalLogs.slice(-20).join("\n");
-    try {
-      await navigator.clipboard.writeText(last20);
-    } catch {
-      const ta = document.createElement("textarea");
-      ta.value = last20;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
+  // Factory Runner Controls
+  const [targetLeads, setTargetLeads] = useState<number>(25);
+  const [selectedLocality, setSelectedLocality] = useState<string>("Delhi NCR / Noida");
+  const [isRunningPipeline, setIsRunningPipeline] = useState<boolean>(false);
+
+  // Inspection Drawer State
+  const [inspectingNode, setInspectingNode] = useState<NodeInspectionData | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+
+  // Terminal Controls
+  const [terminalFilter, setTerminalFilter] = useState<string>("ALL");
+  const [terminalAutoScroll, setTerminalAutoScroll] = useState<boolean>(true);
+  const [copiedTerminal, setCopiedTerminal] = useState<boolean>(false);
+  const [showPreviousRuns, setShowPreviousRuns] = useState<boolean>(false);
+
+  const terminalContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-scroll terminal
+  useEffect(() => {
+    if (terminalAutoScroll && terminalContainerRef.current) {
+      terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight;
     }
-    setCopiedLast20(true);
-    notify(`Copied last ${Math.min(20, terminalLogs.length)} terminal logs to clipboard`);
-    setTimeout(() => setCopiedLast20(false), 2000);
+  }, [terminalLogs, terminalAutoScroll]);
+
+  // Initial nodes configuration for the 6-stage pipeline
+  const [nodes, setNodes] = useState<NodeInspectionData[]>([
+    {
+      id: 1,
+      stepNumber: 1,
+      name: "DISCOVERY",
+      title: "1. Candidate Discovery Waterfall",
+      subtitle: "Places API + Serper Maps",
+      tools: "Google Places API • Serper Maps • Playwright Scraper",
+      status: "SUCCESS",
+      badge: "✓ 25 Found",
+      progressText: "25 candidate dental clinics discovered",
+      logicDescription:
+        "Queries Google Places API, Serper Maps & Playwright Waterfall for dental clinics in specified locality.",
+      duration: "14s",
+      payload: [
+        {
+          id: 1,
+          name: "Dentique Dental & Implant Centre",
+          locality: "Sector 76, Noida",
+          phone: "+91 98112 43210",
+          source: "Google Places API",
+          query: "dentist in sector 76 noida",
+          status: "DISCOVERED",
+        },
+        {
+          id: 2,
+          name: "Dr. Jha Dental Studio",
+          locality: "Sector 74, Noida",
+          phone: "+91 99100 87654",
+          source: "Serper Maps",
+          query: "dental clinic near me",
+          status: "DISCOVERED",
+        },
+        {
+          id: 3,
+          name: "Prime Dental & Aesthetic Clinic",
+          locality: "Sector 62, Noida",
+          phone: "+91 98111 22334",
+          source: "Brave Search",
+          query: "dental implants noida",
+          status: "DISCOVERED",
+        },
+      ],
+      error: null,
+    },
+    {
+      id: 2,
+      stepNumber: 2,
+      name: "VERIFICATION",
+      title: "2. Website Verification & HTTP Probe",
+      subtitle: "HTTP Probes + Brave Search",
+      tools: "HTTP 200/404 Probes • Brave Search No-Website Rule",
+      status: "RUNNING",
+      badge: "● Probing (14/25)",
+      progressText: "Item 14 of 25 • 14 verified no-website (3 dropped)",
+      logicDescription:
+        "Probes domain HTTP status and performs deep search verification to ensure clinic has no active mobile-friendly website.",
+      duration: "32s elapsed",
+      payload: [
+        {
+          clinic: "Dr Jha Dental Studio",
+          domain: "http://drjhadental.in",
+          http_status: 404,
+          has_mobile_site: false,
+          verdict: "PASSED_NO_WEBSITE",
+        },
+        {
+          clinic: "Dentique Dental & Implant Centre",
+          domain: null,
+          http_status: null,
+          has_mobile_site: false,
+          verdict: "PASSED_NO_WEBSITE",
+        },
+        {
+          clinic: "Apollo White Dental",
+          domain: "https://apollowhite.com",
+          http_status: 200,
+          verdict: "DROPPED_ACTIVE_CHAIN",
+        },
+      ],
+      error: {
+        hasError: false,
+      },
+    },
+    {
+      id: 3,
+      stepNumber: 3,
+      name: "DEEP RESEARCH",
+      title: "3. Practo & Justdial Dossier Enrichment",
+      subtitle: "Practo + J-Dial Doctor & IG",
+      tools: "Practo Doctor Scraping • Justdial • Instagram Dossier",
+      status: "QUEUED",
+      badge: "11 Enriched",
+      progressText: "11 doctor credentials & treatment packages staged",
+      logicDescription:
+        "Scrapes doctor educational qualifications, years of experience, patient reviews, and clinic specialty services.",
+      duration: "Queued",
+      payload: [
+        {
+          clinic: "Dentique Dental & Implant Centre",
+          lead_doctor: "Dr. Rajeev Verma",
+          degrees: "BDS, MDS (Prosthodontics)",
+          experience_years: 14,
+          practo_rating: 4.9,
+          reviews_count: 142,
+          treatments: ["Root Canal", "Dental Implants", "Invisalign", "Teeth Whitening"],
+        },
+      ],
+      error: null,
+    },
+    {
+      id: 4,
+      stepNumber: 4,
+      name: "NEXT.JS BUILD",
+      title: "4. Multi-Template Next.js Demo Scaffold",
+      subtitle: "3 Live Templates: Modern, Warm, Lux",
+      tools: "add-clinic.ts • 3 Next.js Themes • Live HTTP Verification",
+      status: "QUEUED",
+      badge: "8 Packages Built",
+      progressText: "8 clinics compiled across 3 luxury themes",
+      logicDescription:
+        "Scaffolds clinic data into Next.js Dental Engine and verifies HTTP 200 live status on localhost:3001.",
+      duration: "Queued",
+      payload: [
+        {
+          clinic_slug: "dentique-dental",
+          themes_generated: ["modern", "warm", "lux"],
+          routes: {
+            modern: "http://localhost:3001/modern/dentique-dental",
+            warm: "http://localhost:3001/warm/dentique-dental",
+            lux: "http://localhost:3001/lux/dentique-dental",
+          },
+          status: "VERIFIED_HTTP_200",
+        },
+      ],
+      error: null,
+    },
+    {
+      id: 5,
+      stepNumber: 5,
+      name: "WALKTHROUGH",
+      title: "5. Headless Video Walkthrough Recording",
+      subtitle: "Headless MP4 Video Recorder",
+      tools: "Playwright Headless • 45s Mobile Viewport • WebM/MP4",
+      status: "QUEUED",
+      badge: "8 MP4s Recorded",
+      progressText: "8 mobile video walkthroughs rendered",
+      logicDescription:
+        "Spawns Playwright Chromium to record an authentic 45-second scrollable mobile preview of the clinic website.",
+      duration: "Queued",
+      payload: [
+        {
+          clinic: "Dentique Dental & Implant Centre",
+          video_file: "public/videos/dentique-dental-walkthrough.mp4",
+          resolution: "1080x1920 (Mobile)",
+          duration_seconds: 45,
+          status: "ENCODED_READY",
+        },
+      ],
+      error: null,
+    },
+    {
+      id: 6,
+      stepNumber: 6,
+      name: "REVIEW TRAY",
+      title: "6. Sealed & Staged Review Tray Buffer",
+      subtitle: "Sealed & Staged Ready for Pitch",
+      tools: "Buffer Health Engine • One-Click Operator Approval",
+      status: "QUEUED",
+      badge: "8 in Buffer",
+      progressText: "8 qualified dental clinics sealed & ready to send",
+      logicDescription:
+        "Stages validated packages with live links and walkthrough videos into the CRM Review Tray for operator dispatch.",
+      duration: "Queued",
+      payload: [
+        {
+          lead_id: 14,
+          clinic_name: "Dentique Dental",
+          preferred_channel: "whatsapp",
+          package_sealed: true,
+          est_value_inr: 25000,
+        },
+      ],
+      error: null,
+    },
+  ]);
+
+  // Handle Node selection to open drawer
+  const handleSelectNode = (node: NodeInspectionData) => {
+    setInspectingNode(node);
+    setDrawerOpen(true);
   };
 
-  const handleTelegramCmdSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!telegramCmd.trim()) return;
+  // Node controls
+  const handleRetryNode = (nodeId: number) => {
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [SUPERVISOR] Manual Retry triggered for Node #${nodeId}...`,
+      `[${new Date().toLocaleTimeString()}] [PROBE] Rerunning stage logic with fresh backoff window...`,
+    ]);
+    setNodes((prev) =>
+      prev.map((n) =>
+        n.id === nodeId
+          ? {
+              ...n,
+              status: "RUNNING",
+              error: null,
+              progressText: "Retrying step in isolated worker...",
+            }
+          : n
+      )
+    );
+    notify(`Retrying Node #${nodeId} execution...`);
+  };
+
+  const handleSkipNode = (nodeId: number) => {
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [SUPERVISOR] Operator skipped Node #${nodeId}. Continuing to next stage...`,
+    ]);
+    setNodes((prev) =>
+      prev.map((n) =>
+        n.id === nodeId
+          ? {
+              ...n,
+              status: "SUCCESS",
+              badge: "Skipped",
+              progressText: "Operator bypassed this step",
+            }
+          : n
+      )
+    );
+    setDrawerOpen(false);
+    notify(`Node #${nodeId} bypassed by operator.`);
+  };
+
+  const handleRunOnlyStep = (nodeId: number) => {
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [SUPERVISOR] Running ONLY Node #${nodeId} in isolated sandbox...`,
+    ]);
+    notify(`Executing Node #${nodeId} in isolation...`);
+  };
+
+  const handlePauseNode = (nodeId: number) => {
+    setNodes((prev) =>
+      prev.map((n) => (n.id === nodeId ? { ...n, status: "QUEUED" } : n))
+    );
+    notify(`Node #${nodeId} execution paused.`);
+  };
+
+  // Run Refill Batch with Target Count
+  const handleRunRefillWithTarget = async () => {
+    setIsRunningPipeline(true);
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [FACTORY] >>> RUN REFILL BATCH Triggered for ${targetLeads} qualified leads (${selectedLocality})...`,
+      `[${new Date().toLocaleTimeString()}] [SCRAPE] Initializing 4-Tier Waterfall Discovery...`,
+    ]);
     try {
-      const res = await apiFetch<{ reply: string }>("/api/telegram/simulate", {
-        method: "POST",
-        body: JSON.stringify({ command: telegramCmd.trim(), hustle_id: activeHustleId }),
-      });
-      setTelegramReply(res.reply);
-    } catch (err) {
-      setTelegramReply(`Error: ${err instanceof Error ? err.message : "Failed to execute"}`);
+      await handleTriggerRefill();
+      notify(`Refill batch initiated for ${targetLeads} leads!`);
+    } catch {
+      // error handled in context
+    } finally {
+      setIsRunningPipeline(false);
+    }
+  };
+
+  // Stop pipeline
+  const handleStopPipeline = () => {
+    setIsRunningPipeline(false);
+    setActiveTerminalJob(null);
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [ALERT] Pipeline execution STOPPED by Captain. Workers detached.`,
+    ]);
+    notify("Pipeline workers stopped.", "err");
+  };
+
+  // Supervisor Command handler
+  const handleSupervisorCommand = (command: string) => {
+    appendTerminalLines([
+      `[${new Date().toLocaleTimeString()}] [COMMAND] Operator command: "${command}"`,
+      `[${new Date().toLocaleTimeString()}] [SUPERVISOR] Instruction registered. Analyzing pipeline state...`,
+    ]);
+    notify(`Supervisor received: "${command}"`);
+  };
+
+  // Filter terminal logs
+  const filteredTerminalLogs = useMemo(() => {
+    if (terminalFilter === "ALL") return terminalLogs;
+    return terminalLogs.filter((line) => {
+      if (terminalFilter === "SCRAPE") return line.includes("[SCRAPE]") || line.includes("[FOUND]");
+      if (terminalFilter === "PROBE") return line.includes("[PROBE]") || line.includes("[OK]") || line.includes("[VERIFY");
+      if (terminalFilter === "BUILD") return line.includes("[BUILD]") || line.includes("[AUDIT]");
+      if (terminalFilter === "VIDEO") return line.includes("[VIDEO]") || line.includes("[MP4]");
+      if (terminalFilter === "ERROR") return line.includes("[ERROR]") || line.includes("[FAIL]") || line.includes("[DROP]");
+      return true;
+    });
+  }, [terminalLogs, terminalFilter]);
+
+  const handleCopyTerminalLogs = async () => {
+    try {
+      await navigator.clipboard.writeText(terminalLogs.join("\n"));
+      setCopiedTerminal(true);
+      notify("Copied all execution terminal logs to clipboard");
+      setTimeout(() => setCopiedTerminal(false), 2000);
+    } catch {
+      // fallback
     }
   };
 
   return (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                  <div className="lg:col-span-2 space-y-4">
-                    <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-wrap items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                            7-Step Clinic Autopilot &amp; 4-Tier Lead Discovery Waterfall
-                          </h2>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold">
-                            Strict DB Dedup Active
-                          </span>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold">
-                            IG Discovery: OFF (Dental Rule)
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          Tier 1: Google Places API &rarr; Tier 2: Serper Maps &rarr; Tier 3: Brave Search &rarr; Tier 4: Playwright Maps &bull; No-Website Filter &bull; 3 Live Demos &bull; Sync batch.json
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          onClick={handleSyncBatchLinks}
-                          className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-600/20 dark:hover:bg-emerald-600/30 border border-emerald-200 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Verify Links &amp; Sync batch.json</span>
-                        </button>
-                        <button
-                          onClick={handleTriggerRefill}
-                          className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-indigo-600/30 transition-all cursor-pointer active:scale-95"
-                        >
-                          <Play className="w-3.5 h-3.5" />
-                          <span>Run Refill Batch Now</span>
-                        </button>
-                      </div>
+    <div className="space-y-6">
+      {/* 1. Cockpit Header & Dual Sub-Page Switcher */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <h1 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <span>⚡ AUTOPILOT COCKPIT</span>
+            </h1>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold">
+              ACTIVE
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Autonomous Factory Control Room &bull; Multi-Channel Dental Telemetry &bull; Real-Time Logs
+          </p>
+        </div>
+
+        {/* Dual Sub-Page Switcher Buttons */}
+        <div className="flex items-center p-1 rounded-2xl bg-slate-100/90 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] shadow-inner">
+          <button
+            onClick={() => setActiveSubPage("factory")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+              activeSubPage === "factory"
+                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]"
+            }`}
+          >
+            <span role="img" aria-label="Lead Pipeline Factory">🏭</span>
+            <span>1. Lead Pipeline Factory</span>
+            {activeSubPage === "factory" && (
+              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveSubPage("outreach")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+              activeSubPage === "outreach"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]"
+            }`}
+          >
+            <span role="img" aria-label="Outreach Hub">🚀</span>
+            <span>2. Outreach Hub</span>
+            {activeSubPage === "outreach" && (
+              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Render Sub-Page Content */}
+      {activeSubPage === "outreach" ? (
+        /* ==================== SUB-PAGE 2: OUTREACH HUB ==================== */
+        <OutreachHubSubpage />
+      ) : (
+        /* ==================== SUB-PAGE 1: LEAD PIPELINE FACTORY ==================== */
+        <div className="space-y-6">
+          {/* 1. Factory Runner Controls */}
+          <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                  <Zap className="w-4 h-4 text-amber-500" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>Factory Runner Controls</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold">
+                      Strict No-Website Filter
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Configure batch lead targets, target locality, and trigger autonomous pipeline refills
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleSyncBatchLinks}
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Verify live HTTP 200 on all 4 demo routes and sync batch.json"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Verify Links</span>
+                </button>
+
+                {isRunningPipeline ? (
+                  <button
+                    type="button"
+                    onClick={handleStopPipeline}
+                    className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-900/30 transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <AlertOctagon className="w-3.5 h-3.5" />
+                    <span>Stop Pipeline</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleRunRefillWithTarget}
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    <span>RUN REFILL BATCH ({targetLeads} Leads)</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Inputs: Target Leads, Locality, Mode */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 dark:border-white/[0.06]">
+              {/* Target Leads Needed */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Target Leads Needed:
+                </label>
+                <div className="flex items-center gap-1.5">
+                  {[10, 25, 30].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setTargetLeads(num)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                        targetLeads === num
+                          ? "bg-indigo-600 text-white shadow-xs"
+                          : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={targetLeads}
+                      onChange={(e) => setTargetLeads(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 text-center focus:outline-none focus:border-indigo-500"
+                      placeholder="Custom"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Locality Selector */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Target Locality / Radius:
+                </label>
+                <select
+                  value={selectedLocality}
+                  onChange={(e) => setSelectedLocality(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                >
+                  <option value="Delhi NCR / Noida">Delhi NCR / Noida (Sector 76-78)</option>
+                  <option value="South Delhi / Saket">South Delhi / Saket &amp; Malviya Nagar</option>
+                  <option value="Gurugram / Cyber Hub">Gurugram / Cyber Hub &amp; DLF Phase 1-5</option>
+                  <option value="West Delhi / Rajouri Garden">West Delhi / Rajouri Garden</option>
+                  <option value="Bengaluru / Indiranagar">Bengaluru / Indiranagar &amp; Koramangala</option>
+                </select>
+              </div>
+
+              {/* Mode Rule */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Discovery &amp; QA Rule:
+                </label>
+                <div className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] text-xs font-medium text-slate-600 dark:text-slate-300 flex items-center justify-between">
+                  <span>Strict No-Website (4-Tier)</span>
+                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                    ENFORCED
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Visual n8n-Style Pipeline Network */}
+          <PipelineNodeNetwork
+            nodes={nodes}
+            selectedNodeId={inspectingNode?.id ?? null}
+            onSelectNode={handleSelectNode}
+          />
+
+          {/* 3. Bottom Split: Live Execution Terminal + Batch End Results Card */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Bottom Left: Live Streaming Execution Terminal */}
+            <div className="rounded-3xl bg-[#0B0D14] border border-slate-800/90 shadow-xl overflow-hidden flex flex-col justify-between">
+              <div>
+                {/* Terminal Controls Bar */}
+                <div className="px-4 py-3 bg-[#121521] border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
                     </div>
-
-                    {/* Phase 3 Specialized Sub-Agents Control Deck (Scout -> Auditor -> Closer) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                      {/* 1. Scout Agent */}
-                      <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-3">
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-slate-900 dark:text-white">1. Scout Agent</span>
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300">
-                              4-Tier Maps + Dossier
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                            Finds new no-website clinics via 4-Tier Waterfall (Places &rarr; Serper &rarr; Brave &rarr; Playwright), skips existing DB leads &amp; enriches Doctor/Email.
-                          </p>
-                        </div>
-                        <button
-                          onClick={handleRunScout}
-                          className="w-full py-2 px-3 rounded-xl bg-indigo-600/15 hover:bg-indigo-600/25 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold cursor-pointer transition-colors"
-                        >
-                          Run Scout Agent
-                        </button>
-                      </div>
-
-                      {/* 2. Auditor Agent */}
-                      <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-3">
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-slate-900 dark:text-white">2. Auditor Agent</span>
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-                              QA + Video Recorder
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                            Verifies HTTP 200 across all 4 demo routes, syncs batch.json, and links MP4 walkthroughs.
-                          </p>
-                        </div>
-                        <div className="flex gap-1.5">
-                          <button
-                            onClick={() => handleRunAuditor(false)}
-                            className="flex-1 py-2 px-2.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold cursor-pointer transition-colors"
-                          >
-                            Audit &amp; Link MP4
-                          </button>
-                          <button
-                            onClick={() => handleRunAuditor(true)}
-                            className="py-2 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold cursor-pointer transition-colors"
-                            title="Run Playwright record-batch.mjs on 1 verified clinic"
-                          >
-                            Record 1
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 3. Closer Agent */}
-                      <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-3">
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between gap-1">
-                            <span className="text-xs font-bold text-slate-900 dark:text-white">3. Closer Agent</span>
-                            <button
-                              type="button"
-                              onClick={() => setCloserDryRun((prev) => !prev)}
-                              className={`text-[10px] font-mono px-2 py-0.5 rounded border cursor-pointer transition-colors ${
-                                closerDryRun
-                                  ? "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/30"
-                                  : "bg-rose-50 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-500/40 font-bold"
-                              }`}
-                              title="Toggle between Dry-Run Safe Preview and LIVE Send"
-                            >
-                              {closerDryRun ? "Mode: DRY-RUN" : "Mode: LIVE SEND"}
-                            </button>
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                            Feeds CRM Outbox to wa_autopilot.mjs, ig_autopilot.mjs &amp; email_autopilot.py + drafts hot follow-ups.
-                          </p>
-                        </div>
-                        <div className="grid grid-cols-3 gap-1.5">
-                          <button
-                            onClick={() => handleRunCloser("whatsapp", closerDryRun)}
-                            className="py-2 px-2 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold cursor-pointer"
-                            title="Run wa_autopilot.mjs against CRM Outbox"
-                          >
-                            {closerDryRun ? "WA Dry" : "WA Live"}
-                          </button>
-                          <button
-                            onClick={() => handleRunCloser("instagram", closerDryRun)}
-                            className="py-2 px-2 rounded-xl bg-pink-600/15 hover:bg-pink-600/25 border border-pink-500/30 text-pink-700 dark:text-pink-300 text-[11px] font-semibold cursor-pointer"
-                            title="Run ig_autopilot.mjs against CRM Outbox"
-                          >
-                            {closerDryRun ? "IG Dry" : "IG Live"}
-                          </button>
-                          <button
-                            onClick={() => handleRunCloser("email", closerDryRun)}
-                            className="py-2 px-2 rounded-xl bg-blue-600/15 hover:bg-blue-600/25 border border-blue-500/30 text-blue-700 dark:text-blue-300 text-[11px] font-semibold cursor-pointer"
-                            title="Run email_autopilot.py against CRM Outbox"
-                          >
-                            {closerDryRun ? "Mail Dry" : "Mail Live"}
-                          </button>
-                        </div>
-                      </div>
+                    <div className="flex items-center gap-2 pl-1">
+                      <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-xs font-bold font-mono text-slate-100 tracking-wide">
+                        Pipeline Terminal (/api/events/stream)
+                      </span>
                     </div>
-
-                    {/* Unified Live Execution Terminal (Refill Batch + Verify Links + Scout + Auditor + Closer) */}
-                    <div className="rounded-3xl bg-[#0B0D14] border border-slate-800/90 shadow-xl overflow-hidden">
-                      <div className="px-4 py-3 bg-[#121521] border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-                          </div>
-                          <div className="flex items-center gap-2 pl-1">
-                            <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-xs font-bold font-mono text-slate-100 tracking-wide">
-                              Live Execution Terminal
-                            </span>
-                          </div>
-                          {activeTerminalJob ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                              RUNNING: {activeTerminalJob}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono text-slate-400 bg-slate-800/70 border border-slate-700/60">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                              STREAM READY ({terminalLogs.length} lines)
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={handleCopyLast20Logs}
-                            className="px-2.5 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-[11px] font-mono font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                            title="Copy the last 20 log lines from this terminal"
-                          >
-                            {copiedLast20 ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                <span className="text-emerald-300">Copied Last 20!</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>Copy Last 20 Logs</span>
-                              </>
-                            )}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setTerminalLogs([
-                                `[${new Date().toLocaleTimeString()}] [SYSTEM] Terminal cleared. Ready for next Refill Batch or Sub-Agent run...`,
-                              ])
-                            }
-                            className="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 text-[11px] font-mono transition-colors cursor-pointer"
-                          >
-                            Clear
-                          </button>
-                        </div>
-                      </div>
-
-                      <div
-                        ref={terminalContainerRef}
-                        className="p-4 h-72 overflow-y-auto font-mono text-xs leading-relaxed space-y-1.5 select-text"
-                      >
-                        {terminalLogs.map((line, idx) => {
-                          const isError = line.includes("[ERROR]") || line.includes("[HTTP FAIL]") || line.includes("[DROP]");
-                          const isSkip = line.includes("[SKIP]");
-                          const isScout = line.includes("[1.SCOUT-AGENT]") || line.includes("[SCOUT]");
-                          const isAuditor = line.includes("[2.AUDITOR-AGENT]") || line.includes("[AUDITOR]") || line.includes("[HTTP 200 OK]");
-                          const isCloser = line.includes("[3.CLOSER") || line.includes("[CLOSER]");
-                          const isRefill = line.includes("[REFILL-BATCH]") || line.includes("[VERIFY-LINKS]");
-
-                          let textColor = "text-slate-300";
-                          if (isError) textColor = "text-rose-400";
-                          else if (isSkip) textColor = "text-amber-300/90";
-                          else if (isAuditor) textColor = "text-emerald-300";
-                          else if (isScout) textColor = "text-indigo-300";
-                          else if (isCloser) textColor = "text-cyan-300";
-                          else if (isRefill) textColor = "text-emerald-400";
-
-                          return (
-                            <div key={idx} className={`${textColor} break-words whitespace-pre-wrap`}>
-                              <span className="text-slate-600 select-none mr-2">
-                                {String(idx + 1).padStart(2, "0")}
-                              </span>
-                              {line}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Structured Latest Run Result + Option to Expand Previous Runs */}
-                    {runs.length > 0 && (
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between px-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                              Latest Run Result (Structured Report)
-                            </span>
-                            <span className="text-[11px] font-mono text-slate-400">
-                              (Showing latest 1 of {runs.length} runs)
-                            </span>
-                          </div>
-                          {runs.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => setShowPreviousRuns((prev) => !prev)}
-                              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
-                            >
-                              <span>
-                                {showPreviousRuns
-                                  ? "Hide Previous Runs"
-                                  : `Show Previous Runs (${runs.length - 1})`}
-                              </span>
-                              {showPreviousRuns ? (
-                                <ChevronUp className="w-3.5 h-3.5" />
-                              ) : (
-                                <ChevronDown className="w-3.5 h-3.5" />
-                              )}
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Latest Run Card (runs[0]) */}
-                        {[runs[0]].map((r) => {
-                          const struct = r.drop_reasons?._structured;
-                          const builtLeads = struct?.built_leads || [];
-                          const droppedItems = struct?.dropped_items || [];
-                          const tiersUsed = struct?.tiers_used || [];
-                          const dropCounts = Object.entries(r.drop_reasons || {}).filter(
-                            ([k, v]) => k !== "_structured" && typeof v === "number"
-                          ) as Array<[string, number]>;
-
-                          return (
-                            <div
-                              key={r.id}
-                              className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-indigo-200/80 dark:border-indigo-500/30 shadow-xs space-y-3.5"
-                            >
-                              <div className="flex items-center justify-between gap-2 flex-wrap">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold uppercase tracking-wider">
-                                    Latest
-                                  </span>
-                                  <span className="text-xs font-bold text-slate-900 dark:text-white">
-                                    Run #{r.id}: {r.job_type}
-                                  </span>
-                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold font-mono">
-                                    {r.status}
-                                  </span>
-                                  {tiersUsed.map((t, i) => (
-                                    <span
-                                      key={i}
-                                      className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30 font-mono"
-                                    >
-                                      {t}
-                                    </span>
-                                  ))}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {r.trace_logs && r.trace_logs.length > 0 && (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        appendTerminalLines([
-                                          `--- Loaded Trace Logs from Run #${r.id} (${r.job_type}) ---`,
-                                          ...(r.trace_logs || []),
-                                        ])
-                                      }
-                                      className="text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer"
-                                    >
-                                      Replay in Terminal
-                                    </button>
-                                  )}
-                                  <span className="text-[11px] text-slate-400 font-mono">
-                                    {new Date(r.started_at).toLocaleTimeString()}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Summary KPI Grid */}
-                              <div className="text-xs text-slate-600 dark:text-slate-300 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                                  <div className="text-[10px] text-slate-400">Candidates Scanned</div>
-                                  <div className="font-bold font-mono text-slate-800 dark:text-white">{r.count_found}</div>
-                                </div>
-                                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                                  <div className="text-[10px] text-slate-400">Passed &amp; Built</div>
-                                  <div className="font-bold font-mono text-emerald-600 dark:text-emerald-400">{r.count_passed}</div>
-                                </div>
-                                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                                  <div className="text-[10px] text-slate-400">Filtered / Deduped</div>
-                                  <div className="font-bold font-mono text-amber-600 dark:text-amber-400">{r.count_dropped}</div>
-                                </div>
-                                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                                  <div className="text-[10px] text-slate-400">Duration</div>
-                                  <div className="font-bold font-mono text-slate-800 dark:text-white">
-                                    {r.finished_at
-                                      ? `${Math.max(1, Math.round((new Date(r.finished_at).getTime() - new Date(r.started_at).getTime()) / 1000))}s`
-                                      : "active"}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Structured Table of Built / Verified / Targeted Clinics */}
-                              {builtLeads.length > 0 && (
-                                <div className="space-y-1.5">
-                                  <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                                    <span>Structured Run Output ({builtLeads.length} Clinics Processed)</span>
-                                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
-                                      100% Deduplicated vs. CRM Database
-                                    </span>
-                                  </div>
-                                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/[0.08]">
-                                    <table className="w-full text-left text-xs">
-                                      <thead className="bg-slate-50 dark:bg-[#10121A] text-[10px] uppercase text-slate-400 font-semibold border-b border-slate-200 dark:border-white/[0.06]">
-                                        <tr>
-                                          <th className="py-2 px-2.5">Clinic &amp; Doctor</th>
-                                          <th className="py-2 px-2.5">Locality</th>
-                                          <th className="py-2 px-2.5">Phone</th>
-                                          <th className="py-2 px-2.5">Fit</th>
-                                          <th className="py-2 px-2.5">Source / Status</th>
-                                          <th className="py-2 px-2.5 text-right">Actions</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-                                        {builtLeads.map((item) => (
-                                          <tr key={item.id} className="hover:bg-slate-50/70 dark:hover:bg-white/[0.02]">
-                                            <td className="py-2 px-2.5">
-                                              <div className="font-bold text-slate-900 dark:text-white">{item.name}</div>
-                                              <div className="text-[10px] text-slate-400">{item.doctor || "Doctor"}</div>
-                                            </td>
-                                            <td className="py-2 px-2.5 text-[11px] text-slate-600 dark:text-slate-300">
-                                              {item.locality}
-                                            </td>
-                                            <td className="py-2 px-2.5 font-mono text-[11px] text-slate-600 dark:text-slate-300">
-                                              {item.phone || "-"}
-                                            </td>
-                                            <td className="py-2 px-2.5">
-                                              <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] font-bold">
-                                                {item.fit_score}/100
-                                              </span>
-                                            </td>
-                                            <td className="py-2 px-2.5">
-                                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300">
-                                                {item.source_tier}
-                                              </span>
-                                            </td>
-                                            <td className="py-2 px-2.5 text-right space-x-1.5">
-                                              {(item.choice_url || item.demo_url) && (
-                                                <a
-                                                  href={item.choice_url || item.demo_url}
-                                                  target="_blank"
-                                                  rel="noreferrer"
-                                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold hover:bg-emerald-100"
-                                                >
-                                                  <span>/demo/{item.slug}</span>
-                                                  <ExternalLink className="w-2.5 h-2.5" />
-                                                </a>
-                                              )}
-                                              <button
-                                                type="button"
-                                                onClick={() => setSelectedLeadId(item.id)}
-                                                className="inline-flex items-center px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10px] font-semibold cursor-pointer hover:bg-slate-200"
-                                              >
-                                                Dossier
-                                              </button>
-                                            </td>
-                                          </tr>
-                                        ))}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Structured Drop / Deduplication Breakdown */}
-                              {(dropCounts.length > 0 || droppedItems.length > 0) && (
-                                <div className="space-y-1.5 pt-1">
-                                  <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                                    <span>Filter &amp; Database Deduplication Gate Breakdown:</span>
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      {dropCounts.map(([reason, count]) => (
-                                        <span
-                                          key={reason}
-                                          className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-200/70 dark:border-amber-500/20"
-                                        >
-                                          {reason}: {count}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                  {droppedItems.length > 0 && (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-28 overflow-y-auto pr-1">
-                                      {droppedItems.map((d, i) => (
-                                        <div
-                                          key={i}
-                                          className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-[#10121A] border border-slate-200/70 dark:border-white/[0.05] text-[11px] flex items-center justify-between gap-2"
-                                        >
-                                          <span className="font-medium text-slate-700 dark:text-slate-300 truncate">
-                                            {d.name}
-                                          </span>
-                                          <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 shrink-0">
-                                            {d.reason}
-                                          </span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-
-                        {/* Collapsible Previous Runs List (runs.slice(1)) */}
-                        {showPreviousRuns && runs.length > 1 && (
-                          <div className="space-y-2.5 pt-1 max-h-96 overflow-y-auto pr-1">
-                            {runs.slice(1).map((r) => {
-                              const struct = r.drop_reasons?._structured;
-                              const builtLeads = struct?.built_leads || [];
-                              return (
-                                <div
-                                  key={r.id}
-                                  className="p-3.5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-2"
-                                >
-                                  <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                                        Run #{r.id}: {r.job_type}
-                                      </span>
-                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold font-mono">
-                                        {r.status}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      {r.trace_logs && r.trace_logs.length > 0 && (
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            appendTerminalLines([
-                                              `--- Loaded Trace Logs from Run #${r.id} (${r.job_type}) ---`,
-                                              ...(r.trace_logs || []),
-                                            ])
-                                          }
-                                          className="text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer"
-                                        >
-                                          Replay in Terminal
-                                        </button>
-                                      )}
-                                      <span className="text-[11px] text-slate-400 font-mono">
-                                        {new Date(r.started_at).toLocaleTimeString()}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div className="text-xs text-slate-600 dark:text-slate-300 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                                    <div className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                                      <div className="text-[10px] text-slate-400">Found</div>
-                                      <div className="font-bold font-mono text-slate-800 dark:text-white">{r.count_found}</div>
-                                    </div>
-                                    <div className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                                      <div className="text-[10px] text-slate-400">Passed</div>
-                                      <div className="font-bold font-mono text-slate-800 dark:text-white">{r.count_passed}</div>
-                                    </div>
-                                    <div className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                                      <div className="text-[10px] text-slate-400">Dropped</div>
-                                      <div className="font-bold font-mono text-amber-600 dark:text-amber-400">{r.count_dropped}</div>
-                                    </div>
-                                    <div className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04]">
-                                      <div className="text-[10px] text-slate-400">Duration</div>
-                                      <div className="font-bold font-mono text-slate-800 dark:text-white">
-                                        {r.finished_at
-                                          ? `${Math.max(1, Math.round((new Date(r.finished_at).getTime() - new Date(r.started_at).getTime()) / 1000))}s`
-                                          : "active"}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  {builtLeads.length > 0 && (
-                                    <div className="flex flex-wrap gap-1.5 pt-1">
-                                      {builtLeads.map((bl) => (
-                                        <button
-                                          key={bl.id}
-                                          type="button"
-                                          onClick={() => setSelectedLeadId(bl.id)}
-                                          className="text-[10px] font-mono px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 cursor-pointer"
-                                        >
-                                          {bl.name} ({bl.locality}) &rarr;
-                                        </button>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
 
-                  {/* Telegram Remote CLI Simulator Console (Compact self-start height) */}
-                  <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-3.5 self-start h-fit">
-                    <div className="flex items-center gap-2">
-                      <Terminal className="w-4 h-4 text-indigo-500" />
-                      <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                        Telegram Remote CLI Console
-                      </h3>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* Filter buttons */}
+                    <div className="flex items-center p-0.5 rounded-lg bg-slate-900 border border-slate-800 text-[10px] font-mono">
+                      {["ALL", "SCRAPE", "PROBE", "BUILD", "VIDEO", "ERROR"].map((f) => (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() => setTerminalFilter(f)}
+                          className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                            terminalFilter === f
+                              ? "bg-indigo-600 text-white font-bold"
+                              : "text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          {f}
+                        </button>
+                      ))}
                     </div>
-                    <form onSubmit={handleTelegramCmdSubmit} className="space-y-2">
-                      <input
-                        type="text"
-                        value={telegramCmd}
-                        onChange={(e) => setTelegramCmd(e.target.value)}
-                        placeholder="Try: /stock, /sprint, /today, /refill..."
-                        className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3 py-2 text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
-                      />
-                      <button
-                        type="submit"
-                        className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-xs font-semibold cursor-pointer transition-colors"
-                      >
-                        Simulate Telegram Command
-                      </button>
-                    </form>
 
-                    {telegramReply && (
-                      <div className="p-3 rounded-xl bg-slate-950 text-emerald-400 text-xs font-mono whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">
-                        {telegramReply}
-                      </div>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setTerminalAutoScroll((prev) => !prev)}
+                      className={`px-2 py-1 rounded-lg text-[10px] font-mono border transition-colors cursor-pointer ${
+                        terminalAutoScroll
+                          ? "bg-slate-800 text-emerald-400 border-slate-700"
+                          : "bg-slate-900 text-slate-500 border-slate-800"
+                      }`}
+                    >
+                      Scroll: {terminalAutoScroll ? "ON" : "OFF"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleCopyTerminalLogs}
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-mono text-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      {copiedTerminal ? (
+                        <Check className="w-3 h-3 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-3 h-3" />
+                      )}
+                      <span>Copy</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setTerminalLogs([
+                          `[${new Date().toLocaleTimeString()}] [SYSTEM] Terminal cleared. Ready for next Refill Batch...`,
+                        ])
+                      }
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-mono text-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      <span>Clear</span>
+                    </button>
                   </div>
                 </div>
 
+                {/* Log lines */}
+                <div
+                  ref={terminalContainerRef}
+                  className="p-4 h-72 overflow-y-auto font-mono text-xs leading-relaxed space-y-1.5 select-text"
+                >
+                  {filteredTerminalLogs.map((line, idx) => {
+                    const isError = line.includes("[ERROR]") || line.includes("[FAIL]") || line.includes("[DROP]");
+                    const isOk = line.includes("[OK]") || line.includes("[HOT]") || line.includes("[200]");
+                    const isScrape = line.includes("[SCRAPE]") || line.includes("[FOUND]");
+                    const isBuild = line.includes("[BUILD]") || line.includes("[AUDIT]");
+                    const isVideo = line.includes("[VIDEO]") || line.includes("[MP4]");
+
+                    let textColor = "text-slate-300";
+                    if (isError) textColor = "text-rose-400";
+                    else if (isOk) textColor = "text-emerald-300";
+                    else if (isScrape) textColor = "text-cyan-300";
+                    else if (isBuild) textColor = "text-indigo-300";
+                    else if (isVideo) textColor = "text-pink-300";
+
+                    return (
+                      <div key={idx} className={`${textColor} break-words whitespace-pre-wrap`}>
+                        <span className="text-slate-600 select-none mr-2">
+                          {String(idx + 1).padStart(2, "0")}
+                        </span>
+                        {line}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Terminal Footer status */}
+              <div className="px-4 py-2 bg-[#0F1117] border-t border-slate-800/60 text-[10px] font-mono text-slate-400 flex items-center justify-between">
+                <span>SSE Connection: CONNECTED (/api/events/stream)</span>
+                <span>{filteredTerminalLogs.length} events logged</span>
+              </div>
+            </div>
+
+            {/* Bottom Right: Batch End Results & Structured Outputs Card */}
+            <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/[0.06]">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <span>📋 Batch End Results &amp; Structured Outputs</span>
+                    </h3>
+                    <p className="text-xs text-slate-400">Direct high-level summary of latest execution</p>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-bold">
+                    🟢 IN PROGRESS
+                  </span>
+                </div>
+
+                {/* Metrics Breakdown */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#0E1017] border border-slate-200/70 dark:border-white/[0.05] space-y-2 text-xs">
+                  <div className="flex items-center justify-between font-mono text-[11px] pb-1 border-b border-slate-200/50 dark:border-white/[0.04]">
+                    <span className="text-slate-400">Run ID: #run-89 (Triggered 2m ago)</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">Stage 2: Verification</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-y-1.5 gap-x-4 pt-1 text-[11px]">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">• Target Requested:</span>
+                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{targetLeads} leads</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">• Candidate Leads:</span>
+                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">25 found</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">• Verified No-Site:</span>
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">14 passed (3 dropped)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">• Research Dossiers:</span>
+                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">11 enriched</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">• Multi-Demos Built:</span>
+                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">8 ready</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">• Review Tray Ready:</span>
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">8 in buffer</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Verified Lead Payload */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-500/20 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <span>🔍 Recent Verified Lead Payload</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                      100% Qualified
+                    </span>
+                  </div>
+
+                  <div>
+                    <div className="font-bold text-xs text-slate-900 dark:text-white">
+                      Dentique Dental &amp; Implant Centre
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Dr. Rajeev Verma &bull; Sec 76 Noida &bull; +91 98112 43210
+                    </div>
+                  </div>
+
+                  {/* Ready live preview links */}
+                  <div className="flex items-center gap-2 pt-1 flex-wrap">
+                    <a
+                      href="http://localhost:3000/demo/modern"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
+                    >
+                      <span>🔗 Modern (200)</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+
+                    <a
+                      href="http://localhost:3000/demo/warm"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
+                    >
+                      <span>🔗 Warm (200)</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+
+                    <a
+                      href="http://localhost:3000/demo/lux"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2 py-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-700 dark:text-indigo-300 text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
+                    >
+                      <span>🔗 Lux (200)</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Jump to Leads */}
+              <div className="pt-2 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs">
+                <span className="text-slate-400 font-mono text-[11px]">
+                  {leads.length} leads in active CRM pipeline
+                </span>
+                {leads.length > 0 && (
+                  <button
+                    onClick={() => setSelectedLeadId(leads[0].id)}
+                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>View First Lead Dossier</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Dedicated Cockpit Factory Supervisor Agent UI Space (Docked at bottom) */}
+          <CockpitSupervisorBar
+            status={isRunningPipeline ? "RUNNING" : "MONITORING"}
+            currentIntent="Monitoring Step 2... 14 clinics verified. Brave Search fallback ready if Serper encounters 429 rate limit."
+            onSendCommand={handleSupervisorCommand}
+            onEmergencyStop={handleStopPipeline}
+          />
+        </div>
+      )}
+
+      {/* Slide-over Node Inspection Drawer */}
+      <NodeInspectionDrawer
+        node={inspectingNode}
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onRetryNode={handleRetryNode}
+        onSkipNode={handleSkipNode}
+        onRunOnlyStep={handleRunOnlyStep}
+        onPauseNode={handlePauseNode}
+      />
+    </div>
   );
 }

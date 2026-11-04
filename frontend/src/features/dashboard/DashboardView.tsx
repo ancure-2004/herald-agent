@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   Activity,
   ArrowRight,
@@ -11,16 +11,11 @@ import {
   ChevronRight,
   Clock,
   Download,
-  Eye,
-  Flame,
-  LayoutDashboard,
-  LayoutGrid,
   Mail,
   MapPin,
   MessageSquare,
   Play,
   Send,
-  ShieldCheck,
   Zap,
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
@@ -36,8 +31,6 @@ export function DashboardView() {
     bufferHealthPct,
     setSelectedLeadId,
     setActiveTab,
-    activeSmartView,
-    setActiveSmartView,
     handleDayModeChange,
     setProblemModalOpen,
     dashScheduleFilter,
@@ -45,8 +38,6 @@ export function DashboardView() {
     handleTriggerRefill,
     handleSyncBatchLinks,
   } = useCRM();
-
-  const [dashboardSubView, setDashboardSubView] = useState<"overview" | "sprint">("overview");
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -94,19 +85,6 @@ export function DashboardView() {
     ).length;
   }, [leads, stageMap]);
 
-  const dueTodayCount = useMemo(() => {
-    const endOfToday = Date.now() + 12 * 60 * 60 * 1000;
-    return leads.filter((l) => {
-      if (!l.next_action_due_at) return false;
-      const dueTime = new Date(l.next_action_due_at).getTime();
-      return dueTime <= endOfToday;
-    }).length;
-  }, [leads]);
-
-  const hotIntentCount = useMemo(() => {
-    return leads.filter((l) => (l.intent_score || 0) >= 40).length;
-  }, [leads]);
-
   const repliedWarmCount = useMemo(() => {
     const repliedStageId = stageMap["replied"] ?? 6;
     return leads.filter((l) => l.stage_id === repliedStageId).length;
@@ -135,11 +113,6 @@ export function DashboardView() {
     }
     return leads;
   }, [leads, dashScheduleFilter]);
-
-  const handleSmartViewClick = (slug: string) => {
-    setActiveSmartView(slug);
-    setActiveTab("board");
-  };
 
   return (
     <div className="space-y-6">
@@ -356,342 +329,16 @@ export function DashboardView() {
             </div>
           </div>
           <button
-            onClick={() => setDashboardSubView(dashboardSubView === "sprint" ? "overview" : "sprint")}
+            onClick={() => setActiveTab("sprint")}
             className="w-full py-1.5 px-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/60 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
             <Zap className="w-3.5 h-3.5 text-amber-500" />
-            <span>{dashboardSubView === "sprint" ? "Back to Command Overview" : "View Evening Sprint Panel"}</span>
+            <span>Open Evening Sprint →</span>
           </button>
         </div>
       </div>
 
-      {/* 3. Seamless Quick-Toggle Access directly to Kanban Board & Smart Views */}
-      <div className="p-4 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Surface & Sub-View Switcher */}
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200/60 dark:border-white/[0.06] text-xs">
-            <button
-              onClick={() => setDashboardSubView("overview")}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
-                dashboardSubView === "overview"
-                  ? "bg-white dark:bg-[#1E2232] text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-white/[0.08]"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Command Overview</span>
-            </button>
-
-            <button
-              onClick={() => setDashboardSubView("sprint")}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
-                dashboardSubView === "sprint"
-                  ? "bg-white dark:bg-[#1E2232] text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-white/[0.08]"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              <Zap className="w-3.5 h-3.5 text-amber-500" />
-              <span>Evening Sprint (EV/min)</span>
-              {sprintPlan && sprintPlan.tasks.length > 0 && (
-                <span className="px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-400 font-mono text-[10px]">
-                  {sprintPlan.tasks.length}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* Quick-Jump Directly to Full Kanban Board */}
-          <button
-            onClick={() => setActiveTab("board")}
-            className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/25 transition-all cursor-pointer active:scale-95"
-            title="Open Full Kanban Board View"
-          >
-            <LayoutGrid className="w-3.5 h-3.5" />
-            <span>Open Kanban Board →</span>
-          </button>
-        </div>
-
-        {/* Smart Views Quick-Toggle Pills Bar */}
-        <div className="pt-2 border-t border-slate-100 dark:border-white/[0.06] flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1.5">
-            <span>Smart Views:</span>
-          </span>
-
-          {/* 1. Review Tray */}
-          <button
-            onClick={() => handleSmartViewClick("review_tray")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSmartView === "review_tray"
-                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
-                : "bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-white/[0.06] text-slate-700 dark:text-slate-300"
-            }`}
-            title="Packages ready for operator approval & dispatch"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Review Tray</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] font-bold">
-              {reviewTrayCount}
-            </span>
-          </button>
-
-          {/* 2. Due Today & Overdue */}
-          <button
-            onClick={() => handleSmartViewClick("due_today")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSmartView === "due_today"
-                ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
-                : "bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-white/[0.06] text-slate-700 dark:text-slate-300"
-            }`}
-            title="Clinics with next steps scheduled for today or overdue"
-          >
-            <Clock className="w-3.5 h-3.5 text-amber-500" />
-            <span>Due Today</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-mono text-[10px] font-bold">
-              {dueTodayCount}
-            </span>
-          </button>
-
-          {/* 3. Hot Intent */}
-          <button
-            onClick={() => handleSmartViewClick("hot_intent")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSmartView === "hot_intent"
-                ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30"
-                : "bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-white/[0.06] text-slate-700 dark:text-slate-300"
-            }`}
-            title="Clinics with high demo engagement & buyer intent (score >= 40)"
-          >
-            <Flame className="w-3.5 h-3.5 text-rose-500" />
-            <span>Hot Intent</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-mono text-[10px] font-bold">
-              {hotIntentCount}
-            </span>
-          </button>
-
-          {/* 4. Active Replies */}
-          <button
-            onClick={() => handleSmartViewClick("replied_warm")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSmartView === "replied_warm"
-                ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30"
-                : "bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-white/[0.06] text-slate-700 dark:text-slate-300"
-            }`}
-            title="Clinics in replied or warm status awaiting operator conversation"
-          >
-            <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
-            <span>Active Replies</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-mono text-[10px] font-bold">
-              {repliedWarmCount}
-            </span>
-          </button>
-
-          {/* 5. All Active */}
-          <button
-            onClick={() => handleSmartViewClick("all_active")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeSmartView === "all_active"
-                ? "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30"
-                : "bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-white/[0.06] text-slate-700 dark:text-slate-300"
-            }`}
-            title="All active clinics across the entire pipeline"
-          >
-            <LayoutGrid className="w-3.5 h-3.5 text-indigo-500" />
-            <span>All Active</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-mono text-[10px] font-bold">
-              {leads.length}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* 4. Sub-View: Evening Sprint Panel (when active) OR Command Overview */}
-      {dashboardSubView === "sprint" ? (
-        /* ==================== EVENING SPRINT DEDICATED PANEL ==================== */
-        <div className="space-y-5 animate-in fade-in duration-200">
-          {/* Sprint KPI Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
-              <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Time Budget Allocated
-                </div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                  {sprintPlan?.allocated_minutes ?? 0} / {sprintPlan?.budget_minutes ?? 60} mins
-                </div>
-                <div className="text-[11px] text-slate-500 mt-1">Ranked by EV / minute</div>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                <Zap className="w-6 h-6" />
-              </div>
-            </div>
-
-            <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
-              <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Expected Pipeline Value
-                </div>
-                <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                  ₹{(sprintPlan?.total_expected_value_inr ?? 0).toLocaleString()}
-                </div>
-                <div className="text-[11px] text-slate-500 mt-1">Probability-weighted yield</div>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-            </div>
-
-            <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-between">
-              <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Prioritized Sprint Tasks
-                </div>
-                <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">
-                  {sprintPlan?.tasks?.length ?? 0} clinics
-                </div>
-                <div className="text-[11px] text-slate-500 mt-1">Replies &gt; Hot Viewers &gt; Review Tray</div>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                <Flame className="w-6 h-6" />
-              </div>
-            </div>
-          </div>
-
-          {/* EV Formula Explanation Banner */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-500/20 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500 shrink-0" />
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                Prioritization Formula:
-              </span>
-              <code className="px-2 py-0.5 rounded-md bg-white/80 dark:bg-[#141721] font-mono text-indigo-600 dark:text-indigo-400 font-bold border border-slate-200/60 dark:border-white/[0.08]">
-                Priority Score = (Close Probability × Deal Value INR) / Estimated Minutes
-              </code>
-            </div>
-            <span className="text-[11px] text-slate-400">
-              Bounded to operator budget ({sprintPlan?.budget_minutes ?? 60} mins)
-            </span>
-          </div>
-
-          {/* Prioritized Task List */}
-          <div className="space-y-2.5">
-            {(!sprintPlan || sprintPlan.tasks.length === 0) ? (
-              <div className="p-12 text-center text-xs text-slate-400 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08]">
-                No sprint tasks queued for tonight. All priority leads are up to date!
-              </div>
-            ) : (
-              sprintPlan.tasks.map((t, idx) => (
-                <div
-                  key={t.lead_id}
-                  onClick={() => setSelectedLeadId(t.lead_id)}
-                  className="p-4 rounded-2xl bg-white dark:bg-[#141721] hover:bg-slate-50 dark:hover:bg-slate-800/70 border border-slate-200 dark:border-white/[0.08] flex items-center justify-between gap-4 cursor-pointer transition-all shadow-xs"
-                >
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
-                      #{idx + 1}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-sm text-slate-900 dark:text-white">
-                          {t.lead_name}
-                        </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                          ({t.doctor_name || "Doctor"} • {t.locality})
-                        </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 font-semibold">
-                          {t.action_type}
-                        </span>
-                      </div>
-                      <div className="text-xs text-slate-600 dark:text-slate-300 mt-1">
-                        Next Step: {t.next_action}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-right shrink-0">
-                    <div>
-                      <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        ~₹{t.expected_value_inr.toLocaleString()} EV
-                      </div>
-                      <div className="text-[11px] text-slate-400">
-                        {t.estimated_minutes} mins • Score {t.priority_score}/m
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      ) : (
-        /* ==================== COMMAND OVERVIEW SECTION ==================== */
-        <div className="space-y-6">
-          {/* Evening Sprint Highlight Teaser */}
-          {sprintPlan && sprintPlan.tasks.length > 0 && (
-            <div className="p-5 rounded-3xl bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-500/20 shadow-xs space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
-                    <Zap className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <span>Evening Sprint Queue</span>
-                      <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] font-mono font-bold">
-                        {sprintPlan.tasks.length} tasks ({sprintPlan.allocated_minutes}m)
-                      </span>
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Ranked by EV per minute • Potential Yield: ~₹{sprintPlan.total_expected_value_inr.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setDashboardSubView("sprint")}
-                  className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-[#1E2232] border border-slate-200 dark:border-white/[0.08] text-indigo-600 dark:text-indigo-400 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                >
-                  <span>Open Full Sprint Panel</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Preview top 2 sprint tasks */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
-                {sprintPlan.tasks.slice(0, 2).map((t, idx) => (
-                  <div
-                    key={t.lead_id}
-                    onClick={() => setSelectedLeadId(t.lead_id)}
-                    className="p-3 rounded-2xl bg-white/80 dark:bg-[#141721]/80 hover:bg-white dark:hover:bg-[#141721] border border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-3 cursor-pointer transition-all"
-                  >
-                    <div className="flex items-center gap-2.5 truncate">
-                      <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-mono">
-                        #{idx + 1}
-                      </span>
-                      <div className="truncate">
-                        <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                          {t.lead_name}
-                        </div>
-                        <div className="text-[11px] text-slate-400 truncate">
-                          {t.next_action}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                        ~₹{t.expected_value_inr.toLocaleString()}
-                      </div>
-                      <div className="text-[10px] text-slate-400">
-                        {t.priority_score}/m
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Middle Section: Outreach Schedule Card + Autopilot Safety */}
+      {/* 3. Middle Section: Outreach Schedule Card + Autopilot Safety */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left: Schedule Card with Filter Tabs & Warm Highlight */}
             <div className="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-5">
@@ -965,8 +612,6 @@ export function DashboardView() {
               </table>
             </div>
           </div>
-        </div>
-      )}
     </div>
   );
 }
