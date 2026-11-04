@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import dynamic from "next/dynamic";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { CRMProvider, useCRM } from "@/context/CRMContext";
 import { Header } from "@/components/layout/Header";
@@ -12,28 +11,11 @@ import { LeadsTableView } from "@/features/table/LeadsTableView";
 import { EveningSprintView } from "@/features/sprint/EveningSprintView";
 import { AutopilotCockpitView } from "@/features/cockpit/AutopilotCockpitView";
 import { HustleSettingsView } from "@/features/settings/HustleSettingsView";
+import { LeadDetailModal } from "@/features/modals/LeadDetailModal";
+import { AddLeadModal } from "@/features/modals/AddLeadModal";
+import { ProblemReportModal } from "@/features/modals/ProblemReportModal";
+import { CommandPaletteModal } from "@/features/modals/CommandPaletteModal";
 import { AssistantDrawer } from "@/features/modals/AssistantDrawer";
-
-// Dynamically import heavy modals to optimize initial bundle size
-const LeadDetailModal = dynamic(
-  () => import("@/features/modals/LeadDetailModal").then((mod) => mod.LeadDetailModal),
-  { ssr: false }
-);
-
-const AddLeadModal = dynamic(
-  () => import("@/features/modals/AddLeadModal").then((mod) => mod.AddLeadModal),
-  { ssr: false }
-);
-
-const ProblemReportModal = dynamic(
-  () => import("@/features/modals/ProblemReportModal").then((mod) => mod.ProblemReportModal),
-  { ssr: false }
-);
-
-const CommandPaletteModal = dynamic(
-  () => import("@/features/modals/CommandPaletteModal").then((mod) => mod.CommandPaletteModal),
-  { ssr: false }
-);
 
 function CRMContent() {
   const { activeTab, loading, toast } = useCRM();

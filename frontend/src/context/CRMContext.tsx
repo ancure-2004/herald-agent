@@ -77,6 +77,7 @@ interface CRMContextType {
   // Real-time & Terminal
   liveFeed: string[];
   terminalLogs: string[];
+  setTerminalLogs: React.Dispatch<React.SetStateAction<string[]>>;
   activeTerminalJob: string | null;
   setActiveTerminalJob: (job: string | null) => void;
   appendTerminalLines: (lines: string[]) => void;
@@ -640,6 +641,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     closeToast,
     liveFeed,
     terminalLogs,
+    setTerminalLogs,
     activeTerminalJob,
     setActiveTerminalJob,
     appendTerminalLines,
