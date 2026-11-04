@@ -96,7 +96,7 @@ export function PipelineNodeNetwork({
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 relative py-3 xl:py-7">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-5 xl:gap-8 relative py-6 xl:py-12">
       {nodes.map((node, idx) => {
         const isSelected = selectedNodeId === node.id;
         const isRunning = node.status === "RUNNING";
@@ -201,24 +201,24 @@ export function PipelineNodeNetwork({
 
             {/* n8n-style port connector curve to next node */}
             {idx < nodes.length - 1 && (
-              <div className="hidden xl:block absolute -right-3 top-1/2 -translate-y-1/2 w-3 pointer-events-none z-10">
-                <svg className="w-3 h-12 overflow-visible" viewBox="0 0 12 40">
+              <div className="hidden xl:block absolute -right-8 top-1/2 -translate-y-1/2 w-8 pointer-events-none z-10">
+                <svg className="w-8 h-12 overflow-visible" viewBox="0 0 32 40">
                   <path
                     d={
                       idx === 0
-                        ? "M 0 20 C 6 20, 6 52, 12 52"
+                        ? "M 0 20 C 16 20, 16 52, 32 52"
                         : idx === 1
-                        ? "M 0 20 C 6 20, 6 -24, 12 -24"
+                        ? "M 0 20 C 16 20, 16 -24, 32 -24"
                         : idx === 2
-                        ? "M 0 20 C 6 20, 6 72, 12 72"
+                        ? "M 0 20 C 16 20, 16 72, 32 72"
                         : idx === 3
-                        ? "M 0 20 C 6 20, 6 -28, 12 -28"
-                        : "M 0 20 C 6 20, 6 52, 12 52"
+                        ? "M 0 20 C 16 20, 16 -28, 32 -28"
+                        : "M 0 20 C 16 20, 16 52, 32 52"
                     }
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.5"
-                    strokeDasharray="3 3"
+                    strokeDasharray="4 3"
                     className="text-indigo-500/40 dark:text-indigo-400/40 animate-pulse"
                   />
                 </svg>
