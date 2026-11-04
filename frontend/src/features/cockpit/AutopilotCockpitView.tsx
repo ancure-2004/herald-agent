@@ -580,7 +580,7 @@ export function AutopilotCockpitView() {
           />
 
           {/* 3. Bottom Split: Live Execution Terminal + Batch End Results Card */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10 xl:mt-14 pt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-16 xl:mt-24 pt-8">
             {/* Bottom Left: Live Streaming Execution Terminal */}
             <div className="rounded-3xl bg-[#0B0D14] border border-slate-800/90 shadow-xl overflow-hidden flex flex-col justify-between">
               <div>

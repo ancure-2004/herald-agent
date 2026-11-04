@@ -96,7 +96,7 @@ export function PipelineNodeNetwork({
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-5 xl:gap-8 relative py-6 xl:py-12">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-8 xl:gap-14 relative mx-auto max-w-[1750px] px-6 sm:px-12 xl:px-16 py-8 xl:py-16">
       {nodes.map((node, idx) => {
         const isSelected = selectedNodeId === node.id;
         const isRunning = node.status === "RUNNING";
@@ -201,19 +201,19 @@ export function PipelineNodeNetwork({
 
             {/* n8n-style port connector curve to next node */}
             {idx < nodes.length - 1 && (
-              <div className="hidden xl:block absolute -right-8 top-1/2 -translate-y-1/2 w-8 pointer-events-none z-10">
-                <svg className="w-8 h-12 overflow-visible" viewBox="0 0 32 40">
+              <div className="hidden xl:block absolute -right-14 top-1/2 -translate-y-1/2 w-14 pointer-events-none z-10">
+                <svg className="w-14 h-16 overflow-visible" viewBox="0 0 56 40">
                   <path
                     d={
                       idx === 0
-                        ? "M 0 20 C 16 20, 16 52, 32 52"
+                        ? "M 0 20 C 28 20, 28 52, 56 52"
                         : idx === 1
-                        ? "M 0 20 C 16 20, 16 -24, 32 -24"
+                        ? "M 0 20 C 28 20, 28 -24, 56 -24"
                         : idx === 2
-                        ? "M 0 20 C 16 20, 16 72, 32 72"
+                        ? "M 0 20 C 28 20, 28 72, 56 72"
                         : idx === 3
-                        ? "M 0 20 C 16 20, 16 -28, 32 -28"
-                        : "M 0 20 C 16 20, 16 52, 32 52"
+                        ? "M 0 20 C 28 20, 28 -28, 56 -28"
+                        : "M 0 20 C 28 20, 28 52, 56 52"
                     }
                     fill="none"
                     stroke="currentColor"
