@@ -71,9 +71,9 @@ export function Header() {
           </div>
         </div>
 
-        {/* Center: Dual-Surface Switcher (Command Dashboard vs Autopilot Cockpit) */}
+        {/* Center: Dual-Surface Switcher (Command vs Cockpit) */}
         <div className="flex items-center p-1 rounded-2xl bg-slate-100/90 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] shadow-inner shrink-0">
-          {/* Surface 1: Command Dashboard */}
+          {/* Surface 1: Command */}
           <button
             onClick={() => setActiveTab("dashboard")}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer relative ${
@@ -81,16 +81,16 @@ export function Header() {
                 ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25 dark:bg-indigo-600 dark:text-white"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]"
             }`}
-            title="Switch to Command Dashboard (High-level KPI control, daily sprint tasks, review tray, and Kanban)"
+            title="Switch to Command (High-level KPI control, daily sprint tasks, review tray, and Kanban)"
           >
-            <span className="text-sm leading-none" role="img" aria-label="Command Dashboard">📊</span>
-            <span className="hidden sm:inline">Command Dashboard</span>
+            <span className="text-sm leading-none" role="img" aria-label="Command">📊</span>
+            <span className="hidden sm:inline">Command</span>
             {isCommandActive && (
               <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-xs" />
             )}
           </button>
 
-          {/* Surface 2: Autopilot Cockpit */}
+          {/* Surface 2: Cockpit */}
           <button
             onClick={() => setActiveTab("autopilot")}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer relative ${
@@ -98,10 +98,10 @@ export function Header() {
                 ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 dark:bg-emerald-600 dark:text-white"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]"
             }`}
-            title="Switch to Autopilot Cockpit (Visual pipeline cards, live terminal stream & multi-channel outreach engine)"
+            title="Switch to Cockpit (Visual pipeline cards, live terminal stream & multi-channel outreach engine)"
           >
-            <span className="text-sm leading-none" role="img" aria-label="Autopilot Cockpit">⚡</span>
-            <span className="hidden sm:inline">Autopilot Cockpit</span>
+            <span className="text-sm leading-none" role="img" aria-label="Cockpit">⚡</span>
+            <span className="hidden sm:inline">Cockpit</span>
             <span
               className={`w-2 h-2 rounded-full shrink-0 ${
                 isCockpitActive

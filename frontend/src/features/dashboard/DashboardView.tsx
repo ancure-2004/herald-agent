@@ -2,19 +2,15 @@
 
 import React, { useMemo } from "react";
 import {
-  Activity,
   ArrowRight,
   Bug,
   Building,
-  Check,
-  CheckCircle2,
   ChevronRight,
   Clock,
   Download,
   Mail,
   MapPin,
   MessageSquare,
-  Play,
   Send,
   Zap,
 } from "lucide-react";
@@ -35,8 +31,6 @@ export function DashboardView() {
     setProblemModalOpen,
     dashScheduleFilter,
     setDashScheduleFilter,
-    handleTriggerRefill,
-    handleSyncBatchLinks,
   } = useCRM();
 
   const greeting = useMemo(() => {
@@ -126,7 +120,7 @@ export function DashboardView() {
             <span>{greeting}</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            {formattedDate} • Side Hustle Autopilot & Command Center
+            {formattedDate} • Side Hustle Command Center
           </p>
         </div>
 
@@ -338,10 +332,8 @@ export function DashboardView() {
         </div>
       </div>
 
-      {/* 3. Middle Section: Outreach Schedule Card + Autopilot Safety */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left: Schedule Card with Filter Tabs & Warm Highlight */}
-            <div className="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-5">
+      {/* 3. Middle Section: Outreach Schedule & Action Queue (Full Width) */}
+      <div className="w-full p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -450,83 +442,10 @@ export function DashboardView() {
                   </div>
                 ))}
               </div>
-            </div>
+      </div>
 
-            {/* Right: Autopilot Velocity & Enforced Invariants */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex flex-col justify-between space-y-5">
-              <div>
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/[0.06]">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-indigo-500" />
-                    <span>Autopilot & Velocity</span>
-                  </h3>
-                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                    ONLINE
-                  </span>
-                </div>
-
-                {/* 7-Step Gate Indicators */}
-                <div className="pt-4 space-y-2">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Enforced Invariants
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-[11px]">
-                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04] text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>No Website Rule</span>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04] text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>2-Source Facts</span>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04] text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Idempotent Send</span>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/[0.04] text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Live HTTP 200</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Autopilot Cockpit Quick Link */}
-                <div className="pt-4">
-                  <button
-                    onClick={() => setActiveTab("autopilot")}
-                    className="w-full p-3 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/50 dark:border-indigo-800/50 text-indigo-700 dark:text-indigo-300 text-xs font-semibold flex items-center justify-between cursor-pointer hover:bg-indigo-100/70 dark:hover:bg-indigo-900/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>Switch to Autopilot Cockpit</span>
-                    </div>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Autopilot Quick Action Triggers */}
-              <div className="space-y-2 pt-2">
-                <button
-                  onClick={handleTriggerRefill}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md shadow-indigo-600/25 transition-all cursor-pointer active:scale-95"
-                >
-                  <Play className="w-3.5 h-3.5" />
-                  <span>Run Stock Refill Batch</span>
-                </button>
-                <button
-                  onClick={handleSyncBatchLinks}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Verify Live HTTP Links</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom: Active Priority Clinics Table */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-4">
+      {/* 4. Bottom: Active Priority Clinics Table */}
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">Active Priority Clinics</h2>
