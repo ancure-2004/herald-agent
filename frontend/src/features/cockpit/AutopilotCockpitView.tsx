@@ -392,7 +392,7 @@ export function AutopilotCockpitView() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-[calc(100vh-5rem)] -m-4 sm:-m-6 p-4 sm:p-6 bg-[#FAF9F6] dark:bg-[#0B0C10] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] transition-colors">
       {/* 1. Sleek Floating Sub-Page Tabs */}
       <div className="flex items-center justify-center pt-1">
         <div className="inline-flex items-center p-1 rounded-2xl bg-white/90 dark:bg-[#141721]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
@@ -429,17 +429,17 @@ export function AutopilotCockpitView() {
       ) : (
         /* ==================== SUB-PAGE 1: LEAD PIPELINE FACTORY ==================== */
         <div className="space-y-6">
-          {/* 1. Collapsible Compact Factory Runner Card */}
-          <div className="p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card transition-all duration-200">
+          {/* 1. Collapsible Compact Factory Runner Card (Constrained Width & Left-Aligned) */}
+          <div className="w-fit max-w-md self-start p-3 sm:p-3.5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card transition-all duration-200">
             {/* Collapsed Header / Toggler Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <button
                 type="button"
                 onClick={() => setRunnerExpanded((prev) => !prev)}
-                className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors cursor-pointer text-left"
+                className="flex items-center gap-2 px-2 py-1 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors cursor-pointer text-left"
                 title={runnerExpanded ? "Collapse Runner Controls" : "Expand Runner Controls"}
               >
-                <div className="w-7 h-7 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center font-bold">
+                <div className="w-7 h-7 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center font-bold shrink-0">
                   <Zap className="w-3.5 h-3.5 text-amber-500" />
                 </div>
                 <div>
@@ -453,19 +453,19 @@ export function AutopilotCockpitView() {
                       <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                     )}
                   </div>
-                  <div className="text-[10px] text-slate-400 font-medium">
-                    {selectedLocality} &bull; Strict No-Website Rule
+                  <div className="text-[10px] text-slate-400 font-medium truncate max-w-[170px]">
+                    {selectedLocality}
                   </div>
                 </div>
               </button>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 shrink-0">
                 {!runnerExpanded && (
                   <button
                     type="button"
                     onClick={handleSyncBatchLinks}
-                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
                     title="Verify live HTTP 200 on all 4 demo routes and sync batch.json"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
@@ -476,7 +476,7 @@ export function AutopilotCockpitView() {
                   <button
                     type="button"
                     onClick={handleStopPipeline}
-                    className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-900/30 transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-900/30 transition-all cursor-pointer flex items-center gap-1"
                   >
                     <AlertOctagon className="w-3.5 h-3.5" />
                     <span>Stop</span>
@@ -485,7 +485,7 @@ export function AutopilotCockpitView() {
                   <button
                     type="button"
                     onClick={handleRunRefillWithTarget}
-                    className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                    className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 shrink-0"
                   >
                     <Play className="w-3.5 h-3.5" />
                     <span>RUN REFILL ({targetLeads})</span>
@@ -496,7 +496,7 @@ export function AutopilotCockpitView() {
 
             {/* Expanded Controls Drawer */}
             {runnerExpanded && (
-              <div className="pt-3 mt-3 border-t border-slate-100 dark:border-white/[0.06] grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs animate-in fade-in duration-200">
+              <div className="pt-3 mt-3 border-t border-slate-100 dark:border-white/[0.06] space-y-3 text-xs animate-in fade-in duration-200">
                 {/* Presets and custom numeric input */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -539,7 +539,7 @@ export function AutopilotCockpitView() {
                   <select
                     value={selectedLocality}
                     onChange={(e) => setSelectedLocality(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                    className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
                   >
                     <option value="Delhi NCR / Noida">Delhi NCR / Noida (Sector 76-78)</option>
                     <option value="South Delhi / Saket">South Delhi / Saket &amp; Malviya Nagar</option>
@@ -550,25 +550,23 @@ export function AutopilotCockpitView() {
                 </div>
 
                 {/* Actions & Collapse */}
-                <div className="space-y-1.5 flex flex-col justify-end">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleSyncBatchLinks}
-                      className="flex-1 py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Verify Links</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRunnerExpanded(false)}
-                      className="p-1.5 rounded-xl border border-slate-200 dark:border-white/[0.08] text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
-                      title="Collapse Controls"
-                    >
-                      <ChevronUp className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleSyncBatchLinks}
+                    className="flex-1 py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Verify Links</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRunnerExpanded(false)}
+                    className="p-1.5 rounded-xl border border-slate-200 dark:border-white/[0.08] text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
+                    title="Collapse Controls"
+                  >
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             )}
