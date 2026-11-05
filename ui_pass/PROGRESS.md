@@ -1,0 +1,59 @@
+# UI Consistency and Polish Pass - Progress
+
+- [x] **Phase 0. Preflight**
+  - [x] Confirm repo root and git status clean
+  - [x] Create and checkout branch `ui/impeccable-pass`
+  - [x] Read `AGENTS.md` (root and frontend), `frontend/docs/*.md`, `ROADMAP_AND_UI_SPEC.md`, `AUTOPILOT_COCKPIT_SPEC.md`
+  - [x] Skim all files in `src/features/` and `src/components/`
+  - [x] Confirm node/npm work and frontend deps installed (`npm run typecheck` passing)
+  - [x] Identify top 5 riskiest things
+  - [x] Initialize `ui_pass/PROGRESS.md` and update `.gitignore`
+- [x] **Phase 1. Install Impeccable**
+  - [x] Run `npx impeccable install` with appropriate provider and scope
+  - [x] Add Impeccable gitignore block to root `.gitignore`
+  - [x] Run `/impeccable doctor` to confirm
+  - [x] Commit Phase 1
+- [ ] **Phase 2. Context & Design System Capture**
+  - [ ] Run `/impeccable init` with operator and project context
+  - [ ] Run `/impeccable document` to capture current visual system into `DESIGN.md`
+  - [ ] Commit `PRODUCT.md` and `DESIGN.md`
+- [ ] **Phase 3. Baseline (Read-Only)**
+  - [ ] Start backend and frontend services (`start_crm.sh`)
+  - [ ] Track A: Detector (`npx impeccable detect` for source and URL)
+  - [ ] Track B: Screenshot matrix via Playwright (6 views, 5 modals across 1440, 1024, 768, 390px in dark & light)
+  - [ ] Track C: Layout probe (`ui_pass/tools/probe.mjs`)
+  - [ ] Track D: Code pattern audit (`reports/code-patterns.md`)
+  - [ ] Impeccable audit & critique per view
+  - [ ] Merge into `reports/BASELINE.md`
+  - [ ] Commit reports (excluding screenshots)
+- [ ] **Phase 4. Plan & Stop for Captain Approval**
+  - [ ] Write `ui_pass/FIX_PLAN.md` (tokens, scale, fix order, risk bounds, non-goals)
+  - [ ] Stop and await Captain's explicit approval
+- [ ] **Phase 5. Foundation**
+  - [ ] Unify tokens (`tailwind.config.ts`, `globals.css`, `layout.tsx`, `page.tsx`)
+  - [ ] Fix root shell containment and scrolling
+  - [ ] Standardize shared layout primitives and `src/components/ui/*` + `src/components/layout/*`
+  - [ ] Re-verify with typecheck, probe, detect, and screenshots
+  - [ ] Commit Phase 5
+- [ ] **Phase 6. Pilot View (Dashboard) & Stop**
+  - [ ] Fix Dashboard view spacing, alignment, and responsiveness
+  - [ ] Verify: typecheck, 0 overflow in probe, detect, before/after screenshots
+  - [ ] Present 1440 dark and 390 dark comparison and stop for Captain OK
+  - [ ] Commit Phase 6
+- [ ] **Phase 7. Remaining Views**
+  - [ ] Kanban Board (`src/features/board/`)
+  - [ ] Leads Table (`src/features/table/`)
+  - [ ] Evening Sprint (`src/features/sprint/`)
+  - [ ] Hustle Settings (`src/features/settings/`)
+  - [ ] Modals & Drawers (`src/features/modals/`)
+  - [ ] Autopilot Cockpit (`src/features/cockpit/` - layout/spacing/overflow only)
+  - [ ] Verify typecheck and commit per feature
+- [ ] **Phase 8. Extract & Final Verification**
+  - [ ] Extract duplicated patterns into shared components
+  - [ ] Full build and typecheck verification (`npm run typecheck`, `npm run build`)
+  - [ ] Final detect, probe, and screenshot matrix (`screens/after`)
+  - [ ] Impeccable audit verification (`audit-after.md`)
+  - [ ] Confirm design hook works
+- [ ] **Final Report**
+  - [ ] Compile `ui_pass/REPORT.md`
+  - [ ] Summary presentation with issue metrics, token changes, remaining decisions, and git log
