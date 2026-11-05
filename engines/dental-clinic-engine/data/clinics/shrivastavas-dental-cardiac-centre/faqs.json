@@ -1,0 +1,34 @@
+{
+  "faqs": [
+    {
+      "category": "General",
+      "question": "What makes dental treatment cardiac-safe at this clinic?",
+      "answer": "As an integrated dental and cardiac centre, we screen blood pressure and select cardiac-conscious anesthetics that minimize cardiovascular stress."
+    },
+    {
+      "category": "Timings",
+      "question": "What are the clinic operating hours in Prashant Vihar?",
+      "answer": "We are open Monday to Saturday 9:00 AM - 1:00 PM and 5:00 PM - 8:30 PM, and on Sundays from 9:00 AM - 1:00 PM for convenient weekend appointments."
+    },
+    {
+      "category": "Root Canal",
+      "question": "Can root canal therapy be completed in a single visit?",
+      "answer": "Yes, using modern rotary endodontics and apex locators, most cases are completed comfortably in a single sitting with minimal post-procedure soreness."
+    },
+    {
+      "category": "Appointments",
+      "question": "How do I book an appointment with Dr. Shrivastava?",
+      "answer": "You can connect directly via WhatsApp at +91 90136 84206 or call to choose a convenient morning or evening time slot."
+    },
+    {
+      "category": "Dentures",
+      "question": "Are flexible dentures better than regular plastic sets?",
+      "answer": "Flexible dentures are thinner, lighter, and eliminate metal hooks, providing much higher comfort and natural appearance while eating."
+    },
+    {
+      "category": "Hygiene",
+      "question": "What sterilization measures are enforced?",
+      "answer": "We enforce multi-tier autoclave vacuum sterilization for all clinical instruments, ensuring 100% patient hygiene and safety."
+    }
+  ]
+}

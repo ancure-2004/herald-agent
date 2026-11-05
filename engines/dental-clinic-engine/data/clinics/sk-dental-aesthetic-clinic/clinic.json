@@ -1,0 +1,109 @@
+{
+  "slug": "sk-dental-aesthetic-clinic",
+  "clinicName": "SK Dental & Aesthetic Clinic",
+  "shortName": "SK Dental",
+  "clinicNameExtended": "SK Dental & Aesthetic Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Pitampura, Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Pitampura, Delhi. Led by Dr. Shivam Khurana (BDS ? Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Pitampura, Delhi, Delhi NCR",
+  "address": "Pitampura, Delhi, Delhi NCR",
+  "landmark": "Centrally located in Pitampura, Delhi",
+  "phone": "+91 79821 67010",
+  "phoneRaw": "07982167010",
+  "whatsapp": "917982167010",
+  "rating": "5.0",
+  "reviewCount": "40+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=SK+Dental+&+Aesthetic+Clinic+Pitampura,+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=SK+Dental+&+Aesthetic+Clinic+Pitampura,+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=SK+Dental+&+Aesthetic+Clinic+Pitampura,+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Shivam Khurana",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS ? Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Pitampura, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS ? Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Pitampura, Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Pitampura, Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Shivam Khurana",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS ? Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Pitampura, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS ? Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Pitampura, Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Pitampura, Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

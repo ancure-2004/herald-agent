@@ -1,0 +1,109 @@
+{
+  "slug": "madan-dental-clinic",
+  "clinicName": "Madan Dental Clinic",
+  "shortName": "Madan Dental Clinic",
+  "clinicNameExtended": "Madan Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Noida Sector 76.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Noida Sector 76. Led by UNKNOWN (BDS (Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Noida Sector 76, Delhi NCR",
+  "address": "sethi arcade, Sethi Max Royal, Noida, Uttar Pradesh 201316",
+  "landmark": "Centrally located in Noida Sector 76",
+  "phone": "+91 93077 69900",
+  "phoneRaw": "09307769900",
+  "whatsapp": "919307769900",
+  "rating": "4.6",
+  "reviewCount": "54+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Madan+Dental+Clinic+Noida+Sector+76+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Madan+Dental+Clinic+Noida+Sector+76",
+  "googleReviewsUrl": "https://maps.google.com/?q=Madan+Dental+Clinic+Noida+Sector+76",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "UNKNOWN",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Noida Sector 76 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Noida Sector 76",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Noida Sector 76",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "UNKNOWN",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Noida Sector 76 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Noida Sector 76",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Noida Sector 76",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

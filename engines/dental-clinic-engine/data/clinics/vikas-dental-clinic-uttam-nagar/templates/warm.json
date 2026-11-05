@@ -1,0 +1,66 @@
+{
+  "comfortPhases": [
+    {
+      "step": "01",
+      "title": "Comprehensive Oral Review",
+      "subtitle": "Personal Consultation",
+      "description": "Dr. Vikas Chaudhary performs a thorough oral exam and explains your treatment roadmap clearly.",
+      "duration": "10 - 15 Mins",
+      "sensoryNote": "Friendly, unrushed discussion.",
+      "keySafeguard": "Clear diagnostic roadmap."
+    },
+    {
+      "step": "02",
+      "title": "Topical Numbing & Laser Prep",
+      "subtitle": "Zero-Sting Protocol",
+      "description": "A pleasant numbing gel is applied beforehand to prevent pinching sensations during treatment.",
+      "duration": "5 Mins",
+      "sensoryNote": "Mild soothing numbness.",
+      "keySafeguard": "Comfort-first delivery."
+    },
+    {
+      "step": "03",
+      "title": "Precision Laser & Rotary Care",
+      "subtitle": "Gentle Micro-Intervention",
+      "description": "Procedures proceed with quiet rotary and laser tools with continuous patient check-ins.",
+      "duration": "20 - 45 Mins",
+      "sensoryNote": "Smooth vibration, zero sharp pain.",
+      "keySafeguard": "Continuous patient reassurance."
+    },
+    {
+      "step": "04",
+      "title": "Clear Aftercare & Follow-Up",
+      "subtitle": "Direct WhatsApp Support",
+      "description": "Receive printed recovery instructions and direct clinic WhatsApp contact for follow-up support.",
+      "duration": "10 Mins",
+      "sensoryNote": "Relieved and well-supported.",
+      "keySafeguard": "Direct post-treatment line."
+    }
+  ],
+  "dentureComparison": [
+    {
+      "feature": "Soft Tissue Healing",
+      "conventional": "Traditional scalpels cause bleeding and pain",
+      "bpsPrecision": "Precision laser dentistry cuts without bleeding",
+      "benefit": "Rapid, painless tissue healing"
+    },
+    {
+      "feature": "Root Canal Speed",
+      "conventional": "Multiple exhausting manual filing visits",
+      "bpsPrecision": "Mechanized rotary endodontics in 1 session",
+      "benefit": "Fast, peaceful tooth saving"
+    },
+    {
+      "feature": "Appointment Access",
+      "conventional": "Closed on weekends; rigid limited hours",
+      "bpsPrecision": "7-day availability including Sundays",
+      "benefit": "Never miss work for treatment"
+    },
+    {
+      "feature": "Enamel Match",
+      "conventional": "Noticeable silver amalgam or opaque resin",
+      "bpsPrecision": "High-strength nano-hybrid composite bonding",
+      "benefit": "Natural, invisible smile finish"
+    }
+  ]
+}

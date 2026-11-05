@@ -1,0 +1,109 @@
+{
+  "slug": "gentle-dental-implant-clinic",
+  "clinicName": "Gentle Dental & Implant Clinic",
+  "shortName": "Gentle Dental",
+  "clinicNameExtended": "Gentle Dental & Implant Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Gurgaon Sector 23.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Gurgaon Sector 23. Led by Dr. Sapna Yadav (BDS (Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Gurgaon Sector 23, Delhi NCR",
+  "address": "Plot 281, Gate Number 1 Sector 23 Rd, Near Water Tank, Sector 23, Gurugram, Haryana 122017",
+  "landmark": "Centrally located in Gurgaon Sector 23",
+  "phone": "+91 98999 66073",
+  "phoneRaw": "09899966073",
+  "whatsapp": "919899966073",
+  "rating": "4.5",
+  "reviewCount": "33+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Gentle+Dental+&+Implant+Clinic+Gurgaon+Sector+23+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Gentle+Dental+&+Implant+Clinic+Gurgaon+Sector+23",
+  "googleReviewsUrl": "https://maps.google.com/?q=Gentle+Dental+&+Implant+Clinic+Gurgaon+Sector+23",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Sapna Yadav",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Gurgaon Sector 23 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Gurgaon Sector 23",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Gurgaon Sector 23",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Sapna Yadav",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Gurgaon Sector 23 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Gurgaon Sector 23",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Gurgaon Sector 23",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "slug": "vikas-dental-clinic-uttam-nagar",
+  "clinicName": "Vikas Dental Clinic",
+  "shortName": "Vikas Dental Clinic",
+  "clinicNameExtended": "Vikas Dental Clinic & Laser Dentistry Centre",
+  "tagline": "Advanced Laser Dentistry & Rotary Root Canals. 530+ Verified Reviews in Uttam Nagar.",
+  "shortDescription": "Top-rated dental practice in Uttam Nagar on Rajapuri Road. Led by Dr. Vikas Chaudhary (BDS, 10+ Years Practice), offering laser dentistry, single-sitting root canals, dental crowns, and 7-day care including Sundays.",
+  "area": "Uttam Nagar / Rajapuri, New Delhi, Delhi",
+  "address": "B-43, Main Rajapuri Rd, near Shanti Nursing Home, Sanjay Enclave, Uttam Nagar, New Delhi, Delhi, 110059, India",
+  "landmark": "Near Shanti Nursing Home & Sanjay Enclave, Rajapuri Road",
+  "phone": "+91 90129 07732",
+  "phoneRaw": "09012907732",
+  "whatsapp": "919012907732",
+  "rating": "4.9",
+  "reviewCount": "530+",
+  "consultationFee": "Standard OPD Consultation",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Vikas+Dental+Clinic+Rajapuri+Road+Uttam+Nagar+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=16869908245912859158&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "googleReviewsUrl": "https://maps.google.com/?cid=16869908245912859158&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "hours": {
+    "verified": true,
+    "notes": "Monday-Saturday: 10:00 AM - 02:00 PM, 04:30 PM - 09:00 PM. Sunday: 10:00 AM - 02:00 PM, 05:00 PM - 09:00 PM.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Vikas Chaudhary",
+    "title": "Lead Dental Surgeon & Practitioner",
+    "qualifications": "BDS (Bachelor of Dental Surgery)",
+    "experience": "10+ Years of Dedicated Clinical Practice",
+    "consultationFee": "Standard OPD Consultation",
+    "philosophy": "Our clinic is dedicated to offering fast, gentle, and modern dental solutions. We combine advanced laser technology and rotary root canals with empathetic patient care so no one delays essential treatment.",
+    "credentials": [
+      "BDS Dental Surgeon with over 10 Years of clinical excellence in Uttam Nagar",
+      "Over 530 verified 5-star patient reviews on Google Maps",
+      "Advanced training in precision laser soft-tissue treatments",
+      "Rotary single-sitting root canal therapy specialist",
+      "Convenient 7-day schedule with dedicated Sunday consulting hours",
+      "Multi-tier vacuum autoclave sterilization for 100% patient safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Vikas Chaudhary",
+      "title": "Lead Dental Surgeon & Practitioner",
+      "qualifications": "BDS (Bachelor of Dental Surgery)",
+      "experience": "10+ Years of Dedicated Clinical Practice",
+      "consultationFee": "Standard OPD Consultation",
+      "philosophy": "Our clinic is dedicated to offering fast, gentle, and modern dental solutions. We combine advanced laser technology and rotary root canals with empathetic patient care so no one delays essential treatment.",
+      "credentials": [
+        "BDS Dental Surgeon with over 10 Years of clinical excellence in Uttam Nagar",
+        "Over 530 verified 5-star patient reviews on Google Maps",
+        "Advanced training in precision laser soft-tissue treatments",
+        "Rotary single-sitting root canal therapy specialist",
+        "Convenient 7-day schedule with dedicated Sunday consulting hours",
+        "Multi-tier vacuum autoclave sterilization for 100% patient safety"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "10:00 AM",
+    "10:45 AM",
+    "11:30 AM",
+    "12:15 PM",
+    "01:00 PM",
+    "01:30 PM"
+  ],
+  "eveningSlots": [
+    "04:30 PM",
+    "05:15 PM",
+    "06:00 PM",
+    "06:45 PM",
+    "07:30 PM",
+    "08:15 PM"
+  ]
+}

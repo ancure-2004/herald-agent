@@ -1,0 +1,125 @@
+{
+  "slug": "dr-rohini-josan-malik",
+  "clinicName": "Dr. Rohini Josan Malik Pediatric Dental Care",
+  "shortName": "Dr. Rohini Josan",
+  "clinicNameExtended": "Dr. Rohini Josan Malik - Max Dental Care & SOWAKA Smiles",
+  "tagline": "Gentle Pediatric Dental Care. Anxiety-Free Smiles for Growing Children.",
+  "shortDescription": "Specialist pediatric dental practice led by Dr. Rohini Josan Malik (Pedodontist, 12+ Years Practice). Offering infant oral care, milk tooth restorations, special needs dentistry, and hospital-grade safety at Max Hospital.",
+  "area": "Mohali / Chandigarh Tricity, Punjab",
+  "address": "Room No 102, Dental Department, Max Super Speciality Hospital Phase-VI, Sector 56A, Sahibzada Ajit Singh Nagar, Punjab 160055",
+  "landmark": "Max Super Speciality Hospital Dental OPD & SOWAKA Smiles TDI City",
+  "phone": "+91 99144 46677",
+  "phoneRaw": "09914446677",
+  "whatsapp": "919914446677",
+  "rating": "5.0",
+  "reviewCount": "9+",
+  "consultationFee": "Standard OPD Consultation",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Max+Super+Speciality+Hospital+Phase+VI+Mohali&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=6649459918405087859",
+  "googleReviewsUrl": "https://maps.google.com/?cid=6649459918405087859",
+  "hours": {
+    "verified": true,
+    "notes": "Monday-Saturday: 09:00 AM - 05:00 PM (Max Hospital). Sunday: Closed.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "09:00 AM",
+        "close": "05:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "09:00 AM",
+        "close": "05:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "09:00 AM",
+        "close": "05:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "09:00 AM",
+        "close": "05:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "09:00 AM",
+        "close": "05:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "09:00 AM",
+        "close": "05:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "Closed",
+        "close": "Closed",
+        "isClosed": true,
+        "status": "Closed"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Rohini Josan Malik",
+    "title": "Lead Specialist Pediatric Dentist (Pedodontist)",
+    "qualifications": "Specialist Pediatric Dental Surgeon • General & Hospital Dental Practice",
+    "experience": "12+ Years of Specialized Clinical Practice",
+    "consultationFee": "Standard Hospital OPD Consultation",
+    "philosophy": "Every child deserves a warm, fear-free introduction to dental care. We build positive experiences through gentle behavioral guidance and reassuring communication that lasts a lifetime.",
+    "credentials": [
+      "Over 12 Years of specialized clinical practice in pediatric dentistry (practicing since 2012)",
+      "Consultant Pediatric Dentist at Max Super Speciality Hospital, Mohali",
+      "Advanced training in behavioral guidance and sensory-adapted dental care",
+      "Comprehensive care for children with special healthcare needs (including ASD)",
+      "Painless milk tooth restorative procedures and pediatric zirconia crowns",
+      "Hospital-grade sterilization and monitoring protocols"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Rohini Josan Malik",
+      "title": "Lead Specialist Pediatric Dentist (Pedodontist)",
+      "qualifications": "Specialist Pediatric Dental Surgeon • General & Hospital Dental Practice",
+      "experience": "12+ Years of Specialized Clinical Practice",
+      "consultationFee": "Standard Hospital OPD Consultation",
+      "philosophy": "Every child deserves a warm, fear-free introduction to dental care. We build positive experiences through gentle behavioral guidance and reassuring communication that lasts a lifetime.",
+      "credentials": [
+        "Over 12 Years of specialized clinical practice in pediatric dentistry (practicing since 2012)",
+        "Consultant Pediatric Dentist at Max Super Speciality Hospital, Mohali",
+        "Advanced training in behavioral guidance and sensory-adapted dental care",
+        "Comprehensive care for children with special healthcare needs (including ASD)",
+        "Painless milk tooth restorative procedures and pediatric zirconia crowns",
+        "Hospital-grade sterilization and monitoring protocols"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "09:00 AM",
+    "10:00 AM",
+    "11:00 AM",
+    "12:00 PM",
+    "01:00 PM",
+    "02:00 PM"
+  ],
+  "eveningSlots": [
+    "02:30 PM",
+    "03:15 PM",
+    "04:00 PM",
+    "04:30 PM",
+    "05:00 PM",
+    "05:30 PM"
+  ]
+}

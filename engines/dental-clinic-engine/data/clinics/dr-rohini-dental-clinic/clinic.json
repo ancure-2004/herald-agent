@@ -1,0 +1,109 @@
+{
+  "slug": "dr-rohini-dental-clinic",
+  "clinicName": "Dr Rohini Dental Clinic",
+  "shortName": "Dr Rohini",
+  "clinicNameExtended": "Dr Rohini Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Rohini.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Rohini. Led by Dr. Rohini Kootala (BDS, MDS (Paediatric and Preventive Dentistry), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Rohini, Delhi NCR",
+  "address": "Sector 8, Rohini, New Delhi, Delhi 110085",
+  "landmark": "Centrally located in Rohini",
+  "phone": "+91 98471 23456",
+  "phoneRaw": "09847123456",
+  "whatsapp": "919847123456",
+  "rating": "4.8",
+  "reviewCount": "25+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr+Rohini+Dental+Clinic+Rohini+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr+Rohini+Dental+Clinic+Rohini",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr+Rohini+Dental+Clinic+Rohini",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Rohini Kootala",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Paediatric and Preventive Dentistry",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Rohini deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Paediatric and Preventive Dentistry registered dental clinician",
+      "10+ Years of dedicated clinical care in Rohini",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Rohini",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Rohini Kootala",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Paediatric and Preventive Dentistry",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Rohini deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Paediatric and Preventive Dentistry registered dental clinician",
+        "10+ Years of dedicated clinical care in Rohini",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Rohini",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

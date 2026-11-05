@@ -1,0 +1,109 @@
+{
+  "slug": "shiva-dental-care",
+  "clinicName": "Shiva Dental Care",
+  "shortName": "Shiva Dental Care",
+  "clinicNameExtended": "Shiva Dental Care & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Rohini Sector 15.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Rohini Sector 15. Led by Lead Dental Surgeon (BDS (Dental Surgeon)), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Rohini Sector 15, Delhi NCR",
+  "address": "A-5/57, B4 Rd, Sector 15, Pocket 4, Sector 15A, Rohini, Delhi, 110089, India",
+  "landmark": "Centrally located in Rohini Sector 15",
+  "phone": "+91 98181 92400",
+  "phoneRaw": "09818192400",
+  "whatsapp": "919818192400",
+  "rating": "4.8",
+  "reviewCount": "5+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Shiva+Dental+Care+Rohini+Sector+15+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Shiva+Dental+Care+Rohini+Sector+15",
+  "googleReviewsUrl": "https://maps.google.com/?q=Shiva+Dental+Care+Rohini+Sector+15",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Lead Dental Surgeon",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon)",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Rohini Sector 15 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon) registered dental clinician",
+      "10+ Years of dedicated clinical care in Rohini Sector 15",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Rohini Sector 15",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Lead Dental Surgeon",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon)",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Rohini Sector 15 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon) registered dental clinician",
+        "10+ Years of dedicated clinical care in Rohini Sector 15",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Rohini Sector 15",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

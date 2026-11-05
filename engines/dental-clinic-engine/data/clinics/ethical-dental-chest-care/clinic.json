@@ -1,0 +1,109 @@
+{
+  "slug": "ethical-dental-chest-care",
+  "clinicName": "Ethical Dental & Chest Care",
+  "shortName": "Ethical Dental",
+  "clinicNameExtended": "Ethical Dental & Chest Care & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Noida Sector 61.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Noida Sector 61. Led by Dr. Vikash Kumar (BDS, Ex-Resident AIIMS Delhi), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Noida Sector 61, Delhi NCR",
+  "address": "D-214 Basement, Behind SBI, Infront of Mothers Pride School, Sector 61, Noida, Uttar Pradesh 201307",
+  "landmark": "Centrally located in Noida Sector 61",
+  "phone": "+91 99535 82822",
+  "phoneRaw": "09953582822",
+  "whatsapp": "919953582822",
+  "rating": "5.0",
+  "reviewCount": "35+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Ethical+Dental+&+Chest+Care+Noida+Sector+61+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Ethical+Dental+&+Chest+Care+Noida+Sector+61",
+  "googleReviewsUrl": "https://maps.google.com/?q=Ethical+Dental+&+Chest+Care+Noida+Sector+61",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Vikash Kumar",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, Ex-Resident AIIMS Delhi",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Noida Sector 61 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, Ex-Resident AIIMS Delhi registered dental clinician",
+      "10+ Years of dedicated clinical care in Noida Sector 61",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Noida Sector 61",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Vikash Kumar",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, Ex-Resident AIIMS Delhi",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Noida Sector 61 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, Ex-Resident AIIMS Delhi registered dental clinician",
+        "10+ Years of dedicated clinical care in Noida Sector 61",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Noida Sector 61",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

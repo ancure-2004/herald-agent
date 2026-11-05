@@ -1,0 +1,109 @@
+{
+  "slug": "family-dental-care",
+  "clinicName": "Family Dental Care",
+  "shortName": "Family Dental Care",
+  "clinicNameExtended": "Family Dental Care & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Block D, Saket, South Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Block D, Saket, South Delhi. Led by Dr. Sheetal Khandelwal (BDS \u2022 Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Block D, Saket, South Delhi, Delhi NCR",
+  "address": "D-133, Lower Ground Floor, Block D, Saket, New Delhi, Delhi 110017 (Near PVR Anupam / Amar Medical Centre)",
+  "landmark": "Centrally located in Block D, Saket, South Delhi",
+  "phone": "+91 98185 30485",
+  "phoneRaw": "09818530485",
+  "whatsapp": "919818530485",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Family+Dental+Care+Block+D,+Saket,+South+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Family+Dental+Care+Block+D,+Saket,+South+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Family+Dental+Care+Block+D,+Saket,+South+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Sheetal Khandelwal",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Block D, Saket, South Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Block D, Saket, South Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Block D, Saket, South Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Sheetal Khandelwal",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Block D, Saket, South Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Block D, Saket, South Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Block D, Saket, South Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

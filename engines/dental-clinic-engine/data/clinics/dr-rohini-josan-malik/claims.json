@@ -1,0 +1,40 @@
+{
+  "claims": [
+    {
+      "id": "claim-rating",
+      "text": "5.0 \u2605 Google Verified Rating",
+      "status": "VERIFIED",
+      "source": "Google Business Profile"
+    },
+    {
+      "id": "claim-reviews",
+      "text": "9+ authentic patient reviews",
+      "status": "VERIFIED",
+      "source": "Google Business Profile"
+    },
+    {
+      "id": "claim-fee",
+      "text": "Standard OPD consultation",
+      "status": "VERIFIED",
+      "source": "Hospital Fee Schedule"
+    },
+    {
+      "id": "claim-experience",
+      "text": "12+ Years specialized pediatric practice",
+      "status": "VERIFIED",
+      "source": "Official Doctor Biography"
+    },
+    {
+      "id": "claim-gentle",
+      "text": "Child-friendly behavioral guidance and tell-show-do protocols",
+      "status": "SAFE_TO_GENERATE",
+      "source": "Standard Clinical Procedure"
+    },
+    {
+      "id": "claim-sterilization",
+      "text": "Multi-tier vacuum autoclave sterilization standards",
+      "status": "SAFE_TO_GENERATE",
+      "source": "Standard Clinical Procedure"
+    }
+  ]
+}

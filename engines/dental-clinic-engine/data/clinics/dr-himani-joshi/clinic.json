@@ -1,0 +1,125 @@
+{
+  "slug": "dr-himani-joshi",
+  "clinicName": "Dr. Himani Joshi - Oral & Maxillofacial Surgeon | Chiranjeevi Dental Clinic",
+  "shortName": "Dr. Himani Joshi",
+  "clinicNameExtended": "Dr. Himani Joshi & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Rohini.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Rohini. Led by Dr. Himani Joshi (BDS, MDS (Oral & Maxillofacial Surgery), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Rohini, Delhi NCR",
+  "address": "H-237, H block, Phase 1, Ashok Vihar, Delhi, 110052",
+  "landmark": "Centrally located in Rohini",
+  "phone": "+91 85273 07952",
+  "phoneRaw": "08527307952",
+  "whatsapp": "918527307952",
+  "rating": "5",
+  "reviewCount": "217+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.+Himani+Joshi+-+Oral+&+Maxillofacial+Surgeon+|+Chiranjeevi+Dental+Clinic+Rohini&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=14026912080287768611",
+  "googleReviewsUrl": "https://maps.google.com/?cid=14026912080287768611",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: Closed.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "Closed",
+        "close": "Closed",
+        "isClosed": true,
+        "status": "Closed"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Himani Joshi",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Oral & Maxillofacial Surgery",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Rohini deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Oral & Maxillofacial Surgery registered dental clinician",
+      "10+ Years of dedicated clinical care in Rohini",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Rohini",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Himani Joshi",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Oral & Maxillofacial Surgery",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Rohini deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Oral & Maxillofacial Surgery registered dental clinician",
+        "10+ Years of dedicated clinical care in Rohini",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Rohini",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "10:00 AM",
+    "10:45 AM",
+    "11:30 AM",
+    "12:15 PM",
+    "01:00 PM",
+    "01:30 PM"
+  ],
+  "eveningSlots": [
+    "04:30 PM",
+    "05:15 PM",
+    "06:00 PM",
+    "06:45 PM",
+    "07:15 PM",
+    "07:45 PM"
+  ]
+}

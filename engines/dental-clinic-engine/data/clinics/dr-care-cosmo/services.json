@@ -1,0 +1,106 @@
+{
+  "services": [
+    {
+      "id": "gentle-care",
+      "title": "Comfort-Focused Dental Care",
+      "category": "Gentle Dentistry",
+      "badge": "Patient First",
+      "description": "Designed specifically for anxious patients, sensitive gums, or low pain tolerance. Gentle techniques and topical pre-numbing for a relaxed visit.",
+      "keyBenefits": [
+        "Eliminates dental anxiety and discomfort",
+        "Gentle, calibrated local numbing",
+        "Fast recovery - walk out feeling comfortable",
+        "Empathetic approach for nervous patients"
+      ],
+      "painScore": "Painless Micro-Care",
+      "recoveryTime": "Immediate (Return home comfortably)",
+      "idealFor": "Dental anxiety, sensitive gums, routine & surgical care",
+      "image": "/images/hero-clinic.jpg"
+    },
+    {
+      "id": "wisdom-extractions",
+      "title": "Impacted Wisdom Tooth Surgery",
+      "category": "Oral Micro-Surgery",
+      "badge": "Gentle Technique",
+      "description": "Atraumatic surgical extraction of deeply angled or impacted wisdom molars with minimal bone disturbance to ensure swift healing.",
+      "keyBenefits": [
+        "High-precision sectional extraction technique",
+        "Protects adjacent second molar roots & nerves",
+        "Micro-sutures for smooth gum healing",
+        "Pre-emptive anti-inflammatory protocols"
+      ],
+      "painScore": "Painless with Local Numbing",
+      "recoveryTime": "24 - 48 Hours to regular routine",
+      "idealFor": "Pericoronitis, jaw pain, crowded molars, hidden decay",
+      "image": "/images/operatory-room.jpg"
+    },
+    {
+      "id": "bps-dentures",
+      "title": "BPS Precision & Flexible Dentures",
+      "category": "Prosthodontics",
+      "badge": "Premium Comfort",
+      "description": "Custom precision prosthetic system delivering reliable suction, natural facial support, and authentic lip fullness for complete chewing comfort.",
+      "keyBenefits": [
+        "Pressure-molded for exact ridge adaptation",
+        "Lightweight flexible palate options",
+        "Multi-tone natural tooth moulds",
+        "Zero adhesive required for daily speech and chewing"
+      ],
+      "painScore": "Non-Invasive Fitting",
+      "recoveryTime": "Instant natural adaptation",
+      "idealFor": "Complete or partial tooth loss, unstable existing dentures",
+      "image": "/images/smile-transformation.jpg"
+    },
+    {
+      "id": "fpd-crowns",
+      "title": "Fixed Partial Dentures (FPD) & Zirconia Crowns",
+      "category": "Aesthetic Restorations",
+      "badge": "High Strength",
+      "description": "Permanent non-removable dental bridges and monolithic zirconia crowns that seamlessly bridge gaps and restore maximum chewing stability.",
+      "keyBenefits": [
+        "Digital shade matching to natural enamel gradient",
+        "Metal-free bio-compatible translucency",
+        "Precision margin sealing against secondary caries",
+        "Durable daily chewing resilience"
+      ],
+      "painScore": "Zero Discomfort with Local Numbing",
+      "recoveryTime": "Immediate functional use",
+      "idealFor": "Missing teeth, fractured crowns, post-RCT protection",
+      "image": "/images/root-canal-tech.jpg"
+    },
+    {
+      "id": "cosmetic-veneers",
+      "title": "Porcelain Veneers & Smile Makeovers",
+      "category": "Cosmetic Studio",
+      "badge": "Aesthetic Design",
+      "description": "Ultra-thin custom porcelain ceramic laminates crafted to correct spacing, discolorations, chips, and irregular tooth alignment.",
+      "keyBenefits": [
+        "Micro-thin preparation preserving natural enamel",
+        "Glass-smooth stain-resistant glazed surface",
+        "Customized smile harmony suited to your facial profile",
+        "Radiant transformation in planned visits"
+      ],
+      "painScore": "Gentle & Non-Invasive",
+      "recoveryTime": "Immediate confidence boost",
+      "idealFor": "Gap closure, fluorosis stains, chipped teeth, uneven edges",
+      "image": "/images/pediatric-care.jpg"
+    },
+    {
+      "id": "painless-rct",
+      "title": "Rotary Single-Sitting Root Canal (RCT)",
+      "category": "Tooth Preservation",
+      "badge": "Endodontics",
+      "description": "Electronic apex locator guided root canal therapy designed to relieve severe toothaches in a single relaxed sitting while preserving your original tooth.",
+      "keyBenefits": [
+        "Quiet, vibration-free rotary instrumentation",
+        "Complete 3D hermetic canal sealing",
+        "Immediate pain relief from infected pulp",
+        "Preserves natural jawbone density"
+      ],
+      "painScore": "Painless Micro-Care",
+      "recoveryTime": "Immediate symptom relief",
+      "idealFor": "Deep cavities, sudden throbbing pain, hot/cold sensitivity",
+      "image": "/images/sterilization.jpg"
+    }
+  ]
+}

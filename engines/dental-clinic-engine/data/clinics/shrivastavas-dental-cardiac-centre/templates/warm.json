@@ -1,0 +1,66 @@
+{
+  "comfortPhases": [
+    {
+      "step": "01",
+      "title": "Systemic & Oral Review",
+      "subtitle": "Health History Evaluation",
+      "description": "We review your blood pressure and dental concerns before planning any treatment.",
+      "duration": "10 - 15 Mins",
+      "sensoryNote": "Calm, unrushed discussion.",
+      "keySafeguard": "Cardiac-safe health check."
+    },
+    {
+      "step": "02",
+      "title": "Gentle Pre-Numbing",
+      "subtitle": "Buffered Anesthetic Care",
+      "description": "A topical gel is applied followed by carefully calibrated, cardiac-safe local anesthetic.",
+      "duration": "5 Mins",
+      "sensoryNote": "Gentle tingling without sharp stings.",
+      "keySafeguard": "Hemodynamic monitoring."
+    },
+    {
+      "step": "03",
+      "title": "Precision Rotary Care",
+      "subtitle": "Quiet Micro-Instruments",
+      "description": "Procedures proceed smoothly with quiet rotary tools, regular pauses, and gentle technique.",
+      "duration": "20 - 45 Mins",
+      "sensoryNote": "Zero sharp pain. Continuous reassurance.",
+      "keySafeguard": "Vital monitoring throughout."
+    },
+    {
+      "step": "04",
+      "title": "Printed Aftercare & Support",
+      "subtitle": "Direct WhatsApp Check-In",
+      "description": "Clear post-care guidance and direct clinic WhatsApp contact ensure total peace of mind.",
+      "duration": "10 Mins",
+      "sensoryNote": "Reassured and comfortable.",
+      "keySafeguard": "Direct clinician follow-up line."
+    }
+  ],
+  "dentureComparison": [
+    {
+      "feature": "Weight & Bulk",
+      "conventional": "Heavy, rigid acrylic plates causing gagging",
+      "bpsPrecision": "Ultra-lightweight biocompatible flexible resin",
+      "benefit": "Effortless, natural speech"
+    },
+    {
+      "feature": "Retention System",
+      "conventional": "Visible metal wires that loosen over time",
+      "bpsPrecision": "Gum-colored flexible clasps blend invisibly",
+      "benefit": "Invisible, confident smile"
+    },
+    {
+      "feature": "Chewing Stability",
+      "conventional": "Sore spots from hard acrylic pressure points",
+      "bpsPrecision": "Contours evenly over gum ridges",
+      "benefit": "Dine comfortably without sores"
+    },
+    {
+      "feature": "Breakage Risk",
+      "conventional": "Brittle material prone to fracture if dropped",
+      "bpsPrecision": "Virtually unbreakable flexible nylon polymer",
+      "benefit": "Long-lasting peace of mind"
+    }
+  ]
+}

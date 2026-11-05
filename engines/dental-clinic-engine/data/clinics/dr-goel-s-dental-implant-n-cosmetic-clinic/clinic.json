@@ -1,0 +1,109 @@
+{
+  "slug": "dr-goel-s-dental-implant-n-cosmetic-clinic",
+  "clinicName": "Dr.Goel's Dental,implant N Cosmetic Clinic",
+  "shortName": "Dr.Goel's",
+  "clinicNameExtended": "Dr.Goel's Dental,implant N Cosmetic Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Rohini Sector 9.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Rohini Sector 9. Led by Dr. Goel (BDS, MDS (), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Rohini Sector 9, Delhi NCR",
+  "address": "Unnamed Road Rajapur, Rajapur, Pocket 5, Sector 9, Rohini, Delhi, 110085, India",
+  "landmark": "Centrally located in Rohini Sector 9",
+  "phone": "+91 98996 29810",
+  "phoneRaw": "09899629810",
+  "whatsapp": "919899629810",
+  "rating": "4.8",
+  "reviewCount": "22+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.Goel's+Dental,implant+N+Cosmetic+Clinic+Rohini+Sector+9+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr.Goel's+Dental,implant+N+Cosmetic+Clinic+Rohini+Sector+9",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr.Goel's+Dental,implant+N+Cosmetic+Clinic+Rohini+Sector+9",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Goel",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Rohini Sector 9 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS ( registered dental clinician",
+      "10+ Years of dedicated clinical care in Rohini Sector 9",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Rohini Sector 9",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Goel",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Rohini Sector 9 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS ( registered dental clinician",
+        "10+ Years of dedicated clinical care in Rohini Sector 9",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Rohini Sector 9",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

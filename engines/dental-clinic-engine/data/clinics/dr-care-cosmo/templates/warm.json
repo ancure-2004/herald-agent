@@ -1,0 +1,72 @@
+{
+  "comfortPhases": [
+    {
+      "step": "01",
+      "title": "Sensory & Comfort Assessment",
+      "subtitle": "Personal Comfort Review",
+      "description": "We listen carefully to your previous dental experiences, concerns, and medical history. Your operatory is tailored with calming ambient lighting and soothing comfort.",
+      "duration": "10 - 15 Mins",
+      "sensoryNote": "A relaxed, unrushed conversation sitting upright in comfort.",
+      "keySafeguard": "Pre-operative assessment & customized comfort plan."
+    },
+    {
+      "step": "02",
+      "title": "Topical Pre-Numb & Local Anesthesia",
+      "subtitle": "Zero-Pinch Anesthetic Protocol",
+      "description": "A pleasant topical gel pre-numbs the area completely before gentle micro-anesthetic is introduced. You remain comfortably relaxed throughout.",
+      "duration": "5 - 8 Mins",
+      "sensoryNote": "Mild numbness and soothing calmness without clinical stress.",
+      "keySafeguard": "Buffered anesthetic to minimize stinging or sharp sensations."
+    },
+    {
+      "step": "03",
+      "title": "Gentle Micro-Care & Surgical Precision",
+      "subtitle": "Atraumatic Tooth Preservation",
+      "description": "Dr. Poornima performs the extraction or restorative procedure using precision instruments. Bone and soft tissue are treated gently to promote swift recovery.",
+      "duration": "20 - 45 Mins",
+      "sensoryNote": "Zero sharp sensations. Soft background hum with continuous check-ins.",
+      "keySafeguard": "Careful monitoring and gentle tissue handling."
+    },
+    {
+      "step": "04",
+      "title": "Post-Care & Swift Recovery",
+      "subtitle": "Same-Day Return to Ease",
+      "description": "Following procedure completion, clear printed post-care instructions and direct clinic WhatsApp follow-up support are provided.",
+      "duration": "10 Mins",
+      "sensoryNote": "Clear-headed, relaxed, with immediate tension relief.",
+      "keySafeguard": "Direct follow-up line with Dr. Poornima for total peace of mind."
+    }
+  ],
+  "dentureComparison": [
+    {
+      "feature": "Retention & Fit Mechanism",
+      "conventional": "Relies heavily on sticky denture paste; frequent slippage while speaking",
+      "bpsPrecision": "Bio-functional mapped suction seal for stability without messy adhesives",
+      "benefit": "Laugh, sneeze, and talk with confidence"
+    },
+    {
+      "feature": "Biting & Chewing Efficiency",
+      "conventional": "Restricted to soft foods; significant chewing strength limitation",
+      "bpsPrecision": "Balanced anatomical occlusion allows chewing daily meals comfortably",
+      "benefit": "Enjoy family meals again"
+    },
+    {
+      "feature": "Gum Soreness & Pressure Points",
+      "conventional": "Rigid plastic creates painful ulcers, pinching, and chronic friction sores",
+      "bpsPrecision": "Thermo-injected bio-compatible resin with ultra-smooth tissue surface",
+      "benefit": "Zero painful sore spots or gum abrasions"
+    },
+    {
+      "feature": "Aesthetic Realism & Gum Tone",
+      "conventional": "Monochromatic flat pink plastic; noticeable artificial appearance",
+      "bpsPrecision": "Multi-layered natural gum characterization with customized tooth shades",
+      "benefit": "Natural looking healthy teeth"
+    },
+    {
+      "feature": "Durability & Elastic Resilience",
+      "conventional": "Brittle acrylic prone to fractures if dropped",
+      "bpsPrecision": "High-impact polymer resilience engineered for long-lasting daily wear",
+      "benefit": "High fracture resistance and years of dependable use"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "slug": "dr-naveens-dental-care-zone",
+  "clinicName": "Dr Naveens Dental Care Zone",
+  "shortName": "Dr Naveens Dental",
+  "clinicNameExtended": "Dr Naveens Dental Care Zone & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Shakti Nagar / Civil Lines, Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Shakti Nagar / Civil Lines, Delhi. Led by Dr. Naveen Arora (BDS \u2022 Dental Surgeon & Implantologist, 24+ yrs exp), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Shakti Nagar / Civil Lines, Delhi, Delhi NCR",
+  "address": "23/4, Chadha Bhawan, Main Road, Shakti Nagar (Near Civil Lines), Delhi 110007",
+  "landmark": "Centrally located in Shakti Nagar / Civil Lines, Delhi",
+  "phone": "+91 98111 24688",
+  "phoneRaw": "09811124688",
+  "whatsapp": "919811124688",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr+Naveens+Dental+Care+Zone+Shakti+Nagar+/+Civil+Lines,+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr+Naveens+Dental+Care+Zone+Shakti+Nagar+/+Civil+Lines,+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr+Naveens+Dental+Care+Zone+Shakti+Nagar+/+Civil+Lines,+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Naveen Arora",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Dental Surgeon & Implantologist, 24+ yrs exp",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Shakti Nagar / Civil Lines, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Dental Surgeon & Implantologist, 24+ yrs exp registered dental clinician",
+      "10+ Years of dedicated clinical care in Shakti Nagar / Civil Lines, Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Shakti Nagar / Civil Lines, Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Naveen Arora",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Dental Surgeon & Implantologist, 24+ yrs exp",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Shakti Nagar / Civil Lines, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Dental Surgeon & Implantologist, 24+ yrs exp registered dental clinician",
+        "10+ Years of dedicated clinical care in Shakti Nagar / Civil Lines, Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Shakti Nagar / Civil Lines, Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

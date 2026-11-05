@@ -1,0 +1,125 @@
+{
+  "slug": "shrivastavas-dental-cardiac-centre",
+  "clinicName": "Shrivastava's Dental & Cardiac Centre",
+  "shortName": "Shrivastava's Dental",
+  "clinicNameExtended": "Shrivastava's Dental & Cardiac Centre Prashant Vihar",
+  "tagline": "Integrated Cardiac-Safe Dentistry. 11+ Years of Trusted Healthcare in Rohini.",
+  "shortDescription": "Comprehensive dental and cardiac wellness centre in Prashant Vihar, Sector 14 Rohini. Providing single-sitting root canals, ceramic crowns, atraumatic extractions, and hemodynamically safe care led by Dr. Shrivastava & clinical team.",
+  "area": "Prashant Vihar, Sector 14, Rohini, Delhi",
+  "address": "A-36, Ground Floor, behind Shiv Mandir, opposite Lancer's Convent School, A Block, Prashant Vihar, Sector 14, Rohini, Delhi, 110085, India",
+  "landmark": "Opposite Lancer's Convent School & Behind Shiv Mandir",
+  "phone": "+91 90136 84206",
+  "phoneRaw": "09013684206",
+  "whatsapp": "919013684206",
+  "rating": "4.9",
+  "reviewCount": "49+",
+  "consultationFee": "Standard OPD Consultation",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Shrivastava's+Dental+and+Cardiac+Centre+Prashant+Vihar+Rohini+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=867638962185967283&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "googleReviewsUrl": "https://maps.google.com/?cid=867638962185967283&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "hours": {
+    "verified": true,
+    "notes": "Monday-Saturday: 09:00 AM - 01:00 PM, 05:00 PM - 08:30 PM. Sunday: 09:00 AM - 01:00 PM.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "09:00 AM",
+        "close": "08:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "09:00 AM",
+        "close": "08:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "09:00 AM",
+        "close": "08:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "09:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "09:00 AM",
+        "close": "08:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "09:00 AM",
+        "close": "08:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "09:00 AM",
+        "close": "01:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Shrivastava & Clinical Team",
+    "title": "Lead Dental Surgeons & Practitioners",
+    "qualifications": "BDS \u2022 Experienced Clinical Dental Surgery Team",
+    "experience": "11+ Years of Dedicated Clinical Practice",
+    "consultationFee": "Standard OPD Consultation",
+    "philosophy": "We believe oral health is deeply connected to overall systemic wellness. Our clinical team prioritizes safe, gentle, and transparent procedures for patients of all ages, especially those with cardiovascular considerations.",
+    "credentials": [
+      "11+ Years of trusted clinical service in Prashant Vihar, Rohini",
+      "Co-founded medical facility combining dental and cardiac excellence",
+      "Advanced single-sitting rotary root canal treatment protocols",
+      "Cardiac-conscious local anesthesia and patient monitoring",
+      "Aesthetic ceramic & monolithic zirconia crowns and bridgework",
+      "Multi-tier vacuum autoclave sterilization and infection control"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Shrivastava & Clinical Team",
+      "title": "Lead Dental Surgeons & Practitioners",
+      "qualifications": "BDS \u2022 Experienced Clinical Dental Surgery Team",
+      "experience": "11+ Years of Dedicated Clinical Practice",
+      "consultationFee": "Standard OPD Consultation",
+      "philosophy": "We believe oral health is deeply connected to overall systemic wellness. Our clinical team prioritizes safe, gentle, and transparent procedures for patients of all ages, especially those with cardiovascular considerations.",
+      "credentials": [
+        "11+ Years of trusted clinical service in Prashant Vihar, Rohini",
+        "Co-founded medical facility combining dental and cardiac excellence",
+        "Advanced single-sitting rotary root canal treatment protocols",
+        "Cardiac-conscious local anesthesia and patient monitoring",
+        "Aesthetic ceramic & monolithic zirconia crowns and bridgework",
+        "Multi-tier vacuum autoclave sterilization and infection control"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "09:00 AM",
+    "09:45 AM",
+    "10:30 AM",
+    "11:15 AM",
+    "12:00 PM",
+    "12:45 PM"
+  ],
+  "eveningSlots": [
+    "05:00 PM",
+    "05:45 PM",
+    "06:30 PM",
+    "07:15 PM",
+    "07:45 PM",
+    "08:15 PM"
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "slug": "vr-dental-care",
+  "clinicName": "VR Dental Care",
+  "shortName": "VR Dental Care",
+  "clinicNameExtended": "VR Dental Care & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Malviya Nagar.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Malviya Nagar. Led by Dr. Megha Dubey (BDS (Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Malviya Nagar, Delhi NCR",
+  "address": "H-9/5, Lower Basement, Block H-6, Malviya Nagar, New Delhi 110017",
+  "landmark": "Centrally located in Malviya Nagar",
+  "phone": "+91 83687 92904",
+  "phoneRaw": "08368792904",
+  "whatsapp": "918368792904",
+  "rating": "4.9",
+  "reviewCount": "84+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=VR+Dental+Care+Malviya+Nagar+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=VR+Dental+Care+Malviya+Nagar",
+  "googleReviewsUrl": "https://maps.google.com/?q=VR+Dental+Care+Malviya+Nagar",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Megha Dubey",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Malviya Nagar deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Malviya Nagar",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Malviya Nagar",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Megha Dubey",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Malviya Nagar deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Malviya Nagar",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Malviya Nagar",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

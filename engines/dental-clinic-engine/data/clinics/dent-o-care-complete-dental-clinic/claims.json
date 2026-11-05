@@ -1,0 +1,40 @@
+{
+  "claims": [
+    {
+      "id": "claim-rating",
+      "text": "4.9 \u2605 Google Verified Rating",
+      "status": "VERIFIED",
+      "source": "Google Business Profile"
+    },
+    {
+      "id": "claim-reviews",
+      "text": "43+ authentic patient reviews",
+      "status": "VERIFIED",
+      "source": "Google Business Profile"
+    },
+    {
+      "id": "claim-fee",
+      "text": "Standard OPD consultation fee",
+      "status": "VERIFIED",
+      "source": "Clinic Fee Schedule"
+    },
+    {
+      "id": "claim-experience",
+      "text": "Dedicated clinical dental practice",
+      "status": "VERIFIED",
+      "source": "Justdial Verified Directory Record"
+    },
+    {
+      "id": "claim-gentle",
+      "text": "Gentle restorative care with local anesthesia",
+      "status": "SAFE_TO_GENERATE",
+      "source": "Standard Clinical Procedure"
+    },
+    {
+      "id": "claim-sterilization",
+      "text": "Multi-tier autoclave vacuum sterilization protocols",
+      "status": "SAFE_TO_GENERATE",
+      "source": "Standard Clinical Procedure"
+    }
+  ]
+}

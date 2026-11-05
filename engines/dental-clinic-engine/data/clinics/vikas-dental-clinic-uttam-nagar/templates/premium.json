@@ -1,0 +1,29 @@
+{
+  "sanctuaryTitle": "Uttam Nagar Laser Practice Sanctuary",
+  "sanctuaryFeatures": [
+    {
+      "title": "Advanced Laser Operatory Suite",
+      "description": "Equipped with modern dental lasers for minimally invasive and comfortable soft-tissue care.",
+      "amenity": "Calming Patient Environment",
+      "icon": "\u2728"
+    },
+    {
+      "title": "Multi-Tier Autoclave Sterilization",
+      "description": "Rigorous medical-grade sterilization cycles with sealed single-use clinical pouches.",
+      "amenity": "Strict Hygiene Standards",
+      "icon": "\ud83d\udee1\ufe0f"
+    },
+    {
+      "title": "Painless Rotary Endodontics",
+      "description": "High-precision rotary equipment ensuring fast, quiet, and pain-free single-sitting root canals.",
+      "amenity": "Anxiety-Free Comfort",
+      "icon": "\ud83c\udf3f"
+    },
+    {
+      "title": "7-Day Accessible Dental Care",
+      "description": "Serving working patients with open hours all 7 days including Sunday morning and evening shifts.",
+      "amenity": "Ethical Patient Accessibility",
+      "icon": "\ud83d\udc8e"
+    }
+  ]
+}

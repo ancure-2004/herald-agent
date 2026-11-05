@@ -1,0 +1,109 @@
+{
+  "slug": "sidhu-dental-clinic",
+  "clinicName": "Sidhu Dental Clinic",
+  "shortName": "Sidhu Dental Clinic",
+  "clinicNameExtended": "Sidhu Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sector 17 Main Market, Faridabad.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sector 17 Main Market, Faridabad. Led by Dr. Chanchal Sidhu (BDS \u2022 Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sector 17 Main Market, Faridabad, Delhi NCR",
+  "address": "SCF-127 / Shop No. 14, 1st Floor, Main Market, Sector 17, Faridabad, Haryana 121002",
+  "landmark": "Centrally located in Sector 17 Main Market, Faridabad",
+  "phone": "+91 96548 23617",
+  "phoneRaw": "09654823617",
+  "whatsapp": "919654823617",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Sidhu+Dental+Clinic+Sector+17+Main+Market,+Faridabad+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Sidhu+Dental+Clinic+Sector+17+Main+Market,+Faridabad",
+  "googleReviewsUrl": "https://maps.google.com/?q=Sidhu+Dental+Clinic+Sector+17+Main+Market,+Faridabad",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Chanchal Sidhu",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sector 17 Main Market, Faridabad deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Sector 17 Main Market, Faridabad",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sector 17 Main Market, Faridabad",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Chanchal Sidhu",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sector 17 Main Market, Faridabad deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Sector 17 Main Market, Faridabad",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sector 17 Main Market, Faridabad",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

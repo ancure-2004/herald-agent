@@ -1,0 +1,109 @@
+{
+  "slug": "dental-square-dental-and-implant-centre",
+  "clinicName": "Dental Square Dental and Implant Centre",
+  "shortName": "Dental Square Dental",
+  "clinicNameExtended": "Dental Square Dental and Implant Centre & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sector 89, Greater Faridabad.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sector 89, Greater Faridabad. Led by Dr. Karishma Samor (BDS, PGIMS Rohtak \u2022 Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sector 89, Greater Faridabad, Delhi NCR",
+  "address": "Near TDI Retreat Society / Puri Luxuria, Sector 89, Greater Faridabad, Haryana 121002",
+  "landmark": "Centrally located in Sector 89, Greater Faridabad",
+  "phone": "+91 89205 84054",
+  "phoneRaw": "08920584054",
+  "whatsapp": "918920584054",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dental+Square+Dental+and+Implant+Centre+Sector+89,+Greater+Faridabad+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dental+Square+Dental+and+Implant+Centre+Sector+89,+Greater+Faridabad",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dental+Square+Dental+and+Implant+Centre+Sector+89,+Greater+Faridabad",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Karishma Samor",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, PGIMS Rohtak \u2022 Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sector 89, Greater Faridabad deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, PGIMS Rohtak \u2022 Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Sector 89, Greater Faridabad",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sector 89, Greater Faridabad",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Karishma Samor",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, PGIMS Rohtak \u2022 Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sector 89, Greater Faridabad deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, PGIMS Rohtak \u2022 Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Sector 89, Greater Faridabad",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sector 89, Greater Faridabad",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

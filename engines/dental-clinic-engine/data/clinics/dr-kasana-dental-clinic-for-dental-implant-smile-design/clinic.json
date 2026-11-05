@@ -1,0 +1,109 @@
+{
+  "slug": "dr-kasana-dental-clinic-for-dental-implant-smile-design",
+  "clinicName": "Dr. Kasana Dental Clinic for Dental Implant & Smile Design",
+  "shortName": "Dr. Kasana Dental",
+  "clinicNameExtended": "Dr. Kasana Dental Clinic for Dental Implant & Smile Design & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Greater Noida Beta 1.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Greater Noida Beta 1. Led by Dr. Lalit Kasana (BDS, MDS Implantologist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Greater Noida Beta 1, Delhi NCR",
+  "address": "Greater Noida Beta 1, Delhi NCR, India",
+  "landmark": "Centrally located in Greater Noida Beta 1",
+  "phone": "+91 93199 57859",
+  "phoneRaw": "09319957859",
+  "whatsapp": "919319957859",
+  "rating": "5.0",
+  "reviewCount": "11+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.+Kasana+Dental+Clinic+for+Dental+Implant+&+Smile+Design+Greater+Noida+Beta+1+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr.+Kasana+Dental+Clinic+for+Dental+Implant+&+Smile+Design+Greater+Noida+Beta+1",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr.+Kasana+Dental+Clinic+for+Dental+Implant+&+Smile+Design+Greater+Noida+Beta+1",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Lalit Kasana",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS Implantologist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Greater Noida Beta 1 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS Implantologist registered dental clinician",
+      "10+ Years of dedicated clinical care in Greater Noida Beta 1",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Greater Noida Beta 1",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Lalit Kasana",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS Implantologist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Greater Noida Beta 1 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS Implantologist registered dental clinician",
+        "10+ Years of dedicated clinical care in Greater Noida Beta 1",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Greater Noida Beta 1",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

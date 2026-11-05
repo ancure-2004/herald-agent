@@ -1,0 +1,109 @@
+{
+  "slug": "dr-vidya-s-dental-aesthetic-studio",
+  "clinicName": "Dr. Vidya's Dental & Aesthetic Studio",
+  "shortName": "Dr. Vidya's Dental",
+  "clinicNameExtended": "Dr. Vidya's Dental & Aesthetic Studio & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sector 45, Noida.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sector 45, Noida. Led by Dr. Vidya (BDS ? Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sector 45, Noida, Delhi NCR",
+  "address": "Sector 45, Noida, Delhi NCR",
+  "landmark": "Centrally located in Sector 45, Noida",
+  "phone": "+91 97178 89991",
+  "phoneRaw": "09717889991",
+  "whatsapp": "919717889991",
+  "rating": "5.0",
+  "reviewCount": "25+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.+Vidya's+Dental+&+Aesthetic+Studio+Sector+45,+Noida+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr.+Vidya's+Dental+&+Aesthetic+Studio+Sector+45,+Noida",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr.+Vidya's+Dental+&+Aesthetic+Studio+Sector+45,+Noida",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Vidya",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS ? Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sector 45, Noida deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS ? Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Sector 45, Noida",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sector 45, Noida",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Vidya",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS ? Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sector 45, Noida deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS ? Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Sector 45, Noida",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sector 45, Noida",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

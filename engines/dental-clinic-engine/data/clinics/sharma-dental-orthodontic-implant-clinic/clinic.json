@@ -1,0 +1,109 @@
+{
+  "slug": "sharma-dental-orthodontic-implant-clinic",
+  "clinicName": "SHARMA DENTAL ORTHODONTIC & IMPLANT CLINIC",
+  "shortName": "SHARMA DENTAL",
+  "clinicNameExtended": "SHARMA DENTAL ORTHODONTIC & IMPLANT CLINIC & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Patel Nagar.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Patel Nagar. Led by Dr. V.K. Sharma (BDS, MDS), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Patel Nagar, Delhi NCR",
+  "address": "Patel Nagar, Delhi NCR, India",
+  "landmark": "Centrally located in Patel Nagar",
+  "phone": "+91 99995 92432",
+  "phoneRaw": "09999592432",
+  "whatsapp": "919999592432",
+  "rating": "4.2",
+  "reviewCount": "27+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=SHARMA+DENTAL+ORTHODONTIC+&+IMPLANT+CLINIC+Patel+Nagar+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=SHARMA+DENTAL+ORTHODONTIC+&+IMPLANT+CLINIC+Patel+Nagar",
+  "googleReviewsUrl": "https://maps.google.com/?q=SHARMA+DENTAL+ORTHODONTIC+&+IMPLANT+CLINIC+Patel+Nagar",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. V.K. Sharma",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Patel Nagar deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS registered dental clinician",
+      "10+ Years of dedicated clinical care in Patel Nagar",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Patel Nagar",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. V.K. Sharma",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Patel Nagar deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS registered dental clinician",
+        "10+ Years of dedicated clinical care in Patel Nagar",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Patel Nagar",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

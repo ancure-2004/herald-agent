@@ -1,0 +1,109 @@
+{
+  "slug": "expert-dental-clinic",
+  "clinicName": "Expert Dental Clinic",
+  "shortName": "Expert Dental Clinic",
+  "clinicNameExtended": "Expert Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sector 16, Faridabad.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sector 16, Faridabad. Led by Lead Dental Surgeon (BDS (Dental Surgeon)), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sector 16, Faridabad, Delhi NCR",
+  "address": "SCO 84-85, First Floor, Sector 16 Market (Adjacent to Sagar Cinema), Sector 16, Faridabad, Haryana 121002",
+  "landmark": "Centrally located in Sector 16, Faridabad",
+  "phone": "+91 98114 26874",
+  "phoneRaw": "09811426874",
+  "whatsapp": "919811426874",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Expert+Dental+Clinic+Sector+16,+Faridabad+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Expert+Dental+Clinic+Sector+16,+Faridabad",
+  "googleReviewsUrl": "https://maps.google.com/?q=Expert+Dental+Clinic+Sector+16,+Faridabad",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Lead Dental Surgeon",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon)",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sector 16, Faridabad deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon) registered dental clinician",
+      "10+ Years of dedicated clinical care in Sector 16, Faridabad",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sector 16, Faridabad",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Lead Dental Surgeon",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon)",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sector 16, Faridabad deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon) registered dental clinician",
+        "10+ Years of dedicated clinical care in Sector 16, Faridabad",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sector 16, Faridabad",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "slug": "complete-dental-care-by-dr-latika",
+  "clinicName": "Complete Dental Care",
+  "shortName": "Complete Dental Care",
+  "clinicNameExtended": "Complete Dental Care & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Shalimar Bagh.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Shalimar Bagh. Led by Dr. Latika (BDS (Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Shalimar Bagh, Delhi NCR",
+  "address": "AM-199/200, AM Block, Poorbi Shalimar Bag, Shalimar Bagh, Delhi, 110088, India",
+  "landmark": "Centrally located in Shalimar Bagh",
+  "phone": "+91 82876 25041",
+  "phoneRaw": "08287625041",
+  "whatsapp": "918287625041",
+  "rating": "5",
+  "reviewCount": "22+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Complete+Dental+Care+by+Dr.+Latika+Shalimar+Bagh&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=4005764036337160440&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "googleReviewsUrl": "https://maps.google.com/?cid=4005764036337160440&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 05:30 PM. Sunday: Closed.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "05:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "05:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "05:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "05:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "05:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "05:30 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "Closed",
+        "close": "Closed",
+        "isClosed": true,
+        "status": "Closed"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Latika",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Shalimar Bagh deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Shalimar Bagh",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Shalimar Bagh",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Latika",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Shalimar Bagh deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Shalimar Bagh",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Shalimar Bagh",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "10:00 AM",
+    "10:45 AM",
+    "11:30 AM",
+    "12:15 PM",
+    "01:00 PM",
+    "01:30 PM"
+  ],
+  "eveningSlots": [
+    "04:30 PM",
+    "05:15 PM",
+    "06:00 PM",
+    "06:45 PM",
+    "07:15 PM",
+    "07:45 PM"
+  ]
+}

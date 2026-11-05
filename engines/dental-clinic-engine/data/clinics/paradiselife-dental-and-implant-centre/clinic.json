@@ -1,0 +1,109 @@
+{
+  "slug": "paradiselife-dental-and-implant-centre",
+  "clinicName": "ParadiseLife DENTAL AND IMPLANT CENTRE",
+  "shortName": "ParadiseLife DENTAL",
+  "clinicNameExtended": "ParadiseLife DENTAL AND IMPLANT CENTRE & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Rohini Sector 22.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Rohini Sector 22. Led by Lead Dental Surgeon (BDS (Dental Surgeon)), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Rohini Sector 22, Delhi NCR",
+  "address": "KPS POLYCLINIC, Barwala Rd, opposite to SIYA GARDEN, Begampur, Sector 38, Begum Pur, Delhi, 110086, India",
+  "landmark": "Centrally located in Rohini Sector 22",
+  "phone": "+91 79797 65060",
+  "phoneRaw": "07979765060",
+  "whatsapp": "917979765060",
+  "rating": "5",
+  "reviewCount": "16+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=ParadiseLife+DENTAL+AND+IMPLANT+CENTRE+Rohini+Sector+22+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=ParadiseLife+DENTAL+AND+IMPLANT+CENTRE+Rohini+Sector+22",
+  "googleReviewsUrl": "https://maps.google.com/?q=ParadiseLife+DENTAL+AND+IMPLANT+CENTRE+Rohini+Sector+22",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Lead Dental Surgeon",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon)",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Rohini Sector 22 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon) registered dental clinician",
+      "10+ Years of dedicated clinical care in Rohini Sector 22",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Rohini Sector 22",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Lead Dental Surgeon",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon)",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Rohini Sector 22 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon) registered dental clinician",
+        "10+ Years of dedicated clinical care in Rohini Sector 22",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Rohini Sector 22",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

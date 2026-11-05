@@ -1,0 +1,109 @@
+{
+  "slug": "geetanjali-dental-clinic",
+  "clinicName": "Geetanjali Dental Clinic",
+  "shortName": "Geetanjali",
+  "clinicNameExtended": "Geetanjali Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Janakpuri.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Janakpuri. Led by Dr. Geetanjali Kapoor Home (BDS (Dental Surgeon)), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Janakpuri, Delhi NCR",
+  "address": "Janakpuri, Delhi NCR, India",
+  "landmark": "Centrally located in Janakpuri",
+  "phone": "+91 98109 87698",
+  "phoneRaw": "09810987698",
+  "whatsapp": "919810987698",
+  "rating": "4.9",
+  "reviewCount": "156+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Geetanjali+Dental+Clinic+Janakpuri+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Geetanjali+Dental+Clinic+Janakpuri",
+  "googleReviewsUrl": "https://maps.google.com/?q=Geetanjali+Dental+Clinic+Janakpuri",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Geetanjali Kapoor Home",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon)",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Janakpuri deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon) registered dental clinician",
+      "10+ Years of dedicated clinical care in Janakpuri",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Janakpuri",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Geetanjali Kapoor Home",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon)",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Janakpuri deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon) registered dental clinician",
+        "10+ Years of dedicated clinical care in Janakpuri",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Janakpuri",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

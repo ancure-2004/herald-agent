@@ -1,0 +1,109 @@
+{
+  "slug": "southpoint-dentistry",
+  "clinicName": "Southpoint Dentistry",
+  "shortName": "Southpoint Dentistry",
+  "clinicNameExtended": "Southpoint Dentistry & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Kalkaji South Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Kalkaji South Delhi. Led by Dr. Pallav Kinra (BDS, MDS (Prosthodontics), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Kalkaji South Delhi, Delhi NCR",
+  "address": "K-84, Main Market, Kalkaji, New Delhi, Delhi 110019",
+  "landmark": "Centrally located in Kalkaji South Delhi",
+  "phone": "+91 80769 72723",
+  "phoneRaw": "08076972723",
+  "whatsapp": "918076972723",
+  "rating": "4.9",
+  "reviewCount": "45+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Southpoint+Dentistry+Kalkaji+South+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Southpoint+Dentistry+Kalkaji+South+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Southpoint+Dentistry+Kalkaji+South+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Pallav Kinra",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Prosthodontics",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Kalkaji South Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Prosthodontics registered dental clinician",
+      "10+ Years of dedicated clinical care in Kalkaji South Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Kalkaji South Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Pallav Kinra",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Prosthodontics",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Kalkaji South Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Prosthodontics registered dental clinician",
+        "10+ Years of dedicated clinical care in Kalkaji South Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Kalkaji South Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

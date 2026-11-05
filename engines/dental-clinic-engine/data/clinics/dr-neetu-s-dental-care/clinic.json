@@ -1,0 +1,109 @@
+{
+  "slug": "dr-neetu-s-dental-care",
+  "clinicName": "Dr. Neetu's Dental Care",
+  "shortName": "Dr. Neetu's",
+  "clinicNameExtended": "Dr. Neetu's Dental Care & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sector 83 / 84, Gurugram.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sector 83 / 84, Gurugram. Led by Dr. Neetu Malik (BDS, MDS - Paediatric and Preventive Dentistry, 13+ years experience), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sector 83 / 84, Gurugram, Delhi NCR",
+  "address": "Shop No. 520, 5th Floor, SVH 83 Metro Street, Sector 83, Gurugram, Haryana 122004",
+  "landmark": "Centrally located in Sector 83 / 84, Gurugram",
+  "phone": "+91 95601 14235",
+  "phoneRaw": "09560114235",
+  "whatsapp": "919560114235",
+  "rating": "4.9",
+  "reviewCount": "35+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.+Neetu's+Dental+Care+Sector+83+/+84,+Gurugram+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr.+Neetu's+Dental+Care+Sector+83+/+84,+Gurugram",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr.+Neetu's+Dental+Care+Sector+83+/+84,+Gurugram",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Neetu Malik",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS - Paediatric and Preventive Dentistry, 13+ years experience",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sector 83 / 84, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS - Paediatric and Preventive Dentistry, 13+ years experience registered dental clinician",
+      "10+ Years of dedicated clinical care in Sector 83 / 84, Gurugram",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sector 83 / 84, Gurugram",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Neetu Malik",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS - Paediatric and Preventive Dentistry, 13+ years experience",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sector 83 / 84, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS - Paediatric and Preventive Dentistry, 13+ years experience registered dental clinician",
+        "10+ Years of dedicated clinical care in Sector 83 / 84, Gurugram",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sector 83 / 84, Gurugram",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

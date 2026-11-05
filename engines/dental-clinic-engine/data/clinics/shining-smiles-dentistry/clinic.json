@@ -1,0 +1,125 @@
+{
+  "slug": "shining-smiles-dentistry",
+  "clinicName": "Shining Smiles Dentistry",
+  "shortName": "Shining Smiles",
+  "clinicNameExtended": "Shining Smiles Dentistry & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Delhi. Led by Dr. Shashank Arora (BDS, MDS (Endodontist & Implantologist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Delhi, Delhi NCR",
+  "address": "F-36 basement, Max hospital, Press Enclave Marg, opposite gate number 5",
+  "landmark": "Centrally located in Delhi",
+  "phone": "+91 88821 18694",
+  "phoneRaw": "08882118694",
+  "whatsapp": "918882118694",
+  "rating": "4.9",
+  "reviewCount": "616+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Shining+Smiles+Dentistry+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=13063181117388930459",
+  "googleReviewsUrl": "https://maps.google.com/?cid=13063181117388930459",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: Closed.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "Closed",
+        "close": "Closed",
+        "isClosed": true,
+        "status": "Closed"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Shashank Arora",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Endodontist & Implantologist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Endodontist & Implantologist registered dental clinician",
+      "10+ Years of dedicated clinical care in Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Shashank Arora",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Endodontist & Implantologist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Endodontist & Implantologist registered dental clinician",
+        "10+ Years of dedicated clinical care in Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "10:00 AM",
+    "10:45 AM",
+    "11:30 AM",
+    "12:15 PM",
+    "01:00 PM",
+    "01:30 PM"
+  ],
+  "eveningSlots": [
+    "04:30 PM",
+    "05:15 PM",
+    "06:00 PM",
+    "06:45 PM",
+    "07:15 PM",
+    "07:45 PM"
+  ]
+}

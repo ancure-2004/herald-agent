@@ -1,0 +1,109 @@
+{
+  "slug": "marvel-dental-care",
+  "clinicName": "Marvel Dental Care",
+  "shortName": "Marvel Dental Care",
+  "clinicNameExtended": "Marvel Dental Care & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Crossings Republik, Ghaziabad.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Crossings Republik, Ghaziabad. Led by Dr. Neha Singh (BDS ? Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Crossings Republik, Ghaziabad, Delhi NCR",
+  "address": "Crossings Republik, Ghaziabad, Delhi NCR",
+  "landmark": "Centrally located in Crossings Republik, Ghaziabad",
+  "phone": "+91 97739 45280",
+  "phoneRaw": "09773945280",
+  "whatsapp": "919773945280",
+  "rating": "5.0",
+  "reviewCount": "64+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Marvel+Dental+Care+Crossings+Republik,+Ghaziabad+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Marvel+Dental+Care+Crossings+Republik,+Ghaziabad",
+  "googleReviewsUrl": "https://maps.google.com/?q=Marvel+Dental+Care+Crossings+Republik,+Ghaziabad",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Neha Singh",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS ? Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Crossings Republik, Ghaziabad deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS ? Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Crossings Republik, Ghaziabad",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Crossings Republik, Ghaziabad",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Neha Singh",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS ? Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Crossings Republik, Ghaziabad deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS ? Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Crossings Republik, Ghaziabad",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Crossings Republik, Ghaziabad",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

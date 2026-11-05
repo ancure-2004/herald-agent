@@ -1,0 +1,66 @@
+{
+  "clinicSlug": "vikas-dental-clinic-uttam-nagar",
+  "images": [
+    {
+      "fileName": "hero-clinic.jpg",
+      "path": "/clinics/vikas-dental-clinic-uttam-nagar/hero-clinic.jpg",
+      "depicts": "Modern clinical dental operatory chair and consultation room",
+      "alt": "Modern clinical dental operatory chair and consultation room",
+      "isStock": true,
+      "depictsServices": []
+    },
+    {
+      "fileName": "operatory-room.jpg",
+      "path": "/clinics/vikas-dental-clinic-uttam-nagar/operatory-room.jpg",
+      "depicts": "Sanitized clinical dental operatory room with overhead examination lighting",
+      "alt": "Sanitized clinical dental operatory room with overhead examination lighting",
+      "isStock": true,
+      "depictsServices": []
+    },
+    {
+      "fileName": "pediatric-care.jpg",
+      "path": "/clinics/vikas-dental-clinic-uttam-nagar/pediatric-care.jpg",
+      "depicts": "Gentle pediatric dental examination setting for young patients",
+      "alt": "Gentle pediatric dental examination setting for young patients",
+      "isStock": true,
+      "depictsServices": [
+        "pediatric-care",
+        "pediatric-dentistry"
+      ]
+    },
+    {
+      "fileName": "root-canal-tech.jpg",
+      "path": "/clinics/vikas-dental-clinic-uttam-nagar/root-canal-tech.jpg",
+      "depicts": "Endodontic rotary treatment instruments and diagnostic equipment",
+      "alt": "Endodontic rotary treatment instruments in a dental operatory",
+      "isStock": true,
+      "depictsServices": [
+        "painless-rct",
+        "rotary-rct",
+        "root-canal-therapy"
+      ]
+    },
+    {
+      "fileName": "smile-transformation.jpg",
+      "path": "/clinics/vikas-dental-clinic-uttam-nagar/smile-transformation.jpg",
+      "depicts": "Close-up of healthy aligned teeth and aesthetic smile design",
+      "alt": "Aesthetic smile design and alignment illustration",
+      "isStock": true,
+      "depictsServices": [
+        "cosmetic-veneers",
+        "smile-makeover",
+        "aligners"
+      ]
+    },
+    {
+      "fileName": "sterilization.jpg",
+      "path": "/clinics/vikas-dental-clinic-uttam-nagar/sterilization.jpg",
+      "depicts": "Autoclave sterilization equipment and sealed clinical pouches",
+      "alt": "Sanitized autoclave equipment and sealed clinical instrument pouches",
+      "isStock": true,
+      "depictsServices": [
+        "sterilization-protocol"
+      ]
+    }
+  ]
+}

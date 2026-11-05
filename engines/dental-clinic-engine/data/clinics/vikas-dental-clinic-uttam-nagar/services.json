@@ -1,0 +1,106 @@
+{
+  "services": [
+    {
+      "id": "laser-dentistry",
+      "title": "Advanced Dental Laser Treatments",
+      "category": "Laser Dentistry",
+      "badge": "Minimally Invasive",
+      "description": "High-precision soft-tissue laser treatments offering pain-free gum contouring, ulcer therapy, and frenectomies with minimal bleeding and swift recovery.",
+      "keyBenefits": [
+        "Minimal to no bleeding",
+        "Rapid tissue healing and regeneration",
+        "Painless without heavy anesthesia",
+        "Precise bacterial decontamination"
+      ],
+      "painScore": "Painless Laser Precision",
+      "recoveryTime": "Immediate return to routine",
+      "idealFor": "Gum reshaping, mouth ulcers, sensitive roots, gummy smiles",
+      "image": "/images/hero-clinic.jpg"
+    },
+    {
+      "id": "rotary-rct",
+      "title": "Rotary Root Canal Treatment (RCT)",
+      "category": "Endodontics",
+      "badge": "Instant Relief",
+      "description": "Advanced rotary root canal therapy using precision electronic apex locators to eliminate infection and relieve acute pain in a single visit.",
+      "keyBenefits": [
+        "Relieves severe pain immediately",
+        "Preserves natural tooth root",
+        "Precision mechanized cleaning",
+        "Completed in 1 or 2 visits"
+      ],
+      "painScore": "Painless with Local Numbing",
+      "recoveryTime": "Same-day comfort return",
+      "idealFor": "Severe toothache, deep decay, sensitive pulp",
+      "image": "/images/root-canal-tech.jpg"
+    },
+    {
+      "id": "zirconia-crowns",
+      "title": "Aesthetic Zirconia & Ceramic Crowns",
+      "category": "Prosthodontics",
+      "badge": "High Strength",
+      "description": "Premium monolithic zirconia crowns engineered for extreme durability, lifelike tooth shade translucency, and permanent chewing power.",
+      "keyBenefits": [
+        "Matched to your natural tooth shade",
+        "High chip and fracture resistance",
+        "Reinforces post-RCT teeth",
+        "100% metal-free biocompatibility"
+      ],
+      "painScore": "Comfortable Fitting",
+      "recoveryTime": "Immediate",
+      "idealFor": "Post-root canal teeth, broken enamel, heavy bite forces",
+      "image": "/images/smile-transformation.jpg"
+    },
+    {
+      "id": "atraumatic-extractions",
+      "title": "Surgical & Routine Tooth Extractions",
+      "category": "Oral Surgery",
+      "badge": "Gentle Technique",
+      "description": "Atraumatic extraction of non-restorable teeth or painful wisdom roots using micro-surgical elevators to minimize bone disturbance.",
+      "keyBenefits": [
+        "Calibrated local anesthesia",
+        "Minimal bone or gum trauma",
+        "Fast healing and socket closure",
+        "Clear recovery instructions"
+      ],
+      "painScore": "Painless with Local Numbing",
+      "recoveryTime": "24 - 48 Hours to regular routine",
+      "idealFor": "Severely decayed teeth, painful wisdom molars",
+      "image": "/images/operatory-room.jpg"
+    },
+    {
+      "id": "ultrasonic-scaling",
+      "title": "Ultrasonic Scaling & Enamel Polishing",
+      "category": "Preventive Care",
+      "badge": "Gum Health",
+      "description": "Thorough ultrasonic scaling to remove stubborn yellow calculus and tobacco stains from gum margins, followed by gentle diamond polishing.",
+      "keyBenefits": [
+        "Stops chronic gum bleeding",
+        "Removes stubborn calculus & tea stains",
+        "Freshens breath and oral feel",
+        "Protects tooth supporting bone"
+      ],
+      "painScore": "Mild Sensitivity Only",
+      "recoveryTime": "Immediate",
+      "idealFor": "Tartar buildup, swollen gums, smoker stains, routine cleaning",
+      "image": "/images/pediatric-care.jpg"
+    },
+    {
+      "id": "composite-fillings",
+      "title": "Composite Tooth-Colored Restorations",
+      "category": "Restorative Dentistry",
+      "badge": "Natural Shade",
+      "description": "High-durability resin composite fillings bonded directly into cavities, restoring natural tooth structure with invisible aesthetic margins.",
+      "keyBenefits": [
+        "Seamless tooth shade match",
+        "Direct bonding strengthens tooth",
+        "Mercury-free composite material",
+        "Dine immediately after curing"
+      ],
+      "painScore": "Zero Discomfort",
+      "recoveryTime": "Immediate",
+      "idealFor": "Cavities, chipped front teeth, worn biting surfaces",
+      "image": "/images/hero-clinic.jpg"
+    }
+  ]
+}

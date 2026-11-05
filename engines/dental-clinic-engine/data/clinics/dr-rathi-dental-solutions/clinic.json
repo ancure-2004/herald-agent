@@ -1,0 +1,109 @@
+{
+  "slug": "dr-rathi-dental-solutions",
+  "clinicName": "Dr.Rathi Dental Solutions",
+  "shortName": "Dr.Rathi Dental",
+  "clinicNameExtended": "Dr.Rathi Dental Solutions & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Karol Bagh.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Karol Bagh. Led by Dr. Sonam Bajaj Rathi (BDS), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Karol Bagh, Delhi NCR",
+  "address": "Karol Bagh, Delhi NCR, India",
+  "landmark": "Centrally located in Karol Bagh",
+  "phone": "+91 97177 99407",
+  "phoneRaw": "09717799407",
+  "whatsapp": "919717799407",
+  "rating": "4.9",
+  "reviewCount": "502+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.Rathi+Dental+Solutions+Karol+Bagh+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr.Rathi+Dental+Solutions+Karol+Bagh",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr.Rathi+Dental+Solutions+Karol+Bagh",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Sonam Bajaj Rathi",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Karol Bagh deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS registered dental clinician",
+      "10+ Years of dedicated clinical care in Karol Bagh",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Karol Bagh",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Sonam Bajaj Rathi",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Karol Bagh deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS registered dental clinician",
+        "10+ Years of dedicated clinical care in Karol Bagh",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Karol Bagh",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

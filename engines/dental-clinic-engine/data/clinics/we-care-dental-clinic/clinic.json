@@ -1,0 +1,109 @@
+{
+  "slug": "we-care-dental-clinic",
+  "clinicName": "We Care Dental Clinic",
+  "shortName": "We Care",
+  "clinicNameExtended": "We Care Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sector 22 and 44, Noida.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sector 22 and 44, Noida. Led by Dr. Shivani Singh (BDS, FRCD, MIDA Gold Medalist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sector 22 and 44, Noida, Delhi NCR",
+  "address": "Sector 22 and 44, Noida, Delhi NCR, India",
+  "landmark": "Centrally located in Sector 22 and 44, Noida",
+  "phone": "+91 99111 30535",
+  "phoneRaw": "09911130535",
+  "whatsapp": "919911130535",
+  "rating": "5.0",
+  "reviewCount": "200+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=We+Care+Dental+Clinic+Sector+22+and+44,+Noida+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=We+Care+Dental+Clinic+Sector+22+and+44,+Noida",
+  "googleReviewsUrl": "https://maps.google.com/?q=We+Care+Dental+Clinic+Sector+22+and+44,+Noida",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Shivani Singh",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, FRCD, MIDA Gold Medalist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sector 22 and 44, Noida deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, FRCD, MIDA Gold Medalist registered dental clinician",
+      "10+ Years of dedicated clinical care in Sector 22 and 44, Noida",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sector 22 and 44, Noida",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Shivani Singh",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, FRCD, MIDA Gold Medalist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sector 22 and 44, Noida deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, FRCD, MIDA Gold Medalist registered dental clinician",
+        "10+ Years of dedicated clinical care in Sector 22 and 44, Noida",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sector 22 and 44, Noida",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

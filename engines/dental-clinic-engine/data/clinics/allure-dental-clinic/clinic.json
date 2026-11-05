@@ -1,0 +1,109 @@
+{
+  "slug": "allure-dental-clinic",
+  "clinicName": "Allure Dental Clinic",
+  "shortName": "Allure Dental Clinic",
+  "clinicNameExtended": "Allure Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Prashant Vihar.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Prashant Vihar. Led by Resident Dental Surgeon (BDS ? Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Prashant Vihar, Delhi NCR",
+  "address": "Prashant Vihar, Delhi NCR",
+  "landmark": "Centrally located in Prashant Vihar",
+  "phone": "+91 70156 40376",
+  "phoneRaw": "07015640376",
+  "whatsapp": "917015640376",
+  "rating": "5.0",
+  "reviewCount": "10+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Allure+Dental+Clinic+Prashant+Vihar+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Allure+Dental+Clinic+Prashant+Vihar",
+  "googleReviewsUrl": "https://maps.google.com/?q=Allure+Dental+Clinic+Prashant+Vihar",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Resident Dental Surgeon",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS ? Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Prashant Vihar deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS ? Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Prashant Vihar",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Prashant Vihar",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Resident Dental Surgeon",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS ? Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Prashant Vihar deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS ? Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Prashant Vihar",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Prashant Vihar",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "slug": "dr-harshita-gupta",
+  "clinicName": "Dr. Harshita Gupta",
+  "shortName": "Dr. Harshita Gupta",
+  "clinicNameExtended": "Dr. Harshita Gupta & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in DLF Phase 4, Galleria Market, Gurugram.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in DLF Phase 4, Galleria Market, Gurugram. Led by Dr. Harshita Gupta (BDS, MDS Orthodontics), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "DLF Phase 4, Galleria Market, Gurugram, Delhi NCR",
+  "address": "520, 5th Floor, Galleria Market, DLF Phase 4, Gurugram, Haryana 122002",
+  "landmark": "Centrally located in DLF Phase 4, Galleria Market, Gurugram",
+  "phone": "+91 98711 66592",
+  "phoneRaw": "09871166592",
+  "whatsapp": "919871166592",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.+Harshita+Gupta+DLF+Phase+4,+Galleria+Market,+Gurugram+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr.+Harshita+Gupta+DLF+Phase+4,+Galleria+Market,+Gurugram",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr.+Harshita+Gupta+DLF+Phase+4,+Galleria+Market,+Gurugram",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Harshita Gupta",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS Orthodontics",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in DLF Phase 4, Galleria Market, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS Orthodontics registered dental clinician",
+      "10+ Years of dedicated clinical care in DLF Phase 4, Galleria Market, Gurugram",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in DLF Phase 4, Galleria Market, Gurugram",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Harshita Gupta",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS Orthodontics",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in DLF Phase 4, Galleria Market, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS Orthodontics registered dental clinician",
+        "10+ Years of dedicated clinical care in DLF Phase 4, Galleria Market, Gurugram",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in DLF Phase 4, Galleria Market, Gurugram",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

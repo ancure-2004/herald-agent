@@ -1,0 +1,29 @@
+{
+  "sanctuaryTitle": "Shalimar Bagh Dental Sanctuary",
+  "sanctuaryFeatures": [
+    {
+      "title": "Private Restorative Operatory",
+      "description": "Relax in comfortable ergonomic treatment suites designed for unhurried consultations.",
+      "amenity": "Calming Patient Environment",
+      "icon": "\u2728"
+    },
+    {
+      "title": "Vacuum Autoclave Sterilization",
+      "description": "Rigorous medical-grade sterilization cycles with sealed single-use instrument pouches.",
+      "amenity": "Strict Hygiene Standards",
+      "icon": "\ud83d\udee1\ufe0f"
+    },
+    {
+      "title": "Targeted Local Anesthetic Protocols",
+      "description": "Gentle pre-numbing protocols to ensure zero-pinch extractions and pain-free fillings.",
+      "amenity": "Anxiety-Free Comfort",
+      "icon": "\ud83c\udf3f"
+    },
+    {
+      "title": "Honest Standard OPD",
+      "description": "Transparent diagnostic fees with clear treatment outlines and zero hidden commercial charges.",
+      "amenity": "Ethical Pricing Standards",
+      "icon": "\ud83d\udc8e"
+    }
+  ]
+}

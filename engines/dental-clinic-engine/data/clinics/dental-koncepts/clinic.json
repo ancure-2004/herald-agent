@@ -1,0 +1,109 @@
+{
+  "slug": "dental-koncepts",
+  "clinicName": "Dental Koncepts",
+  "shortName": "Dental Koncepts",
+  "clinicNameExtended": "Dental Koncepts & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Noida Sector 110.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Noida Sector 110. Led by Dr. Shishir Agarwal (BDS, MDS (Prosthodontics), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Noida Sector 110, Delhi NCR",
+  "address": "1st Floor, A2/21, Varun Marg, Shramik Kunj, Sector 110, Noida, Uttar Pradesh 201304",
+  "landmark": "Centrally located in Noida Sector 110",
+  "phone": "+91 92123 08304",
+  "phoneRaw": "09212308304",
+  "whatsapp": "919212308304",
+  "rating": "4.7",
+  "reviewCount": "12+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dental+Koncepts+Noida+Sector+110+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dental+Koncepts+Noida+Sector+110",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dental+Koncepts+Noida+Sector+110",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Shishir Agarwal",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Prosthodontics",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Noida Sector 110 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Prosthodontics registered dental clinician",
+      "10+ Years of dedicated clinical care in Noida Sector 110",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Noida Sector 110",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Shishir Agarwal",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Prosthodontics",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Noida Sector 110 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Prosthodontics registered dental clinician",
+        "10+ Years of dedicated clinical care in Noida Sector 110",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Noida Sector 110",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "services": [
+    {
+      "id": "pediatric-dentistry",
+      "title": "Pediatric Preventive Dental Care",
+      "category": "Pediatric Dentistry",
+      "badge": "Child Friendly",
+      "description": "Gentle oral examinations, cavity prevention fluoride varnishes, and dental sealants designed to protect developing enamel in growing children.",
+      "keyBenefits": [
+        "Gentle tell-show-do approach",
+        "Fluoride decay prevention",
+        "Protects primary tooth enamel",
+        "Fun positive clinic visit"
+      ],
+      "painScore": "Zero Discomfort",
+      "recoveryTime": "Immediate",
+      "idealFor": "First dental visits, toddler oral health, routine preventive care",
+      "image": "/images/pediatric-care.jpg"
+    },
+    {
+      "id": "pulp-therapy",
+      "title": "Gentle Milk Tooth Pulp Therapy",
+      "category": "Pediatric Endodontics",
+      "badge": "Tooth Preservation",
+      "description": "Compassionate nerve-saving treatments for deeply decayed baby teeth to eliminate pain, stop infection, and guide adult tooth eruption naturally.",
+      "keyBenefits": [
+        "Eliminates toothache quickly",
+        "Preserves baby tooth space",
+        "Gentle calibrated anesthesia",
+        "Fast, peaceful session"
+      ],
+      "painScore": "Painless with Local Numbing",
+      "recoveryTime": "Same-day return to normal play",
+      "idealFor": "Severe tooth pain, deep cavities in baby teeth",
+      "image": "/images/root-canal-tech.jpg"
+    },
+    {
+      "id": "pediatric-crowns",
+      "title": "Pediatric Zirconia & Stainless Crowns",
+      "category": "Restorative Dentistry",
+      "badge": "Durable Protection",
+      "description": "Pre-formed natural white zirconia and stainless steel crowns to restore heavily damaged baby molars and ensure durable chewing strength.",
+      "keyBenefits": [
+        "Bio-compatible tooth protection",
+        "Prevents recurring decay",
+        "Restores full chewing power",
+        "Natural tooth-colored finish"
+      ],
+      "painScore": "Comfortable Fitting",
+      "recoveryTime": "Immediate",
+      "idealFor": "Post-pulp therapy molars, fractured baby teeth",
+      "image": "/images/smile-transformation.jpg"
+    },
+    {
+      "id": "special-needs",
+      "title": "Special Healthcare Needs Dentistry",
+      "category": "Specialized Care",
+      "badge": "Sensory Adapted",
+      "description": "Tailored dental care for children with Autism Spectrum Disorder and sensory sensitivities, featuring unhurried pacing and ambient calming care.",
+      "keyBenefits": [
+        "Sensory-adapted environment",
+        "Unhurried, compassionate care",
+        "Parent accompaniment welcome",
+        "Individualized pace"
+      ],
+      "painScore": "Calm Sensory Care",
+      "recoveryTime": "Immediate",
+      "idealFor": "Sensory sensitive children, medically fragile pediatric patients",
+      "image": "/images/hero-clinic.jpg"
+    },
+    {
+      "id": "preventive-orthodontics",
+      "title": "Preventive Orthodontics & Space Maintainers",
+      "category": "Orthodontics",
+      "badge": "Alignment Guide",
+      "description": "Custom dental space maintainers and early intervention devices to hold space open for permanent teeth after premature baby tooth loss.",
+      "keyBenefits": [
+        "Prevents future dental crowding",
+        "Guards permanent tooth path",
+        "Custom lightweight fit",
+        "Non-invasive placement"
+      ],
+      "painScore": "Zero Discomfort",
+      "recoveryTime": "Instant natural adaptation",
+      "idealFor": "Premature tooth loss, finger-sucking habit correction",
+      "image": "/images/operatory-room.jpg"
+    },
+    {
+      "id": "comfort-sedation",
+      "title": "Comfort-Focused Sedation Dentistry",
+      "category": "Patient Comfort",
+      "badge": "Fear Free",
+      "description": "Safe, regulated conscious sedation care for fearful children requiring extensive treatment, monitored with hospital-grade equipment.",
+      "keyBenefits": [
+        "Alleviates severe dental phobia",
+        "Allows comprehensive treatment",
+        "Comfortable relaxed state",
+        "Continuous vital monitoring"
+      ],
+      "painScore": "Deeply Relaxed",
+      "recoveryTime": "Restful recovery within hours",
+      "idealFor": "Extremely anxious young patients, multi-tooth treatments",
+      "image": "/images/operatory-room.jpg"
+    }
+  ]
+}

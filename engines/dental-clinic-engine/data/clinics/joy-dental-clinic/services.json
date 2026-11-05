@@ -1,0 +1,106 @@
+{
+  "services": [
+    {
+      "id": "dental-implants",
+      "title": "Titanium Dental Implant Surgery",
+      "category": "Implantology",
+      "badge": "Permanent Fix",
+      "description": "Restore missing teeth with premium titanium dental implants that fuse naturally with jawbone for lifetime stability and authentic chewing power.",
+      "keyBenefits": [
+        "Natural appearance and feel",
+        "Prevents jawbone resorption",
+        "No trimming of adjacent teeth",
+        "Long-lasting bite stability"
+      ],
+      "painScore": "Gentle Local Numbing",
+      "recoveryTime": "Immediate return to daily routine",
+      "idealFor": "Missing single or multiple teeth, loose denture replacement",
+      "image": "/images/operatory-room.jpg"
+    },
+    {
+      "id": "atraumatic-extractions",
+      "title": "Gentle Tooth Extractions",
+      "category": "Oral Surgery",
+      "badge": "Zero Pinch Protocol",
+      "description": "Careful sectional extraction of severely damaged or painful teeth with micro-instruments to protect surrounding bone and ensure fast healing.",
+      "keyBenefits": [
+        "Targeted local anesthesia",
+        "Minimal tissue disturbance",
+        "Rapid clotting and recovery",
+        "Unhurried, supportive approach"
+      ],
+      "painScore": "Painless with Local Numbing",
+      "recoveryTime": "24 - 48 Hours to regular routine",
+      "idealFor": "Severely decayed teeth, impacted roots, orthodontic clearance",
+      "image": "/images/hero-clinic.jpg"
+    },
+    {
+      "id": "scaling-polishing",
+      "title": "Ultrasonic Scaling & Teeth Polishing",
+      "category": "Preventive Care",
+      "badge": "Essential Hygiene",
+      "description": "Advanced ultrasonic plaque and tartar removal from deep gum pockets followed by micro-polishing for smooth enamel and fresh breath.",
+      "keyBenefits": [
+        "Removes stubborn tartar deposits",
+        "Stops bleeding and swollen gums",
+        "Brightens surface enamel stains",
+        "Freshens breath and oral feel"
+      ],
+      "painScore": "Mild Sensitivity Only",
+      "recoveryTime": "Immediate",
+      "idealFor": "Plaque accumulation, bad breath, bleeding gums, routine checkup",
+      "image": "/images/pediatric-care.jpg"
+    },
+    {
+      "id": "crowns-bridges",
+      "title": "Zirconia & Ceramic Dental Crowns",
+      "category": "Aesthetic Restorations",
+      "badge": "High Durability",
+      "description": "Precision milled zirconia and ceramic crowns designed to seamlessly cover fractured teeth and bridge gaps with natural tooth translucency.",
+      "keyBenefits": [
+        "Color-matched to adjacent teeth",
+        "High fracture resistance",
+        "Restores full chewing power",
+        "Protects root canal treated teeth"
+      ],
+      "painScore": "Comfortable Fitting",
+      "recoveryTime": "Immediate",
+      "idealFor": "Cracked teeth, post-RCT tooth reinforcement, missing tooth gaps",
+      "image": "/images/smile-transformation.jpg"
+    },
+    {
+      "id": "complete-dentures",
+      "title": "Custom Precision Dentures",
+      "category": "Prosthodontics",
+      "badge": "Comfort Fit",
+      "description": "Custom-molded full and partial acrylic dentures engineered for suction stability and facial support to make dining and smiling effortless.",
+      "keyBenefits": [
+        "Custom contouring for gums",
+        "Natural tooth shading",
+        "Restores speech clarity",
+        "Lightweight acrylic options"
+      ],
+      "painScore": "Non-Invasive",
+      "recoveryTime": "Instant natural adaptation",
+      "idealFor": "Multiple missing teeth, older denture replacement",
+      "image": "/images/smile-transformation.jpg"
+    },
+    {
+      "id": "root-canal-therapy",
+      "title": "Rotary Root Canal Therapy",
+      "category": "Endodontics",
+      "badge": "Tooth Saver",
+      "description": "Modern rotary root canal treatment to eradicate deep tooth infection and relieve acute pain while preserving your authentic natural tooth root.",
+      "keyBenefits": [
+        "Instant severe pain relief",
+        "Preserves natural tooth structure",
+        "Precise rotary canal cleaning",
+        "Completed in 1 to 2 sessions"
+      ],
+      "painScore": "Painless with Local Numbing",
+      "recoveryTime": "24 Hours to full comfort",
+      "idealFor": "Severe toothache, deep decay, heat/cold sensitivity",
+      "image": "/images/root-canal-tech.jpg"
+    }
+  ]
+}

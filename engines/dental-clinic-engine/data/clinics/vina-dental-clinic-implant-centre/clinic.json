@@ -1,0 +1,109 @@
+{
+  "slug": "vina-dental-clinic-implant-centre",
+  "clinicName": "Vina Dental Clinic & Implant Centre",
+  "shortName": "Vina Dental Clinic",
+  "clinicNameExtended": "Vina Dental Clinic & Implant Centre & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Vasant Kunj, Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Vasant Kunj, Delhi. Led by Dr. Vina & Clinical Team (BDS \u2022 Dental Surgeons & Implant Team), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Vasant Kunj, Delhi, Delhi NCR",
+  "address": "RZ-117/9, Prajapati Colony, Pipel Chowk, Kishangarh - Gaushala Marg, Vasant Kunj, New Delhi 110070",
+  "landmark": "Centrally located in Vasant Kunj, Delhi",
+  "phone": "+91 91259 17497",
+  "phoneRaw": "09125917497",
+  "whatsapp": "919125917497",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Vina+Dental+Clinic+&+Implant+Centre+Vasant+Kunj,+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Vina+Dental+Clinic+&+Implant+Centre+Vasant+Kunj,+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Vina+Dental+Clinic+&+Implant+Centre+Vasant+Kunj,+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Vina & Clinical Team",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Dental Surgeons & Implant Team",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Vasant Kunj, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Dental Surgeons & Implant Team registered dental clinician",
+      "10+ Years of dedicated clinical care in Vasant Kunj, Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Vasant Kunj, Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Vina & Clinical Team",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Dental Surgeons & Implant Team",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Vasant Kunj, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Dental Surgeons & Implant Team registered dental clinician",
+        "10+ Years of dedicated clinical care in Vasant Kunj, Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Vasant Kunj, Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

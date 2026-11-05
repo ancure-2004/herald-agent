@@ -1,0 +1,109 @@
+{
+  "slug": "dr-neetu-dental-care",
+  "clinicName": "Dr Neetu Dental Care",
+  "shortName": "Dr Neetu Dental Care",
+  "clinicNameExtended": "Dr Neetu Dental Care & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Gurgaon.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Gurgaon. Led by Dr. Neetu Malik (BDS, MDS (Paediatric and Preventive Dentistry), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Gurgaon, Delhi NCR",
+  "address": "SVH Metro Street, Sector 83, Gurugram, Haryana 122004",
+  "landmark": "Centrally located in Gurgaon",
+  "phone": "+91 91956 01142",
+  "phoneRaw": "09195601142",
+  "whatsapp": "919195601142",
+  "rating": "4.9",
+  "reviewCount": "32+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr+Neetu+Dental+Care+Gurgaon+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr+Neetu+Dental+Care+Gurgaon",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr+Neetu+Dental+Care+Gurgaon",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Neetu Malik",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Paediatric and Preventive Dentistry",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Gurgaon deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Paediatric and Preventive Dentistry registered dental clinician",
+      "10+ Years of dedicated clinical care in Gurgaon",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Gurgaon",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Neetu Malik",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Paediatric and Preventive Dentistry",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Gurgaon deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Paediatric and Preventive Dentistry registered dental clinician",
+        "10+ Years of dedicated clinical care in Gurgaon",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Gurgaon",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

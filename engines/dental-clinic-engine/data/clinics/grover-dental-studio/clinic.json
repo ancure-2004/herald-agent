@@ -1,0 +1,109 @@
+{
+  "slug": "grover-dental-studio",
+  "clinicName": "GROVER DENTAL STUDIO",
+  "shortName": "GROVER DENTAL STUDIO",
+  "clinicNameExtended": "GROVER DENTAL STUDIO & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Lajpat Nagar.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Lajpat Nagar. Led by Dr. Dipesh Grover (MDS), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Lajpat Nagar, Delhi NCR",
+  "address": "Lajpat Nagar, Delhi NCR",
+  "landmark": "Centrally located in Lajpat Nagar",
+  "phone": "+91 90132 33543",
+  "phoneRaw": "09013233543",
+  "whatsapp": "919013233543",
+  "rating": "4.9",
+  "reviewCount": "60+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=GROVER+DENTAL+STUDIO+Lajpat+Nagar+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=GROVER+DENTAL+STUDIO+Lajpat+Nagar",
+  "googleReviewsUrl": "https://maps.google.com/?q=GROVER+DENTAL+STUDIO+Lajpat+Nagar",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Dipesh Grover",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "MDS",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Lajpat Nagar deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "MDS registered dental clinician",
+      "10+ Years of dedicated clinical care in Lajpat Nagar",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Lajpat Nagar",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Dipesh Grover",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "MDS",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Lajpat Nagar deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "MDS registered dental clinician",
+        "10+ Years of dedicated clinical care in Lajpat Nagar",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Lajpat Nagar",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

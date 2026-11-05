@@ -1,0 +1,109 @@
+{
+  "slug": "dental-shack",
+  "clinicName": "Dental Shack",
+  "shortName": "Dental Shack",
+  "clinicNameExtended": "Dental Shack & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Karol Bagh.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Karol Bagh. Led by Resident Dental Surgeon & Clinical Team (BDS), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Karol Bagh, Delhi NCR",
+  "address": "Karol Bagh, Delhi NCR",
+  "landmark": "Centrally located in Karol Bagh",
+  "phone": "+91 93540 34549",
+  "phoneRaw": "09354034549",
+  "whatsapp": "919354034549",
+  "rating": "4.8",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dental+Shack+Karol+Bagh+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dental+Shack+Karol+Bagh",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dental+Shack+Karol+Bagh",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Resident Dental Surgeon & Clinical Team",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Karol Bagh deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS registered dental clinician",
+      "10+ Years of dedicated clinical care in Karol Bagh",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Karol Bagh",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Resident Dental Surgeon & Clinical Team",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Karol Bagh deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS registered dental clinician",
+        "10+ Years of dedicated clinical care in Karol Bagh",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Karol Bagh",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

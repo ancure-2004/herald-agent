@@ -1,0 +1,109 @@
+{
+  "slug": "chawla-dental-clinic-surgical-center",
+  "clinicName": "Chawla Dental Clinic & Surgical Center",
+  "shortName": "Chawla Dental Clinic",
+  "clinicNameExtended": "Chawla Dental Clinic & Surgical Center & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Janakpuri, West Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Janakpuri, West Delhi. Led by Dr. Ramandeep Singh Chawla (BDS, MDS - Oral & Maxillofacial Surgery), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Janakpuri, West Delhi, Delhi NCR",
+  "address": "270, Ground Floor, C4-F, Radha Krishan Thakur Marg, Block C4F, Janakpuri, New Delhi, Delhi 110058 (Near Bharti College)",
+  "landmark": "Centrally located in Janakpuri, West Delhi",
+  "phone": "+91 81300 86847",
+  "phoneRaw": "08130086847",
+  "whatsapp": "918130086847",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Chawla+Dental+Clinic+&+Surgical+Center+Janakpuri,+West+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Chawla+Dental+Clinic+&+Surgical+Center+Janakpuri,+West+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Chawla+Dental+Clinic+&+Surgical+Center+Janakpuri,+West+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Ramandeep Singh Chawla",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS - Oral & Maxillofacial Surgery",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Janakpuri, West Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS - Oral & Maxillofacial Surgery registered dental clinician",
+      "10+ Years of dedicated clinical care in Janakpuri, West Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Janakpuri, West Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Ramandeep Singh Chawla",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS - Oral & Maxillofacial Surgery",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Janakpuri, West Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS - Oral & Maxillofacial Surgery registered dental clinician",
+        "10+ Years of dedicated clinical care in Janakpuri, West Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Janakpuri, West Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

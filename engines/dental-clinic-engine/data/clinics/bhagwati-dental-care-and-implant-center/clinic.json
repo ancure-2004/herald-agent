@@ -1,0 +1,109 @@
+{
+  "slug": "bhagwati-dental-care-and-implant-center",
+  "clinicName": "Bhagwati Dental Care and Implant Center",
+  "shortName": "Bhagwati Dental Care",
+  "clinicNameExtended": "Bhagwati Dental Care and Implant Center & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Vaishali Sector 3.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Vaishali Sector 3. Led by Dr. Vedang Khanna (BDS (Dental Surgeon & Implant Specialist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Vaishali Sector 3, Delhi NCR",
+  "address": "325/1, G-2, Sector-3, Vaishali (Opposite Cloud 9 Tower), Ghaziabad, Uttar Pradesh 201010",
+  "landmark": "Centrally located in Vaishali Sector 3",
+  "phone": "+91 96430 27351",
+  "phoneRaw": "09643027351",
+  "whatsapp": "919643027351",
+  "rating": "4.9",
+  "reviewCount": "57+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Bhagwati+Dental+Care+and+Implant+Center+Vaishali+Sector+3+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Bhagwati+Dental+Care+and+Implant+Center+Vaishali+Sector+3",
+  "googleReviewsUrl": "https://maps.google.com/?q=Bhagwati+Dental+Care+and+Implant+Center+Vaishali+Sector+3",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Vedang Khanna",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon & Implant Specialist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Vaishali Sector 3 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon & Implant Specialist registered dental clinician",
+      "10+ Years of dedicated clinical care in Vaishali Sector 3",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Vaishali Sector 3",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Vedang Khanna",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon & Implant Specialist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Vaishali Sector 3 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon & Implant Specialist registered dental clinician",
+        "10+ Years of dedicated clinical care in Vaishali Sector 3",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Vaishali Sector 3",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "faqs": [
+    {
+      "category": "First Visit",
+      "question": "When should my child have their first dental visit?",
+      "answer": "We recommend bringing your child by their first birthday or when their first tooth appears. Early visits build trust and prevent early childhood cavities."
+    },
+    {
+      "category": "Comfort",
+      "question": "How does Dr. Rohini keep visits comfortable for anxious children?",
+      "answer": "We use the proven tell-show-do technique, gentle comforting language, and sensory adjustments to ensure children feel completely safe and relaxed."
+    },
+    {
+      "category": "Sedation",
+      "question": "Are treatments available under conscious sedation?",
+      "answer": "Yes, Dr. Rohini Josan Malik has specialized expertise in sedation dentistry since 2012, providing comfortable care for fearful or complex cases."
+    },
+    {
+      "category": "Baby Teeth",
+      "question": "Why is it important to treat cavities in baby teeth?",
+      "answer": "Primary teeth maintain space for adult teeth, assist speech, and allow proper nutrition. Neglected cavities can cause severe pain and damage adult roots."
+    },
+    {
+      "category": "Appointments",
+      "question": "How do I schedule an appointment with Dr. Rohini Josan Malik?",
+      "answer": "You can connect directly via WhatsApp at +91 99144 46677 or visit the dental department at Max Super Speciality Hospital, Mohali."
+    },
+    {
+      "category": "Hygiene",
+      "question": "What safety and hygiene standards are followed?",
+      "answer": "We follow hospital-grade multi-tier vacuum autoclave sterilization protocols with strict clinical sanitization between every young patient."
+    }
+  ]
+}

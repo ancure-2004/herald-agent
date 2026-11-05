@@ -1,0 +1,109 @@
+{
+  "slug": "k-h-dental-clinic",
+  "clinicName": "K.H. Dental Clinic",
+  "shortName": "K.H. Dental Clinic",
+  "clinicNameExtended": "K.H. Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Kirti Nagar.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Kirti Nagar. Led by Dr. Gurbinder Singh (BDS ? Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Kirti Nagar, Delhi NCR",
+  "address": "Kirti Nagar, Delhi NCR",
+  "landmark": "Centrally located in Kirti Nagar",
+  "phone": "+91 98710 31739",
+  "phoneRaw": "09871031739",
+  "whatsapp": "919871031739",
+  "rating": "4.9",
+  "reviewCount": "22+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=K.H.+Dental+Clinic+Kirti+Nagar+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=K.H.+Dental+Clinic+Kirti+Nagar",
+  "googleReviewsUrl": "https://maps.google.com/?q=K.H.+Dental+Clinic+Kirti+Nagar",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Gurbinder Singh",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS ? Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Kirti Nagar deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS ? Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Kirti Nagar",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Kirti Nagar",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Gurbinder Singh",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS ? Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Kirti Nagar deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS ? Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Kirti Nagar",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Kirti Nagar",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

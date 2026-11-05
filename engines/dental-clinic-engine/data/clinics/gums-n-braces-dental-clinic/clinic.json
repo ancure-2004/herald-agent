@@ -1,0 +1,109 @@
+{
+  "slug": "gums-n-braces-dental-clinic",
+  "clinicName": "Gums n Braces Dental Clinic",
+  "shortName": "Gums n Braces",
+  "clinicNameExtended": "Gums n Braces Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in South City 1, Gurugram.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in South City 1, Gurugram. Led by Dr. Abhinav Kathuria (BDS, MDS \u2022 Periodontics & Oral Implantology), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "South City 1, Gurugram, Delhi NCR",
+  "address": "Sector 40 / South City 1, Near HUDA Market, Gurugram, Haryana 122001",
+  "landmark": "Centrally located in South City 1, Gurugram",
+  "phone": "+91 98714 65422",
+  "phoneRaw": "09871465422",
+  "whatsapp": "919871465422",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Gums+n+Braces+Dental+Clinic+South+City+1,+Gurugram+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Gums+n+Braces+Dental+Clinic+South+City+1,+Gurugram",
+  "googleReviewsUrl": "https://maps.google.com/?q=Gums+n+Braces+Dental+Clinic+South+City+1,+Gurugram",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Abhinav Kathuria",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS \u2022 Periodontics & Oral Implantology",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in South City 1, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS \u2022 Periodontics & Oral Implantology registered dental clinician",
+      "10+ Years of dedicated clinical care in South City 1, Gurugram",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in South City 1, Gurugram",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Abhinav Kathuria",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS \u2022 Periodontics & Oral Implantology",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in South City 1, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS \u2022 Periodontics & Oral Implantology registered dental clinician",
+        "10+ Years of dedicated clinical care in South City 1, Gurugram",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in South City 1, Gurugram",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

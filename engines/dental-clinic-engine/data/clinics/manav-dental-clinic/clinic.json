@@ -1,0 +1,109 @@
+{
+  "slug": "manav-dental-clinic",
+  "clinicName": "Manav Dental Clinic",
+  "shortName": "Manav Dental Clinic",
+  "clinicNameExtended": "Manav Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Karol Bagh, Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Karol Bagh, Delhi. Led by Dr. Manish Motihar (BDS \u2022 Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Karol Bagh, Delhi, Delhi NCR",
+  "address": "WEA, Near Beadonpura / Behind Jessaram Hospital, Karol Bagh, New Delhi 110005",
+  "landmark": "Centrally located in Karol Bagh, Delhi",
+  "phone": "+91 98100 77783",
+  "phoneRaw": "09810077783",
+  "whatsapp": "919810077783",
+  "rating": "4.8",
+  "reviewCount": "26+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Manav+Dental+Clinic+Karol+Bagh,+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Manav+Dental+Clinic+Karol+Bagh,+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Manav+Dental+Clinic+Karol+Bagh,+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Manish Motihar",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Karol Bagh, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Karol Bagh, Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Karol Bagh, Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Manish Motihar",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Karol Bagh, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Karol Bagh, Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Karol Bagh, Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "slug": "smile-world-multispeciality-dental-center",
+  "clinicName": "Smile World Multispeciality Dental Center",
+  "shortName": "Smile WorldDental",
+  "clinicNameExtended": "Smile World Multispeciality Dental Center & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sector 1, Greater Noida West.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sector 1, Greater Noida West. Led by Dr. Ritika Gulati (BDS \u2022 Orthodontics & Cosmetic Dental Specialist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sector 1, Greater Noida West, Delhi NCR",
+  "address": "Tower CH-207, Stellar Jeevan, GH-03, Sector 1, Bisrakh Jalalpur, Greater Noida West, Uttar Pradesh 201306",
+  "landmark": "Centrally located in Sector 1, Greater Noida West",
+  "phone": "+91 98735 77568",
+  "phoneRaw": "09873577568",
+  "whatsapp": "919873577568",
+  "rating": "4.9",
+  "reviewCount": "35+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Smile+World+Multispeciality+Dental+Center+Sector+1,+Greater+Noida+West+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Smile+World+Multispeciality+Dental+Center+Sector+1,+Greater+Noida+West",
+  "googleReviewsUrl": "https://maps.google.com/?q=Smile+World+Multispeciality+Dental+Center+Sector+1,+Greater+Noida+West",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Ritika Gulati",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Orthodontics & Cosmetic Dental Specialist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sector 1, Greater Noida West deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Orthodontics & Cosmetic Dental Specialist registered dental clinician",
+      "10+ Years of dedicated clinical care in Sector 1, Greater Noida West",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sector 1, Greater Noida West",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Ritika Gulati",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Orthodontics & Cosmetic Dental Specialist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sector 1, Greater Noida West deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Orthodontics & Cosmetic Dental Specialist registered dental clinician",
+        "10+ Years of dedicated clinical care in Sector 1, Greater Noida West",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sector 1, Greater Noida West",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

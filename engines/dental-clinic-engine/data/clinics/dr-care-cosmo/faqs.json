@@ -1,0 +1,34 @@
+{
+  "faqs": [
+    {
+      "category": "General",
+      "question": "What is Dr. Poornima's approach to painless and gentle dental care?",
+      "answer": "We use a multi-step comfort protocol starting with pleasant topical numbing gels, followed by precise local anesthesia. Dr. Poornima utilizes gentle micro-instruments and atraumatic techniques, resulting in minimal post-treatment discomfort and smooth recovery."
+    },
+    {
+      "category": "Wisdom Teeth",
+      "question": "How comfortable is an impacted wisdom tooth extraction at Dr Care Cosmo?",
+      "answer": "We prioritize patient comfort at every stage. First, a topical numbing gel is applied, followed by gentle local anesthesia. Dr. Poornima performs sectional atraumatic extractions to minimize bone disturbance and soft tissue stress, ensuring fast recovery."
+    },
+    {
+      "category": "Dentures",
+      "question": "Why choose custom BPS precision dentures over conventional acrylic sets?",
+      "answer": "Conventional dentures can often loosen or cause sore spots. Precision BPS dentures are fabricated using advanced anatomical articulation and pressure-injection technology, creating a natural suction seal that allows comfortable chewing and speaking without messy adhesives."
+    },
+    {
+      "category": "General",
+      "question": "What is the consultation fee and how do I book an appointment?",
+      "answer": "Dr Care Cosmo Dental Clinic offers a transparent ₹200 standard OPD consultation fee. You can book directly via WhatsApp at +91 84700 84036 or call us. Operating hours are Monday to Saturday 10:00 AM - 8:00 PM."
+    },
+    {
+      "category": "Patient Comfort",
+      "question": "I have high dental anxiety and sensitive gag reflexes. How can you help?",
+      "answer": "Dr. Poornima takes an empathetic, unrushed approach with every patient. We explain each step beforehand, allow you to take breaks whenever you raise a hand, and utilize anti-gag topical numbing techniques to ensure complete comfort."
+    },
+    {
+      "category": "General",
+      "question": "What infection control and sterilization standards are followed?",
+      "answer": "We strictly follow hospital-grade Class-B Autoclave vacuum sterilization for all reusable instruments. Every instrument pouch is sealed and opened directly in front of the patient, guaranteeing 100% infection control and hygiene."
+    }
+  ]
+}

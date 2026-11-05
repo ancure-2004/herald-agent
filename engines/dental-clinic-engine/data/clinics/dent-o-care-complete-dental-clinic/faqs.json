@@ -1,0 +1,34 @@
+{
+  "faqs": [
+    {
+      "category": "Appointments",
+      "question": "What is the consultation fee and appointment process?",
+      "answer": "Dent-O-Care Complete Dental Clinic offers an affordable, transparent standard OPD consultation fee. You can book directly via WhatsApp at +91 98115 45717."
+    },
+    {
+      "category": "Timings",
+      "question": "What are the clinic operating hours in Shalimar Bagh?",
+      "answer": "We are open Monday through Saturday from 10:00 AM - 1:30 PM and 5:30 PM - 8:00 PM. The clinic is closed on Sundays."
+    },
+    {
+      "category": "Root Canal",
+      "question": "Will a root canal treatment be painful?",
+      "answer": "No. Our clinical team utilizes effective local anesthesia and modern rotary instruments so the root canal process is smooth, comfortable, and painless."
+    },
+    {
+      "category": "Restorations",
+      "question": "How long do zirconia dental crowns last?",
+      "answer": "Zirconia crowns are extremely strong and chip-resistant. With good oral hygiene and regular dental checkups, they provide years of reliable chewing."
+    },
+    {
+      "category": "Hygiene",
+      "question": "What sterilization measures are followed at Dent-O-Care?",
+      "answer": "We adhere strictly to multi-tier autoclave vacuum sterilization for all instruments. Every tool set is sealed and opened fresh chairside."
+    },
+    {
+      "category": "Location",
+      "question": "Where is the clinic located in Shalimar Bagh?",
+      "answer": "We are situated at AG-688, Block AG, Near Rudra Consultant in Poorbi Shalimar Bagh, easily accessible with neighborhood parking."
+    }
+  ]
+}

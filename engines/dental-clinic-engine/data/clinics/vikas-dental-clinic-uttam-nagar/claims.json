@@ -1,0 +1,40 @@
+{
+  "claims": [
+    {
+      "id": "claim-rating",
+      "text": "4.9 \u2605 Google Verified Rating",
+      "status": "VERIFIED",
+      "source": "Google Business Profile"
+    },
+    {
+      "id": "claim-reviews",
+      "text": "530+ authentic Google patient reviews",
+      "status": "VERIFIED",
+      "source": "Google Business Profile"
+    },
+    {
+      "id": "claim-fee",
+      "text": "Standard OPD consultation fee",
+      "status": "VERIFIED",
+      "source": "Clinic Fee Schedule"
+    },
+    {
+      "id": "claim-experience",
+      "text": "10+ Years dedicated clinical practice",
+      "status": "VERIFIED",
+      "source": "Verified Directory Record"
+    },
+    {
+      "id": "claim-laser",
+      "text": "Advanced laser dentistry for minimal discomfort",
+      "status": "SAFE_TO_GENERATE",
+      "source": "Standard Clinical Procedure"
+    },
+    {
+      "id": "claim-sterilization",
+      "text": "Multi-tier vacuum autoclave sterilization protocols",
+      "status": "SAFE_TO_GENERATE",
+      "source": "Standard Clinical Procedure"
+    }
+  ]
+}

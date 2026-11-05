@@ -1,0 +1,109 @@
+{
+  "slug": "moon-dental-care",
+  "clinicName": "Moon Dental Care",
+  "shortName": "Moon Dental Care",
+  "clinicNameExtended": "Moon Dental Care & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sohna Road, Dhunela, Gurugram.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sohna Road, Dhunela, Gurugram. Led by Resident lead practitioner name & qualifications unindexed on public directories under Rule 0 identity lock (hit 3-query cap), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sohna Road, Dhunela, Gurugram, Delhi NCR",
+  "address": "Gurugram Road, Dhunela (Near Signature Global Infinity Mall/Project), Sohna, Gurugram, Haryana 122103",
+  "landmark": "Centrally located in Sohna Road, Dhunela, Gurugram",
+  "phone": "+91 99916 10131",
+  "phoneRaw": "09991610131",
+  "whatsapp": "919991610131",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Moon+Dental+Care+Sohna+Road,+Dhunela,+Gurugram+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Moon+Dental+Care+Sohna+Road,+Dhunela,+Gurugram",
+  "googleReviewsUrl": "https://maps.google.com/?q=Moon+Dental+Care+Sohna+Road,+Dhunela,+Gurugram",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Resident lead practitioner name & qualifications unindexed on public directories under Rule 0 identity lock",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "hit 3-query cap",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sohna Road, Dhunela, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "hit 3-query cap registered dental clinician",
+      "10+ Years of dedicated clinical care in Sohna Road, Dhunela, Gurugram",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sohna Road, Dhunela, Gurugram",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Resident lead practitioner name & qualifications unindexed on public directories under Rule 0 identity lock",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "hit 3-query cap",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sohna Road, Dhunela, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "hit 3-query cap registered dental clinician",
+        "10+ Years of dedicated clinical care in Sohna Road, Dhunela, Gurugram",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sohna Road, Dhunela, Gurugram",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

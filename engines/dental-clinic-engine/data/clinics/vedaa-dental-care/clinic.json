@@ -1,0 +1,109 @@
+{
+  "slug": "vedaa-dental-care",
+  "clinicName": "Vedaa Dental Care",
+  "shortName": "Vedaa Dental Care",
+  "clinicNameExtended": "Vedaa Dental Care & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sapphire Mall, Sector 90 / Sector 49, Gurugram.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sapphire Mall, Sector 90 / Sector 49, Gurugram. Led by Dr. Alka Yadav (BDS \u2022 Dental Surgeon, Endodontist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sapphire Mall, Sector 90 / Sector 49, Gurugram, Delhi NCR",
+  "address": "F-133, First Floor, Sapphire 90 / Sapphire Mall, Sector 90 / Sector 49, Gurugram, Haryana 122505",
+  "landmark": "Centrally located in Sapphire Mall, Sector 90 / Sector 49, Gurugram",
+  "phone": "+91 99998 81971",
+  "phoneRaw": "09999881971",
+  "whatsapp": "919999881971",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Vedaa+Dental+Care+Sapphire+Mall,+Sector+90+/+Sector+49,+Gurugram+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Vedaa+Dental+Care+Sapphire+Mall,+Sector+90+/+Sector+49,+Gurugram",
+  "googleReviewsUrl": "https://maps.google.com/?q=Vedaa+Dental+Care+Sapphire+Mall,+Sector+90+/+Sector+49,+Gurugram",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Alka Yadav",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Dental Surgeon, Endodontist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sapphire Mall, Sector 90 / Sector 49, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Dental Surgeon, Endodontist registered dental clinician",
+      "10+ Years of dedicated clinical care in Sapphire Mall, Sector 90 / Sector 49, Gurugram",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sapphire Mall, Sector 90 / Sector 49, Gurugram",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Alka Yadav",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Dental Surgeon, Endodontist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sapphire Mall, Sector 90 / Sector 49, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Dental Surgeon, Endodontist registered dental clinician",
+        "10+ Years of dedicated clinical care in Sapphire Mall, Sector 90 / Sector 49, Gurugram",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sapphire Mall, Sector 90 / Sector 49, Gurugram",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

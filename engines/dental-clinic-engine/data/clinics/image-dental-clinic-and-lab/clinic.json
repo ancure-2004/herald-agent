@@ -1,0 +1,109 @@
+{
+  "slug": "image-dental-clinic-and-lab",
+  "clinicName": "Image Dental Clinic And Lab",
+  "shortName": "Image Dental Clinic",
+  "clinicNameExtended": "Image Dental Clinic And Lab & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Moti Nagar, Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Moti Nagar, Delhi. Led by Dr. D.S. Chatwal (BDS \u2022 Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Moti Nagar, Delhi, Delhi NCR",
+  "address": "Near Acharya Shree Bhikshu Hospital, Moti Nagar, New Delhi 110015",
+  "landmark": "Centrally located in Moti Nagar, Delhi",
+  "phone": "+91 98116 22354",
+  "phoneRaw": "09811622354",
+  "whatsapp": "919811622354",
+  "rating": "4.0",
+  "reviewCount": "1+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Image+Dental+Clinic+And+Lab+Moti+Nagar,+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Image+Dental+Clinic+And+Lab+Moti+Nagar,+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Image+Dental+Clinic+And+Lab+Moti+Nagar,+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. D.S. Chatwal",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Moti Nagar, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Moti Nagar, Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Moti Nagar, Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. D.S. Chatwal",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Moti Nagar, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Moti Nagar, Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Moti Nagar, Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "slug": "your-smile-care-dental-and-implant-centre",
+  "clinicName": "Your Smile Care Dental and Implant Centre",
+  "shortName": "Your Smile Care",
+  "clinicNameExtended": "Your Smile Care Dental and Implant Centre & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Mayur Vihar Phase 3, East Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Mayur Vihar Phase 3, East Delhi. Led by Dr. Khushboo (BDS, Dental Surgeon), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Mayur Vihar Phase 3, East Delhi, Delhi NCR",
+  "address": "Mayur Vihar Phase 3, East Delhi, Delhi NCR, India",
+  "landmark": "Centrally located in Mayur Vihar Phase 3, East Delhi",
+  "phone": "+91 93541 89784",
+  "phoneRaw": "09354189784",
+  "whatsapp": "919354189784",
+  "rating": "5.0",
+  "reviewCount": "200+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Your+Smile+Care+Dental+and+Implant+Centre+Mayur+Vihar+Phase+3,+East+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Your+Smile+Care+Dental+and+Implant+Centre+Mayur+Vihar+Phase+3,+East+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Your+Smile+Care+Dental+and+Implant+Centre+Mayur+Vihar+Phase+3,+East+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Khushboo",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, Dental Surgeon",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Mayur Vihar Phase 3, East Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, Dental Surgeon registered dental clinician",
+      "10+ Years of dedicated clinical care in Mayur Vihar Phase 3, East Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Mayur Vihar Phase 3, East Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Khushboo",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, Dental Surgeon",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Mayur Vihar Phase 3, East Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, Dental Surgeon registered dental clinician",
+        "10+ Years of dedicated clinical care in Mayur Vihar Phase 3, East Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Mayur Vihar Phase 3, East Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

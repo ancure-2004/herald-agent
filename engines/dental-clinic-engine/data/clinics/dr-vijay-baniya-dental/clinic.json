@@ -1,0 +1,109 @@
+{
+  "slug": "dr-vijay-baniya-dental",
+  "clinicName": "Dr. Vijay Baniya Dental",
+  "shortName": "Dr. Vijay Baniya",
+  "clinicNameExtended": "Dr. Vijay Baniya Dental & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Tagore Garden.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Tagore Garden. Led by Dr. Vijay Baniya (BDS (Dental Surgeon)), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Tagore Garden, Delhi NCR",
+  "address": "Tagore Garden, Delhi NCR, India",
+  "landmark": "Centrally located in Tagore Garden",
+  "phone": "+91 70395 13796",
+  "phoneRaw": "07039513796",
+  "whatsapp": "917039513796",
+  "rating": "4.9",
+  "reviewCount": "497+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.+Vijay+Baniya+Dental+Tagore+Garden+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr.+Vijay+Baniya+Dental+Tagore+Garden",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr.+Vijay+Baniya+Dental+Tagore+Garden",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Vijay Baniya",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon)",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Tagore Garden deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon) registered dental clinician",
+      "10+ Years of dedicated clinical care in Tagore Garden",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Tagore Garden",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Vijay Baniya",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon)",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Tagore Garden deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon) registered dental clinician",
+        "10+ Years of dedicated clinical care in Tagore Garden",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Tagore Garden",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

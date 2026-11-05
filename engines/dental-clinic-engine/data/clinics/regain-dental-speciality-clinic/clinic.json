@@ -1,0 +1,109 @@
+{
+  "slug": "regain-dental-speciality-clinic",
+  "clinicName": "Regain Dental Speciality Clinic",
+  "shortName": "Regain Dental",
+  "clinicNameExtended": "Regain Dental Speciality Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Prashant Vihar, Rohini Sector 14, Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Prashant Vihar, Rohini Sector 14, Delhi. Led by Lead Dental Surgeon (BDS (Dental Surgeon)), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Prashant Vihar, Rohini Sector 14, Delhi, Delhi NCR",
+  "address": "D-3/104, 1st Floor, Progressive Chambers, Central Market, D-Block, Prashant Vihar (Above SBI ATM, Opposite PVR Cinemas), Rohini Sector 14, Delhi 110085",
+  "landmark": "Centrally located in Prashant Vihar, Rohini Sector 14, Delhi",
+  "phone": "+91 80451 35310",
+  "phoneRaw": "08045135310",
+  "whatsapp": "918045135310",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Regain+Dental+Speciality+Clinic+Prashant+Vihar,+Rohini+Sector+14,+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Regain+Dental+Speciality+Clinic+Prashant+Vihar,+Rohini+Sector+14,+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Regain+Dental+Speciality+Clinic+Prashant+Vihar,+Rohini+Sector+14,+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Lead Dental Surgeon",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon)",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Prashant Vihar, Rohini Sector 14, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon) registered dental clinician",
+      "10+ Years of dedicated clinical care in Prashant Vihar, Rohini Sector 14, Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Prashant Vihar, Rohini Sector 14, Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Lead Dental Surgeon",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon)",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Prashant Vihar, Rohini Sector 14, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon) registered dental clinician",
+        "10+ Years of dedicated clinical care in Prashant Vihar, Rohini Sector 14, Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Prashant Vihar, Rohini Sector 14, Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

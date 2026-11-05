@@ -1,0 +1,107 @@
+{
+  "slug": "dr-care-cosmo",
+  "clinicName": "Dr Care Cosmo Dental Clinic",
+  "shortName": "Dr Care Cosmo",
+  "clinicNameExtended": "Dr Care Cosmo Dental Clinic & Aesthetic Centre",
+  "tagline": "Gentle Aesthetic Dentistry. Zero Fear Extractions.",
+  "shortDescription": "Experience gentle, patient-first dentistry in Laxmi Nagar. Led by Dr. Poornima (BDS, ~13 Years Clinical Practice), offering atraumatic extractions, precision dentures, and ₹200 standard OPD consultation.",
+  "area": "Krishan Kunj, Laxmi Nagar, Delhi",
+  "address": "House no 5 and 6, Street No. 7, Krishan Kunj Extension Part - 1, Krishan Kunj, Laxmi Nagar, Delhi, 110092",
+  "landmark": "Near Laxmi Nagar & Krishan Kunj Extension, East Delhi",
+  "phone": "+91 84700 84036",
+  "phoneRaw": "08470084036",
+  "whatsapp": "918470084036",
+  "rating": "5.0",
+  "reviewCount": "32+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr+Care+Cosmo+Dental+Clinic+Krishan+Kunj+Laxmi+Nagar+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=7557267134538028677",
+  "googleReviewsUrl": "https://maps.google.com/?cid=7557267134538028677",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: Closed.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "Closed",
+        "close": "Closed",
+        "isClosed": true,
+        "status": "Closed"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Poornima",
+    "title": "Lead Dental Surgeon & Practitioner",
+    "qualifications": "BDS (School of Dental Sciences) • Member, Indian Dental Association (IDA)",
+    "experience": "~13 Years of Clinical Practice",
+    "consultationFee": "₹200 Standard Consultation",
+    "philosophy": "A dental clinic should be a sanctuary of comfort, not a place of anxiety. My priority is ensuring every patient - from nervous first-timers to senior denture seekers - feels heard, respected, and receives gentle, transparent, and ethical care throughout their treatment.",
+    "credentials": [
+      "Graduated with BDS from premier School of Dental Sciences",
+      "~13 Years of dedicated clinical practice in general & aesthetic dentistry",
+      "Experienced in gentle atraumatic dental extractions and aesthetic restorative care",
+      "Transparent & accessible care with ₹200 standard OPD consultation fee",
+      "Comprehensive prosthodontic solutions including custom BPS & flexible dentures",
+      "Strict hospital-grade Class-B Autoclave multi-tier sterilization protocols"
+    ]
+  },
+  "morningSlots": [
+    "10:00 AM",
+    "10:45 AM",
+    "11:30 AM",
+    "12:15 PM",
+    "01:00 PM",
+    "01:45 PM"
+  ],
+  "eveningSlots": [
+    "04:30 PM",
+    "05:15 PM",
+    "06:00 PM",
+    "06:45 PM",
+    "07:15 PM",
+    "07:45 PM"
+  ]
+}

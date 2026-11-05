@@ -1,0 +1,109 @@
+{
+  "slug": "dr-suman-dental-clinic-rohini-delhi",
+  "clinicName": "Dr. Suman Dental Clinic , Rohini, Delhi.",
+  "shortName": "Dr. Suman Dental",
+  "clinicNameExtended": "Dr. Suman Dental Clinic , Rohini, Delhi. & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Rohini Sector 16.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Rohini Sector 16. Led by Dr. Suman Yadav (BDS, MDS (), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Rohini Sector 16, Delhi NCR",
+  "address": "G-6/321, Giani Gurumukhi Musaphir Marg, G Block, Sector 16, Rohini, New Delhi, Delhi, 110089, India",
+  "landmark": "Centrally located in Rohini Sector 16",
+  "phone": "+91 98113 76226",
+  "phoneRaw": "09811376226",
+  "whatsapp": "919811376226",
+  "rating": "4.7",
+  "reviewCount": "18+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.+Suman+Dental+Clinic+,+Rohini,+Delhi.+Rohini+Sector+16+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr.+Suman+Dental+Clinic+,+Rohini,+Delhi.+Rohini+Sector+16",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr.+Suman+Dental+Clinic+,+Rohini,+Delhi.+Rohini+Sector+16",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Suman Yadav",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Rohini Sector 16 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS ( registered dental clinician",
+      "10+ Years of dedicated clinical care in Rohini Sector 16",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Rohini Sector 16",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Suman Yadav",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Rohini Sector 16 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS ( registered dental clinician",
+        "10+ Years of dedicated clinical care in Rohini Sector 16",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Rohini Sector 16",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

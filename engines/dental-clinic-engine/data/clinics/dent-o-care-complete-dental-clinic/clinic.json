@@ -1,0 +1,125 @@
+{
+  "slug": "dent-o-care-complete-dental-clinic",
+  "clinicName": "Dent-O-Care Complete Dental Clinic",
+  "shortName": "Dent-O-Care",
+  "clinicNameExtended": "Dent-O-Care Complete Dental Clinic Shalimar Bagh",
+  "tagline": "Gentle Comprehensive Family Dentistry. 4.9\u2605 Rated in Shalimar Bagh.",
+  "shortDescription": "Established dental clinic in AG Block Shalimar Bagh. Providing gentle single-sitting root canals, zirconia crowns, scaling, and atraumatic extractions led by Dr. Dent-O-Care clinical team with transparent OPD consultation.",
+  "area": "Shalimar Bagh, North West Delhi, Delhi",
+  "address": "AG-688, Block AG, Near Rudra Consultant, Poorbi Shalimar Bagh, Shalimar Bagh, Delhi, 110088, India",
+  "landmark": "Near Rudra Consultant & Poorbi Shalimar Bagh AG Block",
+  "phone": "+91 98115 45717",
+  "phoneRaw": "09811545717",
+  "whatsapp": "919811545717",
+  "rating": "4.9",
+  "reviewCount": "43+",
+  "consultationFee": "Standard OPD Consultation",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dent-O-Care+Complete+Dental+Clinic+Shalimar+Bagh+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=8379721774042557600&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "googleReviewsUrl": "https://maps.google.com/?cid=8379721774042557600&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "hours": {
+    "verified": true,
+    "notes": "Monday-Saturday: 10:00 AM - 01:30 PM, 05:30 PM - 08:00 PM. Sunday: Closed.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "Closed",
+        "close": "Closed",
+        "isClosed": true,
+        "status": "Closed"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dent-O-Care Clinical Team",
+    "title": "Lead Dental Surgeons & Restorative Practitioners",
+    "qualifications": "BDS • Experienced Restorative Dental Surgery Team",
+    "experience": "Dedicated Clinical Dental Practice in Shalimar Bagh",
+    "consultationFee": "Standard OPD Consultation",
+    "philosophy": "We believe in conservative, preventive, and patient-first dentistry. We treat every patient with warmth, transparent guidance, and gentle techniques so your visit is comfortable and reassuring.",
+    "credentials": [
+      "Experienced dental practitioners serving Poorbi Shalimar Bagh",
+      "4.9★ Google rating across 43+ authentic patient reviews",
+      "Special clinical focus on conservative root canal therapy and tooth preservation",
+      "Custom aesthetic crowns and bridgework with natural tooth translucency",
+      "Transparent standard OPD consultation fee and honest treatment planning",
+      "Multi-tier vacuum autoclave sterilization protocols for hygiene"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dent-O-Care Clinical Team",
+      "title": "Lead Dental Surgeons & Restorative Practitioners",
+      "qualifications": "BDS \u2022 Experienced Restorative Dental Surgery Team",
+      "experience": "Dedicated Clinical Dental Practice in Shalimar Bagh",
+      "consultationFee": "Standard OPD Consultation",
+      "philosophy": "We believe in conservative, preventive, and patient-first dentistry. We treat every patient with warmth, transparent guidance, and gentle techniques so your visit is comfortable and reassuring.",
+      "credentials": [
+        "Experienced dental practitioners serving Poorbi Shalimar Bagh",
+        "4.9\u2605 Google rating across 43+ authentic patient reviews",
+        "Special clinical focus on conservative root canal therapy and tooth preservation",
+        "Custom aesthetic crowns and bridgework with natural tooth translucency",
+        "Transparent standard OPD consultation fee and honest treatment planning",
+        "Multi-tier vacuum autoclave sterilization protocols for hygiene"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "10:00 AM",
+    "10:45 AM",
+    "11:30 AM",
+    "12:15 PM",
+    "12:45 PM",
+    "01:15 PM"
+  ],
+  "eveningSlots": [
+    "05:30 PM",
+    "06:00 PM",
+    "06:30 PM",
+    "07:00 PM",
+    "07:30 PM",
+    "07:45 PM"
+  ]
+}

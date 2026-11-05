@@ -6,6 +6,7 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+MONOREPO_ROOT = BACKEND_DIR.parent
 
 
 class Settings(BaseSettings):
@@ -59,6 +60,16 @@ class Settings(BaseSettings):
     )
     DEFAULT_DEAL_VALUE_INR: int = Field(default=15000, description="Default deal value in INR")
 
+    # Engine Directories
+    DENTAL_ENGINE_DIR: Path = Field(
+        default=MONOREPO_ROOT / "engines" / "dental-clinic-engine",
+        description="Path to Dental Clinic Engine directory",
+    )
+    DENTAL_RECORDER_DIR: Path = Field(
+        default=MONOREPO_ROOT / "engines" / "dental-batch-recorder",
+        description="Path to Dental Batch Recorder directory",
+    )
+
     # External APIs (Optional in development, graceful fallback to mock/deterministic)
     GOOGLE_PLACES_API_KEY: Optional[str] = Field(default=None, description="Google Places API Key for clinic discovery")
     BRAVE_API_KEY: Optional[str] = Field(default=None, description="Brave Search API Key for domain & website checks")
@@ -91,6 +102,13 @@ class Settings(BaseSettings):
         elif isinstance(v, (list, tuple)):
             return list(v)
         return ["localhost", "127.0.0.1", "0.0.0.0", "testserver"]
+
+    @field_validator("DENTAL_ENGINE_DIR", "DENTAL_RECORDER_DIR", mode="before")
+    @classmethod
+    def assemble_engine_paths(cls, v: object) -> Path:
+        if isinstance(v, (str, Path)):
+            return Path(v).resolve()
+        return v
 
     @property
     def cors_origins_list(self) -> List[str]:

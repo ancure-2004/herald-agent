@@ -1,0 +1,125 @@
+{
+  "slug": "dr-shobhit-s-dental-implant-centre",
+  "clinicName": "Dr. Shobhit's Dental &Implant Centre",
+  "shortName": "Dr. Shobhit's Dental",
+  "clinicNameExtended": "Dr. Shobhit's Dental &Implant Centre & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Gurgaon Sector 56.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Gurgaon Sector 56. Led by Dr. Shobhit Agarwal (BDS (Dental Surgeon & Implantologist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Gurgaon Sector 56, Delhi NCR",
+  "address": "165 - P, near Devinder Vihar, Sector 56, Gurugram, Haryana 122011, India",
+  "landmark": "Centrally located in Gurgaon Sector 56",
+  "phone": "+91 97173 91252",
+  "phoneRaw": "09717391252",
+  "whatsapp": "919717391252",
+  "rating": "5",
+  "reviewCount": "125+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.+Shobhit's+Dental+&Implant+Centre+Gurgaon+Sector+56&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=17536088998535520030&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "googleReviewsUrl": "https://maps.google.com/?cid=17536088998535520030&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: Closed.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "Closed",
+        "close": "Closed",
+        "isClosed": true,
+        "status": "Closed"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Shobhit Agarwal",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon & Implantologist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Gurgaon Sector 56 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon & Implantologist registered dental clinician",
+      "10+ Years of dedicated clinical care in Gurgaon Sector 56",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Gurgaon Sector 56",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Shobhit Agarwal",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon & Implantologist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Gurgaon Sector 56 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon & Implantologist registered dental clinician",
+        "10+ Years of dedicated clinical care in Gurgaon Sector 56",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Gurgaon Sector 56",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "10:00 AM",
+    "10:45 AM",
+    "11:30 AM",
+    "12:15 PM",
+    "01:00 PM",
+    "01:30 PM"
+  ],
+  "eveningSlots": [
+    "04:30 PM",
+    "05:15 PM",
+    "06:00 PM",
+    "06:45 PM",
+    "07:15 PM",
+    "07:45 PM"
+  ]
+}

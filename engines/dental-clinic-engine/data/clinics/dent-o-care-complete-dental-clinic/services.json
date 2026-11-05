@@ -1,0 +1,106 @@
+{
+  "services": [
+    {
+      "id": "root-canal-therapy",
+      "title": "Precision Rotary Root Canal Therapy",
+      "category": "Endodontics",
+      "badge": "Painless Tech",
+      "description": "Conservative rotary root canal treatment designed to eliminate deep nerve infection and stop pain while preserving your natural tooth root.",
+      "keyBenefits": [
+        "Relieves throbbing tooth pain",
+        "Preserves natural tooth structure",
+        "Precise rotary canal cleaning",
+        "Completed in 1 or 2 visits"
+      ],
+      "painScore": "Painless with Local Numbing",
+      "recoveryTime": "Same-day comfort return",
+      "idealFor": "Deep cavities, nerve infection, severe chewing ache",
+      "image": "/images/root-canal-tech.jpg"
+    },
+    {
+      "id": "zirconia-crowns",
+      "title": "Aesthetic Zirconia & Ceramic Crowns",
+      "category": "Prosthodontics",
+      "badge": "High Durability",
+      "description": "Custom-milled zirconia and ceramic dental crowns providing high fracture resistance, lifelike translucency, and full chewing reinforcement.",
+      "keyBenefits": [
+        "Natural enamel color match",
+        "High fracture and chip resistance",
+        "Reinforces post-RCT teeth",
+        "Precision comfortable margin fit"
+      ],
+      "painScore": "Comfortable Fitting",
+      "recoveryTime": "Immediate",
+      "idealFor": "Post-root canal teeth, cracked enamel, missing tooth gaps",
+      "image": "/images/smile-transformation.jpg"
+    },
+    {
+      "id": "ultrasonic-scaling",
+      "title": "Ultrasonic Scaling & Teeth Polishing",
+      "category": "Preventive Care",
+      "badge": "Gum Health",
+      "description": "Professional ultrasonic cleaning that gently removes stubborn tartar, plaque, and stains from tooth surfaces and below gum margins.",
+      "keyBenefits": [
+        "Stops chronic gum bleeding",
+        "Removes stubborn calculus deposits",
+        "Eliminates bad breath bacteria",
+        "Polished, smooth enamel feel"
+      ],
+      "painScore": "Mild Sensitivity Only",
+      "recoveryTime": "Immediate",
+      "idealFor": "Plaque accumulation, bleeding gums, tea/coffee stains, routine care",
+      "image": "/images/pediatric-care.jpg"
+    },
+    {
+      "id": "composite-fillings",
+      "title": "Tooth-Colored Composite Fillings",
+      "category": "Restorative Dentistry",
+      "badge": "Invisible Shade",
+      "description": "Aesthetic tooth-colored resin restorations that bond seamlessly to natural tooth structure, preventing recurring decay and restoring bite shape.",
+      "keyBenefits": [
+        "Invisible tooth-colored match",
+        "Preserves maximum tooth enamel",
+        "Mercury-free bio-compatible material",
+        "Hardens instantly with LED light"
+      ],
+      "painScore": "Zero Discomfort",
+      "recoveryTime": "Immediate dining comfort",
+      "idealFor": "Cavities, chipped tooth edges, minor tooth wear",
+      "image": "/images/hero-clinic.jpg"
+    },
+    {
+      "id": "atraumatic-extractions",
+      "title": "Gentle Atraumatic Tooth Extractions",
+      "category": "Oral Surgery",
+      "badge": "Zero Pinch",
+      "description": "Gentle tooth extractions performed with precision micro-instruments under targeted local anesthesia to protect bone and ensure quick recovery.",
+      "keyBenefits": [
+        "Targeted local anesthesia",
+        "Minimal bone or soft-tissue trauma",
+        "Fast socket clotting and healing",
+        "Comfortable, unhurried care"
+      ],
+      "painScore": "Painless with Local Numbing",
+      "recoveryTime": "24 - 48 Hours to regular routine",
+      "idealFor": "Severely broken teeth, non-restorable roots",
+      "image": "/images/operatory-room.jpg"
+    },
+    {
+      "id": "partial-dentures",
+      "title": "Custom Precision Partial Dentures",
+      "category": "Prosthodontics",
+      "badge": "Comfort Fit",
+      "description": "Custom-designed partial acrylic and flexible dentures engineered for snug suction and chewing stability without causing gum irritation.",
+      "keyBenefits": [
+        "Natural facial contour support",
+        "Comfortable chewing stability",
+        "Custom shaded acrylic teeth",
+        "Restores speech confidence"
+      ],
+      "painScore": "Non-Invasive",
+      "recoveryTime": "Instant natural adaptation",
+      "idealFor": "Multiple missing teeth, gap filling",
+      "image": "/images/smile-transformation.jpg"
+    }
+  ]
+}

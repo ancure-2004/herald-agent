@@ -1,0 +1,29 @@
+{
+  "sanctuaryTitle": "East Delhi Practice Sanctuary",
+  "sanctuaryFeatures": [
+    {
+      "title": "Private Restorative Operatory",
+      "description": "Ergonomic treatment chairs with soothing ambient illumination for quiet, unrushed consultations.",
+      "amenity": "Calming Patient Environment",
+      "icon": "✨"
+    },
+    {
+      "title": "Sterilization Autoclave",
+      "description": "Multi-tier vacuum steam sterilization ensuring sterile instruments for every patient.",
+      "amenity": "Strict Hygiene Standards",
+      "icon": "🛡️"
+    },
+    {
+      "title": "Calibrated Pre-Numb Protocols",
+      "description": "Pleasant topical anesthetics applied beforehand to eliminate sharp pinching sensations.",
+      "amenity": "Anxiety-Free Comfort",
+      "icon": "🌿"
+    },
+    {
+      "title": "Transparent ₹200 Standard OPD",
+      "description": "Honest clinical diagnoses, detailed treatment cost outlines, and zero hidden commercial charges.",
+      "amenity": "Ethical Pricing Standards",
+      "icon": "💎"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "comfortPhases": [
+    {
+      "step": "01",
+      "title": "Unhurried Clinical Review",
+      "subtitle": "Personal Consultation",
+      "description": "Dr. Kashish Gupta listens carefully to your concerns and dental goals in a warm, welcoming environment.",
+      "duration": "10 - 15 Mins",
+      "sensoryNote": "Friendly and relaxed conversation.",
+      "keySafeguard": "Comprehensive clinical exam."
+    },
+    {
+      "step": "02",
+      "title": "Gentle Topical Pre-Numb",
+      "subtitle": "Zero-Sting Delivery",
+      "description": "A soothing topical gel gently numbs the gum tissue prior to any local anesthetic application.",
+      "duration": "5 Mins",
+      "sensoryNote": "Soothing mild numbness.",
+      "keySafeguard": "Comfort-first delivery."
+    },
+    {
+      "step": "03",
+      "title": "Precision Conservative Care",
+      "subtitle": "Unhurried Mastery",
+      "description": "Whether an extraction, filling, or crown prep, treatments proceed with micro-instruments and check-ins.",
+      "duration": "20 - 40 Mins",
+      "sensoryNote": "Gentle vibration, zero sharpness.",
+      "keySafeguard": "Continuous patient comfort."
+    },
+    {
+      "step": "04",
+      "title": "Clear Recovery & Guidance",
+      "subtitle": "Direct WhatsApp Line",
+      "description": "You receive straightforward aftercare instructions and direct WhatsApp support from Kashish Multi.",
+      "duration": "10 Mins",
+      "sensoryNote": "Relieved and well-supported.",
+      "keySafeguard": "Direct post-treatment line."
+    }
+  ],
+  "dentureComparison": [
+    {
+      "feature": "Retention & Stability",
+      "conventional": "Frequently shifts while talking; needs glue",
+      "bpsPrecision": "Precision-contoured anatomical suction fit",
+      "benefit": "Eat and laugh with confidence"
+    },
+    {
+      "feature": "Chewing Comfort",
+      "conventional": "Restricted to soft, tender foods",
+      "bpsPrecision": "Balanced bite distribution for daily meals",
+      "benefit": "Enjoy normal dining"
+    },
+    {
+      "feature": "Gum Pressure",
+      "conventional": "Rigid plastic can rub and cause sore spots",
+      "bpsPrecision": "Smooth polished acrylic surface contours",
+      "benefit": "Zero painful friction blisters"
+    },
+    {
+      "feature": "Aesthetic Naturalism",
+      "conventional": "Monotone opaque tooth appearance",
+      "bpsPrecision": "Natural multi-shaded tooth moulds",
+      "benefit": "Authentic, youthful smile"
+    }
+  ]
+}

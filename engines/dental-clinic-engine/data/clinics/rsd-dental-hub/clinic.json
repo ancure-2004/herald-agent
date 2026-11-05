@@ -1,0 +1,109 @@
+{
+  "slug": "rsd-dental-hub",
+  "clinicName": "RSD Dental Hub",
+  "shortName": "RSD Dental Hub",
+  "clinicNameExtended": "RSD Dental Hub & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Dwarka Sector 19.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Dwarka Sector 19. Led by Dr. Nitin Kumar (BDS, MDS (Conservative Dentistry & Endodontics), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Dwarka Sector 19, Delhi NCR",
+  "address": "Pocket 3, Sector 19 Dwarka, New Delhi, Delhi 110075",
+  "landmark": "Centrally located in Dwarka Sector 19",
+  "phone": "+91 98188 56321",
+  "phoneRaw": "09818856321",
+  "whatsapp": "919818856321",
+  "rating": "4.9",
+  "reviewCount": "40+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=RSD+Dental+Hub+Dwarka+Sector+19+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=RSD+Dental+Hub+Dwarka+Sector+19",
+  "googleReviewsUrl": "https://maps.google.com/?q=RSD+Dental+Hub+Dwarka+Sector+19",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Nitin Kumar",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Conservative Dentistry & Endodontics",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Dwarka Sector 19 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Conservative Dentistry & Endodontics registered dental clinician",
+      "10+ Years of dedicated clinical care in Dwarka Sector 19",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Dwarka Sector 19",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Nitin Kumar",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Conservative Dentistry & Endodontics",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Dwarka Sector 19 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Conservative Dentistry & Endodontics registered dental clinician",
+        "10+ Years of dedicated clinical care in Dwarka Sector 19",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Dwarka Sector 19",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

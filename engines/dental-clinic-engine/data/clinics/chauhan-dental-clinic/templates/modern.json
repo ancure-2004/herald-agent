@@ -1,0 +1,45 @@
+{
+  "heroMetrics": [
+    {
+      "number": "4.8 \u2605",
+      "label": "Google Rating",
+      "note": "60+ patient reviews"
+    },
+    {
+      "number": "Transparent OPD",
+      "label": "OPD Consultation",
+      "note": "Transparent upfront standard fee"
+    },
+    {
+      "number": "10+ Yrs",
+      "label": "Clinical Practice",
+      "note": "Dr. B.S. Chauhan (BDS (Dental Surgeon)"
+    }
+  ],
+  "alignerJourney": [
+    {
+      "step": "01",
+      "title": "3D Digital Smile Scan",
+      "duration": "15 Mins",
+      "description": "High-resolution intraoral imaging to capture exact tooth positions without uncomfortable putty impressions."
+    },
+    {
+      "step": "02",
+      "title": "Custom Treatment Map",
+      "duration": "2 - 3 Days",
+      "description": "Digital simulation of your step-by-step tooth alignment and final smile aesthetic before fabrication begins."
+    },
+    {
+      "step": "03",
+      "title": "Precision Aligner Series",
+      "duration": "Bi-weekly trays",
+      "description": "Custom-fitted transparent aligners gently move teeth into position with minimal pressure and zero dietary restrictions."
+    },
+    {
+      "step": "04",
+      "title": "Smile Lock & Retention",
+      "duration": "Final visit",
+      "description": "Custom retainers to stabilize your new alignment and ensure lifelong aesthetic harmony."
+    }
+  ]
+}

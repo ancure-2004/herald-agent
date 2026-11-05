@@ -1,0 +1,109 @@
+{
+  "slug": "ayushman-dental-clinic-and-implant-center",
+  "clinicName": "Ayushman Dental Clinic And Implant Center",
+  "shortName": "Ayushman",
+  "clinicNameExtended": "Ayushman Dental Clinic And Implant Center & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in West Sant Nagar, Burari, North Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in West Sant Nagar, Burari, North Delhi. Led by Dr. Vibhor Tyagi (BDS \u2022 Dental Surgeon & Implantologist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "West Sant Nagar, Burari, North Delhi, Delhi NCR",
+  "address": "353, Chandan Vihar, Nehru Gali, West Sant Nagar, Burari, Delhi 110084 (Near Chokkar Market / Himigiri Enclave)",
+  "landmark": "Centrally located in West Sant Nagar, Burari, North Delhi",
+  "phone": "+91 98971 21607",
+  "phoneRaw": "09897121607",
+  "whatsapp": "919897121607",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Ayushman+Dental+Clinic+And+Implant+Center+West+Sant+Nagar,+Burari,+North+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Ayushman+Dental+Clinic+And+Implant+Center+West+Sant+Nagar,+Burari,+North+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Ayushman+Dental+Clinic+And+Implant+Center+West+Sant+Nagar,+Burari,+North+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Vibhor Tyagi",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Dental Surgeon & Implantologist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in West Sant Nagar, Burari, North Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Dental Surgeon & Implantologist registered dental clinician",
+      "10+ Years of dedicated clinical care in West Sant Nagar, Burari, North Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in West Sant Nagar, Burari, North Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Vibhor Tyagi",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Dental Surgeon & Implantologist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in West Sant Nagar, Burari, North Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Dental Surgeon & Implantologist registered dental clinician",
+        "10+ Years of dedicated clinical care in West Sant Nagar, Burari, North Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in West Sant Nagar, Burari, North Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

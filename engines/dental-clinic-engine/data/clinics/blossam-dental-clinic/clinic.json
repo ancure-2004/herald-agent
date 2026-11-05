@@ -1,0 +1,109 @@
+{
+  "slug": "blossam-dental-clinic",
+  "clinicName": "BLOSSAM DENTAL CLINIC",
+  "shortName": "BLOSSAM",
+  "clinicNameExtended": "BLOSSAM DENTAL CLINIC & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Green Park Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Green Park Delhi. Led by Dr. Shalini Singh (BDS, MDS), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Green Park Delhi, Delhi NCR",
+  "address": "Green Park Delhi, Delhi NCR, India",
+  "landmark": "Centrally located in Green Park Delhi",
+  "phone": "+91 99100 54575",
+  "phoneRaw": "09910054575",
+  "whatsapp": "919910054575",
+  "rating": "4.4",
+  "reviewCount": "31+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=BLOSSAM+DENTAL+CLINIC+Green+Park+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=BLOSSAM+DENTAL+CLINIC+Green+Park+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=BLOSSAM+DENTAL+CLINIC+Green+Park+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Shalini Singh",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Green Park Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS registered dental clinician",
+      "10+ Years of dedicated clinical care in Green Park Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Green Park Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Shalini Singh",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Green Park Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS registered dental clinician",
+        "10+ Years of dedicated clinical care in Green Park Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Green Park Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

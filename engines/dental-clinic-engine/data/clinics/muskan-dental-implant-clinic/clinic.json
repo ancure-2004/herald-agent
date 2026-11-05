@@ -1,0 +1,109 @@
+{
+  "slug": "muskan-dental-implant-clinic",
+  "clinicName": "Muskan Dental & Implant Clinic",
+  "shortName": "Muskan Dental",
+  "clinicNameExtended": "Muskan Dental & Implant Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Vasant Kunj.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Vasant Kunj. Led by Dr. Rajeev Aggarwal (BDS, MDS), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Vasant Kunj, Delhi NCR",
+  "address": "Vasant Kunj, Delhi NCR, India",
+  "landmark": "Centrally located in Vasant Kunj",
+  "phone": "+91 93502 97977",
+  "phoneRaw": "09350297977",
+  "whatsapp": "919350297977",
+  "rating": "4.7",
+  "reviewCount": "25+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Muskan+Dental+&+Implant+Clinic+Vasant+Kunj+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Muskan+Dental+&+Implant+Clinic+Vasant+Kunj",
+  "googleReviewsUrl": "https://maps.google.com/?q=Muskan+Dental+&+Implant+Clinic+Vasant+Kunj",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Rajeev Aggarwal",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Vasant Kunj deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS registered dental clinician",
+      "10+ Years of dedicated clinical care in Vasant Kunj",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Vasant Kunj",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Rajeev Aggarwal",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Vasant Kunj deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS registered dental clinician",
+        "10+ Years of dedicated clinical care in Vasant Kunj",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Vasant Kunj",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

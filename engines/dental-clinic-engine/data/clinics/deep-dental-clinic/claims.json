@@ -1,0 +1,40 @@
+{
+  "claims": [
+    {
+      "id": "claim-rating",
+      "text": "5 \u2605 Google Verified Rating",
+      "status": "VERIFIED",
+      "source": "Google Business Profile"
+    },
+    {
+      "id": "claim-reviews",
+      "text": "11+ authentic patient evaluations",
+      "status": "VERIFIED",
+      "source": "Google Business Profile"
+    },
+    {
+      "id": "claim-fee",
+      "text": "Transparent OPD consultation policy",
+      "status": "VERIFIED",
+      "source": "Clinic Fee Schedule"
+    },
+    {
+      "id": "claim-experience",
+      "text": "10+ Years dedicated clinical practice",
+      "status": "VERIFIED",
+      "source": "Practo Verified Profile"
+    },
+    {
+      "id": "claim-painless",
+      "text": "Gentle local numbing and unhurried clinical care",
+      "status": "SAFE_TO_GENERATE",
+      "source": "Standard Clinical Procedure"
+    },
+    {
+      "id": "claim-sterilization",
+      "text": "Multi-tier vacuum autoclave sterilization protocols",
+      "status": "SAFE_TO_GENERATE",
+      "source": "Standard Clinical Procedure"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "slug": "bharat-dental-and-hair-clinic",
+  "clinicName": "Bharat Dental And Hair Clinic",
+  "shortName": "Bharat Dental",
+  "clinicNameExtended": "Bharat Dental And Hair Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Rohini Sector 3.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Rohini Sector 3. Led by Dr. Bharat Agravat Cosmetic (BDS, MDS), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Rohini Sector 3, Delhi NCR",
+  "address": "1st Floor, H34, Plot- 170, Sector 3, Rohini, Delhi, near Vishram Chowk, Pocket 34, Sector 3H, Rohini, New Delhi, Delhi, 110085, India",
+  "landmark": "Centrally located in Rohini Sector 3",
+  "phone": "+91 98119 29054",
+  "phoneRaw": "09811929054",
+  "whatsapp": "919811929054",
+  "rating": "5",
+  "reviewCount": "1+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Bharat+Dental+And+Hair+Clinic+Rohini+Sector+3+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Bharat+Dental+And+Hair+Clinic+Rohini+Sector+3",
+  "googleReviewsUrl": "https://maps.google.com/?q=Bharat+Dental+And+Hair+Clinic+Rohini+Sector+3",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Bharat Agravat Cosmetic",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Rohini Sector 3 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS registered dental clinician",
+      "10+ Years of dedicated clinical care in Rohini Sector 3",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Rohini Sector 3",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Bharat Agravat Cosmetic",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Rohini Sector 3 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS registered dental clinician",
+        "10+ Years of dedicated clinical care in Rohini Sector 3",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Rohini Sector 3",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

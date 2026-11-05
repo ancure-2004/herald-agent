@@ -1,0 +1,109 @@
+{
+  "slug": "smile-point-dental-care-centre",
+  "clinicName": "Smile Point Dental Care Centre",
+  "shortName": "Smile Point Dental",
+  "clinicNameExtended": "Smile Point Dental Care Centre & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in South City 1, Gurugram.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in South City 1, Gurugram. Led by Dr. Sonali Sachdeva & Dr. Vikram Sachdeva (BDS \u2022 Dental Surgeons), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "South City 1, Gurugram, Delhi NCR",
+  "address": "C-Block, South City 1, Sector 41, Gurugram, Haryana 122001",
+  "landmark": "Centrally located in South City 1, Gurugram",
+  "phone": "+91 98117 76848",
+  "phoneRaw": "09811776848",
+  "whatsapp": "919811776848",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Smile+Point+Dental+Care+Centre+South+City+1,+Gurugram+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Smile+Point+Dental+Care+Centre+South+City+1,+Gurugram",
+  "googleReviewsUrl": "https://maps.google.com/?q=Smile+Point+Dental+Care+Centre+South+City+1,+Gurugram",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Sonali Sachdeva & Dr. Vikram Sachdeva",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Dental Surgeons",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in South City 1, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Dental Surgeons registered dental clinician",
+      "10+ Years of dedicated clinical care in South City 1, Gurugram",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in South City 1, Gurugram",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Sonali Sachdeva & Dr. Vikram Sachdeva",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Dental Surgeons",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in South City 1, Gurugram deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Dental Surgeons registered dental clinician",
+        "10+ Years of dedicated clinical care in South City 1, Gurugram",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in South City 1, Gurugram",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

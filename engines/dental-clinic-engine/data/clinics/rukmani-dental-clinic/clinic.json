@@ -1,0 +1,109 @@
+{
+  "slug": "rukmani-dental-clinic",
+  "clinicName": "Rukmani Dental Clinic",
+  "shortName": "Rukmani",
+  "clinicNameExtended": "Rukmani Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Pitampura / Rani Bagh, Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Pitampura / Rani Bagh, Delhi. Led by Dr. Anubhav Tyagi (BDS - Dental Surgeon, Orthodontic & Implant Practitioner), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Pitampura / Rani Bagh, Delhi, Delhi NCR",
+  "address": "Shop No. 2, 643-A, Rishi Nagar, Near Sant Nagar Chowk, Rani Bagh, Pitampura, New Delhi 110034",
+  "landmark": "Centrally located in Pitampura / Rani Bagh, Delhi",
+  "phone": "+91 72898 13913",
+  "phoneRaw": "07289813913",
+  "whatsapp": "917289813913",
+  "rating": "4.9",
+  "reviewCount": "35+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Rukmani+Dental+Clinic+Pitampura+/+Rani+Bagh,+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Rukmani+Dental+Clinic+Pitampura+/+Rani+Bagh,+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Rukmani+Dental+Clinic+Pitampura+/+Rani+Bagh,+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Anubhav Tyagi",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS - Dental Surgeon, Orthodontic & Implant Practitioner",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Pitampura / Rani Bagh, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS - Dental Surgeon, Orthodontic & Implant Practitioner registered dental clinician",
+      "10+ Years of dedicated clinical care in Pitampura / Rani Bagh, Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Pitampura / Rani Bagh, Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Anubhav Tyagi",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS - Dental Surgeon, Orthodontic & Implant Practitioner",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Pitampura / Rani Bagh, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS - Dental Surgeon, Orthodontic & Implant Practitioner registered dental clinician",
+        "10+ Years of dedicated clinical care in Pitampura / Rani Bagh, Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Pitampura / Rani Bagh, Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

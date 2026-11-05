@@ -1,0 +1,125 @@
+{
+  "slug": "dentifique-dental-clinic",
+  "clinicName": "Dentifique Dental Clinic | Dentist in East of Kailash New Delhi",
+  "shortName": "Dentifique",
+  "clinicNameExtended": "Dentifique Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in GK.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in GK. Led by Dr. Mrinalini Ahuja (BDS, MDS (Conservative Dentistry & Endodontics), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "GK, Delhi NCR",
+  "address": "New Delhi, Delhi",
+  "landmark": "Centrally located in GK",
+  "phone": "+91 99802 49792",
+  "phoneRaw": "09980249792",
+  "whatsapp": "919980249792",
+  "rating": "5",
+  "reviewCount": "146+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dentifique+Dental+Clinic+|+Dentist+in+East+of+Kailash+New+Delhi+GK&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=10190881416489925002",
+  "googleReviewsUrl": "https://maps.google.com/?cid=10190881416489925002",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 09:00 AM - 07:00 PM. Sunday: Closed.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "09:00 AM",
+        "close": "07:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "09:00 AM",
+        "close": "07:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "09:00 AM",
+        "close": "07:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "09:00 AM",
+        "close": "07:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "09:00 AM",
+        "close": "07:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "09:00 AM",
+        "close": "07:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "Closed",
+        "close": "Closed",
+        "isClosed": true,
+        "status": "Closed"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Mrinalini Ahuja",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Conservative Dentistry & Endodontics",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in GK deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Conservative Dentistry & Endodontics registered dental clinician",
+      "10+ Years of dedicated clinical care in GK",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in GK",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Mrinalini Ahuja",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Conservative Dentistry & Endodontics",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in GK deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Conservative Dentistry & Endodontics registered dental clinician",
+        "10+ Years of dedicated clinical care in GK",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in GK",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "10:00 AM",
+    "10:45 AM",
+    "11:30 AM",
+    "12:15 PM",
+    "01:00 PM",
+    "01:30 PM"
+  ],
+  "eveningSlots": [
+    "04:30 PM",
+    "05:15 PM",
+    "06:00 PM",
+    "06:45 PM",
+    "07:15 PM",
+    "07:45 PM"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "comfortPhases": [
+    {
+      "step": "01",
+      "title": "Playful Introduction",
+      "subtitle": "Friendly Tell-Show-Do",
+      "description": "We introduce child-friendly instruments through fun games before beginning any examination.",
+      "duration": "10 Mins",
+      "sensoryNote": "Smiles, curiosity, and comfort.",
+      "keySafeguard": "Child-led unhurried pacing."
+    },
+    {
+      "step": "02",
+      "title": "Gentle Comfort Gel",
+      "subtitle": "Fruit-Flavored Pre-Numb",
+      "description": "A pleasant fruit-flavored topical gel is applied gently to prevent any pinch sensations.",
+      "duration": "5 Mins",
+      "sensoryNote": "Sweet taste and gentle numbness.",
+      "keySafeguard": "Calibrated pediatric care."
+    },
+    {
+      "step": "03",
+      "title": "Painless Micro-Care",
+      "subtitle": "Gentle Tooth Restoration",
+      "description": "Dr. Rohini performs the restoration with continuous encouragement, stories, and breaks.",
+      "duration": "15 - 30 Mins",
+      "sensoryNote": "Soft music and reassuring praise.",
+      "keySafeguard": "Continuous vital check-ins."
+    },
+    {
+      "step": "04",
+      "title": "Bravery Reward & Aftercare",
+      "subtitle": "Positive Reinforcement",
+      "description": "Every child receives praise and a bravery badge along with clear dietary guidance for parents.",
+      "duration": "10 Mins",
+      "sensoryNote": "Proud child, happy family.",
+      "keySafeguard": "Direct WhatsApp follow-up line."
+    }
+  ],
+  "dentureComparison": [
+    {
+      "feature": "Enamel Protection",
+      "conventional": "Standard fillings can recurrently leak",
+      "bpsPrecision": "Bio-compatible pediatric zirconia crowns",
+      "benefit": "Long-term tooth preservation"
+    },
+    {
+      "feature": "Pacing & Comfort",
+      "conventional": "Rushed adult-oriented clinical procedures",
+      "bpsPrecision": "Tell-show-do gentle behavioral guidance",
+      "benefit": "Zero childhood dental fear"
+    },
+    {
+      "feature": "Space Preservation",
+      "conventional": "Unplanned extractions cause dental crowding",
+      "bpsPrecision": "Custom space maintainers guide adult teeth",
+      "benefit": "Natural jaw development"
+    },
+    {
+      "feature": "Special Needs Care",
+      "conventional": "Standard clinical setups lack sensory tools",
+      "bpsPrecision": "Sensory-adapted autism-friendly appointments",
+      "benefit": "Welcoming for all children"
+    }
+  ]
+}

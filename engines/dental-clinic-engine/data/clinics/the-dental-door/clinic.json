@@ -1,0 +1,109 @@
+{
+  "slug": "the-dental-door",
+  "clinicName": "The Dental Door",
+  "shortName": "The Dental Door",
+  "clinicNameExtended": "The Dental Door & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sector 104, Noida.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sector 104, Noida. Led by Dr. Shubhangi Sharma (BDS \u2022 Dental Surgeon & Cosmetic Dentist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sector 104, Noida, Delhi NCR",
+  "address": "Shop No. 5 & 6, Shreeji Complex, Ozone Apartment Road, Hajipur, Sector 104, Noida, Uttar Pradesh 201304",
+  "landmark": "Centrally located in Sector 104, Noida",
+  "phone": "+91 99588 46311",
+  "phoneRaw": "09958846311",
+  "whatsapp": "919958846311",
+  "rating": "4.9",
+  "reviewCount": "50+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=The+Dental+Door+Sector+104,+Noida+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=The+Dental+Door+Sector+104,+Noida",
+  "googleReviewsUrl": "https://maps.google.com/?q=The+Dental+Door+Sector+104,+Noida",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Shubhangi Sharma",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Dental Surgeon & Cosmetic Dentist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sector 104, Noida deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Dental Surgeon & Cosmetic Dentist registered dental clinician",
+      "10+ Years of dedicated clinical care in Sector 104, Noida",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sector 104, Noida",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Shubhangi Sharma",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Dental Surgeon & Cosmetic Dentist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sector 104, Noida deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Dental Surgeon & Cosmetic Dentist registered dental clinician",
+        "10+ Years of dedicated clinical care in Sector 104, Noida",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sector 104, Noida",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "slug": "fortune-dental-aesthetic-clinic",
+  "clinicName": "Fortune Dental & Aesthetic Clinic",
+  "shortName": "Fortune Dental",
+  "clinicNameExtended": "Fortune Dental & Aesthetic Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Noida Sector 143.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Noida Sector 143. Led by Dr. Ravish Singh (BDS (Dental Surgeon & Paedodontist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Noida Sector 143, Delhi NCR",
+  "address": "House No. I-3, Vyapar Marg, Near Metro Hospital, Block I, Sector 12, Noida, Uttar Pradesh 201301",
+  "landmark": "Centrally located in Noida Sector 143",
+  "phone": "+91 96670 06041",
+  "phoneRaw": "09667006041",
+  "whatsapp": "919667006041",
+  "rating": "5.0",
+  "reviewCount": "206+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Fortune+Dental+&+Aesthetic+Clinic+Noida+Sector+143+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Fortune+Dental+&+Aesthetic+Clinic+Noida+Sector+143",
+  "googleReviewsUrl": "https://maps.google.com/?q=Fortune+Dental+&+Aesthetic+Clinic+Noida+Sector+143",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Ravish Singh",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon & Paedodontist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Noida Sector 143 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon & Paedodontist registered dental clinician",
+      "10+ Years of dedicated clinical care in Noida Sector 143",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Noida Sector 143",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Ravish Singh",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon & Paedodontist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Noida Sector 143 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon & Paedodontist registered dental clinician",
+        "10+ Years of dedicated clinical care in Noida Sector 143",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Noida Sector 143",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

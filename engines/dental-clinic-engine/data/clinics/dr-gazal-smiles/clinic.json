@@ -1,0 +1,109 @@
+{
+  "slug": "dr-gazal-smiles",
+  "clinicName": "Dr. Gazal Smiles",
+  "shortName": "Dr. Gazal Smiles",
+  "clinicNameExtended": "Dr. Gazal Smiles & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Gurgaon Sector 49.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Gurgaon Sector 49. Led by Dr. Gazal Jain (BDS, MDS (Pedodontics & Preventive Dentistry), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Gurgaon Sector 49, Delhi NCR",
+  "address": "First Floor, Sapphire Mall, Sector 49, Gurugram, Haryana 122018",
+  "landmark": "Centrally located in Gurgaon Sector 49",
+  "phone": "+91 99710 20691",
+  "phoneRaw": "09971020691",
+  "whatsapp": "919971020691",
+  "rating": "5",
+  "reviewCount": "237+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.+Gazal+Smiles+Gurgaon+Sector+49+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr.+Gazal+Smiles+Gurgaon+Sector+49",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr.+Gazal+Smiles+Gurgaon+Sector+49",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Gazal Jain",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Pedodontics & Preventive Dentistry",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Gurgaon Sector 49 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Pedodontics & Preventive Dentistry registered dental clinician",
+      "10+ Years of dedicated clinical care in Gurgaon Sector 49",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Gurgaon Sector 49",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Gazal Jain",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Pedodontics & Preventive Dentistry",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Gurgaon Sector 49 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Pedodontics & Preventive Dentistry registered dental clinician",
+        "10+ Years of dedicated clinical care in Gurgaon Sector 49",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Gurgaon Sector 49",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

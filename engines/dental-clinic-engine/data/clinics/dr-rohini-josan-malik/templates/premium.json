@@ -1,0 +1,29 @@
+{
+  "sanctuaryTitle": "Tricity Pediatric Dental Sanctuary",
+  "sanctuaryFeatures": [
+    {
+      "title": "Sensory-Adapted Pediatric Operatory",
+      "description": "Designed with gentle soothing lighting and cheerful surroundings to reduce childhood anxiety.",
+      "amenity": "Calming Patient Environment",
+      "icon": "\u2728"
+    },
+    {
+      "title": "Hospital-Grade Sterilization Protocols",
+      "description": "Operated under strict hospital clinical hygiene and sealed single-use pediatric instrument standards.",
+      "amenity": "Strict Hygiene Standards",
+      "icon": "\ud83d\udee1\ufe0f"
+    },
+    {
+      "title": "Special Healthcare Needs Integration",
+      "description": "Experienced care tailored specifically for children with Autism Spectrum Disorder and sensory needs.",
+      "amenity": "Anxiety-Free Comfort",
+      "icon": "\ud83c\udf3f"
+    },
+    {
+      "title": "Specialist Pedodontic Mastery",
+      "description": "Over 12 years dedicated to pediatric dentistry, pulp therapy, and conscious sedation care.",
+      "amenity": "Ethical Clinical Standards",
+      "icon": "\ud83d\udc8e"
+    }
+  ]
+}

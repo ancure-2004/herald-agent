@@ -1,0 +1,109 @@
+{
+  "slug": "narang-dental-care-and-implant-centre",
+  "clinicName": "Narang Dental Care and Implant Centre",
+  "shortName": "Narang Dental Care",
+  "clinicNameExtended": "Narang Dental Care and Implant Centre & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Gurgaon Sector 15.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Gurgaon Sector 15. Led by Dr. Puneet Narang (BDS, MDS (Oral & Maxillofacial Implantology), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Gurgaon Sector 15, Delhi NCR",
+  "address": "House No. 1158, Sector 15 Part 2, Sector 15, Gurugram, Haryana 122001",
+  "landmark": "Centrally located in Gurgaon Sector 15",
+  "phone": "+91 96505 15278",
+  "phoneRaw": "09650515278",
+  "whatsapp": "919650515278",
+  "rating": "4.8",
+  "reviewCount": "80+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Narang+Dental+Care+and+Implant+Centre+Gurgaon+Sector+15+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Narang+Dental+Care+and+Implant+Centre+Gurgaon+Sector+15",
+  "googleReviewsUrl": "https://maps.google.com/?q=Narang+Dental+Care+and+Implant+Centre+Gurgaon+Sector+15",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Puneet Narang",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Oral & Maxillofacial Implantology",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Gurgaon Sector 15 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Oral & Maxillofacial Implantology registered dental clinician",
+      "10+ Years of dedicated clinical care in Gurgaon Sector 15",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Gurgaon Sector 15",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Puneet Narang",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Oral & Maxillofacial Implantology",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Gurgaon Sector 15 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Oral & Maxillofacial Implantology registered dental clinician",
+        "10+ Years of dedicated clinical care in Gurgaon Sector 15",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Gurgaon Sector 15",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

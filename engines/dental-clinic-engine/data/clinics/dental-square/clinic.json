@@ -1,0 +1,109 @@
+{
+  "slug": "dental-square",
+  "clinicName": "Dental Square",
+  "shortName": "Dental Square",
+  "clinicNameExtended": "Dental Square & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Gurgaon Sector 82.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Gurgaon Sector 82. Led by Dr. Sarjit Kumar (BDS), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Gurgaon Sector 82, Delhi NCR",
+  "address": "Gurgaon Sector 82, Delhi NCR, India",
+  "landmark": "Centrally located in Gurgaon Sector 82",
+  "phone": "+91 88602 60072",
+  "phoneRaw": "08860260072",
+  "whatsapp": "918860260072",
+  "rating": "4.9",
+  "reviewCount": "465+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dental+Square+Gurgaon+Sector+82+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dental+Square+Gurgaon+Sector+82",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dental+Square+Gurgaon+Sector+82",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Sarjit Kumar",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Gurgaon Sector 82 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS registered dental clinician",
+      "10+ Years of dedicated clinical care in Gurgaon Sector 82",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Gurgaon Sector 82",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Sarjit Kumar",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Gurgaon Sector 82 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS registered dental clinician",
+        "10+ Years of dedicated clinical care in Gurgaon Sector 82",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Gurgaon Sector 82",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

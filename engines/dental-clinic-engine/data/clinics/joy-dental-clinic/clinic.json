@@ -1,0 +1,125 @@
+{
+  "slug": "joy-dental-clinic",
+  "clinicName": "Joy Dental Clinic",
+  "shortName": "Joy Dental Clinic",
+  "clinicNameExtended": "Joy Dental Clinic & Implant Centre",
+  "tagline": "Gentle Family Dentistry. 16+ Years Trusted Care in Punjabi Bagh.",
+  "shortDescription": "Experience pain-free dental treatments in Punjabi Bagh. Led by Dr. Joy Lakhina (BDS, 16 Years Clinical Practice), offering dental implants, atraumatic extractions, and transparent \u20b9200 standard OPD consultation.",
+  "area": "Punjabi Bagh, New Delhi, Delhi",
+  "address": "A 79 Paschim Puri Chowk, Club Rd, opposite Murliwala Sweets, Punjabi Bagh, New Delhi, Delhi 110026",
+  "landmark": "Opposite Murliwala Sweets, Punjabi Bagh Club Road",
+  "phone": "+91 98998 86115",
+  "phoneRaw": "09899886115",
+  "whatsapp": "919899886115",
+  "rating": "4.6",
+  "reviewCount": "49+",
+  "consultationFee": "\u20b9200 Standard OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Joy+Dental+Clinic+Punjabi+Bagh+New+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=10298596669199444604",
+  "googleReviewsUrl": "https://maps.google.com/?cid=10298596669199444604",
+  "hours": {
+    "verified": true,
+    "notes": "Monday, Wednesday-Sunday: 10:30 AM - 02:00 PM, 05:30 PM - 09:00 PM. Tuesday: Closed.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:30 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "Closed",
+        "close": "Closed",
+        "isClosed": true,
+        "status": "Closed"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:30 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:30 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:30 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:30 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:30 AM",
+        "close": "09:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Joy Lakhina",
+    "title": "Lead Dental Surgeon & Practitioner",
+    "qualifications": "BDS (Santosh Medical College, 2010)",
+    "experience": "16+ Years of Clinical Practice",
+    "consultationFee": "\u20b9200 Standard OPD Consultation",
+    "philosophy": "Every patient deserves compassionate, gentle, and transparent oral healthcare. We take time to listen to your concerns and deliver unhurried, gentle treatments with honest clinical advice.",
+    "credentials": [
+      "BDS graduate from Santosh Medical College (2010 batch)",
+      "16+ Years of dedicated clinical dentistry in Punjabi Bagh",
+      "Special clinical focus on titanium dental implants and tooth restorations",
+      "Gentle atraumatic tooth extractions with local anesthesia",
+      "Pocket-friendly transparent \u20b9200 standard OPD consultation fee",
+      "Multi-tier vacuum autoclave sterilization for patient safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Joy Lakhina",
+      "title": "Lead Dental Surgeon & Practitioner",
+      "qualifications": "BDS (Santosh Medical College, 2010)",
+      "experience": "16+ Years of Clinical Practice",
+      "consultationFee": "\u20b9200 Standard OPD Consultation",
+      "philosophy": "Every patient deserves compassionate, gentle, and transparent oral healthcare. We take time to listen to your concerns and deliver unhurried, gentle treatments with honest clinical advice.",
+      "credentials": [
+        "BDS graduate from Santosh Medical College (2010 batch)",
+        "16+ Years of dedicated clinical dentistry in Punjabi Bagh",
+        "Special clinical focus on titanium dental implants and tooth restorations",
+        "Gentle atraumatic tooth extractions with local anesthesia",
+        "Pocket-friendly transparent \u20b9200 standard OPD consultation fee",
+        "Multi-tier vacuum autoclave sterilization for patient safety"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "10:30 AM",
+    "11:15 AM",
+    "12:00 PM",
+    "12:45 PM",
+    "01:15 PM",
+    "01:45 PM"
+  ],
+  "eveningSlots": [
+    "05:30 PM",
+    "06:15 PM",
+    "07:00 PM",
+    "07:45 PM",
+    "08:15 PM",
+    "08:45 PM"
+  ]
+}

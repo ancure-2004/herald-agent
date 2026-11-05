@@ -1,0 +1,109 @@
+{
+  "slug": "select-dental-clinic",
+  "clinicName": "Select Dental Clinic",
+  "shortName": "Select Dental Clinic",
+  "clinicNameExtended": "Select Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sector 50 Central Market Noida.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sector 50 Central Market Noida. Led by Dr. Simita Madan (BDS (Dental Surgeon, Ex-HOD Fortis Hospital), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sector 50 Central Market Noida, Delhi NCR",
+  "address": "Shop 3, B Block, Central Market, Sector 50, Noida, Uttar Pradesh 201301",
+  "landmark": "Centrally located in Sector 50 Central Market Noida",
+  "phone": "+91 93190 22110",
+  "phoneRaw": "09319022110",
+  "whatsapp": "919319022110",
+  "rating": "4.8",
+  "reviewCount": "38+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Select+Dental+Clinic+Sector+50+Central+Market+Noida+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Select+Dental+Clinic+Sector+50+Central+Market+Noida",
+  "googleReviewsUrl": "https://maps.google.com/?q=Select+Dental+Clinic+Sector+50+Central+Market+Noida",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Simita Madan",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS (Dental Surgeon, Ex-HOD Fortis Hospital",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sector 50 Central Market Noida deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS (Dental Surgeon, Ex-HOD Fortis Hospital registered dental clinician",
+      "10+ Years of dedicated clinical care in Sector 50 Central Market Noida",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sector 50 Central Market Noida",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Simita Madan",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS (Dental Surgeon, Ex-HOD Fortis Hospital",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sector 50 Central Market Noida deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS (Dental Surgeon, Ex-HOD Fortis Hospital registered dental clinician",
+        "10+ Years of dedicated clinical care in Sector 50 Central Market Noida",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sector 50 Central Market Noida",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

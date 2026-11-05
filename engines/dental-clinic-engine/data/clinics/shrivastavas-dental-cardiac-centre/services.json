@@ -1,0 +1,106 @@
+{
+  "services": [
+    {
+      "id": "single-sitting-rct",
+      "title": "Single-Sitting Root Canal Therapy",
+      "category": "Endodontics",
+      "badge": "Painless Tech",
+      "description": "Ergonomic rotary endodontic treatment eliminating toothache in a single session while safeguarding your natural tooth root and structural vitality.",
+      "keyBenefits": [
+        "Immediate severe ache relief",
+        "Preserves authentic tooth structure",
+        "Precise apex locator tracking",
+        "Completed in 1 comfortable visit"
+      ],
+      "painScore": "Painless with Local Numbing",
+      "recoveryTime": "Same-day comfort return",
+      "idealFor": "Acute pulpitis, deep decay, broken tooth ache",
+      "image": "/images/root-canal-tech.jpg"
+    },
+    {
+      "id": "ceramic-crowns",
+      "title": "Ceramic & Zirconia Aesthetic Crowns",
+      "category": "Prosthodontics",
+      "badge": "High Strength",
+      "description": "Precision milled tooth-colored ceramic crowns and bridges that seamlessly restore biting strength, smile harmony, and root protection.",
+      "keyBenefits": [
+        "Natural enamel translucency",
+        "Exceptional bite durability",
+        "Protects brittle post-RCT teeth",
+        "Precision margin fit"
+      ],
+      "painScore": "Comfortable Fitting",
+      "recoveryTime": "Immediate",
+      "idealFor": "Post-root canal teeth, worn enamel, missing tooth gaps",
+      "image": "/images/smile-transformation.jpg"
+    },
+    {
+      "id": "cardiac-safe-extractions",
+      "title": "Cardiac-Safe Atraumatic Extractions",
+      "category": "Oral Surgery",
+      "badge": "Patient Monitored",
+      "description": "Gentle sectional tooth extractions utilizing cardiac-appropriate local anesthesia and blood-pressure monitoring for complete peace of mind.",
+      "keyBenefits": [
+        "Hemodynamically safe anesthesia",
+        "Micro-surgical tissue handling",
+        "Minimizes post-extraction swelling",
+        "Supportive, unrushed environment"
+      ],
+      "painScore": "Gentle Local Numbing",
+      "recoveryTime": "24 - 48 Hours to regular routine",
+      "idealFor": "Hypertensive patients, impacted roots, non-restorable teeth",
+      "image": "/images/operatory-room.jpg"
+    },
+    {
+      "id": "ultrasonic-scaling",
+      "title": "Ultrasonic Scaling & Gum Prophylaxis",
+      "category": "Preventive Care",
+      "badge": "Fresh Breath",
+      "description": "Gentle ultrasonic cleaning removing calcified tartar and bacterial biofilm from gum margins to prevent systemic inflammation and gum bleeding.",
+      "keyBenefits": [
+        "Protects cardiac & systemic health",
+        "Stops chronic gum bleeding",
+        "Removes nicotine & coffee stains",
+        "Clean, revitalized oral feel"
+      ],
+      "painScore": "Mild Sensitivity Only",
+      "recoveryTime": "Immediate",
+      "idealFor": "Plaque accumulation, bleeding gums, routine half-yearly care",
+      "image": "/images/pediatric-care.jpg"
+    },
+    {
+      "id": "composite-fillings",
+      "title": "Composite Tooth-Colored Restorations",
+      "category": "Restorative Dentistry",
+      "badge": "Invisible Fillings",
+      "description": "High-grade nano-hybrid composite fillings that chemically bond to natural enamel, arresting decay while matching your exact tooth shade.",
+      "keyBenefits": [
+        "Invisible tooth-colored finish",
+        "Mercury-free bio-compatible resin",
+        "Preserves maximum healthy tooth",
+        "Hardened instantly under LED light"
+      ],
+      "painScore": "Zero Discomfort",
+      "recoveryTime": "Immediate dining comfort",
+      "idealFor": "Cavities, chipped front teeth, minor tooth wear",
+      "image": "/images/hero-clinic.jpg"
+    },
+    {
+      "id": "flexible-dentures",
+      "title": "Custom Flexible Partial Dentures",
+      "category": "Prosthodontics",
+      "badge": "Comfort Palate",
+      "description": "Lightweight, unbreakable flexible dentures designed to replace missing teeth comfortably without rigid metal clasps or gum irritation.",
+      "keyBenefits": [
+        "Zero metallic wires or clasps",
+        "Adapts to natural gum movement",
+        "Lightweight hypoallergenic resin",
+        "Effortless speech and chewing"
+      ],
+      "painScore": "Non-Invasive",
+      "recoveryTime": "Instant natural adaptation",
+      "idealFor": "Multiple missing teeth, replacement of heavy acrylic plates",
+      "image": "/images/smile-transformation.jpg"
+    }
+  ]
+}

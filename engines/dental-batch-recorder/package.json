@@ -1,0 +1,12 @@
+{
+  "name": "dental-batch-recorder",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "record": "node record-batch.mjs",
+    "check": "node --check record-batch.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.55.0"
+  }
+}

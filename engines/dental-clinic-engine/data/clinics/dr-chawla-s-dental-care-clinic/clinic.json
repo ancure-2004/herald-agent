@@ -1,0 +1,109 @@
+{
+  "slug": "dr-chawla-s-dental-care-clinic",
+  "clinicName": "Dr. Chawla's Dental Care Clinic",
+  "shortName": "Dr. Chawla's Dental",
+  "clinicNameExtended": "Dr. Chawla's Dental Care Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Rohini Sector 11.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Rohini Sector 11. Led by Dr. Chawla (BDS, MDS (Dental Specialist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Rohini Sector 11, Delhi NCR",
+  "address": "E-2/217, Ganesh Chowk, Pocket E, Pocket 2, Sector 11, Rohini, Delhi, 110085, India",
+  "landmark": "Centrally located in Rohini Sector 11",
+  "phone": "+91 98910 55699",
+  "phoneRaw": "09891055699",
+  "whatsapp": "919891055699",
+  "rating": "4.5",
+  "reviewCount": "16+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dr.+Chawla's+Dental+Care+Clinic+Rohini+Sector+11+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dr.+Chawla's+Dental+Care+Clinic+Rohini+Sector+11",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dr.+Chawla's+Dental+Care+Clinic+Rohini+Sector+11",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Chawla",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Dental Specialist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Rohini Sector 11 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Dental Specialist registered dental clinician",
+      "10+ Years of dedicated clinical care in Rohini Sector 11",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Rohini Sector 11",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Chawla",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Dental Specialist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Rohini Sector 11 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Dental Specialist registered dental clinician",
+        "10+ Years of dedicated clinical care in Rohini Sector 11",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Rohini Sector 11",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

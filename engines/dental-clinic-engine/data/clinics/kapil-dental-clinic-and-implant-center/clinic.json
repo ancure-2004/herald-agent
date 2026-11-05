@@ -1,0 +1,109 @@
+{
+  "slug": "kapil-dental-clinic-and-implant-center",
+  "clinicName": "Kapil Dental Clinic and Implant Center",
+  "shortName": "Kapil Dental Clinic",
+  "clinicNameExtended": "Kapil Dental Clinic and Implant Center & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Sector 6, Rohini, Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Sector 6, Rohini, Delhi. Led by Dr. Kapil Saroha (BDS, Implantologist), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Sector 6, Rohini, Delhi, Delhi NCR",
+  "address": "Sector 6, Rohini, Delhi, Delhi NCR, India",
+  "landmark": "Centrally located in Sector 6, Rohini, Delhi",
+  "phone": "+91 98117 33823",
+  "phoneRaw": "09811733823",
+  "whatsapp": "919811733823",
+  "rating": "4.8",
+  "reviewCount": "1000+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Kapil+Dental+Clinic+and+Implant+Center+Sector+6,+Rohini,+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Kapil+Dental+Clinic+and+Implant+Center+Sector+6,+Rohini,+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Kapil+Dental+Clinic+and+Implant+Center+Sector+6,+Rohini,+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Kapil Saroha",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, Implantologist",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Sector 6, Rohini, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, Implantologist registered dental clinician",
+      "10+ Years of dedicated clinical care in Sector 6, Rohini, Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Sector 6, Rohini, Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Kapil Saroha",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, Implantologist",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Sector 6, Rohini, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, Implantologist registered dental clinician",
+        "10+ Years of dedicated clinical care in Sector 6, Rohini, Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Sector 6, Rohini, Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

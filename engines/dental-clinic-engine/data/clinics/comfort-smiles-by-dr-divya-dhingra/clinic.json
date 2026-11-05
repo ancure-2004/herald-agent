@@ -1,0 +1,109 @@
+{
+  "slug": "comfort-smiles-by-dr-divya-dhingra",
+  "clinicName": "Comfort Smiles by Dr Divya Dhingra",
+  "shortName": "Comfort Smiles by Dr",
+  "clinicNameExtended": "Comfort Smiles by Dr Divya Dhingra & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Noida.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Noida. Led by Dr. Divya Dhingra (BDS, MDS (Periodontics & Oral Implantology), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Noida, Delhi NCR",
+  "address": "Sector 41, Noida, Uttar Pradesh 201301",
+  "landmark": "Centrally located in Noida",
+  "phone": "+91 98115 67890",
+  "phoneRaw": "09811567890",
+  "whatsapp": "919811567890",
+  "rating": "4.9",
+  "reviewCount": "62+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Comfort+Smiles+by+Dr+Divya+Dhingra+Noida+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Comfort+Smiles+by+Dr+Divya+Dhingra+Noida",
+  "googleReviewsUrl": "https://maps.google.com/?q=Comfort+Smiles+by+Dr+Divya+Dhingra+Noida",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Divya Dhingra",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Periodontics & Oral Implantology",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Noida deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Periodontics & Oral Implantology registered dental clinician",
+      "10+ Years of dedicated clinical care in Noida",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Noida",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Divya Dhingra",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Periodontics & Oral Implantology",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Noida deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Periodontics & Oral Implantology registered dental clinician",
+        "10+ Years of dedicated clinical care in Noida",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Noida",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

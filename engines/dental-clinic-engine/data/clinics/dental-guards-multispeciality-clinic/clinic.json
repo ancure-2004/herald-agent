@@ -1,0 +1,109 @@
+{
+  "slug": "dental-guards-multispeciality-clinic",
+  "clinicName": "Dental Guards Multispeciality Clinic",
+  "shortName": "Dental Guards",
+  "clinicNameExtended": "Dental Guards Multispeciality Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Noida Sector 128.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Noida Sector 128. Led by Dr. Saurabh Kaushik (BDS, MDS (Orthodontics & Dentofacial Orthopedics), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Noida Sector 128, Delhi NCR",
+  "address": "Shop 104, Imperial Arcade, Jaypee Wish Town, Sector 128, Noida, Uttar Pradesh 201304",
+  "landmark": "Centrally located in Noida Sector 128",
+  "phone": "+91 88827 16637",
+  "phoneRaw": "08882716637",
+  "whatsapp": "918882716637",
+  "rating": "4.9",
+  "reviewCount": "75+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Dental+Guards+Multispeciality+Clinic+Noida+Sector+128+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Dental+Guards+Multispeciality+Clinic+Noida+Sector+128",
+  "googleReviewsUrl": "https://maps.google.com/?q=Dental+Guards+Multispeciality+Clinic+Noida+Sector+128",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Saurabh Kaushik",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Orthodontics & Dentofacial Orthopedics",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Noida Sector 128 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Orthodontics & Dentofacial Orthopedics registered dental clinician",
+      "10+ Years of dedicated clinical care in Noida Sector 128",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Noida Sector 128",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Saurabh Kaushik",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Orthodontics & Dentofacial Orthopedics",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Noida Sector 128 deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Orthodontics & Dentofacial Orthopedics registered dental clinician",
+        "10+ Years of dedicated clinical care in Noida Sector 128",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Noida Sector 128",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

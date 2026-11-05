@@ -1,0 +1,109 @@
+{
+  "slug": "oberoi-dental-clinic",
+  "clinicName": "Oberoi Dental Clinic",
+  "shortName": "Oberoi Dental Clinic",
+  "clinicNameExtended": "Oberoi Dental Clinic & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Tagore Garden, Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Tagore Garden, Delhi. Led by Dr. Avnet Oberoi (BDS \u2022 Orthodontics & Dental Care), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Tagore Garden, Delhi, Delhi NCR",
+  "address": "ED-118, Ground Floor, Opposite Four Storey Flats, Near Holy Child School, Tagore Garden, New Delhi 110027",
+  "landmark": "Centrally located in Tagore Garden, Delhi",
+  "phone": "+91 80103 47066",
+  "phoneRaw": "08010347066",
+  "whatsapp": "918010347066",
+  "rating": "4.9",
+  "reviewCount": "14+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=Oberoi+Dental+Clinic+Tagore+Garden,+Delhi+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?q=Oberoi+Dental+Clinic+Tagore+Garden,+Delhi",
+  "googleReviewsUrl": "https://maps.google.com/?q=Oberoi+Dental+Clinic+Tagore+Garden,+Delhi",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "10:00 AM",
+        "close": "02:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Avnet Oberoi",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS \u2022 Orthodontics & Dental Care",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Tagore Garden, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS \u2022 Orthodontics & Dental Care registered dental clinician",
+      "10+ Years of dedicated clinical care in Tagore Garden, Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Tagore Garden, Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Avnet Oberoi",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS \u2022 Orthodontics & Dental Care",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Tagore Garden, Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS \u2022 Orthodontics & Dental Care registered dental clinician",
+        "10+ Years of dedicated clinical care in Tagore Garden, Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Tagore Garden, Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ]
+}

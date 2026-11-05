@@ -1,0 +1,40 @@
+{
+  "claims": [
+    {
+      "id": "claim-google-rating",
+      "text": "5.0 ★ Google Verified Rating",
+      "status": "VERIFIED",
+      "source": "Google Business Profile"
+    },
+    {
+      "id": "claim-google-reviews",
+      "text": "32+ authentic Google patient reviews",
+      "status": "VERIFIED",
+      "source": "Google Business Profile"
+    },
+    {
+      "id": "claim-consultation-fee",
+      "text": "₹200 standard initial OPD consultation fee",
+      "status": "VERIFIED",
+      "source": "Clinic Fee Schedule"
+    },
+    {
+      "id": "claim-doctor-experience",
+      "text": "~13 Years dedicated clinical practice in general & aesthetic dentistry",
+      "status": "VERIFIED",
+      "source": "Lead Doctor Registration & Credentials"
+    },
+    {
+      "id": "claim-gentle-extractions",
+      "text": "Topical pre-numbing and gentle atraumatic extractions",
+      "status": "SAFE_TO_GENERATE",
+      "source": "Standard Clinical Procedure"
+    },
+    {
+      "id": "claim-sterilization",
+      "text": "Strict multi-tier sterilization protocols",
+      "status": "SAFE_TO_GENERATE",
+      "source": "Standard Clinical Procedure"
+    }
+  ]
+}

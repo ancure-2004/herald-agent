@@ -1,0 +1,34 @@
+{
+  "faqs": [
+    {
+      "category": "Consultation",
+      "question": "What is the consultation fee and appointment booking process?",
+      "answer": "Joy Dental Clinic offers an affordable, transparent \u20b9200 standard OPD consultation. You can schedule easily by messaging +91 98998 86115 on WhatsApp or calling directly."
+    },
+    {
+      "category": "General",
+      "question": "What are the clinic operating hours in Punjabi Bagh?",
+      "answer": "The clinic is open Monday and Wednesday through Sunday from 10:30 AM - 2:00 PM and 5:30 PM - 9:00 PM. The clinic remains closed on Tuesdays."
+    },
+    {
+      "category": "Dental Implants",
+      "question": "Are dental implants safe and permanent?",
+      "answer": "Yes, dental implants use biocompatible titanium that integrates firmly with your jawbone, acting as a permanent and sturdy tooth root for natural chewing."
+    },
+    {
+      "category": "Extractions",
+      "question": "Will a tooth extraction be painful at Joy Dental Clinic?",
+      "answer": "Not at all. Dr. Joy Lakhina uses targeted local anesthesia to numb the site completely before gently loosening and removing the tooth atraumatically."
+    },
+    {
+      "category": "Root Canal",
+      "question": "How long does modern rotary root canal therapy take?",
+      "answer": "Most uncomplicated cases are finished comfortably in 1 to 2 visits. Modern rotary instruments allow quiet, rapid, and painless nerve cleaning."
+    },
+    {
+      "category": "Hygiene",
+      "question": "What sterilization standards are maintained at the clinic?",
+      "answer": "We adhere to multi-tier autoclave vacuum sterilization protocols. All instruments are sealed in individual pouches and opened only at chairside."
+    }
+  ]
+}

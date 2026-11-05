@@ -1,0 +1,29 @@
+{
+  "sanctuaryTitle": "Prashant Vihar Healthcare Sanctuary",
+  "sanctuaryFeatures": [
+    {
+      "title": "Dual-Specialty Healthcare Ambiance",
+      "description": "A tranquil clinical setting blending cardiovascular safety and gentle dental artistry.",
+      "amenity": "Calming Patient Environment",
+      "icon": "\u2728"
+    },
+    {
+      "title": "Hospital-Grade Autoclave Sterility",
+      "description": "Vacuum autoclave sterilization cycles with single-use clinical pouches for every visit.",
+      "amenity": "Strict Hygiene Standards",
+      "icon": "\ud83d\udee1\ufe0f"
+    },
+    {
+      "title": "Cardiac-Conscious Anesthetic Protocols",
+      "description": "Blood-pressure monitored anesthetic selection for anxious and senior patients.",
+      "amenity": "Anxiety-Free Comfort",
+      "icon": "\ud83c\udf3f"
+    },
+    {
+      "title": "Transparent Standard OPD",
+      "description": "Honest clinical diagnoses, clear fee outlines, and 11+ years of community trust.",
+      "amenity": "Ethical Pricing Standards",
+      "icon": "\ud83d\udc8e"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "sanctuaryTitle": "Rohini Sector 22 Dental Sanctuary",
+  "sanctuaryFeatures": [
+    {
+      "title": "Private Treatment Operatory",
+      "description": "Experience calm, unhurried clinical appointments in comfortable treatment suites in Rohini Sector 22.",
+      "amenity": "Calming Patient Environment",
+      "icon": "\u2728"
+    },
+    {
+      "title": "Multi-Tier Sterilization",
+      "description": "Rigorous medical-grade sterilization cycles with sealed single-use instrument pouches opened at chairside.",
+      "amenity": "Strict Hygiene Standards",
+      "icon": "\ud83d\udee1\ufe0f"
+    },
+    {
+      "title": "Targeted Local Anesthetic",
+      "description": "Gentle topical pre-numbing protocols to ensure zero-pinch procedures and pain-free restorations.",
+      "amenity": "Anxiety-Free Comfort",
+      "icon": "\ud83c\udf3f"
+    },
+    {
+      "title": "Transparent OPD Standard",
+      "description": "Clear treatment outlines and transparent pricing with zero commercial pressure.",
+      "amenity": "Ethical Pricing Standards",
+      "icon": "\ud83d\udc8e"
+    }
+  ]
+}

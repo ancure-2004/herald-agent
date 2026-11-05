@@ -1,0 +1,125 @@
+{
+  "slug": "dantaah",
+  "clinicName": "DANTAAH - Dr. Sakshi Rawal Yadav(Rct, implants, crowns, bridges,dentures,xray,teeth whitening, veneers, laminates)",
+  "shortName": "DANTAAH",
+  "clinicNameExtended": "DANTAAH & Implant Centre",
+  "tagline": "Compassionate Family Dentistry & Restorative Care in Tilak Nagar Delhi.",
+  "shortDescription": "Experience gentle, pain-free dental treatments in Tilak Nagar Delhi. Led by Dr. Sakshi Rawal Yadav (BDS, MDS (Prosthodontist & Smile Designer), offering advanced root canals, dental implants, and transparent clinical care.",
+  "area": "Tilak Nagar Delhi, Delhi NCR",
+  "address": "Shop no 6 and 7, Hanuman Mandir, chowk, Mukhram Garden, Chaukhandi, Tilak Nagar, New Delhi, Delhi, 110018, India",
+  "landmark": "Centrally located in Tilak Nagar Delhi",
+  "phone": "+91 98995 52225",
+  "phoneRaw": "09899552225",
+  "whatsapp": "919899552225",
+  "rating": "5",
+  "reviewCount": "95+",
+  "consultationFee": "Transparent OPD",
+  "mapEmbedUrl": "https://maps.google.com/maps?q=DANTAAH+-+Dr.+Sakshi+Rawal+Yadav(Rct,+implants,+crowns,+bridges,dentures,xray,teeth+whitening,+veneers,+laminates)+Tilak+Nagar+Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  "directionsUrl": "https://maps.google.com/?cid=3223979245957057994&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "googleReviewsUrl": "https://maps.google.com/?cid=3223979245957057994&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "hours": {
+    "verified": true,
+    "notes": "Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: Closed.",
+    "schedule": [
+      {
+        "day": "Monday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Tuesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Wednesday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Thursday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Friday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Saturday",
+        "open": "10:00 AM",
+        "close": "08:00 PM",
+        "isClosed": false,
+        "status": "Open"
+      },
+      {
+        "day": "Sunday",
+        "open": "Closed",
+        "close": "Closed",
+        "isClosed": true,
+        "status": "Closed"
+      }
+    ]
+  },
+  "doctor": {
+    "name": "Dr. Sakshi Rawal Yadav",
+    "title": "Lead Dental Surgeon & Clinical Director",
+    "qualifications": "BDS, MDS (Prosthodontist & Smile Designer",
+    "experience": "10+ Years of Clinical Practice",
+    "consultationFee": "Transparent OPD",
+    "philosophy": "Every patient in Tilak Nagar Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+    "credentials": [
+      "BDS, MDS (Prosthodontist & Smile Designer registered dental clinician",
+      "10+ Years of dedicated clinical care in Tilak Nagar Delhi",
+      "Specialized focus on conservative tooth preservation and restorative aesthetics",
+      "Gentle localized numbing protocols for anxiety-free procedures",
+      "Transparent pricing with clear diagnostic consultation in Tilak Nagar Delhi",
+      "Multi-tier vacuum autoclave sterilization for clinical safety"
+    ]
+  },
+  "doctors": [
+    {
+      "name": "Dr. Sakshi Rawal Yadav",
+      "title": "Lead Dental Surgeon & Clinical Director",
+      "qualifications": "BDS, MDS (Prosthodontist & Smile Designer",
+      "experience": "10+ Years of Clinical Practice",
+      "consultationFee": "Transparent OPD",
+      "philosophy": "Every patient in Tilak Nagar Delhi deserves compassionate, unhurried, and transparent oral healthcare. We take time to listen, provide clear treatment alternatives, and practice gentle, conservative dentistry.",
+      "credentials": [
+        "BDS, MDS (Prosthodontist & Smile Designer registered dental clinician",
+        "10+ Years of dedicated clinical care in Tilak Nagar Delhi",
+        "Specialized focus on conservative tooth preservation and restorative aesthetics",
+        "Gentle localized numbing protocols for anxiety-free procedures",
+        "Transparent pricing with clear diagnostic consultation in Tilak Nagar Delhi",
+        "Multi-tier vacuum autoclave sterilization for clinical safety"
+      ]
+    }
+  ],
+  "morningSlots": [
+    "10:00 AM",
+    "10:45 AM",
+    "11:30 AM",
+    "12:15 PM",
+    "01:00 PM",
+    "01:30 PM"
+  ],
+  "eveningSlots": [
+    "04:30 PM",
+    "05:15 PM",
+    "06:00 PM",
+    "06:45 PM",
+    "07:15 PM",
+    "07:45 PM"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "faqs": [
+    {
+      "category": "Consultation",
+      "question": "What is the consultation process and appointment booking at Dr. Bhasin Super Speciality Dental Centre?",
+      "answer": "Appointments are scheduled with zero waiting times. You can easily book your visit by messaging +91 91997 16155 on WhatsApp or calling directly for quick confirmation."
+    },
+    {
+      "category": "General",
+      "question": "What are the operating hours for Dr. Bhasin Super Speciality Dental Centre in Shakti Nagar, Delhi?",
+      "answer": "The clinic operates Monday to Saturday: 10:00 AM - 08:00 PM. Sunday: By Appointment. Emergency appointments and advance consultations can be arranged by contacting our clinic desk."
+    },
+    {
+      "category": "Tooth Preservation",
+      "question": "Will a Root Canal Treatment be painful?",
+      "answer": "Not at all. We utilize modern rotary endodontics and targeted local anesthesia to gently remove infection while ensuring total patient comfort throughout."
+    },
+    {
+      "category": "Dental Implants",
+      "question": "How long do titanium dental implants last?",
+      "answer": "Dental implants integrate securely with your natural jawbone. With regular oral hygiene and routine clinical maintenance, they provide a durable, lifelong solution."
+    },
+    {
+      "category": "Hygiene & Sterilization",
+      "question": "What infection control standards does the clinic maintain?",
+      "answer": "We adhere to multi-tier autoclave vacuum sterilization protocols. All treatment instruments are sealed in sterile single-use pouches opened only at chairside."
+    },
+    {
+      "category": "Comfort & Care",
+      "question": "What if I experience dental anxiety or fear during treatment?",
+      "answer": "Our entire team specializes in fear-free dentistry. We use soothing pre-numbing topical gels, unhurried treatment pacing, and frequent check-ins to keep you relaxed."
+    }
+  ]
+}

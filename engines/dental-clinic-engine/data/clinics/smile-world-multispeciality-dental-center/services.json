@@ -1,0 +1,106 @@
+{
+  "services": [
+    {
+      "id": "braces-aligners",
+      "title": "Clear Aligners & Orthodontic Braces",
+      "category": "Orthodontics",
+      "badge": "Discreet Alignment",
+      "description": "Modern transparent aligners and precision brackets designed to gently guide misaligned teeth into harmonious aesthetic alignment.",
+      "keyBenefits": [
+        "Virtually invisible aligner trays",
+        "Removable for dining and brushing",
+        "Predictable digital 3D smile planning",
+        "Comfortable gentle tooth movement"
+      ],
+      "painScore": "Minimal Pressure Only",
+      "recoveryTime": "Adaptive comfort in 48 hours",
+      "idealFor": "Crowded teeth, spacing gaps, uneven bite alignment",
+      "image": "/images/hero-clinic.jpg"
+    },
+    {
+      "id": "root-canal-therapy",
+      "title": "Rotary Root Canal Therapy",
+      "category": "Endodontics",
+      "badge": "Tooth Saver",
+      "description": "Modern rotary root canal treatment to gently eliminate deep infection and relieve acute toothache while preserving your authentic tooth structure.",
+      "keyBenefits": [
+        "Instant toothache relief",
+        "Micro-precision rotary instruments",
+        "Preserves natural tooth root",
+        "Comfortable single-sitting protocol"
+      ],
+      "painScore": "Painless with Local Numbing",
+      "recoveryTime": "24 Hours to full comfort",
+      "idealFor": "Severe tooth pain, deep decay, heat/cold sensitivity",
+      "image": "/images/root-canal-tech.jpg"
+    },
+    {
+      "id": "scaling-polishing",
+      "title": "Ultrasonic Scaling & Teeth Polishing",
+      "category": "Preventive Care",
+      "badge": "Essential Hygiene",
+      "description": "Advanced ultrasonic plaque and calculus removal followed by gentle micro-polishing for healthy pink gums, fresh breath, and smooth enamel.",
+      "keyBenefits": [
+        "Eliminates stubborn tartar",
+        "Prevents gum inflammation",
+        "Brightens surface stains",
+        "Long-lasting fresh breath"
+      ],
+      "painScore": "Mild Sensitivity Only",
+      "recoveryTime": "Immediate",
+      "idealFor": "Plaque accumulation, bleeding gums, bad breath",
+      "image": "/images/pediatric-care.jpg"
+    },
+    {
+      "id": "dental-implants",
+      "title": "Titanium Dental Implant Surgery",
+      "category": "Implantology",
+      "badge": "Permanent Fix",
+      "description": "Restore missing teeth with medical-grade titanium implants that fuse securely with the jawbone for lifetime stability and natural chewing capability.",
+      "keyBenefits": [
+        "Natural look and authentic feel",
+        "Prevents jawbone deterioration",
+        "Protects adjacent healthy teeth",
+        "Permanent bite restoration"
+      ],
+      "painScore": "Gentle Local Numbing",
+      "recoveryTime": "Immediate return to daily routine",
+      "idealFor": "Single or multiple missing teeth, loose denture replacement",
+      "image": "/images/operatory-room.jpg"
+    },
+    {
+      "id": "crowns-bridges",
+      "title": "Zirconia & Ceramic Dental Crowns",
+      "category": "Aesthetic Restorations",
+      "badge": "High Durability",
+      "description": "Precision-crafted monolithic zirconia and porcelain crowns designed to reinforce weakened teeth and restore natural enamel aesthetics.",
+      "keyBenefits": [
+        "Color-matched to natural teeth",
+        "Exceptional fracture resistance",
+        "Restores full chewing power",
+        "Long-term tooth protection"
+      ],
+      "painScore": "Comfortable Fitting",
+      "recoveryTime": "Immediate",
+      "idealFor": "Cracked teeth, post-RCT reinforcement, cosmetic gaps",
+      "image": "/images/smile-transformation.jpg"
+    },
+    {
+      "id": "teeth-whitening",
+      "title": "Professional In-Office Teeth Whitening",
+      "category": "Cosmetic Dentistry",
+      "badge": "Instant Radiance",
+      "description": "Enamel-safe professional brightening treatment that gently lifts deep stains from coffee, tea, and age in a comfortable 45-minute clinical session.",
+      "keyBenefits": [
+        "Up to 6 shades brighter",
+        "Enamel-safe peroxide formulations",
+        "Gentle anti-sensitivity pre-treatment",
+        "Immediate radiant results"
+      ],
+      "painScore": "Zero Sensitivity Formula",
+      "recoveryTime": "Immediate",
+      "idealFor": "Yellowing teeth, coffee/tea stains, pre-event smile boost",
+      "image": "/images/smile-transformation.jpg"
+    }
+  ]
+}
