@@ -13,10 +13,10 @@
   - [x] Add Impeccable gitignore block to root `.gitignore`
   - [x] Run `/impeccable doctor` to confirm
   - [x] Commit Phase 1
-- [ ] **Phase 2. Context & Design System Capture**
-  - [ ] Run `/impeccable init` with operator and project context
-  - [ ] Run `/impeccable document` to capture current visual system into `DESIGN.md`
-  - [ ] Commit `PRODUCT.md` and `DESIGN.md`
+- [x] **Phase 2. Context & Design System Capture**
+  - [x] Run `/impeccable init` with operator and project context
+  - [x] Run `/impeccable document` to capture current visual system into `DESIGN.md`
+  - [x] Commit `PRODUCT.md` and `DESIGN.md`
 - [ ] **Phase 3. Baseline (Read-Only)**
   - [ ] Start backend and frontend services (`start_crm.sh`)
   - [ ] Track A: Detector (`npx impeccable detect` for source and URL)
