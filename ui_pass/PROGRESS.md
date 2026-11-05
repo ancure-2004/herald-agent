@@ -28,18 +28,18 @@
   - [x] Commit reports (excluding screenshots)
 - [x] **Phase 4. Plan & Stop for Captain Approval**
   - [x] Write `ui_pass/FIX_PLAN.md` (tokens, scale, fix order, risk bounds, non-goals)
-  - [ ] Stop and await Captain's explicit approval
+  - [x] Stop and await Captain's explicit approval
 - [x] **Phase 5. Foundation**
   - [x] Unify tokens (`tailwind.config.ts`, `globals.css`, `layout.tsx`, `page.tsx`)
   - [x] Fix root shell containment and scrolling (`h-[100dvh]`, dynamic viewport)
   - [x] Standardize shared layout primitives and `src/components/ui/*` + `src/components/layout/*`
   - [x] Re-verify with typecheck, probe, detect, and screenshots
   - [x] Commit Phase 5
-- [ ] **Phase 6. Pilot View (Dashboard) & Stop**
-  - [ ] Fix Dashboard view spacing, alignment, and responsiveness
-  - [ ] Verify: typecheck, 0 overflow in probe, detect, before/after screenshots
+- [x] **Phase 6. Pilot View (Dashboard) & Stop**
+  - [x] Fix Dashboard view spacing, alignment, and responsiveness
+  - [x] Verify: typecheck, 0 overflow in probe, detect, before/after screenshots
   - [ ] Present 1440 dark and 390 dark comparison and stop for Captain OK
-  - [ ] Commit Phase 6
+  - [x] Commit Phase 6
 - [ ] **Phase 7. Remaining Views**
   - [ ] Kanban Board (`src/features/board/`)
   - [ ] Leads Table (`src/features/table/`)

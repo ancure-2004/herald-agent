@@ -51,7 +51,7 @@ function CRMContent() {
         {/* Center Workspace Content */}
         <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 space-y-6 min-w-0">
           {loading ? (
-            <div className="p-16 text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="p-8 sm:p-16 text-center text-sm text-slate-500 dark:text-slate-400">
               Loading Personal OS CRM...
             </div>
           ) : (

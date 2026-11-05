@@ -113,10 +113,10 @@ export function DashboardView() {
       {/* 1. Header: Greeting, Subtitle, Day Mode Switcher & Top Actions */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="text-xs font-medium text-slate-400 dark:text-slate-500">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             Control Room / Command Dashboard
           </div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             <span>{greeting}</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -125,8 +125,8 @@ export function DashboardView() {
         </div>
 
         {/* Top Controls: Day Mode Switcher, Export CSV, Report Problem */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-1 text-xs shadow-sm">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] rounded-xl p-1 text-xs shadow-xs">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 hidden sm:inline">
               Day Mode:
             </span>
@@ -134,13 +134,13 @@ export function DashboardView() {
               <button
                 key={m}
                 onClick={() => handleDayModeChange(m)}
-                className={`px-3 py-1.5 rounded-xl capitalize font-semibold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg capitalize font-semibold transition-all cursor-pointer ${
                   todayMode === m
                     ? m === "off"
-                      ? "bg-rose-600 text-white shadow-sm"
+                      ? "bg-rose-600 text-white shadow-xs"
                       : m === "away"
-                      ? "bg-amber-600 text-white shadow-sm"
-                      : "bg-indigo-600 text-white shadow-sm"
+                      ? "bg-amber-600 text-white shadow-xs"
+                      : "bg-indigo-600 text-white shadow-xs"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
                 title={`Switch day mode to ${m} (controls autonomous send pacing)`}
@@ -152,7 +152,7 @@ export function DashboardView() {
 
           <a
             href={`${env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"}/api/leads/export/csv?hustle_id=${activeHustleId}`}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors shadow-xs"
             title="Export CRM data to CSV"
           >
             <Download className="w-3.5 h-3.5 text-slate-400" />
@@ -161,7 +161,7 @@ export function DashboardView() {
 
           <button
             onClick={() => setProblemModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/50 text-xs font-semibold text-rose-700 dark:text-rose-300 transition-colors shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-800/50 text-xs font-semibold text-rose-700 dark:text-rose-300 transition-colors shadow-xs cursor-pointer"
             title="Capture run trace & diagnostic brief"
           >
             <Bug className="w-3.5 h-3.5 text-rose-500" />
@@ -173,27 +173,27 @@ export function DashboardView() {
       {/* 2. Top Metric Strip: Stock Buffer Ring, Active Pipeline, Multi-Channel Send Limits, Ready Velocity */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric 1: Stock Buffer Health Ring & Capacity */}
-        <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex items-center justify-between gap-4">
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-between gap-4 transition-colors">
           <div className="space-y-1">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
               Stock Buffer Health
             </div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">
+            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white">
               {bufferHealthPct}%
             </div>
             <div className="text-[11px] text-slate-500 dark:text-slate-400">
               {stockPlan?.effective_buffer_days ?? 3}-day buffer protected
             </div>
-            <div className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+            <div className="text-[10px] font-semibold font-mono text-emerald-600 dark:text-emerald-400">
               {stockPlan?.current_ready_packages ?? 0} / {stockPlan?.required_ready_packages ?? 15} ready
             </div>
           </div>
 
           {/* Circular Gauge SVG */}
-          <div className="relative w-18 h-18 flex items-center justify-center shrink-0">
-            <svg className="w-18 h-18 -rotate-90" viewBox="0 0 36 36">
+          <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
+            <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
               <path
-                className="text-slate-100 dark:text-slate-800"
+                className="text-slate-100 dark:text-white/[0.06]"
                 strokeWidth="3.5"
                 stroke="currentColor"
                 fill="none"
@@ -218,8 +218,8 @@ export function DashboardView() {
         </div>
 
         {/* Metric 2: Active Pipeline Leads & Projected Value */}
-        <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-1">
-          <div className="flex items-center justify-between text-slate-400">
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-1 transition-colors">
+          <div className="flex items-center justify-between text-slate-400 dark:text-slate-500">
             <span className="text-xs font-semibold uppercase tracking-wider">Active Pipeline</span>
             <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
               <Building className="w-4 h-4" />
@@ -227,29 +227,30 @@ export function DashboardView() {
           </div>
           <div className="flex items-baseline justify-between pt-1">
             <div className="text-2xl font-black text-slate-900 dark:text-white">
-              {leads.length} <span className="text-xs font-normal text-slate-400">clinics</span>
+              <span className="font-mono">{leads.length}</span>{" "}
+              <span className="text-xs font-normal text-slate-400">clinics</span>
             </div>
             <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
               ₹{(totalDealValue / 1000).toLocaleString()}k EV
             </div>
           </div>
           <div className="flex items-center gap-1.5 pt-1 text-[10px] flex-wrap">
-            <span className="px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 font-semibold font-mono">
+            <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/50 font-semibold font-mono">
               {reviewTrayCount} Ready
             </span>
-            <span className="px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 font-semibold font-mono">
+            <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800/50 font-semibold font-mono">
               {contactedCount} Pitched
             </span>
-            <span className="px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 font-semibold font-mono">
+            <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/50 font-semibold font-mono">
               {repliedWarmCount} Warm
             </span>
           </div>
         </div>
 
         {/* Metric 3: Multi-Channel Send Limits (WhatsApp / Instagram / Email) */}
-        <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Channel Send Limits</span>
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-2 transition-colors">
+          <div className="flex items-center justify-between text-slate-400 dark:text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider">Channel Limits</span>
             <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
               SAFE
             </span>
@@ -267,7 +268,7 @@ export function DashboardView() {
                   {waSentToday} / {waDailyLimit}
                 </span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-slate-100 dark:bg-white/[0.08] rounded-full h-1.5 overflow-hidden">
                 <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${waPct}%` }} />
               </div>
             </div>
@@ -277,13 +278,13 @@ export function DashboardView() {
               <div className="flex justify-between text-[11px]">
                 <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1">
                   <MessageSquare className="w-3 h-3 text-pink-500" />
-                  <span>Instagram DM</span>
+                  <span>Instagram</span>
                 </span>
                 <span className="font-mono text-slate-700 dark:text-slate-300">
                   {igSentToday} / {igDailyLimit}
                 </span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-slate-100 dark:bg-white/[0.08] rounded-full h-1.5 overflow-hidden">
                 <div className="bg-pink-500 h-1.5 rounded-full" style={{ width: `${igPct}%` }} />
               </div>
             </div>
@@ -299,16 +300,16 @@ export function DashboardView() {
                   {emailSentToday} / {emailDailyLimit}
                 </span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-slate-100 dark:bg-white/[0.08] rounded-full h-1.5 overflow-hidden">
                 <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${emailPct}%` }} />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Metric 4: Evening Sprint Yield & Quick Refill Trigger */}
-        <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex flex-col justify-between space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
+        {/* Metric 4: Evening Sprint Yield */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-2 transition-colors">
+          <div className="flex items-center justify-between text-slate-400 dark:text-slate-500">
             <span className="text-xs font-semibold uppercase tracking-wider">Sprint Velocity</span>
             <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
               <Zap className="w-4 h-4" />
@@ -316,9 +317,11 @@ export function DashboardView() {
           </div>
           <div>
             <div className="text-2xl font-black text-slate-900 dark:text-white">
-              {sprintPlan?.allocated_minutes ?? 0} / {sprintPlan?.budget_minutes ?? 60} <span className="text-xs font-normal text-slate-400">mins</span>
+              <span className="font-mono">{sprintPlan?.allocated_minutes ?? 0}</span> /{" "}
+              <span className="font-mono">{sprintPlan?.budget_minutes ?? 60}</span>{" "}
+              <span className="text-xs font-normal text-slate-400">mins</span>
             </div>
-            <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+            <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold truncate">
               ₹{(sprintPlan?.total_expected_value_inr ?? 0).toLocaleString()} EV Yield • EV/min prioritized
             </div>
           </div>
@@ -333,204 +336,204 @@ export function DashboardView() {
       </div>
 
       {/* 3. Middle Section: Outreach Schedule & Action Queue (Full Width) */}
-      <div className="w-full p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-indigo-500" />
-                    <span>Outreach Schedule & Action Queue</span>
-                  </h2>
-                  <p className="text-xs text-slate-400">Pipedrive mandatory next steps ordered by urgency</p>
-                </div>
+      <div className="w-full p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-5 transition-colors">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Clock className="w-4 h-4 text-indigo-500" />
+              <span>Outreach Schedule & Action Queue</span>
+            </h2>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Pipedrive mandatory next steps ordered by urgency</p>
+          </div>
 
-                {/* Filter Tabs */}
-                <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/60 text-xs">
-                  {[
-                    { id: "all", label: "All Tasks" },
-                    { id: "today", label: "Due Today" },
-                    { id: "hot", label: "Hot Viewers" },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setDashScheduleFilter(tab.id as any)}
-                      className={`px-3 py-1.5 rounded-xl font-semibold transition-all cursor-pointer ${
-                        dashScheduleFilter === tab.id
-                          ? "bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-xs"
-                          : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+          {/* Filter Tabs */}
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-white/[0.06] text-xs">
+            {[
+              { id: "all", label: "All Tasks" },
+              { id: "today", label: "Due Today" },
+              { id: "hot", label: "Hot Viewers" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setDashScheduleFilter(tab.id as any)}
+                className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                  dashScheduleFilter === tab.id
+                    ? "bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-xs"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Featured Urgent Lead */}
+        {dashboardScheduleLeads.length > 0 && (
+          <div
+            onClick={() => setSelectedLeadId(dashboardScheduleLeads[0].id)}
+            className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 dark:border-amber-500/20 space-y-3 cursor-pointer hover:border-amber-500/60 transition-all shadow-xs"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider">
+                    Priority Next Step
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {dashboardScheduleLeads[0].doctor_name || "Doctor"} • {dashboardScheduleLeads[0].locality}
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {dashboardScheduleLeads[0].name}
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  {dashboardScheduleLeads[0].next_action || "Send personalized walkthrough & demo preview links"}
+                </p>
+              </div>
+
+              <div className="text-right shrink-0">
+                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-500/30">
+                  ₹{(dashboardScheduleLeads[0].deal_value_inr || 25000).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-amber-500/20 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-[#141721] border border-amber-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-300 font-medium">
+                  WhatsApp Outreach
+                </span>
+                <span className="text-slate-500 dark:text-slate-400 font-mono text-[11px]">
+                  Fit Score: {dashboardScheduleLeads[0].fit_score}%
+                </span>
+              </div>
+              <span className="text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1 group">
+                <span>Inspect Deal</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Queued Action List */}
+        <div className="space-y-2">
+          {dashboardScheduleLeads.slice(1, 6).map((lead) => (
+            <div
+              key={lead.id}
+              onClick={() => setSelectedLeadId(lead.id)}
+              className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] hover:bg-slate-100 dark:hover:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-4 cursor-pointer transition-colors"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
+                  {lead.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <div className="font-bold text-xs text-slate-900 dark:text-white truncate">{lead.name}</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md lg:max-w-lg">
+                    {lead.next_action || "Schedule initial pitch"}
+                  </div>
                 </div>
               </div>
 
-              {/* Featured Urgent Lead */}
-              {dashboardScheduleLeads.length > 0 && (
-                <div
-                  onClick={() => setSelectedLeadId(dashboardScheduleLeads[0].id)}
-                  className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/30 dark:border-amber-500/20 space-y-3 cursor-pointer hover:border-amber-500 transition-all shadow-xs"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider">
-                          Priority Next Step
-                        </span>
-                        <span className="text-xs text-slate-400">
-                          {dashboardScheduleLeads[0].doctor_name || "Doctor"} • {dashboardScheduleLeads[0].locality}
-                        </span>
-                      </div>
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                        {dashboardScheduleLeads[0].name}
-                      </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-300">
-                        {dashboardScheduleLeads[0].next_action || "Send personalized walkthrough & demo preview links"}
-                      </p>
-                    </div>
-
-                    <div className="text-right shrink-0">
-                      <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
-                        ₹{dashboardScheduleLeads[0].deal_value_inr || 25000}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-amber-500/20 text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-xl bg-white dark:bg-[#141721] border border-amber-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300 font-medium">
-                        WhatsApp Outreach
-                      </span>
-                      <span className="text-slate-400 font-mono text-[11px]">
-                        Fit Score: {dashboardScheduleLeads[0].fit_score}%
-                      </span>
-                    </div>
-                    <span className="text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1 group">
-                      <span>Inspect Deal</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Queued Action List */}
-              <div className="space-y-2">
-                {dashboardScheduleLeads.slice(1, 6).map((lead) => (
-                  <div
-                    key={lead.id}
-                    onClick={() => setSelectedLeadId(lead.id)}
-                    className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#0E1017] hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-4 cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
-                        {lead.name.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-bold text-xs text-slate-900 dark:text-white">{lead.name}</div>
-                        <div className="text-[11px] text-slate-400 truncate max-w-sm">
-                          {lead.next_action || "Schedule initial pitch"}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 font-bold">
-                        {lead.fit_score}% Fit
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-500/20 font-bold">
+                  {lead.fit_score}% Fit
+                </span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* 4. Bottom: Active Priority Clinics Table */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-base font-bold text-slate-900 dark:text-white">Active Priority Clinics</h2>
-                <p className="text-xs text-slate-400">Targeted prospects currently in active conversation stages</p>
-              </div>
-              <button
-                onClick={() => setActiveTab("table")}
-                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <span>View Full Leads Table ({leads.length})</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="border-b border-slate-100 dark:border-white/[0.06] text-slate-400 font-semibold text-[11px] uppercase tracking-wider pb-3">
-                    <th className="py-3 px-3">Clinic & Doctor</th>
-                    <th className="py-3 px-3">Locality</th>
-                    <th className="py-3 px-3">Fit / Intent</th>
-                    <th className="py-3 px-3">Mandatory Next Step</th>
-                    <th className="py-3 px-3">Deal Potential</th>
-                    <th className="py-3 px-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
-                  {leads.slice(0, 6).map((lead) => (
-                    <tr
-                      key={lead.id}
-                      onClick={() => setSelectedLeadId(lead.id)}
-                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
-                    >
-                      <td className="py-3.5 px-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0">
-                            {lead.name.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="font-bold text-slate-900 dark:text-white">{lead.name}</div>
-                            <div className="text-[11px] text-slate-400">{lead.doctor_name || "Doctor"}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{lead.locality || lead.city}</span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-3">
-                        <div className="flex items-center gap-1.5">
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 font-semibold font-mono text-[10px]">
-                            Fit {lead.fit_score}%
-                          </span>
-                          <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 font-semibold font-mono text-[10px]">
-                            Intent {lead.intent_score}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
-                        {lead.next_action || "None scheduled"}
-                      </td>
-                      <td className="py-3.5 px-3">
-                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">
-                          ₹{lead.deal_value_inr || 25000}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-3 text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedLeadId(lead.id);
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium cursor-pointer transition-colors"
-                        >
-                          Inspect
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-4 transition-colors">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Active Priority Clinics</h2>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Targeted prospects currently in active conversation stages</p>
           </div>
+          <button
+            onClick={() => setActiveTab("table")}
+            className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <span>View Full Leads Table ({leads.length})</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-white/[0.06] text-slate-400 dark:text-slate-500 font-semibold text-[11px] uppercase tracking-wider pb-3">
+                <th className="py-3 px-3">Clinic & Doctor</th>
+                <th className="py-3 px-3">Locality</th>
+                <th className="py-3 px-3">Fit / Intent</th>
+                <th className="py-3 px-3">Mandatory Next Step</th>
+                <th className="py-3 px-3">Deal Potential</th>
+                <th className="py-3 px-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
+              {leads.slice(0, 6).map((lead) => (
+                <tr
+                  key={lead.id}
+                  onClick={() => setSelectedLeadId(lead.id)}
+                  className="hover:bg-slate-50/80 dark:hover:bg-white/[0.04] cursor-pointer transition-colors"
+                >
+                  <td className="py-3.5 px-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0">
+                        {lead.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900 dark:text-white">{lead.name}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">{lead.doctor_name || "Doctor"}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">{lead.locality || lead.city}</span>
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-3">
+                    <div className="flex items-center gap-1.5 flex-nowrap">
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-500/20 font-semibold font-mono text-[10px] whitespace-nowrap">
+                        Fit {lead.fit_score}%
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-500/20 font-semibold font-mono text-[10px] whitespace-nowrap">
+                        Intent {lead.intent_score}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                    {lead.next_action || "None scheduled"}
+                  </td>
+                  <td className="py-3.5 px-3">
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                      ₹{(lead.deal_value_inr || 25000).toLocaleString()}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-3 text-right">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedLeadId(lead.id);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-200 text-xs font-semibold cursor-pointer transition-colors"
+                    >
+                      Inspect
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
