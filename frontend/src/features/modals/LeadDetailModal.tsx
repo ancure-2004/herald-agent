@@ -101,7 +101,7 @@ export function LeadDetailModal() {
   const luxuryUrl =
     selectedLead.packages?.[0]?.asset_links?.premium ||
     selectedLead.packages?.[0]?.asset_links?.luxury ||
-    `${defaultBase}/luxury/${selectedLead.slug}`;
+    `${defaultBase}/premium/${selectedLead.slug}`;
 
   // Fallback Contextual Copilot Templates if API hasn't generated any yet
   const fallbackTemplates = [

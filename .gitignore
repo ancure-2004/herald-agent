@@ -36,3 +36,7 @@ crm.db
 # OS files
 .DS_Store
 Thumbs.db
+
+# Test runs and local backups
+test_runs/
+*.bak
