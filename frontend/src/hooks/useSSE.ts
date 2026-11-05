@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { env } from "@/config/env";
+import { PipelineStepEvent } from "@/features/cockpit/types";
 
 export interface SSEMessagePayload {
   type: string;
@@ -16,11 +17,13 @@ export function useSSE({
   onTerminalLog,
   onLiveEvent,
   onRefreshTrigger,
+  onPipelineStep,
   enabled = true,
 }: {
   onTerminalLog?: (line: string, seq?: number) => void;
   onLiveEvent?: (line: string) => void;
   onRefreshTrigger?: () => void;
+  onPipelineStep?: (event: PipelineStepEvent) => void;
   enabled?: boolean;
 } = {}) {
   const lastLogSeqRef = useRef<number>(0);
@@ -30,11 +33,13 @@ export function useSSE({
   const onTerminalLogRef = useRef(onTerminalLog);
   const onLiveEventRef = useRef(onLiveEvent);
   const onRefreshTriggerRef = useRef(onRefreshTrigger);
+  const onPipelineStepRef = useRef(onPipelineStep);
 
   useEffect(() => {
     onTerminalLogRef.current = onTerminalLog;
     onLiveEventRef.current = onLiveEvent;
     onRefreshTriggerRef.current = onRefreshTrigger;
+    onPipelineStepRef.current = onPipelineStep;
   });
 
   useEffect(() => {
@@ -70,6 +75,10 @@ export function useSSE({
               }
               onTerminalLogRef.current?.(data.line, data.seq);
               return;
+            }
+
+            if (data.type === "pipeline_step") {
+              onPipelineStepRef.current?.(data as unknown as PipelineStepEvent);
             }
 
             const line = `[${new Date().toLocaleTimeString()}] ${data.type}: ${data.title || data.message || "Event"}`;

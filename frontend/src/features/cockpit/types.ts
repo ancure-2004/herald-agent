@@ -1,4 +1,33 @@
-export type NodeStatus = "IDLE" | "QUEUED" | "RUNNING" | "SUCCESS" | "FAILED";
+export type NodeStatus = "IDLE" | "QUEUED" | "RUNNING" | "SUCCESS" | "FAILED" | "WAITING_FOR_REVIEW";
+
+export interface PipelineStepEvent {
+  type: "pipeline_step";
+  node_id: "node-1" | "node-2" | "node-3" | "node-4" | "node-5" | "node-6";
+  step_name: "DISCOVERY" | "VERIFICATION" | "RESEARCH" | "SCAFFOLD" | "WALKTHROUGH" | "REVIEW_TRAY";
+  status: NodeStatus;
+  clinic_name?: string;
+  latency_ms?: number;
+  metrics?: {
+    processed?: number;
+    total?: number;
+    badge_text?: string;
+  };
+  payload?: Array<Record<string, unknown>> | Record<string, unknown>;
+  error?: {
+    hasError: boolean;
+    message?: string;
+    exceptionName?: string;
+  } | null;
+  timestamp: string;
+}
+
+export interface CockpitStateResponse {
+  is_running: boolean;
+  current_run_id: number | null;
+  active_node_id: string | null;
+  nodes: NodeInspectionData[];
+  metrics: BatchRunMetrics;
+}
 
 export interface NodeInspectionData {
   id: number;

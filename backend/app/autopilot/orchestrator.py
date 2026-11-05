@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Hustle, Lead, LeadFact, Package, RunLog, Stage
 from app.safety import compute_fit_score, normalize_phone
+from app.services.event_bus import emit_pipeline_step, set_autopilot_running
 
 from .config import (
     ALLOWED_CLAIM_SOURCES,
@@ -1123,6 +1124,16 @@ def run_live_autopilot_discovery(
     query = hustle.search_query or "dental clinic in Rohini Delhi"
     emit(f"Step 1/7 [FIND - 4-TIER WATERFALL]: Searching for '{query}' (target={target_count} new leads)...")
 
+    set_autopilot_running(True)
+    emit_pipeline_step(
+        node_id="node-1",
+        step_name="DISCOVERY",
+        status="RUNNING",
+        clinic_name=f"Searching: {query}",
+        metrics={"processed": 0, "total": target_count, "badge_text": f"Searching ({target_count} target)"},
+        payload=[],
+    )
+
     places: List[Dict[str, Any]] = []
 
     # Tier 1: Google Places API (New)
@@ -1175,6 +1186,28 @@ def run_live_autopilot_discovery(
             tiers_used.append("Tier 4: Playwright Maps & Verified Pool")
         emit(f"[TIER 4] Loaded {len(pw_places)} fallback candidates from Playwright Maps & 1_map_finder verified pool.")
 
+    emit_pipeline_step(
+        node_id="node-1",
+        step_name="DISCOVERY",
+        status="SUCCESS",
+        clinic_name=f"Discovered {len(places)} candidate clinics",
+        metrics={"processed": len(places), "total": len(places), "badge_text": f"✓ {len(places)} Found"},
+        payload=[
+            {
+                "name": p.get("title", "Unknown"),
+                "locality": extract_locality(str(p.get("address", "")), query),
+                "source": p.get("source_tier", "Maps"),
+                "status": "DISCOVERED",
+            }
+            for p in places[:15]
+        ],
+    )
+
+    processed_candidates = 0
+    recent_verifications: List[Dict[str, Any]] = []
+    recent_research: List[Dict[str, Any]] = []
+    recent_scaffold: List[Dict[str, Any]] = []
+
     for place in places:
         if passed_count >= target_count:
             break
@@ -1182,7 +1215,22 @@ def run_live_autopilot_discovery(
         if not title:
             continue
         found_count += 1
+        processed_candidates += 1
         source_tier = place.get("source_tier", "Maps Waterfall")
+        clean_name_prelim = clean_clinic_name(title)
+
+        emit_pipeline_step(
+            node_id="node-2",
+            step_name="VERIFICATION",
+            status="RUNNING",
+            clinic_name=clean_name_prelim,
+            metrics={
+                "processed": passed_count,
+                "total": target_count,
+                "badge_text": f"Probing ({processed_candidates}/{len(places)})",
+            },
+            payload=[{"clinic": clean_name_prelim, "status": "PROBING", "source": source_tier}],
+        )
 
         # 1. Check if clinic name is already in our database (BEFORE spending detail API calls!)
         full_clean_name = re.sub(r"[^a-z0-9]", "", title.lower())
@@ -1195,6 +1243,19 @@ def run_live_autopilot_discovery(
                 {"name": title, "reason": "already_in_db", "detail": "Clinic name already exists in CRM database"}
             )
             emit(f"[SKIP - DB DUPLICATE] '{title}' -> Already exists in CRM database (skipped)")
+            recent_verifications.insert(0, {"clinic": title, "reason": "already_in_db", "verdict": "DROPPED"})
+            emit_pipeline_step(
+                node_id="node-2",
+                step_name="VERIFICATION",
+                status="RUNNING",
+                clinic_name=clean_name_prelim,
+                metrics={
+                    "processed": passed_count,
+                    "total": target_count,
+                    "badge_text": f"{passed_count}/{target_count} ({sum(drop_counts.values())} dropped)",
+                },
+                payload=recent_verifications[:10],
+            )
             continue
 
         # 2. Filter hospital chains
@@ -1204,6 +1265,19 @@ def run_live_autopilot_discovery(
                 {"name": title, "reason": "hospital_or_chain", "detail": "Excluded hospital/chain stopword"}
             )
             emit(f"[SKIP] '{title}' -> Filtered (Hospital/Chain stopword)")
+            recent_verifications.insert(0, {"clinic": title, "reason": "hospital_or_chain", "verdict": "DROPPED"})
+            emit_pipeline_step(
+                node_id="node-2",
+                step_name="VERIFICATION",
+                status="RUNNING",
+                clinic_name=clean_name_prelim,
+                metrics={
+                    "processed": passed_count,
+                    "total": target_count,
+                    "badge_text": f"{passed_count}/{target_count} ({sum(drop_counts.values())} dropped)",
+                },
+                payload=recent_verifications[:10],
+            )
             continue
 
         # 3. Step 2: Check Maps website field
@@ -1215,6 +1289,19 @@ def run_live_autopilot_discovery(
                     {"name": title, "reason": "has_maps_website", "detail": f"Has website on Maps: {ws_host}"}
                 )
                 emit(f"[SKIP] '{title}' -> Already has website on Maps ({ws_host})")
+                recent_verifications.insert(0, {"clinic": title, "reason": "has_maps_website", "verdict": "DROPPED"})
+                emit_pipeline_step(
+                    node_id="node-2",
+                    step_name="VERIFICATION",
+                    status="RUNNING",
+                    clinic_name=clean_name_prelim,
+                    metrics={
+                        "processed": passed_count,
+                        "total": target_count,
+                        "badge_text": f"{passed_count}/{target_count} ({sum(drop_counts.values())} dropped)",
+                    },
+                    payload=recent_verifications[:10],
+                )
                 continue
 
         # If from Tier 1 Google Places API and details not fetched yet, fetch phone & hours now for this survivor
@@ -1239,6 +1326,19 @@ def run_live_autopilot_discovery(
                 }
             )
             emit(f"[SKIP] '{title}' -> No valid Indian WhatsApp mobile number")
+            recent_verifications.insert(0, {"clinic": title, "reason": "no_mobile_whatsapp", "verdict": "DROPPED"})
+            emit_pipeline_step(
+                node_id="node-2",
+                step_name="VERIFICATION",
+                status="RUNNING",
+                clinic_name=clean_name_prelim,
+                metrics={
+                    "processed": passed_count,
+                    "total": target_count,
+                    "badge_text": f"{passed_count}/{target_count} ({sum(drop_counts.values())} dropped)",
+                },
+                payload=recent_verifications[:10],
+            )
             continue
 
         # 5. Deduplicate phone against existing database leads
@@ -1254,6 +1354,19 @@ def run_live_autopilot_discovery(
                 }
             )
             emit(f"[SKIP - DB DUPLICATE] '{title}' ({norm_phone}) -> Phone already in CRM database")
+            recent_verifications.insert(0, {"clinic": title, "reason": "phone_already_in_db", "verdict": "DROPPED"})
+            emit_pipeline_step(
+                node_id="node-2",
+                step_name="VERIFICATION",
+                status="RUNNING",
+                clinic_name=clean_name_prelim,
+                metrics={
+                    "processed": passed_count,
+                    "total": target_count,
+                    "badge_text": f"{passed_count}/{target_count} ({sum(drop_counts.values())} dropped)",
+                },
+                payload=recent_verifications[:10],
+            )
             continue
 
         address = str(place.get("address", "Delhi NCR")).strip()
@@ -1279,7 +1392,55 @@ def run_live_autopilot_discovery(
                 }
             )
             emit(f"Dropped '{clean_name}' -> Found existing domain: {official_domain}")
+            recent_verifications.insert(0, {"clinic": clean_name, "reason": "has_official_domain", "detail": official_domain, "verdict": "DROPPED"})
+            emit_pipeline_step(
+                node_id="node-2",
+                step_name="VERIFICATION",
+                status="RUNNING",
+                clinic_name=clean_name,
+                metrics={
+                    "processed": passed_count,
+                    "total": target_count,
+                    "badge_text": f"{passed_count}/{target_count} ({sum(drop_counts.values())} dropped)",
+                },
+                payload=recent_verifications[:10],
+            )
             continue
+
+        recent_verifications.insert(0, {
+            "clinic": clean_name,
+            "domain": None,
+            "http_status": 404,
+            "has_mobile_site": False,
+            "verdict": "PASSED_NO_WEBSITE",
+            "phone": norm_phone,
+            "locality": locality,
+        })
+        emit_pipeline_step(
+            node_id="node-2",
+            step_name="VERIFICATION",
+            status="SUCCESS",
+            clinic_name=clean_name,
+            metrics={
+                "processed": passed_count + 1,
+                "total": target_count,
+                "badge_text": f"✓ {passed_count + 1} Verified",
+            },
+            payload=recent_verifications[:10],
+        )
+
+        emit_pipeline_step(
+            node_id="node-3",
+            step_name="RESEARCH",
+            status="RUNNING",
+            clinic_name=clean_name,
+            metrics={
+                "processed": passed_count,
+                "total": target_count,
+                "badge_text": f"Enriching {clean_name}",
+            },
+            payload=recent_research[:10],
+        )
 
         doc_name, degrees, doc_source = extract_doctor_and_degrees(
             title, organic, lead_phone=norm_phone, locality=locality
@@ -1290,6 +1451,30 @@ def run_live_autopilot_discovery(
         )
         rating = str(place.get("rating", "4.9"))
         reviews = str(place.get("ratingCount", "50"))
+
+        recent_research.insert(0, {
+            "clinic": clean_name,
+            "lead_doctor": doc_name,
+            "degrees": degrees or "BDS / Dental Surgeon",
+            "source": doc_source,
+            "rating": rating,
+            "reviews": reviews,
+            "locality": locality,
+            "phone": norm_phone,
+            "operating_hours": hours_obj.get("notes", "Call to confirm"),
+        })
+        emit_pipeline_step(
+            node_id="node-3",
+            step_name="RESEARCH",
+            status="SUCCESS",
+            clinic_name=clean_name,
+            metrics={
+                "processed": passed_count + 1,
+                "total": target_count,
+                "badge_text": f"✓ {passed_count + 1} Enriched",
+            },
+            payload=recent_research[:10],
+        )
 
         slug_base = generate_clean_slug(clean_name, max_len=45) or f"clinic-{int(time.time())}"
         slug = slug_base
@@ -1480,14 +1665,60 @@ def run_live_autopilot_discovery(
             }
         )
         emit(f"Built & verified clinic #{lead.id}: '{title}' ({locality}) -> {base}/demo/{slug}")
+        recent_scaffold.insert(0, {
+            "lead_id": lead.id,
+            "clinic_slug": slug,
+            "clinic_name": clean_name,
+            "themes_generated": ["modern", "premium", "warm"],
+            "routes": {
+                "choice": f"{base}/demo/{slug}",
+                "modern": f"{base}/modern/{slug}",
+                "premium": f"{base}/premium/{slug}",
+                "warm": f"{base}/warm/{slug}",
+            },
+            "status": "VERIFIED_HTTP_200",
+        })
+        emit_pipeline_step(
+            node_id="node-4",
+            step_name="SCAFFOLD",
+            status="SUCCESS",
+            clinic_name=clean_name,
+            metrics={"processed": passed_count, "total": target_count, "badge_text": f"✓ {passed_count} Built"},
+            payload=recent_scaffold[:10],
+        )
 
     db.commit()
 
     # Step 7: Verify live links return HTTP 200 and add working links to batch.json!
     emit("Step 7/7 [VERIFY & SYNC]: Checking HTTP 200 on all 4 live routes and syncing batch.json...")
+    emit_pipeline_step(
+        node_id="node-5",
+        step_name="WALKTHROUGH",
+        status="RUNNING",
+        clinic_name="Syncing batch.json & HTTP 200 routes",
+        metrics={"processed": 0, "total": passed_count, "badge_text": "Verifying URLs"},
+    )
     sync_report = sync_verified_links_to_batch_json(db, base_url, log_cb=emit)
     emit(
         f"Verified {sync_report['verified_count']} live clinic demo links (HTTP 200) and wrote to {sync_report['batch_json_path']}"
+    )
+    emit_pipeline_step(
+        node_id="node-5",
+        step_name="WALKTHROUGH",
+        status="SUCCESS",
+        clinic_name=f"{sync_report['verified_count']} Demo Routes Live",
+        metrics={
+            "processed": sync_report["verified_count"],
+            "total": sync_report["verified_count"],
+            "badge_text": f"✓ {sync_report['verified_count']} Verified",
+        },
+        payload=[
+            {
+                "batch_json": str(sync_report["batch_json_path"]),
+                "verified_count": sync_report["verified_count"],
+                "video_status": "video_pending",
+            }
+        ],
     )
 
     structured_drop_payload: Dict[str, Any] = {
@@ -1518,6 +1749,32 @@ def run_live_autopilot_discovery(
     db.add(run)
     db.commit()
     db.refresh(run)
+
+    total_review_tray = db.query(Lead).filter(Lead.stage_id == (package_ready_stage.id if package_ready_stage else 2)).count()
+    emit_pipeline_step(
+        node_id="node-6",
+        step_name="REVIEW_TRAY",
+        status="WAITING_FOR_REVIEW",
+        clinic_name="Review Tray Ready",
+        metrics={
+            "processed": total_review_tray,
+            "total": total_review_tray,
+            "badge_text": f"{total_review_tray} in Buffer",
+        },
+        payload=[
+            {
+                "lead_id": l["id"],
+                "clinic_name": l["name"],
+                "doctor": l.get("doctor", ""),
+                "demo_url": l.get("demo_url", ""),
+                "phone": l.get("phone", ""),
+                "fit_score": l.get("fit_score", 90),
+                "package_sealed": True,
+            }
+            for l in built_leads_summary
+        ],
+    )
+    set_autopilot_running(False, run_id=run.id)
 
     return {
         "run_id": run.id,

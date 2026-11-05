@@ -32,6 +32,13 @@ export function PipelineNodeNetwork({
             OK
           </span>
         );
+      case "WAITING_FOR_REVIEW":
+        return (
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            READY
+          </span>
+        );
       case "RUNNING":
         return (
           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">

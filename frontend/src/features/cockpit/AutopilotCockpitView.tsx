@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import {
   Activity,
   AlertOctagon,
@@ -31,7 +31,8 @@ import {
   Zap,
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
-import { NodeInspectionData, NodeStatus } from "./types";
+import { apiFetch } from "@/lib/api/client";
+import { BatchRunMetrics, CockpitStateResponse, NodeInspectionData, NodeStatus } from "./types";
 import { PipelineNodeNetwork } from "./PipelineNodeNetwork";
 import { NodeInspectionDrawer } from "./NodeInspectionDrawer";
 import { CockpitSupervisorBar } from "./CockpitSupervisorBar";
@@ -52,6 +53,7 @@ export function AutopilotCockpitView() {
     handleTriggerRefill,
     setSelectedLeadId,
     notify,
+    latestPipelineStep,
   } = useCRM();
 
   // Sub-page switcher state: "factory" | "outreach"
@@ -82,7 +84,7 @@ export function AutopilotCockpitView() {
     }
   }, [terminalLogs, terminalAutoScroll]);
 
-  // Initial nodes configuration for the 6-stage pipeline
+  // Initial structural nodes configuration for the 6-stage pipeline
   const [nodes, setNodes] = useState<NodeInspectionData[]>([
     {
       id: 1,
@@ -90,42 +92,14 @@ export function AutopilotCockpitView() {
       name: "DISCOVERY",
       title: "1. Candidate Discovery Waterfall",
       subtitle: "Places API + Serper Maps",
-      tools: "Google Places API • Serper Maps • Playwright Scraper",
-      status: "SUCCESS",
-      badge: "✓ 25 Found",
-      progressText: "25 candidate dental clinics discovered",
+      tools: "Google Places API • Serper Maps • Brave Search • Playwright Scraper",
+      status: "IDLE",
+      badge: "0 Found",
+      progressText: "Waiting to initiate 4-tier waterfall discovery...",
       logicDescription:
         "Queries Google Places API, Serper Maps & Playwright Waterfall for dental clinics in specified locality.",
-      duration: "14s",
-      payload: [
-        {
-          id: 1,
-          name: "Dentique Dental & Implant Centre",
-          locality: "Sector 76, Noida",
-          phone: "+91 98112 43210",
-          source: "Google Places API",
-          query: "dentist in sector 76 noida",
-          status: "DISCOVERED",
-        },
-        {
-          id: 2,
-          name: "Dr. Jha Dental Studio",
-          locality: "Sector 74, Noida",
-          phone: "+91 99100 87654",
-          source: "Serper Maps",
-          query: "dental clinic near me",
-          status: "DISCOVERED",
-        },
-        {
-          id: 3,
-          name: "Prime Dental & Aesthetic Clinic",
-          locality: "Sector 62, Noida",
-          phone: "+91 98111 22334",
-          source: "Brave Search",
-          query: "dental implants noida",
-          status: "DISCOVERED",
-        },
-      ],
+      duration: "Idle",
+      payload: [],
       error: null,
     },
     {
@@ -135,89 +109,45 @@ export function AutopilotCockpitView() {
       title: "2. Website Verification & HTTP Probe",
       subtitle: "HTTP Probes + Brave Search",
       tools: "HTTP 200/404 Probes • Brave Search No-Website Rule",
-      status: "RUNNING",
-      badge: "● Probing (14/25)",
-      progressText: "Item 14 of 25 • 14 verified no-website (3 dropped)",
+      status: "IDLE",
+      badge: "0 Probed",
+      progressText: "Waiting for candidate stream to probe domain & mobile status...",
       logicDescription:
         "Probes domain HTTP status and performs deep search verification to ensure clinic has no active mobile-friendly website.",
-      duration: "32s elapsed",
-      payload: [
-        {
-          clinic: "Dr Jha Dental Studio",
-          domain: "http://drjhadental.in",
-          http_status: 404,
-          has_mobile_site: false,
-          verdict: "PASSED_NO_WEBSITE",
-        },
-        {
-          clinic: "Dentique Dental & Implant Centre",
-          domain: null,
-          http_status: null,
-          has_mobile_site: false,
-          verdict: "PASSED_NO_WEBSITE",
-        },
-        {
-          clinic: "Apollo White Dental",
-          domain: "https://apollowhite.com",
-          http_status: 200,
-          verdict: "DROPPED_ACTIVE_CHAIN",
-        },
-      ],
-      error: {
-        hasError: false,
-      },
+      duration: "Idle",
+      payload: [],
+      error: null,
     },
     {
       id: 3,
       stepNumber: 3,
       name: "DEEP RESEARCH",
-      title: "3. Practo & Justdial Dossier Enrichment",
-      subtitle: "Practo + J-Dial Doctor & IG",
-      tools: "Practo Doctor Scraping • Justdial • Instagram Dossier",
-      status: "QUEUED",
-      badge: "11 Enriched",
-      progressText: "11 doctor credentials & treatment packages staged",
+      title: "3. Doctor & Clinic Dossier Enrichment",
+      subtitle: "Doctor Extraction & Opening Hours",
+      tools: "Doctor Scraping • Opening Hours • Verified Reviews",
+      status: "IDLE",
+      badge: "0 Enriched",
+      progressText: "Waiting for verified no-website clinics to extract doctor credentials...",
       logicDescription:
         "Scrapes doctor educational qualifications, years of experience, patient reviews, and clinic specialty services.",
-      duration: "Queued",
-      payload: [
-        {
-          clinic: "Dentique Dental & Implant Centre",
-          lead_doctor: "Dr. Rajeev Verma",
-          degrees: "BDS, MDS (Prosthodontics)",
-          experience_years: 14,
-          practo_rating: 4.9,
-          reviews_count: 142,
-          treatments: ["Root Canal", "Dental Implants", "Invisalign", "Teeth Whitening"],
-        },
-      ],
+      duration: "Idle",
+      payload: [],
       error: null,
     },
     {
       id: 4,
       stepNumber: 4,
       name: "NEXT.JS BUILD",
-      title: "4. Multi-Template Next.js Demo Scaffold",
-      subtitle: "3 Live Templates: Modern, Warm, Lux",
+      title: "4. Multi-Template Demo Scaffold",
+      subtitle: "3 Live Themes: Modern, Premium, Warm",
       tools: "add-clinic.ts • 3 Next.js Themes • Live HTTP Verification",
-      status: "QUEUED",
-      badge: "8 Packages Built",
-      progressText: "8 clinics compiled across 3 luxury themes",
+      status: "IDLE",
+      badge: "0 Built",
+      progressText: "Waiting for enriched dossiers to scaffold into Next.js Dental Engine...",
       logicDescription:
         "Scaffolds clinic data into Next.js Dental Engine and verifies HTTP 200 live status on localhost:3001.",
-      duration: "Queued",
-      payload: [
-        {
-          clinic_slug: "dentique-dental",
-          themes_generated: ["modern", "warm", "lux"],
-          routes: {
-            modern: "http://localhost:3001/modern/dentique-dental",
-            warm: "http://localhost:3001/warm/dentique-dental",
-            lux: "http://localhost:3001/lux/dentique-dental",
-          },
-          status: "VERIFIED_HTTP_200",
-        },
-      ],
+      duration: "Idle",
+      payload: [],
       error: null,
     },
     {
@@ -227,21 +157,13 @@ export function AutopilotCockpitView() {
       title: "5. Headless Video Walkthrough Recording",
       subtitle: "Headless MP4 Video Recorder",
       tools: "Playwright Headless • 45s Mobile Viewport • WebM/MP4",
-      status: "QUEUED",
-      badge: "8 MP4s Recorded",
-      progressText: "8 mobile video walkthroughs rendered",
+      status: "IDLE",
+      badge: "0 Recorded",
+      progressText: "Waiting for verified demo URLs to sync into batch.json...",
       logicDescription:
         "Spawns Playwright Chromium to record an authentic 45-second scrollable mobile preview of the clinic website.",
-      duration: "Queued",
-      payload: [
-        {
-          clinic: "Dentique Dental & Implant Centre",
-          video_file: "public/videos/dentique-dental-walkthrough.mp4",
-          resolution: "1080x1920 (Mobile)",
-          duration_seconds: 45,
-          status: "ENCODED_READY",
-        },
-      ],
+      duration: "Idle",
+      payload: [],
       error: null,
     },
     {
@@ -251,24 +173,98 @@ export function AutopilotCockpitView() {
       title: "6. Sealed & Staged Review Tray Buffer",
       subtitle: "Sealed & Staged Ready for Pitch",
       tools: "Buffer Health Engine • One-Click Operator Approval",
-      status: "QUEUED",
-      badge: "8 in Buffer",
-      progressText: "8 qualified dental clinics sealed & ready to send",
+      status: "IDLE",
+      badge: "0 in Buffer",
+      progressText: "Waiting for packages to seal into CRM Review Tray...",
       logicDescription:
-        "Stages validated packages with live links and walkthrough videos into the CRM Review Tray for operator dispatch.",
-      duration: "Queued",
-      payload: [
-        {
-          lead_id: 14,
-          clinic_name: "Dentique Dental",
-          preferred_channel: "whatsapp",
-          package_sealed: true,
-          est_value_inr: 25000,
-        },
-      ],
+        "Stages validated packages with live links into the CRM Review Tray for operator dispatch.",
+      duration: "Idle",
+      payload: [],
       error: null,
     },
   ]);
+
+  const [metrics, setMetrics] = useState<BatchRunMetrics | null>(null);
+
+  // Hydrate Cockpit State from Backend
+  const loadCockpitState = useCallback(async () => {
+    try {
+      const res = await apiFetch<CockpitStateResponse>(
+        `/api/autopilot/cockpit-state?hustle_id=${activeHustleId}`
+      );
+      if (res && Array.isArray(res.nodes) && res.nodes.length === 6) {
+        setNodes(res.nodes);
+      }
+      if (res && res.metrics) {
+        setMetrics(res.metrics);
+      }
+      if (res && typeof res.is_running === "boolean") {
+        setIsRunningPipeline(res.is_running);
+      }
+    } catch {
+      // Keep existing structural nodes on network failure
+    }
+  }, [activeHustleId]);
+
+  useEffect(() => {
+    loadCockpitState();
+  }, [loadCockpitState]);
+
+  // Dynamically update Cockpit nodes & drawer when real structured SSE pipeline_step events arrive
+  useEffect(() => {
+    if (!latestPipelineStep) return;
+    const evt = latestPipelineStep;
+    const stepMap: Record<string, number> = {
+      "node-1": 1,
+      "node-2": 2,
+      "node-3": 3,
+      "node-4": 4,
+      "node-5": 5,
+      "node-6": 6,
+    };
+    const stepNum = stepMap[evt.node_id];
+    if (!stepNum) return;
+
+    setNodes((prevNodes) =>
+      prevNodes.map((n) => {
+        if (n.stepNumber === stepNum) {
+          const updatedPayload = evt.payload
+            ? Array.isArray(evt.payload)
+              ? evt.payload
+              : [evt.payload]
+            : n.payload;
+          const updatedBadge = evt.metrics?.badge_text || (evt.status === "SUCCESS" ? "✓ Done" : n.badge);
+          const updatedProgress = evt.clinic_name
+            ? `${evt.step_name}: ${evt.clinic_name}`
+            : (evt.metrics?.badge_text || n.progressText);
+          const updatedDuration = evt.latency_ms ? `${evt.latency_ms}ms` : n.duration;
+          const updatedError = evt.error
+            ? { hasError: true, message: evt.error.message }
+            : null;
+
+          const updated: NodeInspectionData = {
+            ...n,
+            status: evt.status,
+            badge: updatedBadge,
+            progressText: updatedProgress,
+            duration: updatedDuration,
+            payload: updatedPayload as Array<Record<string, unknown>>,
+            error: updatedError,
+          };
+          setInspectingNode((curr) => (curr && curr.id === n.id ? updated : curr));
+          return updated;
+        }
+        return n;
+      })
+    );
+
+    if (evt.status === "RUNNING") {
+      setIsRunningPipeline(true);
+    } else if (evt.node_id === "node-6" && (evt.status === "SUCCESS" || evt.status === "WAITING_FOR_REVIEW")) {
+      setIsRunningPipeline(false);
+      loadCockpitState();
+    }
+  }, [latestPipelineStep, loadCockpitState]);
 
   // Handle Node selection to open drawer
   const handleSelectNode = (node: NodeInspectionData) => {
@@ -334,6 +330,13 @@ export function AutopilotCockpitView() {
   // Run Refill Batch with Target Count
   const handleRunRefillWithTarget = async () => {
     setIsRunningPipeline(true);
+    setNodes((prev) =>
+      prev.map((n) =>
+        n.stepNumber === 1
+          ? { ...n, status: "RUNNING", progressText: "Starting 4-Tier Waterfall Discovery...", badge: "Searching..." }
+          : { ...n, status: "IDLE" }
+      )
+    );
     appendTerminalLines([
       `[${new Date().toLocaleTimeString()}] [FACTORY] >>> RUN REFILL BATCH Triggered for ${targetLeads} qualified leads (${selectedLocality})...`,
       `[${new Date().toLocaleTimeString()}] [SCRAPE] Initializing 4-Tier Waterfall Discovery...`,
@@ -345,6 +348,7 @@ export function AutopilotCockpitView() {
       // error handled in context
     } finally {
       setIsRunningPipeline(false);
+      await loadCockpitState();
     }
   };
 
@@ -707,16 +711,24 @@ export function AutopilotCockpitView() {
                     </h3>
                     <p className="text-xs text-slate-400">Direct high-level summary of latest execution</p>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-bold">
-                    🟢 IN PROGRESS
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
+                    isRunningPipeline
+                      ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-500/30"
+                      : "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30"
+                  }`}>
+                    {isRunningPipeline ? "● RUNNING" : "🟢 READY"}
                   </span>
                 </div>
 
                 {/* Metrics Breakdown */}
                 <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/70 dark:border-white/[0.05] space-y-2 text-xs">
                   <div className="flex items-center justify-between font-mono text-[11px] pb-1 border-b border-slate-200/50 dark:border-white/[0.04]">
-                    <span className="text-slate-400">Run ID: #run-89 (Triggered 2m ago)</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">Stage 2: Verification</span>
+                    <span className="text-slate-400">
+                      Run ID: {metrics?.runId || "Latest Run"} ({metrics?.triggeredAgo || "Loaded"})
+                    </span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                      {isRunningPipeline ? "Stage: In-Flight" : "Stage: Buffer Ready"}
+                    </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-y-1.5 gap-x-4 pt-1 text-[11px]">
@@ -726,23 +738,33 @@ export function AutopilotCockpitView() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">• Candidate Leads:</span>
-                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">25 found</span>
+                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                        {metrics?.candidateFound ?? 0} found
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">• Verified No-Site:</span>
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">14 passed (3 dropped)</span>
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        {metrics?.verifiedNoSite ?? 0} passed ({metrics?.droppedCount ?? 0} dropped)
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">• Research Dossiers:</span>
-                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">11 enriched</span>
+                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                        {metrics?.enrichedDossiers ?? 0} enriched
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">• Multi-Demos Built:</span>
-                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">8 ready</span>
+                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                        {metrics?.demosBuilt ?? 0} ready
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">• Review Tray Ready:</span>
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">8 in buffer</span>
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        {metrics?.reviewTrayReady ?? 0} in buffer
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -754,50 +776,56 @@ export function AutopilotCockpitView() {
                       <span>🔍 Recent Verified Lead Payload</span>
                     </span>
                     <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                      100% Qualified
+                      {metrics?.recentLead?.fitScore ? `${metrics.recentLead.fitScore}% Fit` : "100% Qualified"}
                     </span>
                   </div>
 
                   <div>
                     <div className="font-bold text-xs text-slate-900 dark:text-white">
-                      Dentique Dental &amp; Implant Centre
+                      {metrics?.recentLead?.name || "No lead discovered yet"}
                     </div>
                     <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Dr. Rajeev Verma &bull; Sec 76 Noida &bull; +91 98112 43210
+                      {metrics?.recentLead?.doctor || "Doctor In-Charge"} &bull; {metrics?.recentLead?.locality || "Delhi NCR"} &bull; {metrics?.recentLead?.phone || "Phone verified"}
                     </div>
                   </div>
 
                   {/* Ready live preview links */}
                   <div className="flex items-center gap-2 pt-1 flex-wrap">
-                    <a
-                      href="http://localhost:3000/demo/modern"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-2 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <span>🔗 Modern (200)</span>
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
+                    {metrics?.recentLead?.previewLinks?.modern && (
+                      <a
+                        href={metrics.recentLead.previewLinks.modern}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-2 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <span>🔗 Modern (200)</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    )}
 
-                    <a
-                      href="http://localhost:3000/demo/warm"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <span>🔗 Warm (200)</span>
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
+                    {metrics?.recentLead?.previewLinks?.warm && (
+                      <a
+                        href={metrics.recentLead.previewLinks.warm}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <span>🔗 Warm (200)</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    )}
 
-                    <a
-                      href="http://localhost:3000/demo/lux"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-2 py-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-700 dark:text-indigo-300 text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <span>🔗 Lux (200)</span>
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
+                    {metrics?.recentLead?.previewLinks?.lux && (
+                      <a
+                        href={metrics.recentLead.previewLinks.lux}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-2 py-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-700 dark:text-indigo-300 text-[10px] font-mono font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <span>🔗 Premium (200)</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>

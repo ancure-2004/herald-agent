@@ -34,3 +34,9 @@ def verify_and_sync_links(db: Session = Depends(get_db)):
 @router.get("/batch")
 def get_dispatch_cockpit_batch(hustle_id: int = Query(1), db: Session = Depends(get_db)):
     return PipelineController.get_cockpit_batch(db, hustle_id)
+
+
+@router.get("/autopilot/cockpit-state")
+@router.get("/autopilot/status")
+def get_cockpit_state(hustle_id: int = Query(1), db: Session = Depends(get_db)):
+    return PipelineController.get_cockpit_state(db, hustle_id)

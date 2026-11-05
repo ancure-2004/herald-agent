@@ -22,3 +22,7 @@ class PipelineController:
     @staticmethod
     def get_cockpit_batch(db: Session, hustle_id: int = 1) -> List[Dict[str, Any]]:
         return PipelineService.get_cockpit_batch(db, hustle_id)
+
+    @staticmethod
+    def get_cockpit_state(db: Session, hustle_id: int = 1) -> Dict[str, Any]:
+        return PipelineService.get_cockpit_state(db, hustle_id)

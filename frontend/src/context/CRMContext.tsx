@@ -4,6 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { apiFetch } from "@/lib/api/client";
 import { useSSE } from "@/hooks/useSSE";
 import { useTheme } from "@/hooks/useTheme";
+import { PipelineStepEvent } from "@/features/cockpit/types";
 import {
   CopilotSuggestion,
   Hustle,
@@ -85,6 +86,7 @@ interface CRMContextType {
   showPreviousRuns: boolean;
   setShowPreviousRuns: React.Dispatch<React.SetStateAction<boolean>>;
   terminalContainerRef: React.RefObject<HTMLDivElement | null>;
+  latestPipelineStep: PipelineStepEvent | null;
 
   // Sorting & Filtering
   sortBy: "fit" | "intent" | "deal" | "name" | "due";
@@ -195,6 +197,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   ]);
   const [activeTerminalJob, setActiveTerminalJob] = useState<string | null>(null);
   const [showPreviousRuns, setShowPreviousRuns] = useState<boolean>(false);
+  const [latestPipelineStep, setLatestPipelineStep] = useState<PipelineStepEvent | null>(null);
   const terminalContainerRef = useRef<HTMLDivElement | null>(null);
   const lastLogSeqRef = useRef<number>(0);
 
@@ -335,6 +338,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     onTerminalLog: handleTerminalLog,
     onLiveEvent: handleLiveEvent,
     onRefreshTrigger: handleRefreshTrigger,
+    onPipelineStep: (step) => setLatestPipelineStep(step),
   });
 
   // Action Handlers
@@ -649,6 +653,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     showPreviousRuns,
     setShowPreviousRuns,
     terminalContainerRef,
+    latestPipelineStep,
     sortBy,
     setSortBy,
     sortOrder,
