@@ -1,0 +1,1552 @@
+[
+  {
+    "context": "dashboard_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "30"
+    ]
+  },
+  {
+    "context": "settings_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 62,
+        "clientHeight": 62,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 60,
+        "clientHeight": 60,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 60,
+        "clientHeight": 60,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 503,
+        "clientWidth": 320,
+        "scrollHeight": 62,
+        "clientHeight": 62,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "30"
+    ]
+  },
+  {
+    "context": "settings_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "₹89,990 EV Yield • EV/min prioritized",
+        "className": "text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold trunc",
+        "scrollWidth": 244,
+        "clientWidth": 126,
+        "scrollHeight": 17,
+        "clientHeight": 17,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "₹89,990 EV Yield • EV/min prioritized",
+        "className": "text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold trunc",
+        "scrollWidth": 244,
+        "clientWidth": 126,
+        "scrollHeight": 17,
+        "clientHeight": 17,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-Assistant_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "settings_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "settings_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "₹89,990 EV Yield • EV/min prioritized",
+        "className": "text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold trunc",
+        "scrollWidth": 244,
+        "clientWidth": 60,
+        "scrollHeight": 17,
+        "clientHeight": 17,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-Assistant_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "settings_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "₹89,990 EV Yield • EV/min prioritized",
+        "className": "text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold trunc",
+        "scrollWidth": 244,
+        "clientWidth": 230,
+        "scrollHeight": 17,
+        "clientHeight": 17,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 60,
+        "clientHeight": 60,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 60,
+        "clientHeight": 60,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "₹89,990 EV Yield • EV/min prioritized",
+        "className": "text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold trunc",
+        "scrollWidth": 244,
+        "clientWidth": 230,
+        "scrollHeight": 17,
+        "clientHeight": 17,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 60,
+        "clientHeight": 60,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 60,
+        "clientHeight": 60,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-Assistant_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "settings_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 62,
+        "clientHeight": 62,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 60,
+        "clientHeight": 60,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 60,
+        "clientHeight": 60,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 503,
+        "clientWidth": 320,
+        "scrollHeight": 62,
+        "clientHeight": 62,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "settings_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "₹89,990 EV Yield • EV/min prioritized",
+        "className": "text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold trunc",
+        "scrollWidth": 244,
+        "clientWidth": 182,
+        "scrollHeight": 17,
+        "clientHeight": 17,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md lg:",
+        "scrollWidth": 278,
+        "clientWidth": 236,
+        "scrollHeight": 17,
+        "clientHeight": 17,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md lg:",
+        "scrollWidth": 256,
+        "clientWidth": 236,
+        "scrollHeight": 17,
+        "clientHeight": 17,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md lg:",
+        "scrollWidth": 256,
+        "clientWidth": 236,
+        "scrollHeight": 17,
+        "clientHeight": 17,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "SIMPLY TEETH Orthodontic and Implant Centre",
+        "className": "font-bold text-xs text-slate-900 dark:text-white truncate",
+        "scrollWidth": 270,
+        "clientWidth": 236,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md lg:",
+        "scrollWidth": 256,
+        "clientWidth": 236,
+        "scrollHeight": 17,
+        "clientHeight": 17,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-Assistant_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "settings_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  }
+]

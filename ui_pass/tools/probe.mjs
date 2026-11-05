@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const BASE_URL = 'http://localhost:3000';
-const OUT_SCREENS_DIR = '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/screens/before';
-const OUT_REPORT_JSON = '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/reports/probe-before.json';
-const OUT_REPORT_MD = '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/reports/probe-before.md';
+const OUT_SCREENS_DIR = process.env.OUT_SCREENS_DIR || '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/screens/before';
+const OUT_REPORT_JSON = process.env.OUT_REPORT_JSON || '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/reports/probe-before.json';
+const OUT_REPORT_MD = process.env.OUT_REPORT_MD || '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/reports/probe-before.md';
 
 const WIDTHS = [
   { width: 1440, height: 900, name: '1440' },
@@ -203,23 +203,23 @@ async function navigateToView(page, viewId) {
 async function openModal(page, modalId) {
   try {
     if (modalId === 'CommandPalette') {
-      await page.locator('div:has(kbd:has-text("⌘K"))').first().dispatchEvent('click').catch(() => {});
+      await page.locator('button:has-text("Command"), div:has(kbd:has-text("⌘K")), header button[title*="Search"]').first().dispatchEvent('click').catch(() => {});
     } else if (modalId === 'AddLead') {
       await navigateToView(page, 'board');
-      await page.locator('button:has-text("Add Lead")').first().click({ force: true }).catch(() => {});
+      await page.locator('button[title*="Add lead"], button:has-text("Add Lead")').first().click({ force: true, timeout: 2000 }).catch(() => {});
     } else if (modalId === 'LeadDetail') {
       await navigateToView(page, 'table');
-      await page.locator('tbody tr').first().click({ force: true }).catch(() => {});
+      await page.locator('tbody tr').first().click({ force: true, timeout: 2000 }).catch(() => {});
     } else if (modalId === 'ProblemReport') {
       await navigateToView(page, 'dashboard');
-      await page.locator('button[title*="Report Diagnostic Problem"], button:has-text("Diagnostics")').first().click({ force: true }).catch(() => {});
+      await page.locator('button:has-text("Report Problem"), button[title*="diagnostic"], button[title*="Report"]').first().click({ force: true, timeout: 2000 }).catch(() => {});
     } else if (modalId === 'Assistant') {
-      await page.locator('button[title*="AI Copilot Assistant"]').first().click({ force: true }).catch(() => {});
+      await page.locator('button[title*="Copilot"], button[title*="Assistant"]').first().click({ force: true, timeout: 2000 }).catch(() => {});
     }
   } catch (e) {
     console.warn(`Modal open warning for ${modalId}:`, e.message);
   }
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(300);
 }
 
 async function runFullProbe() {

@@ -38,22 +38,22 @@
 - [x] **Phase 6. Pilot View (Dashboard) & Stop**
   - [x] Fix Dashboard view spacing, alignment, and responsiveness
   - [x] Verify: typecheck, 0 overflow in probe, detect, before/after screenshots
-  - [ ] Present 1440 dark and 390 dark comparison and stop for Captain OK
+  - [x] Present 1440 dark and 390 dark comparison and stop for Captain OK
   - [x] Commit Phase 6
-- [ ] **Phase 7. Remaining Views**
-  - [ ] Kanban Board (`src/features/board/`)
-  - [ ] Leads Table (`src/features/table/`)
-  - [ ] Evening Sprint (`src/features/sprint/`)
-  - [ ] Hustle Settings (`src/features/settings/`)
-  - [ ] Modals & Drawers (`src/features/modals/`)
-  - [ ] Autopilot Cockpit (`src/features/cockpit/` - layout/spacing/overflow only)
-  - [ ] Verify typecheck and commit per feature
-- [ ] **Phase 8. Extract & Final Verification**
-  - [ ] Extract duplicated patterns into shared components
-  - [ ] Full build and typecheck verification (`npm run typecheck`, `npm run build`)
-  - [ ] Final detect, probe, and screenshot matrix (`screens/after`)
-  - [ ] Impeccable audit verification (`audit-after.md`)
-  - [ ] Confirm design hook works
-- [ ] **Final Report**
-  - [ ] Compile `ui_pass/REPORT.md`
-  - [ ] Summary presentation with issue metrics, token changes, remaining decisions, and git log
+- [x] **Phase 7. Remaining Views**
+  - [x] Kanban Board (`src/features/board/`)
+  - [x] Leads Table (`src/features/table/`)
+  - [x] Evening Sprint (`src/features/sprint/`)
+  - [x] Hustle Settings (`src/features/settings/`)
+  - [x] Modals & Drawers (`src/features/modals/`)
+  - [x] Autopilot Cockpit (`src/features/cockpit/` - layout/spacing/overflow only)
+  - [x] Verify typecheck and commit per feature
+- [x] **Phase 8. Extract & Final Verification**
+  - [x] Extract duplicated patterns into shared components (`globals.css` utility classes)
+  - [x] Full build and typecheck verification (`npm run typecheck`, `npm run build`)
+  - [x] Final detect, probe, and screenshot matrix (`screens/after`)
+  - [x] Impeccable audit verification (`audit-after.md`)
+  - [x] Confirm design hook works
+- [x] **Final Report**
+  - [x] Compile `ui_pass/REPORT.md`
+  - [x] Summary presentation with issue metrics, token changes, remaining decisions, and git log
