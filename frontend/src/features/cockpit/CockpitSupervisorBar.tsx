@@ -45,7 +45,7 @@ export function CockpitSupervisorBar({
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
+    <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40">
       {!isOpen ? (
         /* Collapsed State: Sleek Floating Action Button */
         <button
@@ -64,7 +64,7 @@ export function CockpitSupervisorBar({
         </button>
       ) : (
         /* Expanded State: Elegant Floating Card Popover */
-        <div className="w-[380px] sm:w-[420px] max-h-[500px] rounded-3xl bg-white dark:bg-[#141721] border border-emerald-500/30 shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="w-[calc(100vw-2rem)] sm:w-[420px] max-h-[500px] rounded-2xl bg-white dark:bg-[#141721] border border-emerald-500/30 shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
           {/* Header */}
           <div className="p-3.5 bg-gradient-to-r from-emerald-600/10 via-teal-600/5 to-transparent border-b border-slate-100 dark:border-white/[0.06] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -157,7 +157,7 @@ export function CockpitSupervisorBar({
           </div>
 
           {/* Command Input Prompt Footer */}
-          <div className="p-3 bg-slate-50 dark:bg-[#0E1017] border-t border-slate-100 dark:border-white/[0.06]">
+          <div className="p-3 bg-slate-50 dark:bg-white/[0.04] border-t border-slate-100 dark:border-white/[0.06]">
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
               <input
                 type="text"

@@ -392,7 +392,7 @@ export function AutopilotCockpitView() {
   };
 
   return (
-    <div className="space-y-6 min-h-[calc(100vh-5rem)] -m-4 sm:-m-6 p-4 sm:p-6 bg-[#FAF9F6] dark:bg-[#0B0C10] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] transition-colors">
+    <div className="space-y-6 min-h-[calc(100vh-5rem)] -m-4 sm:-m-6 p-4 sm:p-6 bg-transparent transition-colors">
       {/* 1. Sleek Floating Sub-Page Tabs */}
       <div className="flex items-center justify-center pt-1">
         <div className="inline-flex items-center p-1 rounded-2xl bg-white/90 dark:bg-[#141721]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
@@ -430,7 +430,7 @@ export function AutopilotCockpitView() {
         /* ==================== SUB-PAGE 1: LEAD PIPELINE FACTORY ==================== */
         <div className="space-y-6">
           {/* 1. Collapsible Compact Factory Runner Card (Constrained Width & Left-Aligned) */}
-          <div className="w-fit max-w-md self-start p-3 sm:p-3.5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card transition-all duration-200">
+          <div className="w-fit max-w-md self-start p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs transition-all duration-200">
             {/* Collapsed Header / Toggler Bar */}
             <div className="flex items-center gap-2.5 flex-wrap">
               <button
@@ -524,7 +524,7 @@ export function AutopilotCockpitView() {
                         max={100}
                         value={targetLeads}
                         onChange={(e) => setTargetLeads(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2 py-1 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 text-center focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2 py-1 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 text-center focus:outline-none focus:border-indigo-500"
                         placeholder="Custom"
                       />
                     </div>
@@ -539,7 +539,7 @@ export function AutopilotCockpitView() {
                   <select
                     value={selectedLocality}
                     onChange={(e) => setSelectedLocality(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                    className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
                   >
                     <option value="Delhi NCR / Noida">Delhi NCR / Noida (Sector 76-78)</option>
                     <option value="South Delhi / Saket">South Delhi / Saket &amp; Malviya Nagar</option>
@@ -698,7 +698,7 @@ export function AutopilotCockpitView() {
             </div>
 
             {/* Bottom Right: Batch End Results & Structured Outputs Card */}
-            <div className="p-5 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-card flex flex-col justify-between space-y-4">
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/[0.06]">
                   <div>
@@ -713,7 +713,7 @@ export function AutopilotCockpitView() {
                 </div>
 
                 {/* Metrics Breakdown */}
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#0E1017] border border-slate-200/70 dark:border-white/[0.05] space-y-2 text-xs">
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/70 dark:border-white/[0.05] space-y-2 text-xs">
                   <div className="flex items-center justify-between font-mono text-[11px] pb-1 border-b border-slate-200/50 dark:border-white/[0.04]">
                     <span className="text-slate-400">Run ID: #run-89 (Triggered 2m ago)</span>
                     <span className="text-emerald-600 dark:text-emerald-400 font-bold">Stage 2: Verification</span>

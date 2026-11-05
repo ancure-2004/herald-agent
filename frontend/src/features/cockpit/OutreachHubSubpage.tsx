@@ -311,7 +311,7 @@ export function OutreachHubSubpage() {
             </div>
 
             {/* Pacing & Target Details */}
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#0E1017] border border-slate-200/70 dark:border-white/[0.05] text-xs space-y-1.5">
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/70 dark:border-white/[0.05] text-xs space-y-1.5">
               <div className="flex justify-between text-[11px]">
                 <span className="text-slate-400">Pacing Delay:</span>
                 <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">4-7 mins (jittered)</span>
@@ -382,7 +382,7 @@ export function OutreachHubSubpage() {
             </div>
 
             {/* Pacing & Target Details */}
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#0E1017] border border-slate-200/70 dark:border-white/[0.05] text-xs space-y-1.5">
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/70 dark:border-white/[0.05] text-xs space-y-1.5">
               <div className="flex justify-between text-[11px]">
                 <span className="text-slate-400">Pacing Delay:</span>
                 <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">2 mins spacing</span>

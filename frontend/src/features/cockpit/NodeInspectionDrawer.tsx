@@ -66,7 +66,7 @@ export function NodeInspectionDrawer({
       />
 
       {/* Slide-over Drawer Pane */}
-      <aside className="relative w-full max-w-2xl bg-white dark:bg-[#0E1017] border-l border-slate-200 dark:border-white/[0.08] shadow-2xl flex flex-col h-full z-10 animate-in slide-in-from-right duration-200 text-slate-900 dark:text-slate-100">
+      <aside className="relative w-full max-w-2xl bg-white dark:bg-[#141721] border-l border-slate-200/80 dark:border-white/[0.08] shadow-2xl flex flex-col h-full z-10 animate-in slide-in-from-right duration-200 text-slate-900 dark:text-slate-100">
         {/* Drawer Header */}
         <div className="px-6 py-4 border-b border-slate-200/80 dark:border-white/[0.08] flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-[#141721]/50">
           <div>
