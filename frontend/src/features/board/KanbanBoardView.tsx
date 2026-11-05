@@ -218,7 +218,7 @@ export function KanbanBoardView() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                 filterPopoverOpen || filterMinFit > 0 || filterVerifiedOnly
                   ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
-                  : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-700 border-slate-200 dark:border-white/[0.06] text-slate-700 dark:text-slate-300"
+                  : "bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300"
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -279,7 +279,7 @@ export function KanbanBoardView() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                 sortPopoverOpen
                   ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
-                  : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-700 border-slate-200 dark:border-white/[0.06] text-slate-700 dark:text-slate-300"
+                  : "bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300"
               }`}
             >
               <ArrowUpDown className="w-3.5 h-3.5" />
@@ -299,7 +299,7 @@ export function KanbanBoardView() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-white/[0.06]">
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.06]">
                     <div className="text-slate-400 text-xs font-mono">::</div>
                     <select
                       value={sortBy}
@@ -367,12 +367,12 @@ export function KanbanBoardView() {
               });
 
             const stageColors = [
-              "bg-indigo-500 text-indigo-500",
-              "bg-amber-500 text-amber-500",
-              "bg-emerald-500 text-emerald-500",
-              "bg-blue-500 text-blue-500",
-              "bg-purple-500 text-purple-500",
-              "bg-rose-500 text-rose-500",
+              "bg-indigo-500",
+              "bg-amber-500",
+              "bg-emerald-500",
+              "bg-blue-500",
+              "bg-purple-500",
+              "bg-rose-500",
             ];
             const dotColor = stageColors[sIdx % stageColors.length];
 
@@ -403,10 +403,10 @@ export function KanbanBoardView() {
                   }
                   setDraggingLeadId(null);
                 }}
-                className={`flex-1 min-w-[280px] sm:min-w-[310px] max-w-[360px] flex flex-col rounded-3xl bg-slate-100/70 dark:bg-[#0D0F16]/90 border transition-all duration-200 ${
+                className={`flex-1 min-w-[280px] sm:min-w-[310px] max-w-[360px] flex flex-col rounded-2xl bg-slate-100/70 dark:bg-[#0F1117] border transition-all duration-200 ${
                   dragOverStageId === stage.id
                     ? "border-indigo-500 ring-2 ring-indigo-500/30 bg-indigo-500/[0.04]"
-                    : "border-slate-200/80 dark:border-white/[0.06]"
+                    : "border-slate-200/80 dark:border-white/[0.08]"
                 }`}
               >
                 {/* Stage Column Header */}
@@ -613,8 +613,8 @@ export function KanbanBoardView() {
 
           {/* Focused List Rows / Empty State */}
           {focusedLeads.length === 0 ? (
-            <div className="p-12 text-center rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+            <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center mx-auto text-slate-400">
                 <CurrentViewIcon className="w-6 h-6" />
               </div>
               <div className="text-sm font-bold text-slate-900 dark:text-white">
