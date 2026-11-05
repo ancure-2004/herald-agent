@@ -74,7 +74,7 @@ export function HustleSettingsView() {
     <div className="max-w-4xl space-y-5">
       <form
         onSubmit={handleSaveHustleSettings}
-        className="p-6 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs space-y-5"
+        className="p-6 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-5 transition-colors"
       >
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
@@ -87,23 +87,23 @@ export function HustleSettingsView() {
           </div>
           <button
             type="submit"
-            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 cursor-pointer transition-all"
+            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/25 active:scale-[0.98] cursor-pointer transition-all"
           >
             Save Hustle Settings
           </button>
         </div>
 
         {/* 4-Tier Lead Discovery Waterfall Overview Card */}
-        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.06] space-y-2.5">
+        <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.06] space-y-2.5">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <span className="text-xs font-bold text-slate-900 dark:text-white">
               Lead Discovery Waterfall Order (Strict Database Deduplication Enabled)
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold">
               Zero DB Re-Use Guarantee
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
             <div className="p-2.5 rounded-xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.06]">
               <div className="text-[10px] font-mono text-indigo-500 font-bold">TIER 1 (PRIMARY)</div>
               <div className="font-semibold text-slate-900 dark:text-white mt-0.5">Google Places API</div>
@@ -128,9 +128,9 @@ export function HustleSettingsView() {
         </div>
 
         {/* Instagram Discovery Rule Toggle (Explicitly OFF for Dental Clinics, configurable for other CRM hustles) */}
-        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.06] flex items-center justify-between gap-4">
+        <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.06] flex items-center justify-between gap-4">
           <div className="space-y-0.5">
-            <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
               <span>CRM Instagram Lead Discovery &amp; Research</span>
               {(activeHustle.slug.includes("dental") ||
                 activeHustle.name.toLowerCase().includes("dental")) && (
@@ -151,7 +151,7 @@ export function HustleSettingsView() {
               activeHustle.name.toLowerCase().includes("dental")
             }
             onChange={(e) => setSettingsIgDiscovery(e.target.checked)}
-            className="w-4 h-4 accent-indigo-600 cursor-pointer disabled:opacity-50"
+            className="w-4 h-4 accent-indigo-600 cursor-pointer disabled:opacity-50 shrink-0"
           />
         </div>
 
@@ -163,10 +163,10 @@ export function HustleSettingsView() {
             <select
               value={settingsAutonomy}
               onChange={(e) => setSettingsAutonomy(e.target.value as "copilot" | "autopilot")}
-              className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white"
+              className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:border-indigo-500 rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white transition-all cursor-pointer"
             >
-              <option value="copilot">Copilot (Human Review Tray before Send)</option>
-              <option value="autopilot">Autopilot (Auto-Dispatch within Daily Caps)</option>
+              <option value="copilot" className="bg-white dark:bg-[#141721] text-slate-900 dark:text-white">Copilot (Human Review Tray before Send)</option>
+              <option value="autopilot" className="bg-white dark:bg-[#141721] text-slate-900 dark:text-white">Autopilot (Auto-Dispatch within Daily Caps)</option>
             </select>
           </div>
 
@@ -178,54 +178,54 @@ export function HustleSettingsView() {
               type="text"
               value={settingsQuery}
               onChange={(e) => setSettingsQuery(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white"
+              className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:border-indigo-500 rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white transition-all"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div className="space-y-1">
-            <label className="text-slate-500 dark:text-slate-400">Minimum Buffer Days</label>
+            <label className="text-slate-500 dark:text-slate-400 text-[11px] font-medium">Minimum Buffer Days</label>
             <input
               type="number"
               min={1}
               max={14}
               value={settingsMinDays}
               onChange={(e) => setSettingsMinDays(Number(e.target.value))}
-              className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white"
+              className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:border-indigo-500 rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white transition-all"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-slate-500 dark:text-slate-400">Daily WhatsApp Cap</label>
+            <label className="text-slate-500 dark:text-slate-400 text-[11px] font-medium">Daily WhatsApp Cap</label>
             <input
               type="number"
               min={1}
               max={100}
               value={settingsWaLimit}
               onChange={(e) => setSettingsWaLimit(Number(e.target.value))}
-              className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white"
+              className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:border-indigo-500 rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white transition-all"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-slate-500 dark:text-slate-400">Daily Instagram Cap</label>
+            <label className="text-slate-500 dark:text-slate-400 text-[11px] font-medium">Daily Instagram Cap</label>
             <input
               type="number"
               min={0}
               max={100}
               value={settingsIgLimit}
               onChange={(e) => setSettingsIgLimit(Number(e.target.value))}
-              className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white"
+              className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:border-indigo-500 rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white transition-all"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-slate-500 dark:text-slate-400">Daily Email Cap</label>
+            <label className="text-slate-500 dark:text-slate-400 text-[11px] font-medium">Daily Email Cap</label>
             <input
               type="number"
               min={1}
               max={200}
               value={settingsEmailLimit}
               onChange={(e) => setSettingsEmailLimit(Number(e.target.value))}
-              className="w-full bg-slate-50 dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.1] rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white"
+              className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:border-indigo-500 rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white transition-all"
             />
           </div>
         </div>
