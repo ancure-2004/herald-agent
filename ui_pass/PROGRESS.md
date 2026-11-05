@@ -17,15 +17,15 @@
   - [x] Run `/impeccable init` with operator and project context
   - [x] Run `/impeccable document` to capture current visual system into `DESIGN.md`
   - [x] Commit `PRODUCT.md` and `DESIGN.md`
-- [ ] **Phase 3. Baseline (Read-Only)**
-  - [ ] Start backend and frontend services (`start_crm.sh`)
-  - [ ] Track A: Detector (`npx impeccable detect` for source and URL)
-  - [ ] Track B: Screenshot matrix via Playwright (6 views, 5 modals across 1440, 1024, 768, 390px in dark & light)
-  - [ ] Track C: Layout probe (`ui_pass/tools/probe.mjs`)
-  - [ ] Track D: Code pattern audit (`reports/code-patterns.md`)
-  - [ ] Impeccable audit & critique per view
-  - [ ] Merge into `reports/BASELINE.md`
-  - [ ] Commit reports (excluding screenshots)
+- [x] **Phase 3. Baseline (Read-Only)**
+  - [x] Start backend and frontend services (`start_crm.sh`)
+  - [x] Track A: Detector (`npx impeccable detect` for source and URL)
+  - [x] Track B: Screenshot matrix via Playwright (6 views, 5 modals across 1440, 1024, 768, 390px in dark & light)
+  - [x] Track C: Layout probe (`ui_pass/tools/probe.mjs`)
+  - [x] Track D: Code pattern audit (`reports/code-patterns.md`)
+  - [x] Impeccable audit & critique per view (`reports/audit-before.md`, `reports/critique-before.md`)
+  - [x] Merge into `reports/BASELINE.md`
+  - [x] Commit reports (excluding screenshots)
 - [ ] **Phase 4. Plan & Stop for Captain Approval**
   - [ ] Write `ui_pass/FIX_PLAN.md` (tokens, scale, fix order, risk bounds, non-goals)
   - [ ] Stop and await Captain's explicit approval

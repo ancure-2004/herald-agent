@@ -1,0 +1,3994 @@
+[
+  {
+    "context": "dashboard_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "30"
+    ]
+  },
+  {
+    "context": "settings_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Approve and send initial WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Check demo view telemetry & follow up in 3 days",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 278,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 486,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Warm layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 219,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Modern layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 450,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 503,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "“Namaste Dr. Dr. Rajeev Verma, we noticed Dentique",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 573,
+        "clientWidth": 573,
+        "scrollHeight": 72,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      },
+      {
+        "text": "“Sir, we offer zero upfront setup and a 100% satis",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 573,
+        "clientWidth": 573,
+        "scrollHeight": 54,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_1440_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "30"
+    ]
+  },
+  {
+    "context": "settings_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Approve and send initial WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Check demo view telemetry & follow up in 3 days",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 278,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 486,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Warm layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 219,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Modern layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 450,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 76,
+        "clientHeight": 76,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 76,
+        "clientHeight": 76,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 503,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "“Namaste Dr. Dr. Rajeev Verma, we noticed Dentique",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 475,
+        "clientWidth": 475,
+        "scrollHeight": 72,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      },
+      {
+        "text": "“Sir, we offer zero upfront setup and a 100% satis",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 475,
+        "clientWidth": 475,
+        "scrollHeight": 54,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_1024_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "30"
+    ]
+  },
+  {
+    "context": "settings_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Approve and send initial WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Check demo view telemetry & follow up in 3 days",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 278,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 486,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Warm layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 219,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Modern layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 450,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_768_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "30"
+    ]
+  },
+  {
+    "context": "settings_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Approve and send initial WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Check demo view telemetry & follow up in 3 days",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 278,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 486,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Warm layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 219,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Dr. Pratibha Patel",
+        "className": "font-medium text-slate-700 dark:text-slate-300 truncate max-w-[140px]",
+        "scrollWidth": 98,
+        "clientWidth": 96,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Modern layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 450,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 76,
+        "clientHeight": 76,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 76,
+        "clientHeight": 76,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 503,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "“Namaste Dr. Dr. Rajeev Verma, we noticed Dentique",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 272,
+        "clientWidth": 272,
+        "scrollHeight": 125,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      },
+      {
+        "text": "“Sir, we offer zero upfront setup and a 100% satis",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 272,
+        "clientWidth": 272,
+        "scrollHeight": 89,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      },
+      {
+        "text": "“Dr. Dr. Rajeev Verma, pricing is a flat ₹15000 co",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 272,
+        "clientWidth": 272,
+        "scrollHeight": 72,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_390_dark",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "30"
+    ]
+  },
+  {
+    "context": "settings_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Approve and send initial WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Check demo view telemetry & follow up in 3 days",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 278,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 486,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Warm layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 219,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Modern layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 450,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 503,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "“Namaste Dr. Dr. Rajeev Verma, we noticed Dentique",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 573,
+        "clientWidth": 573,
+        "scrollHeight": 72,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      },
+      {
+        "text": "“Sir, we offer zero upfront setup and a 100% satis",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 573,
+        "clientWidth": 573,
+        "scrollHeight": 54,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_1440_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 66,
+        "clientHeight": 66,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "30"
+    ]
+  },
+  {
+    "context": "settings_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Approve and send initial WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Check demo view telemetry & follow up in 3 days",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 278,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 486,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Warm layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 219,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Modern layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 450,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 76,
+        "clientHeight": 76,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 76,
+        "clientHeight": 76,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 503,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "“Namaste Dr. Dr. Rajeev Verma, we noticed Dentique",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 475,
+        "clientWidth": 475,
+        "scrollHeight": 72,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      },
+      {
+        "text": "“Sir, we offer zero upfront setup and a 100% satis",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 475,
+        "clientWidth": 475,
+        "scrollHeight": 54,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_1024_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "30"
+    ]
+  },
+  {
+    "context": "settings_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Approve and send initial WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Check demo view telemetry & follow up in 3 days",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 278,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 486,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Warm layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 219,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Modern layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 450,
+        "clientWidth": 210,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 76,
+        "clientHeight": 76,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 76,
+        "clientHeight": 76,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 503,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "“Namaste Dr. Dr. Rajeev Verma, we noticed Dentique",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 618,
+        "clientWidth": 618,
+        "scrollHeight": 54,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      },
+      {
+        "text": "“Sir, we offer zero upfront setup and a 100% satis",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 618,
+        "clientWidth": 618,
+        "scrollHeight": 54,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_768_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "dashboard_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "board_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "table_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "sprint_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "autopilot_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "30"
+    ]
+  },
+  {
+    "context": "settings_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-CommandPalette_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [],
+    "headerObscured": [],
+    "mainScrollIssue": false,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-AddLead_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Approve and send initial WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review 3 live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 292,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Check demo view telemetry & follow up in 3 days",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 278,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 486,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Warm layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 219,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Dr. Pratibha Patel",
+        "className": "font-medium text-slate-700 dark:text-slate-300 truncate max-w-[140px]",
+        "scrollWidth": 98,
+        "clientWidth": 96,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send Closer follow-up on Modern layout",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 231,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 307,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Review live demo links & approve WhatsApp pitch",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 283,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "text-xs truncate font-medium",
+        "scrollWidth": 450,
+        "clientWidth": 180,
+        "scrollHeight": 16,
+        "clientHeight": 16,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-LeadDetail_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 76,
+        "clientHeight": 76,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 76,
+        "clientHeight": 76,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Send post-call WhatsApp follow-up (Spoke to doctor",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 503,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "“Namaste Dr. Dr. Rajeev Verma, we noticed Dentique",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 272,
+        "clientWidth": 272,
+        "scrollHeight": 125,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      },
+      {
+        "text": "“Sir, we offer zero upfront setup and a 100% satis",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 272,
+        "clientWidth": 272,
+        "scrollHeight": 89,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      },
+      {
+        "text": "“Dr. Dr. Rajeev Verma, pricing is a flat ₹15000 co",
+        "className": "text-slate-700 dark:text-slate-300 italic text-[11px] leading-relaxed line-clamp",
+        "scrollWidth": 272,
+        "clientWidth": 272,
+        "scrollHeight": 72,
+        "clientHeight": 36,
+        "horizClipped": false,
+        "vertClipped": true
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ]
+  },
+  {
+    "context": "modal-ProblemReport_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "context": "modal-Assistant_390_light",
+    "horizontalOverflow": [],
+    "viewportOverflow": [],
+    "clippedText": [
+      {
+        "text": "Reply to Dr. Rajeev's pricing question & schedule ",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 468,
+        "clientWidth": 320,
+        "scrollHeight": 124,
+        "clientHeight": 124,
+        "horizClipped": true,
+        "vertClipped": false
+      },
+      {
+        "text": "Record walkthrough video & approve WhatsApp pitch",
+        "className": "py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate",
+        "scrollWidth": 327,
+        "clientWidth": 320,
+        "scrollHeight": 92,
+        "clientHeight": 92,
+        "horizClipped": true,
+        "vertClipped": false
+      }
+    ],
+    "headerObscured": [],
+    "mainScrollIssue": true,
+    "modalIssues": [],
+    "zIndices": [
+      "20",
+      "30",
+      "40"
+    ]
+  }
+]

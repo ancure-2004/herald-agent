@@ -1,0 +1,13 @@
+{
+  "name": "ui-pass-tools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node capture.mjs",
+    "probe": "node probe.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}
