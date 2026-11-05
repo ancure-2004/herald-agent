@@ -26,8 +26,8 @@
   - [x] Impeccable audit & critique per view (`reports/audit-before.md`, `reports/critique-before.md`)
   - [x] Merge into `reports/BASELINE.md`
   - [x] Commit reports (excluding screenshots)
-- [ ] **Phase 4. Plan & Stop for Captain Approval**
-  - [ ] Write `ui_pass/FIX_PLAN.md` (tokens, scale, fix order, risk bounds, non-goals)
+- [x] **Phase 4. Plan & Stop for Captain Approval**
+  - [x] Write `ui_pass/FIX_PLAN.md` (tokens, scale, fix order, risk bounds, non-goals)
   - [ ] Stop and await Captain's explicit approval
 - [ ] **Phase 5. Foundation**
   - [ ] Unify tokens (`tailwind.config.ts`, `globals.css`, `layout.tsx`, `page.tsx`)
