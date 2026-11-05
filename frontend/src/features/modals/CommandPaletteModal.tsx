@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   Activity,
   ArrowRight,
@@ -44,6 +44,21 @@ export function CommandPaletteModal() {
     toggleDarkMode,
     activeHustleId,
   } = useCRM();
+
+  // Global keyboard shortcuts (Cmd+K to open/close, Escape to close)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCmdKOpen((prev) => !prev);
+      } else if (e.key === "Escape" && cmdKOpen) {
+        e.preventDefault();
+        setCmdKOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [cmdKOpen, setCmdKOpen]);
 
   const quickActions = useMemo(
     () => [
@@ -177,16 +192,19 @@ export function CommandPaletteModal() {
   if (!cmdKOpen) return null;
 
   return (
-          <div
-            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-start justify-center pt-16 sm:pt-24 px-4 animate-in fade-in duration-150"
-            onClick={() => setCmdKOpen(false)}
-          >
-            <div
-              className="w-full max-w-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.12] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[82vh] animate-in zoom-in-95 duration-150"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Search Input Bar */}
-              <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-white/[0.08] flex items-center gap-3 bg-slate-50/50 dark:bg-[#10121A]/80">
+    <div
+      className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/75 backdrop-blur-md flex items-start justify-center pt-16 sm:pt-24 px-4 animate-in fade-in duration-150"
+      onClick={() => setCmdKOpen(false)}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command Palette"
+    >
+      <div
+        className="w-full max-w-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.12] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-150"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Search Input Bar */}
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-white/[0.08] flex items-center gap-3 bg-slate-50/50 dark:bg-[#0F1117]/80">
                 <Search className="w-5 h-5 text-indigo-500 shrink-0" />
                 <input
                   autoFocus
@@ -315,24 +333,23 @@ export function CommandPaletteModal() {
                 </div>
               </div>
 
-              {/* Footer Navigation Hints */}
-              <div className="p-3.5 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#10121A]/80 flex items-center justify-between text-[11px] text-slate-400 px-4">
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/[0.08] font-mono text-[9px]">ESC</kbd>
-                    <span>to close</span>
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/[0.08] font-mono text-[9px]">↵</kbd>
-                    <span>to select</span>
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 text-[10px] text-slate-500">
-                  <span>CustomerGo Command Palette</span>
-                </div>
-              </div>
-            </div>
+        {/* Footer Navigation Hints */}
+        <div className="p-3.5 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0F1117]/80 flex items-center justify-between text-[11px] text-slate-400 px-4">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/[0.08] font-mono text-[9px]">ESC</kbd>
+              <span>to close</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/[0.08] font-mono text-[9px]">↵</kbd>
+              <span>to select</span>
+            </span>
           </div>
-
+          <div className="flex items-center gap-1 text-[10px] text-slate-500">
+            <span>CustomerGo Command Palette</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bug, X } from "lucide-react";
+import { Bug } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { apiFetch } from "@/lib/api/client";
+import { Modal } from "@/components/ui/Modal";
 
 export function ProblemReportModal() {
   const { problemModalOpen, setProblemModalOpen, activeHustleId, notify } = useCRM();
@@ -39,23 +40,15 @@ export function ProblemReportModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="w-full max-w-lg bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.12] rounded-3xl p-6 shadow-2xl space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Bug className="w-4 h-4 text-rose-500" />
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Capture Diagnostic Problem Brief</h3>
-          </div>
-          <button
-            onClick={handleClose}
-            className="text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
+    <Modal
+      isOpen={problemModalOpen}
+      onClose={handleClose}
+      title="Capture Diagnostic Problem Brief"
+      maxWidth="lg"
+    >
+      <div className="space-y-4">
         {!problemBriefResult ? (
-          <form onSubmit={handleReportProblem} className="space-y-3 text-xs">
+          <form onSubmit={handleReportProblem} className="space-y-3.5 text-xs">
             <p className="text-slate-600 dark:text-slate-400">
               Describe what went wrong. The CRM will bundle recent run logs, failed gates, and telemetry into a structured Markdown brief ready for Antigravity IDE.
             </p>
@@ -65,27 +58,27 @@ export function ProblemReportModal() {
               value={problemText}
               onChange={(e) => setProblemText(e.target.value)}
               placeholder="e.g. Run #14 failed on step 6: template preview HTTP 500 error on clinic xyz..."
-              className="w-full bg-slate-50 dark:bg-[#0E1017] border border-slate-200 dark:border-white/[0.1] rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-rose-500"
+              className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-rose-500 transition-all font-sans"
             />
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-white/[0.06]">
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-300 font-medium cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold shadow-md shadow-rose-600/30 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold shadow-md shadow-rose-600/25 active:scale-[0.98] cursor-pointer transition-all"
               >
                 Generate Diagnostic Brief
               </button>
             </div>
           </form>
         ) : (
-          <div className="space-y-3 text-xs">
-            <div className="p-3 rounded-xl bg-slate-950 text-slate-200 font-mono text-[11px] max-h-60 overflow-y-auto whitespace-pre-wrap">
+          <div className="space-y-3.5 text-xs">
+            <div className="p-3.5 rounded-xl bg-slate-950 text-slate-200 font-mono text-[11px] max-h-60 overflow-y-auto whitespace-pre-wrap border border-slate-800">
               {problemBriefResult}
             </div>
             <button
@@ -93,13 +86,13 @@ export function ProblemReportModal() {
                 navigator.clipboard.writeText(problemBriefResult);
                 notify("Copied diagnostic brief to clipboard!");
               }}
-              className="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer"
+              className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer shadow-md shadow-indigo-600/25 transition-all"
             >
               Copy Brief to Clipboard
             </button>
           </div>
         )}
       </div>
-    </div>
+    </Modal>
   );
 }

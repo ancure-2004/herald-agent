@@ -278,11 +278,11 @@ export function LeadDetailModal() {
       }}
       className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-in fade-in zoom-in-95 duration-200"
     >
-      <div className="w-full max-w-6xl max-h-[94vh] bg-white dark:bg-[#12141D] border border-slate-200/90 dark:border-white/[0.12] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-6xl max-h-[94vh] bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.12] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* ============================================================== */}
         {/* MODAL TOP BAR                                                  */}
         {/* ============================================================== */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-white/[0.08] bg-slate-50/90 dark:bg-[#0F1118] flex flex-wrap items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-white/[0.08] bg-slate-50/90 dark:bg-[#0F1117] flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/70 flex items-center justify-center font-black text-lg text-indigo-600 dark:text-indigo-400 shrink-0">
               {selectedLead.name.slice(0, 2).toUpperCase()}
@@ -342,7 +342,7 @@ export function LeadDetailModal() {
             </div>
 
             {/* Pipeline Stage Dropdown */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-[#181B26] border border-slate-200 dark:border-white/[0.08] shadow-xs">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
               <span className="text-xs text-slate-400">Stage:</span>
               <select
                 value={selectedLead.stage_id}
@@ -377,7 +377,7 @@ export function LeadDetailModal() {
           {/* ============================================================== */}
           <div className="lg:col-span-7 space-y-4 flex flex-col">
             {/* WhatsApp / Chat Timeline View Card */}
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.08] flex flex-col shadow-xs">
+            <div className="p-4 rounded-2xl bg-white dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08] flex flex-col shadow-xs">
               {/* Timeline Header & Channel Filters */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/[0.06]">
                 <div className="flex items-center gap-2">
