@@ -15,7 +15,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 cd "$ROOT_DIR/backend"
-.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 
 cd "$ROOT_DIR/frontend"

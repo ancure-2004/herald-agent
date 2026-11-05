@@ -715,11 +715,17 @@ def sync_verified_links_to_batch_json(
     verified_batch: List[Dict[str, Any]] = []
     failed_links: List[Dict[str, Any]] = []
 
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    def _check_single_pkg(pkg_item: Package) -> Tuple[Package, bool, Dict[str, Any]]:
+        s = pkg_item.lead.slug
+        ok, details = verify_live_demo_links(s, base)
+        return (pkg_item, ok, details)
+
+    # First upgrade payloads if needed (db operations)
     for pkg in packages:
         lead = pkg.lead
         slug = lead.slug
-
-        # Ensure package has full canonical payload upgraded if needed
         if not pkg.clinic_payload or "templates" not in pkg.clinic_payload:
             _emit(f"Upgrading canonical 3-template payload for '{lead.name}' (/demo/{slug})...")
             quals = (lead.custom_fields or {}).get("degrees", "BDS (Dental Surgeon)")
@@ -742,31 +748,37 @@ def sync_verified_links_to_batch_json(
             }
             db.commit()
 
-        links_ok, check_details = verify_live_demo_links(slug, base)
-        pkg.self_check_report = {**(pkg.self_check_report or {}), "live_link_verification": check_details}
+    # Run HTTP verification concurrently across up to 8 threads
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = {executor.submit(_check_single_pkg, p): p for p in packages}
+        for future in as_completed(futures):
+            pkg, links_ok, check_details = future.result()
+            lead = pkg.lead
+            slug = lead.slug
+            pkg.self_check_report = {**(pkg.self_check_report or {}), "live_link_verification": check_details}
 
-        if links_ok:
-            _emit(
-                f"[HTTP 200 OK] Verified all 4 live routes (/demo, /modern, /premium, /warm) for '{lead.name}' (slug={slug})"
-            )
-            pkg.asset_links = {
-                "choice_page": f"{base}/demo/{slug}",
-                "modern": f"{base}/modern/{slug}",
-                "premium": f"{base}/premium/{slug}",
-                "warm": f"{base}/warm/{slug}",
-            }
-            verified_batch.append(
-                {
-                    "name": f"Clinic-{lead.id}-{slug}",
-                    "url": f"{base}/modern/{slug}",
-                    "choice_url": f"{base}/demo/{slug}",
-                    "lead_id": lead.id,
-                    "slug": slug,
+            if links_ok:
+                _emit(
+                    f"[HTTP 200 OK] Verified all 4 live routes (/demo, /modern, /premium, /warm) for '{lead.name}' (slug={slug})"
+                )
+                pkg.asset_links = {
+                    "choice_page": f"{base}/demo/{slug}",
+                    "modern": f"{base}/modern/{slug}",
+                    "premium": f"{base}/premium/{slug}",
+                    "warm": f"{base}/warm/{slug}",
                 }
-            )
-        else:
-            _emit(f"[HTTP FAIL] Route check failed for '{lead.name}' (slug={slug})")
-            failed_links.append({"lead_id": lead.id, "slug": slug, "details": check_details})
+                verified_batch.append(
+                    {
+                        "name": f"Clinic-{lead.id}-{slug}",
+                        "url": f"{base}/modern/{slug}",
+                        "choice_url": f"{base}/demo/{slug}",
+                        "lead_id": lead.id,
+                        "slug": slug,
+                    }
+                )
+            else:
+                _emit(f"[HTTP FAIL] Route check failed for '{lead.name}' (slug={slug})")
+                failed_links.append({"lead_id": lead.id, "slug": slug, "details": check_details})
 
     db.commit()
 

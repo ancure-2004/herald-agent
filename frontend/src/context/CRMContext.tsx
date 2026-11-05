@@ -136,7 +136,7 @@ interface CRMContextType {
   loadAll: () => Promise<void>;
   handleStageChange: (lead: Lead, newStageId: number) => Promise<void>;
   handleApproveAndSend: (lead: Lead) => Promise<void>;
-  handleTriggerRefill: () => Promise<void>;
+  handleTriggerRefill: (batchSize?: number) => Promise<void>;
   handleDayModeChange: (mode: "normal" | "away" | "off") => Promise<void>;
   handleSyncBatchLinks: () => Promise<void>;
   handleRunScout: () => Promise<void>;
@@ -376,28 +376,30 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleTriggerRefill = async () => {
+  const handleTriggerRefill = async (batchSize: number = 3) => {
     setActiveTerminalJob("7-Step Refill Batch");
     appendTerminalLines([
-      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Run Refill Batch Now' (7-step pipeline)...`,
+      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Run Refill Batch Now' (7-step pipeline, target=${batchSize})...`,
     ]);
     try {
-      notify("Running 7-step Autopilot Refill Batch (live logs streaming in terminal)...");
+      notify(`Running 7-step Autopilot Refill Batch (target=${batchSize})...`);
       const res = await apiFetch<{ run_id: number; message: string; trace_logs?: string[] }>(
         "/api/autopilot/run-refill",
         {
           method: "POST",
-          body: JSON.stringify({ hustle_id: activeHustleId, batch_size: 2 }),
+          body: JSON.stringify({ hustle_id: activeHustleId, batch_size: batchSize }),
+          timeoutMs: 300000,
         }
       );
       await syncTerminalLogs();
-      notify(`Refill completed: Run #${res.run_id} (${res.message})`);
-      loadAll();
+      notify(`Refill completed: Run #${res.run_id} (${res.message || "Success"})`);
+      await loadAll();
     } catch (err) {
       appendTerminalLines([
         `[${new Date().toLocaleTimeString()}] [ERROR] Refill failed: ${err instanceof Error ? err.message : "Unknown error"}`,
       ]);
       notify(err instanceof Error ? err.message : "Failed to trigger refill", "err");
+      await loadAll();
     } finally {
       setActiveTerminalJob(null);
     }
@@ -426,6 +428,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       const res = await apiFetch<{ verified: number; total: number }>("/api/packages/sync-batch-json", {
         method: "POST",
         body: JSON.stringify({ hustle_id: activeHustleId }),
+        timeoutMs: 300000,
       });
       await syncTerminalLogs();
       notify(`Self-check passed: ${res.verified}/${res.total} templates verified live & synced`);

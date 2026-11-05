@@ -342,7 +342,7 @@ export function AutopilotCockpitView() {
       `[${new Date().toLocaleTimeString()}] [SCRAPE] Initializing 4-Tier Waterfall Discovery...`,
     ]);
     try {
-      await handleTriggerRefill();
+      await handleTriggerRefill(targetLeads);
       notify(`Refill batch initiated for ${targetLeads} leads!`);
     } catch {
       // error handled in context
@@ -356,6 +356,13 @@ export function AutopilotCockpitView() {
   const handleStopPipeline = () => {
     setIsRunningPipeline(false);
     setActiveTerminalJob(null);
+    setNodes((prev) =>
+      prev.map((n) =>
+        n.status === "RUNNING"
+          ? { ...n, status: "IDLE", progressText: "Execution stopped by operator" }
+          : n
+      )
+    );
     appendTerminalLines([
       `[${new Date().toLocaleTimeString()}] [ALERT] Pipeline execution STOPPED by Captain. Workers detached.`,
     ]);

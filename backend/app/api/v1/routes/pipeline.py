@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Body, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
@@ -17,11 +17,24 @@ def list_runs(hustle_id: Optional[int] = Query(None), db: Session = Depends(get_
 @router.post("/autopilot/trigger-refill")
 @router.post("/autopilot/run-refill")
 def trigger_autopilot_refill(
-    hustle_id: int = Query(1),
-    batch_size: int = Query(3),
+    payload: Optional[Dict[str, Any]] = Body(None),
+    hustle_id: Optional[int] = Query(None),
+    batch_size: Optional[int] = Query(None),
     db: Session = Depends(get_db),
 ):
-    return PipelineController.trigger_refill(db, hustle_id, batch_size)
+    h_id = 1
+    if payload and "hustle_id" in payload:
+        h_id = int(payload["hustle_id"])
+    elif hustle_id is not None:
+        h_id = hustle_id
+
+    b_size = 3
+    if payload and "batch_size" in payload:
+        b_size = int(payload["batch_size"])
+    elif batch_size is not None:
+        b_size = batch_size
+
+    return PipelineController.trigger_refill(db, h_id, b_size)
 
 
 @router.post("/autopilot/verify-links")
