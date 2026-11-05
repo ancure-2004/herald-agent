@@ -29,12 +29,12 @@
 - [x] **Phase 4. Plan & Stop for Captain Approval**
   - [x] Write `ui_pass/FIX_PLAN.md` (tokens, scale, fix order, risk bounds, non-goals)
   - [ ] Stop and await Captain's explicit approval
-- [ ] **Phase 5. Foundation**
-  - [ ] Unify tokens (`tailwind.config.ts`, `globals.css`, `layout.tsx`, `page.tsx`)
-  - [ ] Fix root shell containment and scrolling
-  - [ ] Standardize shared layout primitives and `src/components/ui/*` + `src/components/layout/*`
-  - [ ] Re-verify with typecheck, probe, detect, and screenshots
-  - [ ] Commit Phase 5
+- [x] **Phase 5. Foundation**
+  - [x] Unify tokens (`tailwind.config.ts`, `globals.css`, `layout.tsx`, `page.tsx`)
+  - [x] Fix root shell containment and scrolling (`h-[100dvh]`, dynamic viewport)
+  - [x] Standardize shared layout primitives and `src/components/ui/*` + `src/components/layout/*`
+  - [x] Re-verify with typecheck, probe, detect, and screenshots
+  - [x] Commit Phase 5
 - [ ] **Phase 6. Pilot View (Dashboard) & Stop**
   - [ ] Fix Dashboard view spacing, alignment, and responsiveness
   - [ ] Verify: typecheck, 0 overflow in probe, detect, before/after screenshots

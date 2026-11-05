@@ -22,7 +22,7 @@ function CRMContent() {
   const isCockpit = activeTab === "autopilot";
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#FAF9F6] dark:bg-[#0B0C10] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-[#FAF8F5] dark:bg-[#0B0C10] text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Toast Notification Banner */}
       {toast && (
         <div

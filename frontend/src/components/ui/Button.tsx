@@ -10,20 +10,20 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", loading = false, disabled, children, ...props }, ref) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
+      "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer";
 
     const variantStyles = {
-      primary: "bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-sm",
-      secondary: "bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-100",
-      outline: "border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200",
-      ghost: "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300",
-      danger: "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm",
+      primary: "bg-indigo-600 hover:bg-indigo-500 text-white focus:ring-indigo-500 shadow-sm shadow-indigo-600/20 active:scale-[0.98]",
+      secondary: "bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] dark:text-slate-100 border border-transparent dark:border-white/[0.08]",
+      outline: "border border-slate-300 dark:border-white/[0.1] hover:bg-slate-50 dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-200",
+      ghost: "hover:bg-slate-100 dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-300",
+      danger: "bg-rose-600 hover:bg-rose-500 text-white focus:ring-rose-500 shadow-sm active:scale-[0.98]",
     };
 
     const sizeStyles = {
-      sm: "px-2.5 py-1.5 text-xs",
-      md: "px-3.5 py-2 text-sm",
-      lg: "px-5 py-2.5 text-base",
+      sm: "px-3 py-1.5 text-xs min-h-[34px]",
+      md: "px-4 py-2 text-sm min-h-[40px]",
+      lg: "px-5 py-2.5 text-base min-h-[46px]",
     };
 
     return (
