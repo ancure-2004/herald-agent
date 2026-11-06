@@ -26,9 +26,12 @@ class QuotaGuard:
     @classmethod
     def ensure_schema(cls, db: Session) -> None:
         """Idempotently creates the api_usage table if it doesn't already exist."""
-        sql = """
+        bind = db.get_bind()
+        is_sqlite = bind is not None and bind.dialect.name == "sqlite"
+        id_col = "id INTEGER PRIMARY KEY AUTOINCREMENT" if is_sqlite else "id SERIAL PRIMARY KEY"
+        sql = f"""
         CREATE TABLE IF NOT EXISTS api_usage (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            {id_col},
             provider VARCHAR(64) NOT NULL,
             sku VARCHAR(64) NOT NULL,
             month VARCHAR(7) NOT NULL,

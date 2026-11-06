@@ -18,6 +18,7 @@ from app.core.exceptions import (
     validation_exception_handler,
 )
 from app.core.logging import logger
+from app.db.schema_migrations import ensure_schema_columns
 from app.db.session import Base, SessionLocal, engine
 from app.middleware.body_size import RequestSizeLimitMiddleware
 from app.middleware.rate_limit import limiter
@@ -42,6 +43,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Ensure database tables exist and seed initial lookup data
     Base.metadata.create_all(bind=engine)
+    ensure_schema_columns(engine)
     db = SessionLocal()
     try:
         seed_initial_data(db, include_demo_leads=True)
