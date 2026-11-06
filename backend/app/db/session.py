@@ -6,12 +6,23 @@ from app.core.config import get_settings
 settings = get_settings()
 
 db_url = settings.normalized_database_url
-connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
+connect_args = (
+    {"check_same_thread": False}
+    if db_url.startswith("sqlite")
+    else {
+        "connect_timeout": 5,
+        "keepalives": 1,
+        "keepalives_idle": 30,
+        "keepalives_interval": 10,
+        "keepalives_count": 5,
+    }
+)
 
 engine = create_engine(
     db_url,
     connect_args=connect_args,
     pool_pre_ping=True,
+    pool_recycle=300,
 )
 
 if db_url.startswith("sqlite"):

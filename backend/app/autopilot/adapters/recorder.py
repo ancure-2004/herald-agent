@@ -11,8 +11,9 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from ..config import BATCH_JSON_PATH, CLINICS_DATA_DIR, DENTAL_RECORDER_DIR
 from app.core.config import get_settings
+
+from ..config import CLINICS_DATA_DIR, DENTAL_RECORDER_DIR
 
 logger = logging.getLogger("personal_os.autopilot.recorder")
 
@@ -83,11 +84,13 @@ class BatchRecorderAdapter:
                 except Exception:
                     pass
 
-            batch_items.append({
-                "name": f"Clinic-{slug}",
-                "url": f"{base}/{tpl}/{slug}",
-                "choice_url": f"{base}/demo/{slug}",
-            })
+            batch_items.append(
+                {
+                    "name": f"Clinic-{slug}",
+                    "url": f"{base}/{tpl}/{slug}",
+                    "choice_url": f"{base}/demo/{slug}",
+                }
+            )
 
         written_path = self.write_batch_json(batch_items)
         return {

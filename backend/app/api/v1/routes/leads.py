@@ -84,6 +84,16 @@ def generate_post_call_draft(lead_id: int, payload: Dict[str, Any], db: Session 
     return LeadController.post_call_draft(db, lead_id, payload)
 
 
+@router.get("/leads/{lead_id}/recording/status")
+def get_lead_recording_status(lead_id: int, db: Session = Depends(get_db)):
+    return LeadController.get_recording_status(db, lead_id)
+
+
+@router.get("/leads/{lead_id}/recording")
+def get_lead_recording(lead_id: int, db: Session = Depends(get_db)):
+    return LeadController.get_recording_response(db, lead_id)
+
+
 @router.post("/admin/wipe-leads")
 def wipe_leads(db: Session = Depends(get_db)):
     return LeadController.wipe_leads(db)

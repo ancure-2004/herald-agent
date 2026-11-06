@@ -21,8 +21,8 @@ export interface ModernViewModel {
   phone: string;
   phoneRaw: string;
   whatsapp: string;
-  rating: string;
-  reviewCount: string;
+  rating?: string;
+  reviewCount?: string;
   consultationFee?: string;
   mapEmbedUrl: string;
   directionsUrl: string;
@@ -123,11 +123,21 @@ export function adaptToModern(
 
   // Derive stats in code from rating, reviewCount, fee, and experience
   const stats = [
-    {
-      value: `${clinic.rating} ★`,
-      label: 'Verified Google Rating',
-      sub: clinic.reviewCount ? `${clinic.reviewCount} Reviews` : 'Patient Reviews',
-    },
+    ...(clinic.rating
+      ? [
+          {
+            value: `${clinic.rating} ★`,
+            label: 'Verified Google Rating',
+            sub: clinic.reviewCount ? `${clinic.reviewCount} Reviews` : 'Patient Reviews',
+          },
+        ]
+      : [
+          {
+            value: 'Gentle Care',
+            label: 'Clinical Philosophy',
+            sub: 'Tooth Preservation',
+          },
+        ]),
     {
       value: primaryDoctor.experience,
       label: 'Clinical Practice',
@@ -142,30 +152,38 @@ export function adaptToModern(
 
   // Derive trustMetrics in code from rating, reviewCount, fee, and experience
   const trustMetrics = [
-    {
-      id: 'rating',
-      metric: `${clinic.rating} ★`,
-      value: `${clinic.rating} ★`,
-      category: 'Patient Satisfaction',
-      label: 'Google Verified Rating',
-      highlight: `Consistent ${clinic.rating} ★ Rating Across All Treatments`,
-      description: `Evaluated by genuine patients across ${clinic.area} for attentive chairside care, gentle procedures, and clinical accuracy.`,
-      badge: 'Google Verified',
-      tag: '5-Star Standard',
-      verified: true,
-    },
-    {
-      id: 'reviews',
-      metric: clinic.reviewCount || '100+',
-      value: clinic.reviewCount || '100+',
-      category: 'Community Endorsement',
-      label: 'Google Maps Reviews',
-      highlight: `${clinic.reviewCount || '100+'} Authentic Patient Experiences`,
-      description: `Locally recognized dental practice trusted by families for conservative tooth preservation, gentle scaling, and timely appointments.`,
-      badge: 'Public Feedback',
-      tag: 'Local Favorite',
-      verified: true,
-    },
+    ...(clinic.rating
+      ? [
+          {
+            id: 'rating',
+            metric: `${clinic.rating} ★`,
+            value: `${clinic.rating} ★`,
+            category: 'Patient Satisfaction',
+            label: 'Google Verified Rating',
+            highlight: `Consistent ${clinic.rating} ★ Rating Across All Treatments`,
+            description: `Evaluated by genuine patients across ${clinic.area} for attentive chairside care, gentle procedures, and clinical accuracy.`,
+            badge: 'Google Verified',
+            tag: '5-Star Standard',
+            verified: true,
+          },
+        ]
+      : []),
+    ...(clinic.reviewCount
+      ? [
+          {
+            id: 'reviews',
+            metric: clinic.reviewCount,
+            value: clinic.reviewCount,
+            category: 'Community Endorsement',
+            label: 'Google Maps Reviews',
+            highlight: `${clinic.reviewCount} Authentic Patient Experiences`,
+            description: `Locally recognized dental practice trusted by families for conservative tooth preservation, gentle scaling, and timely appointments.`,
+            badge: 'Public Feedback',
+            tag: 'Community Trust',
+            verified: true,
+          },
+        ]
+      : []),
     {
       id: 'fee',
       metric: clinic.consultationFee || 'Transparent OPD',

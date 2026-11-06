@@ -38,8 +38,13 @@ def format_clinic_context(clinic: Dict[str, Any], base_url: Optional[str] = None
     doc = clinic.get("doc_name") or clinic.get("doctor_name") or "Doctor"
     locality = clinic.get("locality", "Delhi NCR")
     phone = clinic.get("phone", "")
-    rating = str(clinic.get("rating", "4.9"))
-    revs = str(clinic.get("review_count") or clinic.get("reviews", "45"))
+
+    raw_rating = clinic.get("rating")
+    rating = str(raw_rating) if raw_rating is not None and str(raw_rating).strip() else None
+
+    raw_revs = clinic.get("review_count") or clinic.get("reviews")
+    revs = str(raw_revs) if raw_revs is not None and str(raw_revs).strip() else None
+
     tpl = (clinic.get("recommended_template") or clinic.get("template") or "modern").lower()
 
     return {
@@ -66,9 +71,14 @@ def format_clinic_context(clinic: Dict[str, Any], base_url: Optional[str] = None
 def generate_whatsapp_pitch(clinic: Dict[str, Any], base_url: Optional[str] = None) -> Dict[str, str]:
     """Generates 2-part WhatsApp pitch (text hook + video/links caption)."""
     c = format_clinic_context(clinic, base_url)
+    rating_line = ""
+    if c["rating"]:
+        revs_part = f" aur {c['revs']} patient reviews" if c["revs"] else ""
+        rating_line = f"Google par {c['name']} ki {c['rating']}★ rating{revs_part} dekh kar kaafi accha laga.\n\n"
+
     hook = (
         f"Namaste {c['doc_salutation']} 🙏\n\n"
-        f"Google par {c['name']} ki {c['rating']}★ rating aur {c['revs']} patient reviews dekh kar kaafi accha laga.\n\n"
+        f"{rating_line}"
         f"Humne aapke clinic ke liye 3 alag visual styles mein ek modern website ready ki hai, taaki patients directly details dekh sakein aur appointment book kar sakein.\n\n"
         f"Iska ek quick screen recording video walkthrough niche share kar raha hoon:"
     )
@@ -94,9 +104,14 @@ def generate_whatsapp_pitch(clinic: Dict[str, Any], base_url: Optional[str] = No
 def generate_instagram_pitch(clinic: Dict[str, Any], base_url: Optional[str] = None) -> Dict[str, str]:
     """Generates Instagram DM invite and reply kit."""
     c = format_clinic_context(clinic, base_url)
+    rating_line = ""
+    if c["rating"]:
+        revs_part = f" aur {c['revs']} patient reviews" if c["revs"] else ""
+        rating_line = f"Google par {c['name']} ki {c['rating']}/5 rating{revs_part} dekh kar kaafi accha laga.\n\n"
+
     dm = (
         f"Namaste {c['doc_salutation']}\n\n"
-        f"Google par {c['name']} ki {c['rating']}/5 rating aur {c['revs']} patient reviews dekh kar kaafi accha laga.\n\n"
+        f"{rating_line}"
         f"Humne aapke clinic ke liye 3 alag visual styles mein ek modern website ready ki hai. Sample design ka live preview link ye raha:\n"
         f"{c['demo_url']}\n\n"
         f"Baqi do designs bhi live hain. Aapko ye design kaisa laga?"
@@ -122,9 +137,17 @@ def generate_email_pitch(clinic: Dict[str, Any], base_url: Optional[str] = None)
     """Generates personalized Email subject and HTML/Plain-text body."""
     c = format_clinic_context(clinic, base_url)
     subject = f"Sample Website Designs for {c['name']}"
+
+    rating_line = ""
+    if c["rating"]:
+        revs_part = f" aur {c['revs']} patient reviews" if c["revs"] else ""
+        rating_line = (
+            f"Google par {c['name']} ({c['loc']}) ki {c['rating']}★ rating{revs_part} dekh kar kaafi accha laga.\n\n"
+        )
+
     body = (
         f"Namaste {c['doc_salutation']},\n\n"
-        f"Google par {c['name']} ({c['loc']}) ki {c['rating']}★ rating aur {c['revs']} patient reviews dekh kar kaafi accha laga.\n\n"
+        f"{rating_line}"
         f"Humne aapke clinic ke liye 3 distinct visual styles mein interactive website layouts ready kiye hain, jisme mobile-first booking, verified services aur patient proof beautifully arranged hain:\n\n"
         f"• Design 1 (Modern Precision): {c['modern_url']}\n"
         f"• Design 2 (Premium Boutique): {c['premium_url']}\n"

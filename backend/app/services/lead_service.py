@@ -412,6 +412,76 @@ class LeadService:
         }
 
     @staticmethod
+    def find_lead_recording_path(db: Session, lead_id: int) -> Optional[str]:
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+
+        # 1. Check Package video_file_path if it exists on disk
+        if lead.packages:
+            for pkg in lead.packages:
+                if pkg.video_file_path and os.path.exists(pkg.video_file_path):
+                    return pkg.video_file_path
+
+        # 2. Check DENTAL_RECORDER_DIR recordings
+        try:
+            import re
+
+            from app.autopilot.config import DENTAL_RECORDER_DIR, PROJECTS_ROOT
+
+            clean_slug = (lead.slug or "").lower().strip()
+            safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "-", lead.name or "").strip("-").lower()
+
+            recordings_dir = DENTAL_RECORDER_DIR / "recordings"
+            if recordings_dir.exists():
+                for ext in [".mp4", ".webm"]:
+                    for name_cand in [clean_slug, safe_name, f"Clinic-{lead.id}"]:
+                        p = recordings_dir / f"{name_cand}{ext}"
+                        if p.exists():
+                            return str(p)
+
+                for p in recordings_dir.glob("*.mp4"):
+                    p_lower = p.stem.lower()
+                    if (
+                        (clean_slug and clean_slug in p_lower)
+                        or (safe_name and safe_name in p_lower)
+                        or f"clinic-{lead.id}" in p_lower
+                    ):
+                        return str(p)
+
+            # 3. Check PROJECTS_ROOT / Dental-Clinic-Clients
+            clients_dir = PROJECTS_ROOT / "Dental-Clinic-Clients"
+            if clients_dir.exists():
+                for p in clients_dir.glob(f"**/Clinic-{lead.id}.mp4"):
+                    if p.exists():
+                        return str(p)
+                for p in clients_dir.glob(f"**/*{clean_slug}*/*.mp4"):
+                    if p.exists():
+                        return str(p)
+        except Exception:
+            pass
+
+        return None
+
+    @staticmethod
+    def get_recording_status(db: Session, lead_id: int) -> Dict[str, Any]:
+        path_str = LeadService.find_lead_recording_path(db, lead_id)
+        if path_str and os.path.exists(path_str):
+            size_mb = round(os.path.getsize(path_str) / (1024 * 1024), 2)
+            return {
+                "has_recording": True,
+                "url": f"/api/leads/{lead_id}/recording",
+                "filename": os.path.basename(path_str),
+                "size_mb": size_mb,
+            }
+        return {
+            "has_recording": False,
+            "url": None,
+            "filename": None,
+            "size_mb": 0.0,
+        }
+
+    @staticmethod
     def wipe_leads(db: Session) -> Dict[str, Any]:
         db.query(TrackingEvent).delete()
         db.query(Commitment).delete()

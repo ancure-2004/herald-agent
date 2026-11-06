@@ -105,6 +105,8 @@ class Lead(Base):
     ai_fields = Column(JSON, default=dict)
     what_changed_summary = Column(Text, default="")
     deal_value_inr = Column(Integer, default=15000)
+    is_test = Column(Boolean, default=False, index=True)
+    test_run_id = Column(String(100), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), default=utcnow)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 

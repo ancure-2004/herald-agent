@@ -88,5 +88,30 @@ class LeadController:
         return LeadService.post_call_draft(db, lead_id, payload)
 
     @staticmethod
+    def get_recording_status(db: Session, lead_id: int) -> Dict[str, Any]:
+        return LeadService.get_recording_status(db, lead_id)
+
+    @staticmethod
+    def get_recording_response(db: Session, lead_id: int):
+        import os
+
+        from fastapi.responses import FileResponse
+
+        from app.core.exceptions import NotFoundError
+
+        path_str = LeadService.find_lead_recording_path(db, lead_id)
+        if not path_str or not os.path.exists(path_str):
+            raise NotFoundError("No walkthrough recording found for this lead.")
+        media_type = "video/webm" if path_str.endswith(".webm") else "video/mp4"
+        return FileResponse(
+            path=path_str,
+            media_type=media_type,
+            headers={
+                "Accept-Ranges": "bytes",
+                "Content-Disposition": f'inline; filename="{os.path.basename(path_str)}"',
+            },
+        )
+
+    @staticmethod
     def wipe_leads(db: Session) -> Dict[str, Any]:
         return LeadService.wipe_leads(db)

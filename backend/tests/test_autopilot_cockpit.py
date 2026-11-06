@@ -1,6 +1,5 @@
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.services.event_bus import (
     emit_pipeline_step,
     get_pipeline_state,

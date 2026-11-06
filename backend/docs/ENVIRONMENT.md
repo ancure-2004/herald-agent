@@ -26,13 +26,23 @@ Configuration is managed via `pydantic-settings` in `app/core/config.py`. At sta
 | `DIRECT_URL` | `str` | `None` | Direct connection string for serverless pooled DB |
 | `DEMO_ENGINE_BASE_URL` | `str` | `"http://localhost:3001"` | Base URL of the Dental Clinic Engine |
 | `DEFAULT_DEAL_VALUE_INR`| `int` | `15000` | Default estimated value per deal |
-| `GOOGLE_PLACES_API_KEY`| `str` | `None` | Google Places API key for lead discovery |
-| `BRAVE_API_KEY` | `str` | `None` | Brave Search API key for website checks |
-| `SERPER_API_KEY` | `str` | `None` | Serper API key for search fallback |
+| `GOOGLE_PLACES_API_KEY`| `str` | `None` | Google Places API key (soft quota guarded) |
 | `GEMINI_API_KEY` | `str` | `None` | Gemini API key for copilot & research |
 | `GROQ_API_KEY` | `str` | `None` | Groq API key for fast inference |
 | `TELEGRAM_BOT_TOKEN` | `str` | `None` | Telegram bot token for real-time mobile alerts |
 | `TELEGRAM_CHAT_ID` | `str` | `None` | Telegram user/chat ID for alert dispatch |
+| `CONTACT_USER_AGENT` | `str` | `"PersonalOS-Autopilot/2.0..."` | User-Agent identifying contact info for OSM/Overpass |
+| `DISCOVERY_PROVIDERS` | `str` | `"google,overpass,local_pool"` | Waterfall discovery order |
+| `SEARCH_MIN_INTERVAL_SECONDS` | `float` | `4.0` | Minimum throttle interval between DDGS search calls |
+| `SEARCH_CACHE_TTL_DAYS` | `int` | `30` | Search result DB cache TTL in days |
+| `OVERPASS_ENDPOINTS` | `str` | `"https://overpass-api.de..."` | Comma-separated Overpass API mirrors |
+| `OVERPASS_CACHE_TTL_HOURS` | `int` | `24` | Overpass response DB cache TTL in hours |
+| `GOOGLE_MAX_PAGES_PER_QUERY` | `int` | `1` | Maximum pages per query for Google Places |
+| `GOOGLE_MONTHLY_SOFT_LIMIT_TEXT_SEARCH` | `int` | `900` | Monthly soft quota limit for Places text search |
+| `GOOGLE_MONTHLY_SOFT_LIMIT_DETAILS` | `int` | `900` | Monthly soft quota limit for Places details |
+| `WEBSITE_CHECK_ON_UNVERIFIED` | `str` | `"hold"` | Action on unverified DDGS check: hold or allow_flagged |
+| `TEST_MODE_MAX_TARGET` | `int` | `3` | Maximum target allowed when testing_mode=true |
+| `RECORDER_TIMEOUT_PER_CLINIC_SECONDS` | `int` | `90` | Subprocess timeout in seconds per clinic recording |
 
 ---
 

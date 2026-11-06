@@ -11,7 +11,7 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from ..config import CLINICS_DATA_DIR, DENTAL_ENGINE_DIR
+from ..config import DENTAL_ENGINE_DIR
 
 logger = logging.getLogger("personal_os.autopilot.clinic_engine")
 
