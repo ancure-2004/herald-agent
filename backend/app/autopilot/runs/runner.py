@@ -90,6 +90,15 @@ def execute_autopilot_run(
 
         # Stage 1: Discovery
         candidates = stage_discovery(ctx, locality, query)
+        if not candidates and not options.locality:
+            for _ in range(4):
+                if ctx.check_cancelled():
+                    break
+                locality = resolve_locality(None)
+                query = hustle.search_query or f"dental clinic in {locality.city}"
+                candidates = stage_discovery(ctx, locality, query)
+                if candidates:
+                    break
         found_count = len(candidates)
         if options.stop_after == "discovery" or ctx.check_cancelled():
             status_str = "cancelled" if ctx.check_cancelled() else "succeeded"

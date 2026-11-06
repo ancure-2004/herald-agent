@@ -56,17 +56,27 @@ LOCALITY_PRESETS: Dict[str, Locality] = {
 # In-memory permanent cache for resolved free-text localities
 _NOMINATIM_CACHE: Dict[str, Locality] = {}
 _LAST_NOMINATIM_CALL_TS: float = 0.0
+_PRESET_KEYS = list(LOCALITY_PRESETS.keys())
+_CURRENT_PRESET_INDEX = 0
+
+
+def get_next_preset_locality() -> Locality:
+    """Returns the next locality in the preset rotation so autopilot never repeats or stalls."""
+    global _CURRENT_PRESET_INDEX
+    key = _PRESET_KEYS[_CURRENT_PRESET_INDEX % len(_PRESET_KEYS)]
+    _CURRENT_PRESET_INDEX = (_CURRENT_PRESET_INDEX + 1) % len(_PRESET_KEYS)
+    return LOCALITY_PRESETS[key]
 
 
 def resolve_locality(raw_input: Optional[str]) -> Locality:
     """
     Resolves a locality label to a Locality object with city, state and bounding box.
-    First checks exact presets; falls back to Nominatim OSM geocoding with caching and rate limit.
+    First checks exact presets; falls back to preset rotation or Nominatim OSM geocoding.
     """
     global _LAST_NOMINATIM_CALL_TS
     if not raw_input or not raw_input.strip():
-        # Default fallback
-        return LOCALITY_PRESETS["South Delhi / Saket"]
+        # Rotate through presets automatically
+        return get_next_preset_locality()
 
     norm_key = raw_input.strip()
     if norm_key in LOCALITY_PRESETS:

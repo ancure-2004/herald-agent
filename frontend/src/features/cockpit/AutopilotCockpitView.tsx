@@ -61,9 +61,9 @@ export function AutopilotCockpitView() {
 
   // Factory Runner Controls
   const [targetLeads, setTargetLeads] = useState<number>(25);
-  const [selectedLocality, setSelectedLocality] = useState<string>("Delhi NCR / Noida");
   const [isRunningPipeline, setIsRunningPipeline] = useState<boolean>(false);
   const [runnerExpanded, setRunnerExpanded] = useState<boolean>(false);
+  const [testingMode, setTestingMode] = useState<boolean>(true);
 
   // Inspection Drawer State
   const [inspectingNode, setInspectingNode] = useState<NodeInspectionData | null>(null);
@@ -254,6 +254,16 @@ export function AutopilotCockpitView() {
           setInspectingNode((curr) => (curr && curr.id === n.id ? updated : curr));
           return updated;
         }
+
+        // Sequential stage progression guard while pipeline is running:
+        if (evt.status === "RUNNING") {
+          if (n.stepNumber < stepNum && n.status !== "FAILED") {
+            return { ...n, status: "SUCCESS" };
+          }
+          if (n.stepNumber > stepNum && n.status !== "FAILED") {
+            return { ...n, status: "QUEUED" };
+          }
+        }
         return n;
       })
     );
@@ -334,16 +344,16 @@ export function AutopilotCockpitView() {
       prev.map((n) =>
         n.stepNumber === 1
           ? { ...n, status: "RUNNING", progressText: "Starting 4-Tier Waterfall Discovery...", badge: "Searching..." }
-          : { ...n, status: "IDLE" }
+          : { ...n, status: "QUEUED", badge: "Queued", progressText: "Waiting for previous stage to complete..." }
       )
     );
     appendTerminalLines([
-      `[${new Date().toLocaleTimeString()}] [FACTORY] >>> RUN REFILL BATCH Triggered for ${targetLeads} qualified leads (${selectedLocality})...`,
-      `[${new Date().toLocaleTimeString()}] [SCRAPE] Initializing 4-Tier Waterfall Discovery...`,
+      `[${new Date().toLocaleTimeString()}] [FACTORY] >>> RUN REFILL BATCH Triggered for ${targetLeads} qualified leads [TESTING MODE: ${testingMode ? "ON (Live Discovery, No Cache)" : "OFF"}]...`,
+      `[${new Date().toLocaleTimeString()}] [SCRAPE] Initializing 4-Tier Waterfall Discovery with preset rotation...`,
     ]);
     try {
-      await handleTriggerRefill(targetLeads);
-      notify(`Refill batch initiated for ${targetLeads} leads!`);
+      await handleTriggerRefill(targetLeads, testingMode);
+      notify(`Refill batch initiated for ${targetLeads} leads (${testingMode ? "Live Test Mode" : "Standard"})!`);
     } catch {
       // error handled in context
     } finally {
@@ -458,6 +468,11 @@ export function AutopilotCockpitView() {
                     <span className="text-xs font-black text-slate-900 dark:text-white">
                       ⚡ {targetLeads} Leads Needed
                     </span>
+                    {testingMode && (
+                      <span className="text-[9px] font-mono font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.2 rounded-md">
+                        LIVE TEST
+                      </span>
+                    )}
                     {runnerExpanded ? (
                       <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
                     ) : (
@@ -465,7 +480,7 @@ export function AutopilotCockpitView() {
                     )}
                   </div>
                   <div className="text-[10px] text-slate-400 font-medium truncate max-w-[170px]">
-                    {selectedLocality}
+                    Auto-Rotating Presets
                   </div>
                 </div>
               </button>
@@ -542,22 +557,34 @@ export function AutopilotCockpitView() {
                   </div>
                 </div>
 
-                {/* Locality Selector */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Target Locality:
-                  </label>
-                  <select
-                    value={selectedLocality}
-                    onChange={(e) => setSelectedLocality(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                {/* Testing Mode Toggle */}
+                <div className="pt-2 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between">
+                  <div className="pr-2">
+                    <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <span>🧪 Testing Mode (Live Real / No Cache)</span>
+                      {testingMode && (
+                        <span className="px-1.5 py-0.2 text-[9px] font-mono font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-md">
+                          LIVE ONLY
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-slate-400 leading-tight">
+                      Bypasses static candidate pool &amp; cached videos. Executes real live APIs.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setTestingMode((prev) => !prev)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      testingMode ? "bg-amber-500" : "bg-slate-200 dark:bg-slate-700"
+                    }`}
                   >
-                    <option value="Delhi NCR / Noida">Delhi NCR / Noida (Sector 76-78)</option>
-                    <option value="South Delhi / Saket">South Delhi / Saket &amp; Malviya Nagar</option>
-                    <option value="Gurugram / Cyber Hub">Gurugram / Cyber Hub &amp; DLF Phase 1-5</option>
-                    <option value="West Delhi / Rajouri Garden">West Delhi / Rajouri Garden</option>
-                    <option value="Bengaluru / Indiranagar">Bengaluru / Indiranagar &amp; Koramangala</option>
-                  </select>
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                        testingMode ? "translate-x-4" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
                 </div>
 
                 {/* Actions & Collapse */}
