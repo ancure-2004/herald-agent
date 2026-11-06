@@ -10,7 +10,7 @@ connect_args = (
     {"check_same_thread": False}
     if db_url.startswith("sqlite")
     else {
-        "connect_timeout": 5,
+        "connect_timeout": 15,
         "keepalives": 1,
         "keepalives_idle": 30,
         "keepalives_interval": 10,
