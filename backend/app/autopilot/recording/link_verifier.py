@@ -49,6 +49,7 @@ def sync_verified_links_to_batch_json(
     log_cb: Optional[Callable[[str], None]] = None,
     only_lead_ids: Optional[List[int]] = None,
     since: Optional[datetime] = None,
+    cancel_check: Optional[Callable[[], bool]] = None,
 ) -> Dict[str, Any]:
     """Audits packages, verifies live routes, and syncs working demo links to batch.json."""
 
@@ -82,6 +83,9 @@ def sync_verified_links_to_batch_json(
     with ThreadPoolExecutor(max_workers=8) as executor:
         futures = {executor.submit(_check_single, p): p for p in packages}
         for future in as_completed(futures):
+            if cancel_check and cancel_check():
+                _emit("[STOP] Verification loop stopped by cancellation signal.")
+                break
             pkg, links_ok, check_details = future.result()
             lead = pkg.lead
             slug = lead.slug

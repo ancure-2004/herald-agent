@@ -87,9 +87,13 @@ class DbCache:
             db = self_or_cls.db
             key = args[0] if len(args) > 0 else kwargs["key"]
             return DbCache._get_static(db, key, bypass=bypass)
-        else:
+        elif self_or_cls is DbCache:
             db = args[0] if len(args) > 0 else kwargs["db"]
             key = args[1] if len(args) > 1 else kwargs["key"]
+            return DbCache._get_static(db, key, bypass=bypass)
+        else:
+            db = self_or_cls
+            key = args[0] if len(args) > 0 else kwargs["key"]
             return DbCache._get_static(db, key, bypass=bypass)
 
     @classmethod
@@ -135,9 +139,15 @@ class DbCache:
             value = args[1] if len(args) > 1 else kwargs["value"]
             provider = args[2] if len(args) > 2 else kwargs.get("provider", "generic")
             DbCache._set_static(db, key, value, provider=provider, ttl_hours=ttl_hours, bypass=bypass)
-        else:
+        elif self_or_cls is DbCache:
             db = args[0] if len(args) > 0 else kwargs["db"]
             key = args[1] if len(args) > 1 else kwargs["key"]
             value = args[2] if len(args) > 2 else kwargs["value"]
             provider = args[3] if len(args) > 3 else kwargs.get("provider", "generic")
+            DbCache._set_static(db, key, value, provider=provider, ttl_hours=ttl_hours, bypass=bypass)
+        else:
+            db = self_or_cls
+            key = args[0] if len(args) > 0 else kwargs["key"]
+            value = args[1] if len(args) > 1 else kwargs["value"]
+            provider = args[2] if len(args) > 2 else kwargs.get("provider", "generic")
             DbCache._set_static(db, key, value, provider=provider, ttl_hours=ttl_hours, bypass=bypass)

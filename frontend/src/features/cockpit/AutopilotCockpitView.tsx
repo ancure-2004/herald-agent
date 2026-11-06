@@ -363,7 +363,17 @@ export function AutopilotCockpitView() {
   };
 
   // Stop pipeline
-  const handleStopPipeline = () => {
+  const handleStopPipeline = async () => {
+    try {
+      await apiFetch<{ success: boolean; message: string }>("/api/autopilot/stop", {
+        method: "POST",
+      });
+      appendTerminalLines([
+        `[${new Date().toLocaleTimeString()}] [STOP] Sent cancellation signal to backend pipeline.`,
+      ]);
+    } catch (err) {
+      console.error("Failed to signal backend cancel:", err);
+    }
     setIsRunningPipeline(false);
     setActiveTerminalJob(null);
     setNodes((prev) =>
@@ -377,6 +387,7 @@ export function AutopilotCockpitView() {
       `[${new Date().toLocaleTimeString()}] [ALERT] Pipeline execution STOPPED by Captain. Workers detached.`,
     ]);
     notify("Pipeline workers stopped.", "err");
+    await loadCockpitState();
   };
 
   // Supervisor Command handler

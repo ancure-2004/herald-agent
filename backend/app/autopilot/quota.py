@@ -122,21 +122,21 @@ class QuotaGuard:
     ) -> bool:
         if isinstance(self_or_cls, QuotaGuard):
             db = self_or_cls.db
-            if not db and args and isinstance(args[0], Session):
-                db = args[0]
-                provider = args[1]
-                sku = args[2]
-                limit = args[3] if len(args) > 3 else kwargs.get("limit")
-            else:
-                provider = args[0] if len(args) > 0 else kwargs["provider"]
-                sku = args[1] if len(args) > 1 else kwargs["sku"]
-                limit = args[2] if len(args) > 2 else kwargs.get("limit")
+            provider = args[0] if len(args) > 0 else kwargs["provider"]
+            sku = args[1] if len(args) > 1 else kwargs["sku"]
+            limit = args[2] if len(args) > 2 else kwargs.get("limit")
             return QuotaGuard._try_consume_static(db, provider, sku, limit=limit)
-        else:
+        elif self_or_cls is QuotaGuard:
             db = args[0] if len(args) > 0 else kwargs["db"]
             provider = args[1] if len(args) > 1 else kwargs["provider"]
             sku = args[2] if len(args) > 2 else kwargs["sku"]
             limit = args[3] if len(args) > 3 else kwargs.get("limit")
+            return QuotaGuard._try_consume_static(db, provider, sku, limit=limit)
+        else:
+            db = self_or_cls
+            provider = args[0] if len(args) > 0 else kwargs["provider"]
+            sku = args[1] if len(args) > 1 else kwargs["sku"]
+            limit = args[2] if len(args) > 2 else kwargs.get("limit")
             return QuotaGuard._try_consume_static(db, provider, sku, limit=limit)
 
     def get_usage(
@@ -148,9 +148,12 @@ class QuotaGuard:
         if isinstance(self_or_cls, QuotaGuard):
             db = self_or_cls.db
             provider = args[0] if len(args) > 0 else kwargs.get("provider")
-        else:
+        elif self_or_cls is QuotaGuard:
             db = args[0] if len(args) > 0 else kwargs["db"]
             provider = args[1] if len(args) > 1 else kwargs.get("provider")
+        else:
+            db = self_or_cls
+            provider = args[0] if len(args) > 0 else kwargs.get("provider")
 
         QuotaGuard.ensure_schema(db)
         month = QuotaGuard.get_current_month()

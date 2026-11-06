@@ -11,6 +11,18 @@ def stage_recording(
     ctx: RunContext,
     created_leads: List[Lead],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    if not created_leads:
+        ctx.emit("Step 5/7 [WALKTHROUGH RECORDINGS]: No new leads created to record. Skipping.")
+        emit_pipeline_step(
+            node_id="node-5",
+            step_name="WALKTHROUGH",
+            status="SUCCESS",
+            clinic_name="0 Walkthroughs (No new leads)",
+            metrics={"processed": 0, "total": 0, "badge_text": "Skipped"},
+            payload=[],
+        )
+        return {"verified_count": 0}, {"recorded_count": 0, "items": []}
+
     ctx.emit("Step 5/7 [WALKTHROUGH RECORDINGS]: Syncing batch.json and recording walkthroughs...")
     emit_pipeline_step(
         node_id="node-5",
@@ -24,7 +36,8 @@ def stage_recording(
         db=ctx.db,
         base_url=ctx.options.base_url,
         log_cb=ctx.emit,
-        only_lead_ids=new_lead_ids if new_lead_ids else None,
+        only_lead_ids=new_lead_ids,
+        cancel_check=ctx.check_cancelled,
     )
     recording_report = record_walkthrough_batch(
         db=ctx.db,
