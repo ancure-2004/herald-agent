@@ -136,7 +136,7 @@ interface CRMContextType {
   loadAll: () => Promise<void>;
   handleStageChange: (lead: Lead, newStageId: number) => Promise<void>;
   handleApproveAndSend: (lead: Lead) => Promise<void>;
-  handleTriggerRefill: (batchSize?: number) => Promise<void>;
+  handleTriggerRefill: (batchSize?: number, testingMode?: boolean, locality?: string) => Promise<void>;
   handleDayModeChange: (mode: "normal" | "away" | "off") => Promise<void>;
   handleSyncBatchLinks: () => Promise<void>;
   handleRunScout: () => Promise<void>;
@@ -376,18 +376,28 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleTriggerRefill = async (batchSize: number = 3) => {
+  const handleTriggerRefill = async (
+    batchSize: number = 3,
+    testingMode: boolean = false,
+    locality?: string
+  ) => {
     setActiveTerminalJob("7-Step Refill Batch");
+    const modeTag = testingMode ? " [TESTING MODE: LIVE-ONLY / NO CACHE]" : "";
     appendTerminalLines([
-      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Run Refill Batch Now' (7-step pipeline, target=${batchSize})...`,
+      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Run Refill Batch Now' (target=${batchSize}${locality ? `, locality=${locality}` : ""})${modeTag}...`,
     ]);
     try {
-      notify(`Running 7-step Autopilot Refill Batch (target=${batchSize})...`);
+      notify(`Running 7-step Autopilot Refill Batch (target=${batchSize})${modeTag}...`);
       const res = await apiFetch<{ run_id: number; message: string; trace_logs?: string[] }>(
         "/api/autopilot/run-refill",
         {
           method: "POST",
-          body: JSON.stringify({ hustle_id: activeHustleId, batch_size: batchSize }),
+          body: JSON.stringify({
+            hustle_id: activeHustleId,
+            batch_size: batchSize,
+            testing_mode: testingMode,
+            locality: locality,
+          }),
           timeoutMs: 300000,
         }
       );

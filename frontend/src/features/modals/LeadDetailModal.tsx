@@ -12,12 +12,14 @@ import {
   Clock,
   ExternalLink,
   Eye,
+  Film,
   Flame,
   Globe,
   Lock,
   MapPin,
   MessageSquare,
   Phone,
+  Play,
   Send,
   ShieldCheck,
   Sparkles,
@@ -60,6 +62,11 @@ export function LeadDetailModal() {
   const [callNoteInput, setCallNoteInput] = useState<string>("");
   const [postCallLoading, setPostCallLoading] = useState<boolean>(false);
 
+  // Lazy Video Walkthrough Recording Player
+  const [showVideo, setShowVideo] = useState<boolean>(false);
+  const [recordingInfo, setRecordingInfo] = useState<{ has_recording: boolean; size_mb?: number } | null>(null);
+  const [checkingRecording, setCheckingRecording] = useState<boolean>(false);
+
   // Scroll Container Reference
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
@@ -80,6 +87,19 @@ export function LeadDetailModal() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [setSelectedLeadId]);
+
+  // Lazy check recording status per selected lead; never autoplay or prebuffer
+  useEffect(() => {
+    setShowVideo(false);
+    setRecordingInfo(null);
+    if (selectedLead?.id) {
+      setCheckingRecording(true);
+      apiFetch<{ has_recording: boolean; size_mb?: number }>(`/api/leads/${selectedLead.id}/recording/status`)
+        .then((res) => setRecordingInfo(res))
+        .catch(() => setRecordingInfo({ has_recording: false }))
+        .finally(() => setCheckingRecording(false));
+    }
+  }, [selectedLead?.id]);
 
   if (!selectedLead) return null;
 
@@ -755,6 +775,84 @@ export function LeadDetailModal() {
                   {((selectedLead as any).demo_views_count ?? selectedLead.events?.length ?? 0)} times
                 </strong>
               </div>
+            </div>
+
+            {/* Walkthrough Video Recording (Lazy loaded on explicit review) */}
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#10121A] border border-slate-200 dark:border-white/[0.08] space-y-3 shadow-xs">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
+                <span className="flex items-center gap-1.5">
+                  <Film className="w-3.5 h-3.5 text-pink-500" />
+                  <span>Walkthrough Video Recording</span>
+                </span>
+                {checkingRecording ? (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400">
+                    Checking...
+                  </span>
+                ) : recordingInfo?.has_recording ? (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-500/20">
+                    {recordingInfo.size_mb ? `${recordingInfo.size_mb} MB (Ready)` : "Ready (MP4)"}
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400">
+                    Pending / Optional
+                  </span>
+                )}
+              </div>
+
+              {showVideo ? (
+                <div className="space-y-2">
+                  <video
+                    controls
+                    autoPlay
+                    playsInline
+                    preload="none"
+                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-black aspect-video max-h-64 object-contain shadow-inner"
+                    src={`/api/leads/${selectedLead.id}/recording`}
+                  >
+                    Your browser does not support HTML5 video streaming.
+                  </video>
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <a
+                      href={`/api/leads/${selectedLead.id}/recording`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[11px] font-medium text-pink-600 dark:text-pink-400 hover:underline flex items-center gap-1"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>Open Video in New Tab</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setShowVideo(false)}
+                      className="text-[11px] font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white"
+                    >
+                      Close Video
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowVideo(true)}
+                    className="flex-1 p-2.5 rounded-xl bg-pink-50/80 hover:bg-pink-100/80 dark:bg-pink-950/40 dark:hover:bg-pink-900/50 border border-pink-200 dark:border-pink-500/30 flex items-center justify-center gap-2 text-xs font-bold text-pink-700 dark:text-pink-300 transition-colors"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>Watch Walkthrough Recording</span>
+                  </button>
+                  {recordingInfo?.has_recording && (
+                    <a
+                      href={`/api/leads/${selectedLead.id}/recording`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-[#0E1017] dark:hover:bg-slate-800/70 border border-slate-200/80 dark:border-white/[0.06] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                      title="Open full video directly in browser tab"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Clinic Dossier & Verified Facts */}
