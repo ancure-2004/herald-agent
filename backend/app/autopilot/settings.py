@@ -32,6 +32,11 @@ class AutopilotSettings:
     test_mode_max_target: int = int(os.getenv("TEST_MODE_MAX_TARGET", "3"))
     recorder_timeout_per_clinic_seconds: int = int(os.getenv("RECORDER_TIMEOUT_PER_CLINIC_SECONDS", "180"))
     contact_user_agent: str = os.getenv("CONTACT_USER_AGENT", "PersonalOS-Autopilot/2.0 (contact: info@example.com)")
+    google_places_api_key: str = field(
+        default_factory=lambda: (
+            os.getenv("GOOGLE_PLACES_API_KEY") or getattr(__import__("app.core.config", fromlist=["get_settings"]).get_settings(), "GOOGLE_PLACES_API_KEY", "") or ""
+        ).strip()
+    )
 
 
 def get_autopilot_settings() -> AutopilotSettings:

@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import urllib.request
 from typing import Any, Dict, List, Optional
 
@@ -104,7 +103,12 @@ class GooglePlacesProvider:
     name = "google"
 
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = (api_key or os.getenv("GOOGLE_PLACES_API_KEY", "")).strip()
+        if api_key:
+            self.api_key = api_key.strip()
+        else:
+            from app.autopilot.settings import get_autopilot_settings
+
+            self.api_key = get_autopilot_settings().google_places_api_key
 
     def search_candidates(
         self,
@@ -116,11 +120,16 @@ class GooglePlacesProvider:
     ) -> List[Candidate]:
         if not self.api_key:
             return []
+        if db is not None:
+            can_call = QuotaGuard.try_consume(db, "google_places", "text_search")
+            if not can_call:
+                logger.warning("%s Google Places search monthly quota exceeded, skipping call.", TAG_QUOTA)
+                return []
         results_raw = google_places_search(
             query=query,
             api_key=self.api_key,
             max_results=min(20, target_count * 2),
-            db=db,
+            db=None,
         )
         candidates: List[Candidate] = []
         for r in results_raw:
