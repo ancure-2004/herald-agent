@@ -128,7 +128,7 @@ class GooglePlacesProvider:
         results_raw = google_places_search(
             query=query,
             api_key=self.api_key,
-            max_results=min(20, target_count * 2),
+            max_results=20,
             db=None,
         )
         candidates: List[Candidate] = []

@@ -29,7 +29,7 @@ class AutopilotSettings:
     google_monthly_soft_limit_text_search: int = int(os.getenv("GOOGLE_MONTHLY_SOFT_LIMIT_TEXT_SEARCH", "900"))
     google_monthly_soft_limit_details: int = int(os.getenv("GOOGLE_MONTHLY_SOFT_LIMIT_DETAILS", "900"))
     website_check_on_unverified: str = os.getenv("WEBSITE_CHECK_ON_UNVERIFIED", "hold")  # "hold" | "allow_flagged"
-    test_mode_max_target: int = int(os.getenv("TEST_MODE_MAX_TARGET", "3"))
+    test_mode_max_target: int = int(os.getenv("TEST_MODE_MAX_TARGET", "10"))
     recorder_timeout_per_clinic_seconds: int = int(os.getenv("RECORDER_TIMEOUT_PER_CLINIC_SECONDS", "180"))
     contact_user_agent: str = os.getenv("CONTACT_USER_AGENT", "PersonalOS-Autopilot/2.0 (contact: info@example.com)")
     google_places_api_key: str = field(

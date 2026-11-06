@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.autopilot.discovery.localities import resolve_locality
+from app.autopilot.discovery.localities import LOCALITY_PRESETS, resolve_locality
 from app.autopilot.quota import QuotaGuard
 from app.autopilot.runs.context import RunContext
 from app.autopilot.runs.job_manager import JobManager
@@ -18,7 +18,7 @@ from app.autopilot.runs.stages import (
 )
 from app.autopilot.search.ddgs_provider import DDGSSearchProvider
 from app.autopilot.settings import get_autopilot_settings
-from app.autopilot.types import RunOptions
+from app.autopilot.types import Candidate, RunOptions, VerifiedCandidate
 from app.models.entities import Hustle, Lead, RunLog, Stage
 from app.services.event_bus import emit_pipeline_step, set_autopilot_running
 
@@ -88,25 +88,43 @@ def execute_autopilot_run(
         locality = resolve_locality(options.locality)
         query = hustle.search_query or f"dental clinic in {locality.city}"
 
-        # Stage 1: Discovery
-        candidates = stage_discovery(ctx, locality, query)
-        if not candidates and not options.locality:
-            for _ in range(4):
-                if ctx.check_cancelled():
-                    break
+        # Discovery & Verification loop: probe across preset localities until target_count is reached
+        search_prov = DDGSSearchProvider()
+        verified: List[VerifiedCandidate] = []
+        all_candidates: List[Candidate] = []
+        drop_counts: Dict[str, int] = {}
+        dropped_items: List[Dict[str, Any]] = []
+
+        max_attempts = len(LOCALITY_PRESETS) if not options.locality else 1
+        for attempt in range(max_attempts):
+            if ctx.check_cancelled() or len(verified) >= options.target_count:
+                break
+            if attempt > 0:
                 locality = resolve_locality(None)
                 query = hustle.search_query or f"dental clinic in {locality.city}"
-                candidates = stage_discovery(ctx, locality, query)
-                if candidates:
-                    break
-        found_count = len(candidates)
+                ctx.emit(
+                    f"[WATERFALL] Target not yet met ({len(verified)}/{options.target_count}). "
+                    f"Advancing discovery to next preset: '{locality.label}'..."
+                )
+
+            batch_candidates = stage_discovery(ctx, locality, query)
+            all_candidates.extend(batch_candidates)
+            if not batch_candidates:
+                continue
+
+            v_batch, d_counts, d_items = stage_verification(
+                ctx, batch_candidates, locality, search_prov, existing_verified=verified
+            )
+            verified.extend(v_batch)
+            for k, v in d_counts.items():
+                drop_counts[k] = drop_counts.get(k, 0) + v
+            dropped_items.extend(d_items)
+
+        found_count = len(all_candidates)
         if options.stop_after == "discovery" or ctx.check_cancelled():
             status_str = "cancelled" if ctx.check_cancelled() else "succeeded"
             return _finalize_run(db, run_log, ctx, status_str, found_count, 0, {}, [], [], {}, {})
 
-        # Stage 2: Verification
-        search_prov = DDGSSearchProvider()
-        verified, drop_counts, dropped_items = stage_verification(ctx, candidates, locality, search_prov)
         if options.stop_after == "verification" or ctx.check_cancelled():
             status_str = "cancelled" if ctx.check_cancelled() else "succeeded"
             return _finalize_run(

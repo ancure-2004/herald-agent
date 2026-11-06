@@ -69,9 +69,11 @@ def stage_verification(
     candidates: List[Candidate],
     locality: Locality,
     search_provider: Optional[WebSearchProvider],
+    existing_verified: Optional[List[VerifiedCandidate]] = None,
 ) -> Tuple[List[VerifiedCandidate], Dict[str, int], List[Dict[str, Any]]]:
+    already_count = len(existing_verified or [])
     ctx.emit(
-        f"Step 2/7 [VERIFICATION]: Probing candidates for no-website & WhatsApp (target={ctx.options.target_count})..."
+        f"Step 2/7 [VERIFICATION]: Probing candidates for no-website & WhatsApp (target={ctx.options.target_count}, verified={already_count})..."
     )
     emit_pipeline_step(
         node_id="node-2",
@@ -79,19 +81,24 @@ def stage_verification(
         status="RUNNING",
         clinic_name="Probing candidates...",
         metrics={
-            "processed": 0,
+            "processed": already_count,
             "total": ctx.options.target_count,
-            "badge_text": f"Probing (0/{ctx.options.target_count})",
+            "badge_text": f"Probing ({already_count}/{ctx.options.target_count})",
         },
         payload=[],
     )
     seen_phones, seen_names, _ = get_existing_db_identities(ctx.db, ignore_test_leads=not ctx.options.testing_mode)
+    if existing_verified:
+        for ev in existing_verified:
+            seen_phones.add(ev.ten_digit)
+            seen_names.add(ev.full_clean_name)
+
     verified: List[VerifiedCandidate] = []
     drop_counts: Dict[str, int] = {}
     dropped_items: List[Dict[str, Any]] = []
 
     for idx, c in enumerate(candidates, 1):
-        if ctx.check_cancelled() or len(verified) >= ctx.options.target_count:
+        if ctx.check_cancelled() or (already_count + len(verified)) >= ctx.options.target_count:
             break
         emit_pipeline_step(
             node_id="node-2",
@@ -99,7 +106,7 @@ def stage_verification(
             status="RUNNING",
             clinic_name=c.name,
             metrics={
-                "processed": len(verified),
+                "processed": already_count + len(verified),
                 "total": ctx.options.target_count,
                 "badge_text": f"Probing ({idx}/{len(candidates)})",
             },
