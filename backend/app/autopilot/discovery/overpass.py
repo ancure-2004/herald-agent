@@ -139,7 +139,7 @@ class OverpassProvider:
         for attempt in range(min(3, len(self.endpoints))):
             endpoint = self.endpoints[attempt % len(self.endpoints)]
             try:
-                with httpx.Client(timeout=60.0) as client:
+                with httpx.Client(timeout=15.0) as client:
                     resp = client.post(endpoint, data={"data": query}, headers=headers)
                     if resp.status_code == 200:
                         data = resp.json()

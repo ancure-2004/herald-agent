@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Dict, Iterator, List, Optional, Set
+from typing import Any, Dict, Iterator, List, Optional, Set
 
 from sqlalchemy.orm import Session
 
@@ -33,12 +33,14 @@ class CandidateStream:
         target_count: int = 10,
         db: Optional[Session] = None,
         testing_mode: bool = False,
+        emit_cb: Optional[Any] = None,
     ):
         self.query = query
         self.locality = locality
         self.target_count = target_count
         self.db = db
         self.testing_mode = testing_mode
+        self.emit_cb = emit_cb
 
         if providers is not None:
             self.providers = providers
@@ -68,9 +70,15 @@ class CandidateStream:
         for provider in self.providers:
             # Skip local_pool in testing mode
             if self.testing_mode and provider.name == "local_pool":
+                if self.emit_cb:
+                    self.emit_cb(f"[{TAG_SCRAPE}] Skipped local_pool (Testing Mode: live-only)")
                 continue
 
-            logger.info("%s Querying discovery provider '%s' for '%s'", TAG_SCRAPE, provider.name, self.locality.label)
+            msg = f"[{TAG_SCRAPE}] Querying provider '{provider.name}' for '{self.locality.label}'..."
+            logger.info(msg)
+            if self.emit_cb:
+                self.emit_cb(msg)
+
             if provider.name not in self.providers_used:
                 self.providers_used.append(provider.name)
 
@@ -82,8 +90,14 @@ class CandidateStream:
                     db=self.db,
                     testing_mode=self.testing_mode,
                 )
+                if self.emit_cb:
+                    self.emit_cb(
+                        f"[{TAG_SCRAPE}] Provider '{provider.name}' yielded {len(candidates)} raw candidates."
+                    )
             except Exception as e:
                 logger.warning("Provider '%s' failed: %s", provider.name, e)
+                if self.emit_cb:
+                    self.emit_cb(f"[{TAG_SCRAPE}] Provider '{provider.name}' encountered error: {e}")
                 continue
 
             for cand in candidates:

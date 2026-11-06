@@ -56,6 +56,16 @@ def verify_single_candidate(
         logger.info("%s '%s' -> %s", TAG_DROP, title, chain_reason)
         return None, {"name": title, "reason": "hospital_or_chain", "detail": chain_reason}
 
+    # Fetch details if survivor from Google Places lacks phone
+    if not candidate.phone and candidate.place_id and settings.google_places_api_key:
+        from app.autopilot.discovery.google_places import google_place_details
+
+        details = google_place_details(candidate.place_id, settings.google_places_api_key, db=db)
+        if details.get("nationalPhoneNumber"):
+            candidate.phone = details["nationalPhoneNumber"]
+        if details.get("regularOpeningHours") and not candidate.opening_hours:
+            candidate.opening_hours = details["regularOpeningHours"]
+
     # 3. Valid Indian mobile check
     is_valid_phone, norm_phone, ten_digit = check_phone_is_valid_indian_mobile(candidate.phone)
     if not is_valid_phone or not norm_phone:

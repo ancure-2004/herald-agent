@@ -41,6 +41,7 @@ def stage_discovery(
         target_count=ctx.options.target_count,
         db=ctx.db,
         testing_mode=ctx.options.testing_mode,
+        emit_cb=ctx.emit,
     )
     candidates: List[Candidate] = []
     max_candidates = max(20, ctx.options.target_count * 4)
@@ -117,10 +118,12 @@ def stage_verification(
             verified.append(res)
             seen_phones.add(res.ten_digit)
             seen_names.add(res.full_clean_name)
+            ctx.emit(f"[VERIFY] ✓ '{res.candidate.name}' ({res.norm_phone}) verified: zero official website found.")
         elif drop_info:
             r = drop_info.get("reason", "unknown")
             drop_counts[r] = drop_counts.get(r, 0) + 1
             dropped_items.append(drop_info)
+            ctx.emit(f"[DROP] ✗ '{c.name}': {drop_info.get('detail') or r}")
 
     emit_pipeline_step(
         node_id="node-2",
