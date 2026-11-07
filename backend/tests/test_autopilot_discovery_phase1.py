@@ -495,15 +495,6 @@ def test_discovery_providers_default_and_waterfall_streamlining():
     fallback_provider.search_candidates.assert_called_once()
 
 
-def test_overpass_strict_timeout_and_fallback():
-    """Verifies overpass query format uses short timeout."""
-    from app.autopilot.discovery.overpass import build_overpass_query
-
-    bbox = (28.565, 77.215, 28.580, 77.230)
-    query = build_overpass_query(bbox)
-    assert "[timeout:5]" in query
-
-
 def test_generic_stopword_names_not_cached_or_falsely_deduped(in_memory_db):
     """
     Generic stopword names ('dentalclinic', 'dentist', etc.) must NEVER:

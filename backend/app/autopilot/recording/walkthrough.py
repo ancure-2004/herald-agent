@@ -13,7 +13,7 @@ from app.autopilot.config import DENTAL_RECORDER_DIR
 from app.autopilot.log_tags import TAG_ERROR, TAG_MP4, TAG_VIDEO
 from app.autopilot.recording.naming import recording_name
 from app.autopilot.settings import get_autopilot_settings
-from app.models.entities import Lead
+from app.models.entities import Lead, Package
 from app.services.event_bus import emit_pipeline_step
 from app.services.lead_service import LeadService
 
@@ -74,7 +74,11 @@ def record_walkthrough_batch(
             and os.path.getsize(existing_path) > 1000
         ):
             _emit(f"{TAG_VIDEO} Walkthrough video already exists for '{lead.name}': {os.path.basename(existing_path)}")
-            pkg = lead.packages[-1] if lead.packages else None
+            pkg = (
+                lead.packages[-1]
+                if lead.packages
+                else db.query(Package).filter(Package.lead_id == lead.id).order_by(Package.id.desc()).first()
+            )
             if pkg:
                 pkg.video_file_path = existing_path
                 pkg.video_size_mb = round(os.path.getsize(existing_path) / (1024 * 1024), 2)
@@ -181,7 +185,11 @@ def record_walkthrough_batch(
 
             if found_p:
                 recorded_count += 1
-                pkg = lead.packages[-1] if lead.packages else None
+                pkg = (
+                lead.packages[-1]
+                if lead.packages
+                else db.query(Package).filter(Package.lead_id == lead.id).order_by(Package.id.desc()).first()
+            )
                 if pkg:
                     pkg.video_file_path = str(found_p)
                     pkg.video_size_mb = round(found_p.stat().st_size / (1024 * 1024), 2)

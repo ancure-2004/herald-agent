@@ -81,15 +81,10 @@ class Settings(BaseSettings):
 
     # Autopilot Pipeline Settings
     DISCOVERY_PROVIDERS: str = Field(
-        default="google,overpass,local_pool", description="Comma-separated discovery provider order"
+        default="google,local_pool", description="Comma-separated discovery provider order"
     )
     SEARCH_MIN_INTERVAL_SECONDS: float = Field(default=4.0, description="Minimum interval between DDGS search calls")
     SEARCH_CACHE_TTL_DAYS: int = Field(default=30, description="Search cache TTL in days")
-    OVERPASS_ENDPOINTS: str = Field(
-        default="https://overpass-api.de/api/interpreter,https://lz4.overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter",
-        description="Comma-separated Overpass API endpoints",
-    )
-    OVERPASS_CACHE_TTL_HOURS: int = Field(default=24, description="Overpass response cache TTL in hours")
     GOOGLE_MAX_PAGES_PER_QUERY: int = Field(
         default=1, description="Max pagination pages per Google Places search query"
     )

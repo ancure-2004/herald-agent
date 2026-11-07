@@ -12,7 +12,7 @@ logger = logging.getLogger("personal_os.autopilot.cache")
 
 class DbCache:
     """
-    Database-backed cache for search and Overpass queries.
+    Database-backed cache for search queries.
     Key = hash(provider + normalized query/params).
     Supports both DbCache(db).get(key, bypass=...) and DbCache.get(db, key, bypass=...).
     """

@@ -77,26 +77,16 @@ def check_candidate_website(
     """
     clean_name = clean_clinic_name(candidate.name)
 
-    # 1. Google Maps website field
-    if candidate.website and not ("OSM" in candidate.source_tier or "Overpass" in candidate.source_tier):
+    # 1. Candidate website field
+    if candidate.website:
         host = registered_host(candidate.website)
         if host and not is_directory_domain(host):
+            src = "osm_tag" if "OSM" in str(candidate.source_tier or "") else "maps_field"
             return WebsiteVerdict(
                 status="HAS_SITE",
                 domain=host,
-                evidence=[f"Maps field websiteUri: {candidate.website}"],
-                source="maps_field",
-            ), []
-
-    # 2. OSM website tag
-    if candidate.website and ("OSM" in candidate.source_tier or "Overpass" in candidate.source_tier):
-        host = registered_host(candidate.website)
-        if host and not is_directory_domain(host):
-            return WebsiteVerdict(
-                status="HAS_SITE",
-                domain=host,
-                evidence=[f"OSM website tag: {candidate.website}"],
-                source="osm_tag",
+                evidence=[f"Candidate website: {candidate.website}"],
+                source=src,
             ), []
 
     # 3. Web Search check

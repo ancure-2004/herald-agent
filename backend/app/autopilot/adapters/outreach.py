@@ -1,7 +1,7 @@
 """
 Outreach Generation Adapter
 ---------------------------
-Generates personalized, multi-channel outreach copy (WhatsApp, Instagram, Email)
+Generates personalized 100% WhatsApp outreach copy
 for dental clinic prospects based on clinic details and demo URLs.
 """
 
@@ -98,70 +98,4 @@ def generate_whatsapp_pitch(clinic: Dict[str, Any], base_url: Optional[str] = No
         "text_hook": hook,
         "video_caption": caption,
         "full_text": f"{hook}\n\n---\n\n{caption}",
-    }
-
-
-def generate_instagram_pitch(clinic: Dict[str, Any], base_url: Optional[str] = None) -> Dict[str, str]:
-    """Generates Instagram DM invite and reply kit."""
-    c = format_clinic_context(clinic, base_url)
-    rating_line = ""
-    if c["rating"]:
-        revs_part = f" aur {c['revs']} patient reviews" if c["revs"] else ""
-        rating_line = f"Google par {c['name']} ki {c['rating']}/5 rating{revs_part} dekh kar kaafi accha laga.\n\n"
-
-    dm = (
-        f"Namaste {c['doc_salutation']}\n\n"
-        f"{rating_line}"
-        f"Humne aapke clinic ke liye 3 alag visual styles mein ek modern website ready ki hai. Sample design ka live preview link ye raha:\n"
-        f"{c['demo_url']}\n\n"
-        f"Baqi do designs bhi live hain. Aapko ye design kaisa laga?"
-    )
-
-    reply_kit = (
-        f"Ye {c['name']} ke live sample ka screen recording preview hai.\n\n"
-        f"Aapke clinic ke 3 styles yahan dekh sakte hain:\n"
-        f"• Modern: {c['modern_url']}\n"
-        f"• Premium: {c['premium_url']}\n"
-        f"• Warm: {c['warm_url']}\n\n"
-        f"Aapke clinic brand ke liye kaun sa design sabse accha rahega?"
-    )
-
-    return {
-        "channel": "Instagram",
-        "initial_dm": dm,
-        "reply_kit": reply_kit,
-    }
-
-
-def generate_email_pitch(clinic: Dict[str, Any], base_url: Optional[str] = None) -> Dict[str, str]:
-    """Generates personalized Email subject and HTML/Plain-text body."""
-    c = format_clinic_context(clinic, base_url)
-    subject = f"Sample Website Designs for {c['name']}"
-
-    rating_line = ""
-    if c["rating"]:
-        revs_part = f" aur {c['revs']} patient reviews" if c["revs"] else ""
-        rating_line = (
-            f"Google par {c['name']} ({c['loc']}) ki {c['rating']}★ rating{revs_part} dekh kar kaafi accha laga.\n\n"
-        )
-
-    body = (
-        f"Namaste {c['doc_salutation']},\n\n"
-        f"{rating_line}"
-        f"Humne aapke clinic ke liye 3 distinct visual styles mein interactive website layouts ready kiye hain, jisme mobile-first booking, verified services aur patient proof beautifully arranged hain:\n\n"
-        f"• Design 1 (Modern Precision): {c['modern_url']}\n"
-        f"• Design 2 (Premium Boutique): {c['premium_url']}\n"
-        f"• Design 3 (Warm Family Care): {c['warm_url']}\n\n"
-        f"Inme se jo bhi aesthetic aapke practice ke liye best fit ho, hum wahi finalize kar denge. Aapko inme se kaun sa design sabse pasand aaya?\n\n"
-        f"Warm regards,\n"
-        f"Ankur Tyagi\n"
-        f"Web Architect & Healthcare UI Designer\n"
-        f"Delhi NCR | +91 95823 90243\n\n"
-        f"If you prefer not to receive updates regarding website designs, please reply 'opt-out' and we will remove your contact immediately."
-    )
-
-    return {
-        "channel": "Email",
-        "subject": subject,
-        "body": body,
     }

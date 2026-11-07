@@ -419,10 +419,14 @@ class LeadService:
         if not lead:
             raise NotFoundError("Lead not found.")
 
-        # 1. Check Package video_file_path if it exists on disk
+        # 1. Check Package video_file_path if it exists on disk and is valid
         if lead.packages:
-            for pkg in lead.packages:
-                if pkg.video_file_path and os.path.exists(pkg.video_file_path):
+            for pkg in reversed(lead.packages):
+                if (
+                    pkg.video_file_path
+                    and os.path.exists(pkg.video_file_path)
+                    and os.path.getsize(pkg.video_file_path) > 1000
+                ):
                     return pkg.video_file_path
 
         # 2. Check DENTAL_RECORDER_DIR recordings
@@ -433,13 +437,14 @@ class LeadService:
 
             clean_slug = (lead.slug or "").lower().strip()
             safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "-", lead.name or "").strip("-").lower()
+            canonical_name = f"Clinic-{lead.id}-{clean_slug}"
 
             recordings_dir = DENTAL_RECORDER_DIR / "recordings"
             if recordings_dir.exists():
                 for ext in [".mp4", ".webm"]:
-                    for name_cand in [clean_slug, safe_name, f"Clinic-{lead.id}"]:
+                    for name_cand in [canonical_name, f"Clinic-{clean_slug}", clean_slug, safe_name]:
                         p = recordings_dir / f"{name_cand}{ext}"
-                        if p.exists():
+                        if p.exists() and p.stat().st_size > 1000:
                             return str(p)
 
                 for p in recordings_dir.glob("*.mp4"):
@@ -447,18 +452,14 @@ class LeadService:
                     if (
                         (clean_slug and clean_slug in p_lower)
                         or (safe_name and safe_name in p_lower)
-                        or f"clinic-{lead.id}" in p_lower
-                    ):
+                    ) and p.stat().st_size > 1000:
                         return str(p)
 
-            # 3. Check PROJECTS_ROOT / Dental-Clinic-Clients
+            # 3. Check PROJECTS_ROOT / Dental-Clinic-Clients (strictly require slug match to avoid cross-batch collision)
             clients_dir = PROJECTS_ROOT / "Dental-Clinic-Clients"
-            if clients_dir.exists():
-                for p in clients_dir.glob(f"**/Clinic-{lead.id}.mp4"):
-                    if p.exists():
-                        return str(p)
+            if clients_dir.exists() and clean_slug:
                 for p in clients_dir.glob(f"**/*{clean_slug}*/*.mp4"):
-                    if p.exists():
+                    if p.exists() and p.stat().st_size > 1000:
                         return str(p)
         except Exception:
             pass

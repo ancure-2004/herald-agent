@@ -8,7 +8,6 @@ from app.autopilot.discovery.dedup import GENERIC_STOPWORD_NAMES, DiscoveryDedup
 from app.autopilot.discovery.google_places import GooglePlacesProvider, GoogleQuotaExhausted
 from app.autopilot.discovery.local_pool import LocalPoolProvider
 from app.autopilot.discovery.localities import Locality
-from app.autopilot.discovery.overpass import OverpassProvider
 from app.autopilot.log_tags import TAG_SCRAPE
 from app.autopilot.settings import get_autopilot_settings
 from app.autopilot.types import Candidate
@@ -85,7 +84,6 @@ class CandidateStream:
         order = settings.discovery_providers
         prov_map: Dict[str, DiscoveryProvider] = {
             "google": GooglePlacesProvider(),
-            "overpass": OverpassProvider(),
             "local_pool": LocalPoolProvider(),
         }
         res: List[DiscoveryProvider] = []

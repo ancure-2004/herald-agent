@@ -10,11 +10,10 @@ import sys
 import traceback
 from typing import Any, Dict, List
 
-from app.database import SessionLocal
-from app.models import Hustle, Lead, Stage
-from app.agents import run_scout_agent, run_auditor_agent, run_closer_agent
+from app.agents import run_auditor_agent, run_closer_agent, run_scout_agent
 from app.autopilot import run_live_autopilot_discovery
-
+from app.database import SessionLocal
+from app.models import Hustle, Lead
 
 TOOLS: List[Dict[str, Any]] = [
     {

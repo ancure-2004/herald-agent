@@ -13,8 +13,6 @@ from sqlalchemy.orm import Session
 from app.autopilot.adapters import (
     default_clinic_engine,
     default_recorder,
-    generate_email_pitch,
-    generate_instagram_pitch,
     generate_whatsapp_pitch,
 )
 from app.autopilot.build.payload import (
@@ -112,8 +110,6 @@ class DentalPipeline:
         }
         outreach = {
             "whatsapp": generate_whatsapp_pitch(clinic_info, base_url),
-            "instagram": generate_instagram_pitch(clinic_info, base_url),
-            "email": generate_email_pitch(clinic_info, base_url),
         }
 
         # 5. Queue in batch.json if verified

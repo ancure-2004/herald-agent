@@ -331,7 +331,12 @@ class DemoFactoryService:
                 lead.custom_fields = custom_fields
                 lead.what_changed_summary = f"Built 3 live designs (/demo/{lead.slug}). Quality score: {q_score}."
 
-                pkg = db.query(Package).filter(Package.lead_id == lead.id).first()
+                pkg = (
+                    db.query(Package)
+                    .filter(Package.lead_id == lead.id)
+                    .order_by(Package.id.desc())
+                    .first()
+                )
                 asset_links = {
                     "choice_page": f"{base_url}/demo/{lead.slug}",
                     "modern": f"{base_url}/modern/{lead.slug}",
@@ -402,7 +407,12 @@ class DemoFactoryService:
             # d) State Transition & Immediate Commit
             built_leads: List[Dict[str, Any]] = []
             for lead in built_lead_objects:
-                pkg = db.query(Package).filter(Package.lead_id == lead.id).first()
+                pkg = (
+                    db.query(Package)
+                    .filter(Package.lead_id == lead.id)
+                    .order_by(Package.id.desc())
+                    .first()
+                )
                 video_path = pkg.video_file_path if pkg else None
                 video_ok = bool(
                     video_path

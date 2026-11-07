@@ -34,8 +34,6 @@ ALLOWED_CLAIM_SOURCES: Set[str] = {
     "Google Maps Title",
     "Verified Search Snippet",
     "Standard Clinical Procedure",
-    "OpenStreetMap Overpass",
-    "OSM Overpass",
 }
 
 FORBIDDEN_MEDICAL_CLAIMS: List[str] = ALWAYS_BANNED_CLAIMS

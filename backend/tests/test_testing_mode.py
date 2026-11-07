@@ -46,7 +46,6 @@ def test_testing_mode_allows_local_pool_fallback():
 
     with (
         patch("app.autopilot.discovery.google_places.google_places_search", return_value=[]),
-        patch("app.autopilot.discovery.overpass.OverpassProvider.search_candidates", return_value=[]),
         patch("app.autopilot.discovery.local_pool.playwright_maps_fallback_pool") as mock_pw,
         patch("app.autopilot.runs.runner.stage_verification", return_value=([], {}, [])),
     ):

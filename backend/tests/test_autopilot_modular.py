@@ -9,8 +9,6 @@ from pathlib import Path
 from app.autopilot.adapters.clinic_engine import ClinicEngineAdapter
 from app.autopilot.adapters.outreach import (
     format_clinic_context,
-    generate_email_pitch,
-    generate_instagram_pitch,
     generate_whatsapp_pitch,
     get_clean_salutation,
 )
@@ -60,16 +58,6 @@ def test_outreach_salutation_and_templates():
     assert wa["channel"] == "WhatsApp"
     assert "Namaste Dr. Rajeev Verma Ji 🙏" in wa["text_hook"]
     assert "http://localhost:3001/warm/dentique-dental-care" in wa["video_caption"]
-
-    # Instagram Pitch
-    ig = generate_instagram_pitch(sample_clinic, base_url="http://localhost:3001")
-    assert ig["channel"] == "Instagram"
-    assert "Namaste Dr. Rajeev Verma Ji" in ig["initial_dm"]
-
-    # Email Pitch
-    em = generate_email_pitch(sample_clinic, base_url="http://localhost:3001")
-    assert em["channel"] == "Email"
-    assert "Sample Website Designs for Dentique Dental Care" in em["subject"]
 
 
 def test_batch_recorder_adapter(tmp_path):
