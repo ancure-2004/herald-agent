@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -6,12 +7,10 @@ from sqlalchemy.pool import StaticPool
 
 from app.autopilot.discovery.google_places import GooglePlacesProvider, GoogleQuotaExhausted
 from app.autopilot.discovery.local_pool import LocalPoolProvider, is_candidate_in_locality
-from app.autopilot.discovery.localities import Locality, resolve_locality
-from app.autopilot.discovery.service import DiscoveryService
+from app.autopilot.discovery.localities import Locality
 from app.autopilot.discovery.waterfall import CandidateStream
 from app.autopilot.runs.runner import execute_autopilot_run
-from app.autopilot.search.cache import DbCache
-from app.autopilot.types import Candidate, RunOptions
+from app.autopilot.types import RunOptions
 from app.db.schema_migrations import ensure_schema_columns
 from app.db.session import Base
 from app.models.entities import Hustle, Lead, Package, Stage

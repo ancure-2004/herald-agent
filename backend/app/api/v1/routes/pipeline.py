@@ -81,6 +81,52 @@ def discover_leads(
     return res
 
 
+@router.post("/autopilot/build-batch")
+def build_batch(
+    response: Response,
+    payload: Optional[Dict[str, Any]] = Body(None),
+    hustle_id: Optional[int] = Query(None),
+    batch_size: Optional[int] = Query(None),
+    testing_mode: Optional[bool] = Query(None),
+    async_mode: Optional[bool] = Query(None),
+    db: Session = Depends(get_db),
+):
+    h_id = 1
+    if payload and "hustle_id" in payload:
+        h_id = int(payload["hustle_id"])
+    elif hustle_id is not None:
+        h_id = hustle_id
+
+    b_size = 10
+    if payload and "batch_size" in payload:
+        b_size = int(payload["batch_size"])
+    elif batch_size is not None:
+        b_size = batch_size
+
+    t_mode = False
+    if payload and "testing_mode" in payload:
+        t_mode = bool(payload["testing_mode"])
+    elif testing_mode is not None:
+        t_mode = testing_mode
+
+    is_async = False
+    if payload and "async_mode" in payload:
+        is_async = bool(payload["async_mode"])
+    elif async_mode is not None:
+        is_async = async_mode
+
+    res = PipelineController.build_batch(
+        db=db,
+        hustle_id=h_id,
+        batch_size=b_size,
+        testing_mode=t_mode,
+        async_mode=is_async,
+    )
+    if is_async:
+        response.status_code = status.HTTP_202_ACCEPTED
+    return res
+
+
 @router.post("/autopilot/trigger-refill")
 @router.post("/autopilot/run-refill")
 def trigger_autopilot_refill(

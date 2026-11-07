@@ -2,7 +2,6 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.autopilot.discovery.google_places import GooglePlacesProvider

@@ -110,6 +110,51 @@ class PipelineService:
         )
 
     @classmethod
+    def build_batch(
+        cls,
+        db: Session,
+        hustle_id: int = 1,
+        batch_size: int = 10,
+        testing_mode: bool = False,
+        async_mode: bool = False,
+    ) -> Dict[str, Any]:
+        from app.autopilot.build.factory_service import DemoFactoryService
+
+        if async_mode:
+            active_id = JobManager.get_active_run_id()
+            if active_id is not None:
+                raise HTTPException(status_code=409, detail=f"Run #{active_id} already in progress")
+
+            def _bg_worker():
+                with SessionLocal() as bg_db:
+                    try:
+                        DemoFactoryService.build_batch(
+                            db=bg_db,
+                            hustle_id=hustle_id,
+                            batch_size=batch_size,
+                            testing_mode=testing_mode,
+                            log_cb=lambda msg: emit_terminal_log("DEMO-FACTORY", msg),
+                        )
+                    except Exception as ex:
+                        logger.error("Async demo factory build batch failed: %s", ex)
+
+            t = threading.Thread(target=_bg_worker, daemon=True)
+            t.start()
+            return {
+                "status": "running",
+                "async": True,
+                "message": "Autopilot demo factory batch build started in background thread",
+            }
+
+        return DemoFactoryService.build_batch(
+            db=db,
+            hustle_id=hustle_id,
+            batch_size=batch_size,
+            testing_mode=testing_mode,
+            log_cb=lambda msg: emit_terminal_log("DEMO-FACTORY", msg),
+        )
+
+    @classmethod
     def trigger_refill(
         cls,
         db: Session,
@@ -126,6 +171,14 @@ class PipelineService:
                 hustle_id=hustle_id,
                 target_count=batch_size,
                 locality=locality,
+                testing_mode=testing_mode,
+                async_mode=async_mode,
+            )
+        if stop_after == "build":
+            return cls.build_batch(
+                db=db,
+                hustle_id=hustle_id,
+                batch_size=batch_size,
                 testing_mode=testing_mode,
                 async_mode=async_mode,
             )

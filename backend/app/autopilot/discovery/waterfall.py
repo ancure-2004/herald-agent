@@ -147,7 +147,7 @@ class CandidateStream:
                 )
                 if self.emit_cb:
                     self.emit_cb(f"[{TAG_SCRAPE}] Provider '{provider.name}' yielded {len(candidates)} raw candidates.")
-            except GoogleQuotaExhausted as e:
+            except GoogleQuotaExhausted:
                 provider.quota_exhausted = True
                 GooglePlacesProvider.quota_exhausted = True
                 msg = (

@@ -13,10 +13,10 @@ from app.autopilot.discovery.localities import LOCALITY_PRESETS, resolve_localit
 from app.autopilot.discovery.waterfall import CandidateStream
 from app.autopilot.quota import QuotaGuard
 from app.autopilot.runs.job_manager import JobManager
-from app.autopilot.runs.runner import ensure_lead_schema
 from app.autopilot.search.cache import DbCache
 from app.autopilot.utils.text import clean_clinic_name, generate_clean_slug
 from app.core.exceptions import NotFoundError
+from app.db.schema_migrations import ensure_schema_columns
 from app.models.entities import Lead, LeadFact, RunLog, Stage
 from app.repositories.hustle_repo import HustleRepository
 from app.safety import compute_fit_score
@@ -25,6 +25,13 @@ from app.services.event_bus import broadcast_sse, emit_pipeline_step, set_autopi
 logger = logging.getLogger("personal_os.autopilot.discovery.service")
 
 STAGING_BUFFER_CEILING = 210
+
+
+def ensure_lead_schema(db: Session) -> None:
+    try:
+        ensure_schema_columns(db.get_bind())
+    except Exception as e:
+        logger.debug("ensure_lead_schema migration notice: %s", e)
 
 
 class DiscoveryService:

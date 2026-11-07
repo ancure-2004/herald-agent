@@ -58,6 +58,22 @@ class PipelineController:
         )
 
     @staticmethod
+    def build_batch(
+        db: Session,
+        hustle_id: int = 1,
+        batch_size: int = 10,
+        testing_mode: bool = False,
+        async_mode: bool = False,
+    ) -> Dict[str, Any]:
+        return PipelineService.build_batch(
+            db,
+            hustle_id=hustle_id,
+            batch_size=batch_size,
+            testing_mode=testing_mode,
+            async_mode=async_mode,
+        )
+
+    @staticmethod
     def cleanup_test_data(db: Session, confirmation: str) -> Dict[str, Any]:
         return PipelineService.cleanup_test_data(db, confirmation)
 
