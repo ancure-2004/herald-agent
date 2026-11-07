@@ -13,6 +13,21 @@ from app.models.entities import Lead
 
 logger = logging.getLogger("personal_os.autopilot.discovery.dedup")
 
+GENERIC_STOPWORD_NAMES: Set[str] = {
+    "dentalclinic",
+    "dentist",
+    "dental",
+    "clinic",
+    "dentalcare",
+    "dentalcentre",
+    "dentalhospital",
+    "smiledental",
+    "dentalhub",
+    "dentalstudio",
+    "theclinic",
+    "thedentist",
+}
+
 
 class RejectionCache:
     """
@@ -56,6 +71,9 @@ class RejectionCache:
         ]:
             if key_val and str(key_val).strip():
                 clean_val = str(key_val).strip().lower()
+                # Stopword guard: never cache generic or short clinic names
+                if key_type == "name" and (clean_val in GENERIC_STOPWORD_NAMES or len(clean_val) < 6):
+                    continue
                 cache_key = DbCache.make_key(cls.PROVIDER, {"type": key_type, "val": clean_val})
                 DbCache.set(db, cache_key, payload, provider=cls.PROVIDER, ttl_hours=cls.TTL_HOURS)
 
@@ -78,6 +96,9 @@ class RejectionCache:
         ]:
             if key_val and str(key_val).strip():
                 clean_val = str(key_val).strip().lower()
+                # Stopword guard: never match generic or short clinic names
+                if key_type == "name" and (clean_val in GENERIC_STOPWORD_NAMES or len(clean_val) < 6):
+                    continue
                 cache_key = DbCache.make_key(cls.PROVIDER, {"type": key_type, "val": clean_val})
                 cached = DbCache.get(db, cache_key)
                 if cached and isinstance(cached, dict):
@@ -139,9 +160,9 @@ class DiscoveryDeduplicator:
                 clean = clean_clinic_name(l.name)
                 full_clean = re.sub(r"[^a-z0-9]", "", clean.lower())
                 short_clean = re.sub(r"[^a-z0-9]", "", re.split(r"[-|:]", l.name)[0].lower())
-                if full_clean:
+                if full_clean and full_clean not in GENERIC_STOPWORD_NAMES and len(full_clean) >= 6:
                     self.db_names.add(full_clean)
-                if len(short_clean) >= 6:
+                if short_clean and short_clean not in GENERIC_STOPWORD_NAMES and len(short_clean) >= 6:
                     self.db_names.add(short_clean)
             if l.custom_fields and isinstance(l.custom_fields, dict):
                 pid = l.custom_fields.get("place_id") or l.custom_fields.get("google_cid")
@@ -167,10 +188,12 @@ class DiscoveryDeduplicator:
 
         # 2. Normalized clean business name check
         full_clean, short_clean = self.normalize_name(candidate.name)
-        if full_clean and (full_clean in self.db_names or full_clean in self.session_names):
-            return True, f"Clinic name '{candidate.name}' already exists in CRM or staged this run"
-        if len(short_clean) >= 6 and (short_clean in self.db_names or short_clean in self.session_names):
-            return True, f"Clinic prefix '{short_clean}' already exists in CRM or staged this run"
+        if full_clean and full_clean not in GENERIC_STOPWORD_NAMES and len(full_clean) >= 6:
+            if full_clean in self.db_names or full_clean in self.session_names:
+                return True, f"Clinic name '{candidate.name}' already exists in CRM or staged this run"
+        if short_clean and short_clean not in GENERIC_STOPWORD_NAMES and len(short_clean) >= 6:
+            if short_clean in self.db_names or short_clean in self.session_names:
+                return True, f"Clinic prefix '{short_clean}' already exists in CRM or staged this run"
 
         # 3. 10-digit phone check
         phone_val = norm_phone or candidate.phone
@@ -195,11 +218,12 @@ class DiscoveryDeduplicator:
         # Fast in-memory session check
         if pid and f"place_id:{pid}" in self.session_rejected:
             return True, {"reason": "cached_session_rejection", "detail": f"Place ID {pid} rejected earlier"}
-        if full_clean and f"name:{full_clean}" in self.session_rejected:
-            return True, {
-                "reason": "cached_session_rejection",
-                "detail": f"Clinic name '{full_clean}' rejected earlier",
-            }
+        if full_clean and full_clean not in GENERIC_STOPWORD_NAMES and len(full_clean) >= 6:
+            if f"name:{full_clean}" in self.session_rejected:
+                return True, {
+                    "reason": "cached_session_rejection",
+                    "detail": f"Clinic name '{full_clean}' rejected earlier",
+                }
         if ten_digit and f"phone:{ten_digit}" in self.session_rejected:
             return True, {"reason": "cached_session_rejection", "detail": f"Phone {ten_digit} rejected earlier"}
         if dom and f"domain:{dom}" in self.session_rejected:
@@ -209,7 +233,7 @@ class DiscoveryDeduplicator:
         cached = RejectionCache.check_rejected(
             db=self.db,
             place_id=pid if pid else None,
-            norm_name=full_clean if full_clean else None,
+            norm_name=full_clean if (full_clean and full_clean not in GENERIC_STOPWORD_NAMES and len(full_clean) >= 6) else None,
             phone_10d=ten_digit if ten_digit else None,
             domain=dom if dom else None,
         )
@@ -217,7 +241,7 @@ class DiscoveryDeduplicator:
             # Populate in-memory session set so next lookup is instant
             if pid:
                 self.session_rejected.add(f"place_id:{pid}")
-            if full_clean:
+            if full_clean and full_clean not in GENERIC_STOPWORD_NAMES and len(full_clean) >= 6:
                 self.session_rejected.add(f"name:{full_clean}")
             if ten_digit:
                 self.session_rejected.add(f"phone:{ten_digit}")
@@ -243,7 +267,7 @@ class DiscoveryDeduplicator:
         # Add to in-memory session
         if pid:
             self.session_rejected.add(f"place_id:{pid}")
-        if full_clean:
+        if full_clean and full_clean not in GENERIC_STOPWORD_NAMES and len(full_clean) >= 6:
             self.session_rejected.add(f"name:{full_clean}")
         if ten_digit:
             self.session_rejected.add(f"phone:{ten_digit}")
@@ -255,7 +279,7 @@ class DiscoveryDeduplicator:
             db=self.db,
             reason=reason,
             place_id=pid if pid else None,
-            norm_name=full_clean if full_clean else None,
+            norm_name=full_clean if (full_clean and full_clean not in GENERIC_STOPWORD_NAMES and len(full_clean) >= 6) else None,
             phone_10d=ten_digit if ten_digit else None,
             domain=dom if dom else None,
             detail=detail,
@@ -270,10 +294,10 @@ class DiscoveryDeduplicator:
         if pid:
             self.session_place_ids.add(pid)
             self.db_place_ids.add(pid)
-        if full_clean:
+        if full_clean and full_clean not in GENERIC_STOPWORD_NAMES and len(full_clean) >= 6:
             self.session_names.add(full_clean)
             self.db_names.add(full_clean)
-        if len(short_clean) >= 6:
+        if short_clean and short_clean not in GENERIC_STOPWORD_NAMES and len(short_clean) >= 6:
             self.session_names.add(short_clean)
             self.db_names.add(short_clean)
         if ten_digit:

@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional
 
@@ -170,13 +171,14 @@ class DiscoveryService:
                     break
 
                 if attempt > 0:
+                    time.sleep(1.2)
                     loc_obj = resolve_locality(None)
                     emit(
                         f"[WATERFALL] Staged {len(newly_staged)}/{effective_target}. "
                         f"Advancing discovery to next preset: '{loc_obj.label}'..."
                     )
 
-                query = hustle.search_query or f"dental clinic in {loc_obj.city}"
+                query = f"dental clinic in {loc_obj.label}, Delhi NCR, India"
                 stream = CandidateStream(
                     query=query,
                     locality=loc_obj,
@@ -286,6 +288,7 @@ class DiscoveryService:
 
                     deduplicator.record_accepted(cand, cand.phone)
                     newly_staged.append(staged_lead)
+                    db.commit()
                     staged_summaries.append(
                         {
                             "id": staged_lead.id,

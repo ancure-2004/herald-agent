@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterator, List, Optional, Set
 from sqlalchemy.orm import Session
 
 from app.autopilot.discovery.base import DiscoveryProvider
-from app.autopilot.discovery.dedup import DiscoveryDeduplicator
+from app.autopilot.discovery.dedup import GENERIC_STOPWORD_NAMES, DiscoveryDeduplicator
 from app.autopilot.discovery.google_places import GooglePlacesProvider
 from app.autopilot.discovery.local_pool import LocalPoolProvider
 from app.autopilot.discovery.localities import Locality
@@ -219,9 +219,9 @@ class CandidateStream:
                 pid = (cand.place_id or "").strip()
                 if pid:
                     self.deduplicator.session_place_ids.add(pid)
-                if full_clean:
+                if full_clean and full_clean not in GENERIC_STOPWORD_NAMES and len(full_clean) >= 6:
                     self.deduplicator.session_names.add(full_clean)
-                if len(short_clean) >= 6:
+                if len(short_clean) >= 6 and short_clean not in GENERIC_STOPWORD_NAMES:
                     self.deduplicator.session_names.add(short_clean)
                 self.deduplicator.session_phones.add(ten_digit)
 

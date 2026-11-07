@@ -1,5 +1,7 @@
 import json
 import logging
+import time
+import urllib.error
 import urllib.request
 from typing import Any, Dict, List, Optional
 
@@ -51,25 +53,38 @@ def google_places_search(
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-        out: List[Dict[str, Any]] = []
-        for p in data.get("places", []):
-            phone = p.get("nationalPhoneNumber") or p.get("internationalPhoneNumber") or ""
-            out.append(
-                {
-                    "place_id": p.get("id", ""),
-                    "title": (p.get("displayName") or {}).get("text", ""),
-                    "address": p.get("formattedAddress", ""),
-                    "rating": p.get("rating"),
-                    "ratingCount": p.get("userRatingCount"),
-                    "website": p.get("websiteUri", ""),
-                    "maps_url": p.get("googleMapsUri", ""),
-                    "phoneNumber": phone,
-                    "source_tier": "Tier 1: Google Places API",
-                }
-            )
-        return out
+    for attempt in range(2):
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                out: List[Dict[str, Any]] = []
+                for p in data.get("places", []):
+                    phone = p.get("nationalPhoneNumber") or p.get("internationalPhoneNumber") or ""
+                    out.append(
+                        {
+                            "place_id": p.get("id", ""),
+                            "title": (p.get("displayName") or {}).get("text", ""),
+                            "address": p.get("formattedAddress", ""),
+                            "rating": p.get("rating"),
+                            "ratingCount": p.get("userRatingCount"),
+                            "website": p.get("websiteUri", ""),
+                            "maps_url": p.get("googleMapsUri", ""),
+                            "phoneNumber": phone,
+                            "source_tier": "Tier 1: Google Places API",
+                        }
+                    )
+                return out
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt == 0:
+                logger.warning("Google Places API rate limited (HTTP 429). Retrying in 3 seconds...")
+                time.sleep(3)
+                continue
+            logger.error("Google Places search HTTP error %s: %s", getattr(e, "code", None), e)
+            return []
+        except Exception as e:
+            logger.error("Google Places search failed: %s", e)
+            return []
+    return []
 
 
 def google_place_details(
@@ -77,7 +92,7 @@ def google_place_details(
     api_key: str,
     db: Optional[Session] = None,
 ) -> Dict[str, Any]:
-    """Legacy-compatible Google Place Details endpoint."""
+    """Legacy-compatible Google Place Details endpoint with retry on 429."""
     if not place_id or not api_key:
         return {}
     if db is not None:
@@ -94,12 +109,21 @@ def google_place_details(
         },
         method="GET",
     )
-    try:
-        with urllib.request.urlopen(req, timeout=12) as resp:
-            return json.loads(resp.read().decode("utf-8"))
-    except Exception as e:
-        logger.debug("Google place details fetch failed: %s", e)
-        return {}
+    for attempt in range(2):
+        try:
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt == 0:
+                logger.warning("Google Place Details rate limited (HTTP 429). Retrying in 3 seconds...")
+                time.sleep(3)
+                continue
+            logger.debug("Google place details fetch failed: %s", e)
+            return {}
+        except Exception as e:
+            logger.debug("Google place details fetch failed: %s", e)
+            return {}
+    return {}
 
 
 class GooglePlacesProvider:

@@ -502,3 +502,53 @@ def test_overpass_strict_timeout_and_fallback():
     bbox = (28.565, 77.215, 28.580, 77.230)
     query = build_overpass_query(bbox)
     assert "[timeout:5]" in query
+
+
+def test_generic_stopword_names_not_cached_or_falsely_deduped(in_memory_db):
+    """
+    Generic stopword names ('dentalclinic', 'dentist', etc.) must NEVER:
+    1. Be cached under type 'name' in RejectionCache.
+    2. Block other clinics sharing generic names from being staged.
+    3. Be added to db_names to falsely flag duplicates.
+    """
+    from app.autopilot.discovery.dedup import GENERIC_STOPWORD_NAMES, RejectionCache
+
+    # 1. Verify RejectionCache does not cache generic stopword names
+    RejectionCache.record_rejection(
+        db=in_memory_db,
+        reason="hospital_or_chain",
+        norm_name="dentalclinic",
+        place_id="PID_GENERIC_1",
+        phone_10d="9811199991",
+    )
+    # Check rejection for another clinic with norm_name 'dentalclinic' but different place_id & phone
+    cand2 = Candidate(name="Dental Clinic - South Extension", place_id="PID_GENERIC_2", phone="+919811199992")
+    dedup = DiscoveryDeduplicator(db=in_memory_db, ignore_test_leads=False)
+    is_rej, info = dedup.check_rejection_cache(cand2)
+    assert is_rej is False
+
+    # 2. Verify generic stopwords are NOT in dedup.db_names even if a lead with that name is in DB
+    hustle = in_memory_db.query(Hustle).first()
+    stage = in_memory_db.query(Stage).first()
+    lead_stopword = Lead(
+        hustle_id=hustle.id,
+        stage_id=stage.id,
+        status="STAGED",
+        slug="the-dentist-clinic",
+        name="The Dentist",
+        primary_phone="+919811199993",
+        phones=["+919811199993"],
+        custom_fields={"place_id": "PID_DENTIST_1"},
+    )
+    in_memory_db.add(lead_stopword)
+    in_memory_db.commit()
+
+    fresh_dedup = DiscoveryDeduplicator(db=in_memory_db, ignore_test_leads=False)
+    for sw in GENERIC_STOPWORD_NAMES:
+        assert sw not in fresh_dedup.db_names
+
+    # 3. New candidate with generic name 'Dentist' is NOT flagged duplicate if phone & place_id differ
+    cand3 = Candidate(name="Dentist", place_id="PID_DENTIST_2", phone="+919811199994")
+    is_dup, reason = fresh_dedup.check_duplicate(cand3)
+    assert is_dup is False
+    assert reason is None
