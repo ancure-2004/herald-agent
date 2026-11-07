@@ -37,6 +37,10 @@ DIRECTORY_DOMAINS: Set[str] = {
     "instagram.com",
     "facebook.com",
     "fb.com",
+    "linktr.ee",
+    "wa.me",
+    "whatsapp.com",
+    "business.site",
     "linkedin.com",
     "youtube.com",
     "twitter.com",
@@ -71,4 +75,17 @@ DIRECTORY_DOMAINS: Set[str] = {
     "indianexpress.com",
     "thehindu.com",
     "news18.com",
+}
+
+# Whitelist of allowed non-independent domains for fast discovery filtering
+ALLOWED_DISCOVERY_DOMAINS: Set[str] = {
+    "instagram.com",
+    "facebook.com",
+    "fb.com",
+    "linktr.ee",
+    "wa.me",
+    "whatsapp.com",
+    "google.com",
+    "goo.gl",
+    "business.site",
 }

@@ -18,6 +18,7 @@ class LeadController:
         smart_view: Optional[str] = None,
         include_archived: bool = False,
         search: Optional[str] = None,
+        status: Optional[str] = None,
     ) -> List[Lead]:
         return LeadService.list_leads(
             db=db,
@@ -26,6 +27,7 @@ class LeadController:
             smart_view=smart_view,
             include_archived=include_archived,
             search=search,
+            status=status,
         )
 
     @staticmethod

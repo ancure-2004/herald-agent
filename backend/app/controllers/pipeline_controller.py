@@ -40,6 +40,24 @@ class PipelineController:
         )
 
     @staticmethod
+    def discover_leads(
+        db: Session,
+        hustle_id: int = 1,
+        target_count: int = 30,
+        locality: Optional[str] = None,
+        testing_mode: bool = False,
+        async_mode: bool = False,
+    ) -> Dict[str, Any]:
+        return PipelineService.discover_leads(
+            db,
+            hustle_id=hustle_id,
+            target_count=target_count,
+            locality=locality,
+            testing_mode=testing_mode,
+            async_mode=async_mode,
+        )
+
+    @staticmethod
     def cleanup_test_data(db: Session, confirmation: str) -> Dict[str, Any]:
         return PipelineService.cleanup_test_data(db, confirmation)
 

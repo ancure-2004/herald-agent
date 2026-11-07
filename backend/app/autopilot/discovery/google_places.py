@@ -37,6 +37,8 @@ def google_places_search(
             "places.userRatingCount",
             "places.websiteUri",
             "places.googleMapsUri",
+            "places.nationalPhoneNumber",
+            "places.internationalPhoneNumber",
         ]
     )
     req = urllib.request.Request(
@@ -53,6 +55,7 @@ def google_places_search(
         data = json.loads(resp.read().decode("utf-8"))
         out: List[Dict[str, Any]] = []
         for p in data.get("places", []):
+            phone = p.get("nationalPhoneNumber") or p.get("internationalPhoneNumber") or ""
             out.append(
                 {
                     "place_id": p.get("id", ""),
@@ -62,7 +65,7 @@ def google_places_search(
                     "ratingCount": p.get("userRatingCount"),
                     "website": p.get("websiteUri", ""),
                     "maps_url": p.get("googleMapsUri", ""),
-                    "phoneNumber": "",
+                    "phoneNumber": phone,
                     "source_tier": "Tier 1: Google Places API",
                 }
             )
@@ -87,7 +90,7 @@ def google_place_details(
         f"https://places.googleapis.com/v1/places/{place_id}",
         headers={
             "X-Goog-Api-Key": api_key,
-            "X-Goog-FieldMask": "nationalPhoneNumber,regularOpeningHours",
+            "X-Goog-FieldMask": "nationalPhoneNumber,internationalPhoneNumber,regularOpeningHours,websiteUri",
         },
         method="GET",
     )

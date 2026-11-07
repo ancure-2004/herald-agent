@@ -17,6 +17,7 @@ def list_leads(
     smart_view: Optional[str] = Query(None),
     include_archived: bool = Query(False),
     search: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     return LeadController.list_leads(
@@ -26,6 +27,7 @@ def list_leads(
         smart_view=smart_view,
         include_archived=include_archived,
         search=search,
+        status=status,
     )
 
 

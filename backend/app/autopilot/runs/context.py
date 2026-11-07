@@ -22,6 +22,10 @@ class CancelToken:
         with self._lock:
             return self._cancelled
 
+    def is_set(self) -> bool:
+        with self._lock:
+            return self._cancelled
+
 
 @dataclass
 class RunContext:

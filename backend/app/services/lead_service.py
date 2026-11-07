@@ -40,6 +40,7 @@ class LeadService:
         smart_view: Optional[str] = None,
         include_archived: bool = False,
         search: Optional[str] = None,
+        status: Optional[str] = None,
     ) -> List[Lead]:
         return LeadRepository.list_leads(
             db=db,
@@ -48,6 +49,7 @@ class LeadService:
             smart_view=smart_view,
             include_archived=include_archived,
             search=search,
+            status=status,
         )
 
     @staticmethod

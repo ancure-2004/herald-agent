@@ -26,8 +26,8 @@ logger = logging.getLogger("personal_os.autopilot.runner")
 
 
 def ensure_lead_schema(db: Session) -> None:
-    """Idempotently ensures is_test and test_run_id columns exist on the leads table."""
-    for col_def in ("is_test BOOLEAN DEFAULT 0", "test_run_id INTEGER"):
+    """Idempotently ensures is_test, test_run_id, and status columns exist on the leads table."""
+    for col_def in ("is_test BOOLEAN DEFAULT 0", "test_run_id INTEGER", "status VARCHAR(50) DEFAULT 'STAGED'"):
         try:
             db.execute(text(f"ALTER TABLE leads ADD COLUMN {col_def}"))
             db.commit()

@@ -91,6 +91,7 @@ class Lead(Base):
     email = Column(String(250), nullable=True, index=True)
     instagram_handle = Column(String(150), unique=True, nullable=True, index=True)
     preferred_channel = Column(String(50), default="whatsapp")
+    status = Column(String(50), default="STAGED", nullable=True, index=True)
     fit_score = Column(Integer, default=0)
     fit_reasons = Column(JSON, default=list)
     intent_score = Column(Integer, default=0)

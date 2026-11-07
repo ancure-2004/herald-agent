@@ -4,7 +4,7 @@ from .claims_policy import (
     BANNED_UNLESS_SOURCED_CLAIMS,
     FORBIDDEN_MEDICAL_CLAIMS,
 )
-from .directory_domains import DIRECTORY_DOMAINS
+from .directory_domains import ALLOWED_DISCOVERY_DOMAINS, DIRECTORY_DOMAINS
 from .hospital_chains import HOSPITAL_CHAIN_STOPWORDS
 from .paths import (
     BACKEND_DIR,
@@ -22,6 +22,7 @@ from .service_catalog import SERVICE_CATALOG
 
 __all__ = [
     "ALLOWED_CLAIM_SOURCES",
+    "ALLOWED_DISCOVERY_DOMAINS",
     "ALWAYS_BANNED_CLAIMS",
     "BANNED_UNLESS_SOURCED_CLAIMS",
     "BATCH_JSON_PATH",

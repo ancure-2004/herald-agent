@@ -61,8 +61,57 @@ class PipelineService:
             return {"status": "cancelling", "run_id": target_id}
         return {"status": "not_running", "run_id": target_id}
 
-    @staticmethod
+    @classmethod
+    def discover_leads(
+        cls,
+        db: Session,
+        hustle_id: int = 1,
+        target_count: int = 30,
+        locality: Optional[str] = None,
+        testing_mode: bool = False,
+        async_mode: bool = False,
+    ) -> Dict[str, Any]:
+        from app.autopilot.discovery.service import DiscoveryService
+
+        if async_mode:
+            active_id = JobManager.get_active_run_id()
+            if active_id is not None:
+                raise HTTPException(status_code=409, detail=f"Run #{active_id} already in progress")
+
+            def _bg_worker():
+                with SessionLocal() as bg_db:
+                    try:
+                        DiscoveryService.run_discovery_and_staging(
+                            db=bg_db,
+                            hustle_id=hustle_id,
+                            target_count=target_count,
+                            locality=locality,
+                            testing_mode=testing_mode,
+                            log_cb=lambda msg: emit_terminal_log("DISCOVERY", msg),
+                        )
+                    except Exception as ex:
+                        logger.error("Async discovery run failed: %s", ex)
+
+            t = threading.Thread(target=_bg_worker, daemon=True)
+            t.start()
+            return {
+                "status": "running",
+                "async": True,
+                "message": "Autopilot lead discovery started in background thread",
+            }
+
+        return DiscoveryService.run_discovery_and_staging(
+            db=db,
+            hustle_id=hustle_id,
+            target_count=target_count,
+            locality=locality,
+            testing_mode=testing_mode,
+            log_cb=lambda msg: emit_terminal_log("DISCOVERY", msg),
+        )
+
+    @classmethod
     def trigger_refill(
+        cls,
         db: Session,
         hustle_id: int = 1,
         batch_size: int = 3,
@@ -71,6 +120,16 @@ class PipelineService:
         async_mode: bool = False,
         stop_after: Optional[str] = None,
     ) -> Dict[str, Any]:
+        if stop_after == "discovery":
+            return cls.discover_leads(
+                db=db,
+                hustle_id=hustle_id,
+                target_count=batch_size,
+                locality=locality,
+                testing_mode=testing_mode,
+                async_mode=async_mode,
+            )
+
         hustle = HustleRepository.get_by_id(db, hustle_id)
         if not hustle:
             raise NotFoundError("Hustle not found.")
@@ -510,6 +569,10 @@ class PipelineService:
             },
         }
 
+        from app.autopilot.discovery.service import STAGING_BUFFER_CEILING, DiscoveryService
+
+        staged_pool_cnt = DiscoveryService.get_staged_count(db, hustle_id=hustle_id)
+
         metrics = {
             "runId": f"#run-{last_run.id}" if last_run else "#run-0",
             "triggeredAgo": "Recently" if last_run else "Never",
@@ -523,6 +586,8 @@ class PipelineService:
             "enrichedDossiers": len(research_payload),
             "demosBuilt": built_cnt,
             "reviewTrayReady": review_buffer_cnt,
+            "stagedPoolCount": staged_pool_cnt,
+            "stagedCeiling": STAGING_BUFFER_CEILING,
             "duration": dur_str,
             "recentLead": recent_lead_data,
         }

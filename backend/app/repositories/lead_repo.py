@@ -39,6 +39,7 @@ class LeadRepository:
         smart_view: Optional[str] = None,
         include_archived: bool = False,
         search: Optional[str] = None,
+        status: Optional[str] = None,
     ) -> List[Lead]:
         q = db.query(Lead).options(
             joinedload(Lead.facts),
@@ -70,8 +71,11 @@ class LeadRepository:
             q = q.join(Stage, Lead.stage_id == Stage.id).filter(Stage.slug == "replied")
         elif smart_view == "no_reply_5d":
             q = q.join(Stage, Lead.stage_id == Stage.id).filter(Stage.slug == "contacted")
-        elif stage_slug:
+        if stage_slug:
             q = q.join(Stage, Lead.stage_id == Stage.id).filter(Stage.slug == stage_slug)
+
+        if status:
+            q = q.filter(Lead.status == status)
 
         if search:
             pattern = f"%{search.strip()}%"

@@ -34,7 +34,11 @@ class AutopilotSettings:
     contact_user_agent: str = os.getenv("CONTACT_USER_AGENT", "PersonalOS-Autopilot/2.0 (contact: info@example.com)")
     google_places_api_key: str = field(
         default_factory=lambda: (
-            os.getenv("GOOGLE_PLACES_API_KEY") or getattr(__import__("app.core.config", fromlist=["get_settings"]).get_settings(), "GOOGLE_PLACES_API_KEY", "") or ""
+            os.getenv("GOOGLE_PLACES_API_KEY")
+            or getattr(
+                __import__("app.core.config", fromlist=["get_settings"]).get_settings(), "GOOGLE_PLACES_API_KEY", ""
+            )
+            or ""
         ).strip()
     )
 

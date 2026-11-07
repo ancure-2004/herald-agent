@@ -41,6 +41,7 @@ class LeadCreate(BaseSchema):
     email: Optional[str] = None
     instagram_handle: Optional[str] = None
     preferred_channel: str = "whatsapp"
+    status: Optional[str] = "STAGED"
     next_action: Optional[str] = None
     next_action_due_at: Optional[datetime] = None
     custom_fields: Dict[str, Any] = Field(default_factory=dict)
@@ -59,6 +60,7 @@ class LeadUpdate(BaseSchema):
     email: Optional[str] = None
     instagram_handle: Optional[str] = None
     preferred_channel: Optional[str] = None
+    status: Optional[str] = None
     stage_id: Optional[int] = None
     next_action: Optional[str] = None
     next_action_due_at: Optional[datetime] = None
@@ -94,6 +96,7 @@ class LeadOut(BaseORMModel):
     email: Optional[str]
     instagram_handle: Optional[str]
     preferred_channel: str
+    status: Optional[str] = "STAGED"
     fit_score: int
     fit_reasons: List[str]
     intent_score: int
