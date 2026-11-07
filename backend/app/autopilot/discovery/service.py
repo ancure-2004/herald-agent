@@ -7,6 +7,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.autopilot.discovery.dedup import DiscoveryDeduplicator
+from app.autopilot.discovery.google_places import GooglePlacesProvider
+from app.autopilot.discovery.local_pool import LocalPoolProvider
 from app.autopilot.discovery.localities import LOCALITY_PRESETS, resolve_locality
 from app.autopilot.discovery.waterfall import CandidateStream
 from app.autopilot.quota import QuotaGuard
@@ -162,6 +164,10 @@ class DiscoveryService:
         try:
             loc_obj = resolve_locality(locality)
             max_presets = len(LOCALITY_PRESETS) if not locality else 1
+            locality_specified = bool(locality)
+
+            LocalPoolProvider.reset_pool_status()
+            GooglePlacesProvider.reset_quota_status()
 
             for attempt in range(max_presets):
                 if cancel_token.is_cancelled or len(newly_staged) >= effective_target:
@@ -187,6 +193,7 @@ class DiscoveryService:
                     testing_mode=testing_mode,
                     emit_cb=emit,
                     deduplicator=deduplicator,
+                    locality_specified=locality_specified,
                 )
 
                 for cand in stream:

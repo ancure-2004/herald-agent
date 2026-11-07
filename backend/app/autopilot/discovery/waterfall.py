@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.autopilot.discovery.base import DiscoveryProvider
 from app.autopilot.discovery.dedup import GENERIC_STOPWORD_NAMES, DiscoveryDeduplicator
-from app.autopilot.discovery.google_places import GooglePlacesProvider
+from app.autopilot.discovery.google_places import GooglePlacesProvider, GoogleQuotaExhausted
 from app.autopilot.discovery.local_pool import LocalPoolProvider
 from app.autopilot.discovery.localities import Locality
 from app.autopilot.discovery.overpass import OverpassProvider
@@ -41,6 +41,7 @@ class CandidateStream:
         testing_mode: bool = False,
         emit_cb: Optional[Any] = None,
         deduplicator: Optional[DiscoveryDeduplicator] = None,
+        locality_specified: bool = False,
     ):
         self.query = query
         self.locality = locality
@@ -48,6 +49,7 @@ class CandidateStream:
         self.db = db
         self.testing_mode = testing_mode
         self.emit_cb = emit_cb
+        self.locality_specified = locality_specified
 
         if deduplicator is not None:
             self.deduplicator = deduplicator
@@ -77,7 +79,8 @@ class CandidateStream:
     def seen_names(self) -> Set[str]:
         return self.deduplicator.session_names
 
-    def _init_default_providers(self) -> List[DiscoveryProvider]:
+    @classmethod
+    def init_default_providers(cls) -> List[DiscoveryProvider]:
         settings = get_autopilot_settings()
         order = settings.discovery_providers
         prov_map: Dict[str, DiscoveryProvider] = {
@@ -91,6 +94,9 @@ class CandidateStream:
             if clean_name in prov_map:
                 res.append(prov_map[clean_name])
         return res
+
+    def _init_default_providers(self) -> List[DiscoveryProvider]:
+        return self.init_default_providers()
 
     def __iter__(self) -> Iterator[Candidate]:
         settings = get_autopilot_settings()
@@ -110,10 +116,16 @@ class CandidateStream:
                     self.emit_cb(msg)
                 break
 
-            # Skip local_pool in testing mode
-            if self.testing_mode and provider.name == "local_pool":
+            # Circuit-breaker: immediately stop querying Google if quota is exhausted
+            is_exhausted = (
+                getattr(provider, "quota_exhausted", False) is True
+                or GooglePlacesProvider.quota_exhausted is True
+            )
+            if provider.name == "google" and is_exhausted:
+                msg = f"[{TAG_SCRAPE}] Google Places quota exhausted, skipping provider."
+                logger.info(msg)
                 if self.emit_cb:
-                    self.emit_cb(f"[{TAG_SCRAPE}] Skipped local_pool (Testing Mode: live-only)")
+                    self.emit_cb(msg)
                 continue
 
             msg = f"[{TAG_SCRAPE}] Querying provider '{provider.name}' for '{self.locality.label}'..."
@@ -131,9 +143,21 @@ class CandidateStream:
                     target_count=self.target_count,
                     db=self.db,
                     testing_mode=self.testing_mode,
+                    locality_specified=self.locality_specified,
                 )
                 if self.emit_cb:
                     self.emit_cb(f"[{TAG_SCRAPE}] Provider '{provider.name}' yielded {len(candidates)} raw candidates.")
+            except GoogleQuotaExhausted as e:
+                provider.quota_exhausted = True
+                GooglePlacesProvider.quota_exhausted = True
+                msg = (
+                    f"[{TAG_SCRAPE}] Google Places quota exhausted (HTTP 429). "
+                    f"Circuit-breaker tripped: skipping Google for remaining run."
+                )
+                logger.warning(msg)
+                if self.emit_cb:
+                    self.emit_cb(msg)
+                continue
             except Exception as e:
                 logger.warning("Provider '%s' failed: %s", provider.name, e)
                 if self.emit_cb:

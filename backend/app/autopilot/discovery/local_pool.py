@@ -47,12 +47,38 @@ def playwright_maps_fallback_pool(query: str = "") -> List[Dict[str, Any]]:
     return out
 
 
+def is_candidate_in_locality(item: Dict[str, Any], locality_label: str) -> bool:
+    """Checks if a local pool candidate matches the requested locality."""
+    if not locality_label:
+        return True
+    item_loc = (item.get("locality") or item.get("area") or "").strip().lower()
+    item_addr = (item.get("address") or "").strip().lower()
+    t_label = locality_label.strip().lower()
+
+    if t_label in item_loc or item_loc in t_label:
+        return True
+
+    noise = {"delhi", "ncr", "india"}
+    tokens = [tok for tok in t_label.replace(",", " ").split() if tok not in noise]
+    if tokens and all(tok in item_loc or tok in item_addr for tok in tokens):
+        return True
+    return False
+
+
 def load_fallback_candidates_pool() -> List[Dict[str, Any]]:
     return playwright_maps_fallback_pool("dental clinic in Delhi NCR")
 
 
 class LocalPoolProvider:
     name = "local_pool"
+    _pool_scanned: bool = False
+
+    def __init__(self):
+        self.scanned = False
+
+    @classmethod
+    def reset_pool_status(cls) -> None:
+        cls._pool_scanned = False
 
     def search_candidates(
         self,
@@ -60,16 +86,33 @@ class LocalPoolProvider:
         locality: Locality,
         target_count: int = 10,
         testing_mode: bool = False,
+        locality_specified: bool = False,
         **kwargs,
     ) -> List[Candidate]:
-        if testing_mode:
-            return []
-        raw_items = playwright_maps_fallback_pool(query)
+        # Filter candidates by locality if specified
+        if locality_specified:
+            target_label = locality.label if locality else ""
+            raw_items = [
+                item
+                for item in playwright_maps_fallback_pool(query)
+                if is_candidate_in_locality(item, target_label)
+            ]
+        else:
+            # If pool was already scanned in this run, avoid re-evaluating the same 216 candidates on all 100 presets
+            if self.scanned or LocalPoolProvider._pool_scanned:
+                logger.debug("Local pool already scanned in this run, skipping re-scan.")
+                return []
+            raw_items = playwright_maps_fallback_pool(query)
+            self.scanned = True
+            LocalPoolProvider._pool_scanned = True
+
         candidates: List[Candidate] = []
         for item in raw_items:
+            c_loc = item.get("locality") or item.get("area") or (locality.label if locality else "")
             c = Candidate(
                 name=item.get("title", ""),
                 address=item.get("address", ""),
+                locality=c_loc,
                 phone=item.get("phoneNumber", ""),
                 website=item.get("website", ""),
                 rating=float(item["rating"]) if item.get("rating") is not None else None,

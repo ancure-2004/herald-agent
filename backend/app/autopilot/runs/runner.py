@@ -5,7 +5,10 @@ from typing import Any, Callable, Dict, List, Optional
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.autopilot.discovery.google_places import GooglePlacesProvider
+from app.autopilot.discovery.local_pool import LocalPoolProvider
 from app.autopilot.discovery.localities import LOCALITY_PRESETS, resolve_locality
+from app.autopilot.discovery.waterfall import CandidateStream
 from app.autopilot.quota import QuotaGuard
 from app.autopilot.runs.context import RunContext
 from app.autopilot.runs.job_manager import JobManager
@@ -19,6 +22,7 @@ from app.autopilot.runs.stages import (
 from app.autopilot.search.ddgs_provider import DDGSSearchProvider
 from app.autopilot.settings import get_autopilot_settings
 from app.autopilot.types import Candidate, RunOptions, VerifiedCandidate
+from app.db.schema_migrations import ensure_schema_columns
 from app.models.entities import Hustle, Lead, RunLog, Stage
 from app.services.event_bus import emit_pipeline_step, set_autopilot_running
 
@@ -27,12 +31,10 @@ logger = logging.getLogger("personal_os.autopilot.runner")
 
 def ensure_lead_schema(db: Session) -> None:
     """Idempotently ensures is_test, test_run_id, and status columns exist on the leads table."""
-    for col_def in ("is_test BOOLEAN DEFAULT 0", "test_run_id INTEGER", "status VARCHAR(50) DEFAULT 'STAGED'"):
-        try:
-            db.execute(text(f"ALTER TABLE leads ADD COLUMN {col_def}"))
-            db.commit()
-        except Exception:
-            db.rollback()
+    try:
+        ensure_schema_columns(db.get_bind())
+    except Exception as e:
+        logger.debug("ensure_lead_schema migration notice: %s", e)
 
 
 def execute_autopilot_run(
@@ -86,7 +88,7 @@ def execute_autopilot_run(
 
     try:
         locality = resolve_locality(options.locality)
-        query = hustle.search_query or f"dental clinic in {locality.city}"
+        query = f"dental clinic in {locality.label}, Delhi NCR, India"
 
         # Discovery & Verification loop: probe across preset localities until target_count is reached
         search_prov = DDGSSearchProvider()
@@ -95,19 +97,30 @@ def execute_autopilot_run(
         drop_counts: Dict[str, int] = {}
         dropped_items: List[Dict[str, Any]] = []
 
+        providers = CandidateStream.init_default_providers()
+        LocalPoolProvider.reset_pool_status()
+        GooglePlacesProvider.reset_quota_status()
+        locality_specified = bool(options.locality)
+
         max_attempts = len(LOCALITY_PRESETS) if not options.locality else 1
         for attempt in range(max_attempts):
             if ctx.check_cancelled() or len(verified) >= options.target_count:
                 break
             if attempt > 0:
                 locality = resolve_locality(None)
-                query = hustle.search_query or f"dental clinic in {locality.city}"
+                query = f"dental clinic in {locality.label}, Delhi NCR, India"
                 ctx.emit(
                     f"[WATERFALL] Target not yet met ({len(verified)}/{options.target_count}). "
                     f"Advancing discovery to next preset: '{locality.label}'..."
                 )
 
-            batch_candidates = stage_discovery(ctx, locality, query)
+            batch_candidates = stage_discovery(
+                ctx,
+                locality,
+                query,
+                providers=providers,
+                locality_specified=locality_specified,
+            )
             all_candidates.extend(batch_candidates)
             if not batch_candidates:
                 continue

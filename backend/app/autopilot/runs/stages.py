@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
+from app.autopilot.discovery.base import DiscoveryProvider
 from app.autopilot.discovery.localities import Locality
 from app.autopilot.discovery.waterfall import CandidateStream
 from app.autopilot.research.doctor import extract_doctor_and_degrees
@@ -21,6 +22,8 @@ def stage_discovery(
     ctx: RunContext,
     locality: Locality,
     query: str,
+    providers: Optional[List[DiscoveryProvider]] = None,
+    locality_specified: bool = False,
 ) -> List[Candidate]:
     ctx.emit(f"Step 1/7 [FIND - WATERFALL]: Searching in '{locality.label}' (target={ctx.options.target_count})...")
     emit_pipeline_step(
@@ -38,10 +41,12 @@ def stage_discovery(
     stream = CandidateStream(
         query=query,
         locality=locality,
+        providers=providers,
         target_count=ctx.options.target_count,
         db=ctx.db,
         testing_mode=ctx.options.testing_mode,
         emit_cb=ctx.emit,
+        locality_specified=locality_specified,
     )
     candidates: List[Candidate] = []
     max_candidates = max(20, ctx.options.target_count * 4)

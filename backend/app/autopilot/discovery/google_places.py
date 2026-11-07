@@ -15,15 +15,32 @@ from app.autopilot.types import Candidate
 logger = logging.getLogger("personal_os.autopilot.discovery.google_places")
 
 
+class GoogleQuotaExhausted(Exception):
+    """Raised when Google Places returns HTTP 429 / RESOURCE_EXHAUSTED after retry."""
+
+    pass
+
+
 def google_places_search(
     query: str,
     api_key: str,
     max_results: int = 20,
     db: Optional[Session] = None,
 ) -> List[Dict[str, Any]]:
-    """Legacy-compatible Google Places searchText function."""
+    """Legacy-compatible Google Places searchText function with raw DbCache."""
     if not api_key:
         return []
+
+    cache_key = None
+    if db is not None:
+        from app.autopilot.search.cache import DbCache
+
+        cache_key = DbCache.make_key("google_places_raw", {"query": query.strip().lower()})
+        cached = DbCache.get(db, cache_key)
+        if cached is not None:
+            logger.info("Google Places raw results cache hit for '%s' (0 API calls)", query)
+            return cached
+
     if db is not None:
         can_call = QuotaGuard.try_consume(db, "google", "places_search")
         if not can_call:
@@ -73,12 +90,20 @@ def google_places_search(
                             "source_tier": "Tier 1: Google Places API",
                         }
                     )
+                if db is not None and cache_key is not None:
+                    from app.autopilot.search.cache import DbCache
+
+                    DbCache.set(db, cache_key, out, provider="google_places_raw", ttl_hours=168)
                 return out
         except urllib.error.HTTPError as e:
             if e.code == 429 and attempt == 0:
                 logger.warning("Google Places API rate limited (HTTP 429). Retrying in 3 seconds...")
                 time.sleep(3)
                 continue
+            if e.code == 429:
+                logger.error("Google Places API rate limited (HTTP 429) after retry. Quota exhausted.")
+                GooglePlacesProvider.quota_exhausted = True
+                raise GoogleQuotaExhausted(f"Google Places API rate limited (HTTP 429): {e}")
             logger.error("Google Places search HTTP error %s: %s", getattr(e, "code", None), e)
             return []
         except Exception as e:
@@ -118,6 +143,10 @@ def google_place_details(
                 logger.warning("Google Place Details rate limited (HTTP 429). Retrying in 3 seconds...")
                 time.sleep(3)
                 continue
+            if e.code == 429:
+                logger.error("Google Place Details rate limited (HTTP 429) after retry. Quota exhausted.")
+                GooglePlacesProvider.quota_exhausted = True
+                raise GoogleQuotaExhausted(f"Google Place Details rate limited (HTTP 429): {e}")
             logger.debug("Google place details fetch failed: %s", e)
             return {}
         except Exception as e:
@@ -128,6 +157,7 @@ def google_place_details(
 
 class GooglePlacesProvider:
     name = "google"
+    quota_exhausted: bool = False
 
     def __init__(self, api_key: Optional[str] = None):
         if api_key:
@@ -136,33 +166,19 @@ class GooglePlacesProvider:
             from app.autopilot.settings import get_autopilot_settings
 
             self.api_key = get_autopilot_settings().google_places_api_key
+        self.quota_exhausted = GooglePlacesProvider.quota_exhausted
 
-    def search_candidates(
-        self,
-        query: str,
-        locality: Locality,
-        target_count: int = 10,
-        db: Optional[Session] = None,
-        **kwargs,
-    ) -> List[Candidate]:
-        if not self.api_key:
-            return []
-        if db is not None:
-            can_call = QuotaGuard.try_consume(db, "google_places", "text_search")
-            if not can_call:
-                logger.warning("%s Google Places search monthly quota exceeded, skipping call.", TAG_QUOTA)
-                return []
-        results_raw = google_places_search(
-            query=query,
-            api_key=self.api_key,
-            max_results=20,
-            db=None,
-        )
+    @classmethod
+    def reset_quota_status(cls) -> None:
+        cls.quota_exhausted = False
+
+    def _raw_to_candidates(self, results_raw: List[Dict[str, Any]], locality: Locality) -> List[Candidate]:
         candidates: List[Candidate] = []
         for r in results_raw:
             c = Candidate(
                 name=r.get("title", ""),
                 address=r.get("address", ""),
+                locality=r.get("locality") or (locality.label if locality else ""),
                 phone=r.get("phoneNumber", ""),
                 website=r.get("website", ""),
                 rating=float(r["rating"]) if r.get("rating") is not None else None,
@@ -174,3 +190,54 @@ class GooglePlacesProvider:
             )
             candidates.append(c)
         return candidates
+
+    def search_candidates(
+        self,
+        query: str,
+        locality: Locality,
+        target_count: int = 10,
+        db: Optional[Session] = None,
+        **kwargs,
+    ) -> List[Candidate]:
+        if not self.api_key:
+            return []
+        if self.quota_exhausted or GooglePlacesProvider.quota_exhausted:
+            logger.info("Google Places provider quota is marked exhausted, skipping call.")
+            return []
+
+        # Check raw DbCache first: 0 API calls, NO QuotaGuard consumed!
+        cache_key = None
+        if db is not None:
+            from app.autopilot.search.cache import DbCache
+
+            cache_key = DbCache.make_key("google_places_raw", {"query": query.strip().lower()})
+            cached_raw = DbCache.get(db, cache_key)
+            if cached_raw is not None:
+                logger.info("Google Places raw results cache hit for '%s' (0 API calls)", query)
+                return self._raw_to_candidates(cached_raw, locality)
+
+        # Consume monthly quota only if live call will proceed
+        if db is not None:
+            can_call = QuotaGuard.try_consume(db, "google_places", "text_search")
+            if not can_call:
+                logger.warning("%s Google Places search monthly quota exceeded, skipping call.", TAG_QUOTA)
+                return []
+
+        try:
+            results_raw = google_places_search(
+                query=query,
+                api_key=self.api_key,
+                max_results=20,
+                db=db,
+            )
+        except GoogleQuotaExhausted:
+            self.quota_exhausted = True
+            GooglePlacesProvider.quota_exhausted = True
+            raise
+
+        if db is not None and cache_key is not None and results_raw:
+            from app.autopilot.search.cache import DbCache
+
+            DbCache.set(db, cache_key, results_raw, provider="google_places_raw", ttl_hours=168)
+
+        return self._raw_to_candidates(results_raw, locality)

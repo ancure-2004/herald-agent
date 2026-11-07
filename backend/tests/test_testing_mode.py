@@ -30,7 +30,7 @@ def test_trigger_refill_route_accepts_testing_mode(client: TestClient):
         assert kwargs.get("target_count") == 2
 
 
-def test_testing_mode_bypasses_tier4_cache():
+def test_testing_mode_allows_local_pool_fallback():
     test_engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
@@ -48,8 +48,9 @@ def test_testing_mode_bypasses_tier4_cache():
         patch("app.autopilot.discovery.google_places.google_places_search", return_value=[]),
         patch("app.autopilot.discovery.overpass.OverpassProvider.search_candidates", return_value=[]),
         patch("app.autopilot.discovery.local_pool.playwright_maps_fallback_pool") as mock_pw,
+        patch("app.autopilot.runs.runner.stage_verification", return_value=([], {}, [])),
     ):
-        mock_pw.return_value = [{"title": "Cached Clinic", "address": "Rohini Delhi"}]
+        mock_pw.return_value = [{"title": "Cached Clinic", "address": "Rohini Delhi", "phoneNumber": "+919811122334"}]
 
         logs = []
         result = run_live_autopilot_discovery(
@@ -59,10 +60,11 @@ def test_testing_mode_bypasses_tier4_cache():
             base_url="http://localhost:3001",
             log_cb=logs.append,
             testing_mode=True,
+            locality="Rohini Delhi",
+            stop_after="discovery",
         )
 
-        # With testing_mode=True, Tier 4 / local_pool fallback must NOT be called
-        mock_pw.assert_not_called()
-        assert result["found"] == 0
-        assert result["passed"] == 0
+        # With testing_mode=True, local_pool serves as fallback when google yields no candidates
+        mock_pw.assert_called()
+        assert result["found"] == 1
     db.close()
