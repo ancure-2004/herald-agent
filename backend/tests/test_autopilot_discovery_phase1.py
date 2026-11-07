@@ -350,3 +350,155 @@ def test_discover_api_endpoint(client: TestClient):
         assert len(data["staged_leads"]) == 1
         assert data["staged_leads"][0]["status"] == "STAGED"
         mock_ctrl.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# 6. 100 Micro-Localities & Streamlined Waterfall Tests
+# ---------------------------------------------------------------------------
+
+
+def test_locality_presets_100_curated_delhi_ncr():
+    """Validates the 100 curated Delhi NCR micro-localities, strictly excluding Bangalore."""
+    from app.autopilot.discovery.localities import LOCALITY_PRESETS, get_next_preset_locality, resolve_locality
+
+    # 1. Total count is exactly 100
+    assert len(LOCALITY_PRESETS) == 100
+
+    # 2. Bangalore / Indiranagar is completely removed
+    assert "Bengaluru / Indiranagar" not in LOCALITY_PRESETS
+    for key, loc in LOCALITY_PRESETS.items():
+        assert "bengaluru" not in key.lower()
+        assert "bangalore" not in key.lower()
+        assert loc.city != "Bengaluru"
+        assert loc.state != "Karnataka"
+
+    # 3. Cities and states strictly Delhi NCR
+    allowed_cities = {"Noida", "Greater Noida", "Gurugram", "Ghaziabad", "Faridabad", "Delhi"}
+    allowed_states = {"Uttar Pradesh", "Haryana", "Delhi"}
+
+    for key, loc in LOCALITY_PRESETS.items():
+        assert loc.city in allowed_cities, f"Unexpected city {loc.city} for {key}"
+        assert loc.state in allowed_states, f"Unexpected state {loc.state} for {key}"
+        s, w, n, e = loc.bbox
+        assert s < n, f"Invalid latitude range for {key}: south={s}, north={n}"
+        assert w < e, f"Invalid longitude range for {key}: west={w}, east={e}"
+        # All Delhi NCR coordinates reside between lat 28.3 - 28.8 and lon 76.9 - 77.6
+        assert 28.3 <= s <= 28.8, f"Latitude {s} out of Delhi NCR bounds for {key}"
+        assert 76.9 <= w <= 77.6, f"Longitude {w} out of Delhi NCR bounds for {key}"
+
+    # 4. Critical micro-localities exist
+    required_samples = [
+        "Golf Course Extension Gurugram",
+        "Gurugram Sector 54",
+        "Gurugram Sector 55",
+        "Gurugram Sector 65",
+        "Dwarka Expressway Gurugram",
+        "Greater Noida Knowledge Park",
+        "Gaur City 2 Greater Noida",
+        "Noida Sector 135",
+        "Noida Sector 150",
+        "Karol Bagh Delhi",
+        "Connaught Place Delhi",
+        "Chanakyapuri Delhi",
+        "Vasant Vihar Delhi",
+        "Safdarjung Enclave Delhi",
+        "Anand Vihar Delhi",
+        "Krishna Nagar Delhi",
+        "Rohini Sector 8",
+        "Paschim Vihar Delhi",
+        "South Extension Part 2",
+    ]
+    for sample in required_samples:
+        assert sample in LOCALITY_PRESETS, f"Required micro-locality missing: {sample}"
+
+    # 5. Resolution checks
+    # Exact key
+    assert resolve_locality("South Extension").label == "South Extension"
+    # Case-insensitive
+    assert resolve_locality("south extension").label == "South Extension"
+    # Legacy prefix format
+    assert resolve_locality("South Delhi / Saket").city == "Delhi"
+    # Preset rotation
+    loc1 = get_next_preset_locality()
+    loc2 = get_next_preset_locality()
+    assert loc1.label != loc2.label
+
+
+def test_discovery_providers_default_and_waterfall_streamlining():
+    """Ensures discovery_providers defaults to ['google', 'local_pool'] and waterfall stops querying after yield."""
+    from app.autopilot.discovery.localities import LOCALITY_PRESETS
+    from app.autopilot.discovery.waterfall import CandidateStream
+    from app.autopilot.settings import get_autopilot_settings
+
+    settings = get_autopilot_settings()
+    assert "google" in settings.discovery_providers
+    assert "local_pool" in settings.discovery_providers
+    assert "overpass" not in settings.discovery_providers
+
+    locality = LOCALITY_PRESETS["South Extension"]
+
+    # 1. When primary provider yields candidates, secondary provider is NEVER queried
+    primary_cand = Candidate(
+        name="Apex Smiles Dental",
+        place_id="PID_APEX_1",
+        phone="+919811100001",
+        source_tier="Primary Provider",
+    )
+    primary_provider = MagicMock()
+    primary_provider.name = "google"
+    primary_provider.search_candidates.return_value = [primary_cand]
+
+    secondary_provider = MagicMock()
+    secondary_provider.name = "local_pool"
+    secondary_provider.search_candidates.return_value = []
+
+    stream = CandidateStream(
+        query="dental clinic in South Extension",
+        locality=locality,
+        providers=[primary_provider, secondary_provider],
+        target_count=5,
+    )
+    results = list(stream)
+
+    assert len(results) == 1
+    assert results[0].name == "Apex Smiles Dental"
+    primary_provider.search_candidates.assert_called_once()
+    # Secondary provider should NOT be queried because primary yielded candidates
+    secondary_provider.search_candidates.assert_not_called()
+
+    # 2. When primary provider yields 0 candidates, secondary provider IS queried
+    empty_primary = MagicMock()
+    empty_primary.name = "google"
+    empty_primary.search_candidates.return_value = []
+
+    fallback_cand = Candidate(
+        name="Fallback Dental",
+        place_id="PID_FALLBACK_1",
+        phone="+919811100002",
+        source_tier="Fallback Provider",
+    )
+    fallback_provider = MagicMock()
+    fallback_provider.name = "local_pool"
+    fallback_provider.search_candidates.return_value = [fallback_cand]
+
+    stream2 = CandidateStream(
+        query="dental clinic in South Extension",
+        locality=locality,
+        providers=[empty_primary, fallback_provider],
+        target_count=5,
+    )
+    results2 = list(stream2)
+
+    assert len(results2) == 1
+    assert results2[0].name == "Fallback Dental"
+    empty_primary.search_candidates.assert_called_once()
+    fallback_provider.search_candidates.assert_called_once()
+
+
+def test_overpass_strict_timeout_and_fallback():
+    """Verifies overpass query format uses short timeout."""
+    from app.autopilot.discovery.overpass import build_overpass_query
+
+    bbox = (28.565, 77.215, 28.580, 77.230)
+    query = build_overpass_query(bbox)
+    assert "[timeout:5]" in query

@@ -94,8 +94,22 @@ class CandidateStream:
 
     def __iter__(self) -> Iterator[Candidate]:
         settings = get_autopilot_settings()
+        yielded_count = 0
 
         for provider in self.providers:
+            # If target count already satisfied or previous provider already yielded candidates, do not query subsequent providers
+            if yielded_count >= self.target_count:
+                break
+            if yielded_count > 0:
+                msg = (
+                    f"[{TAG_SCRAPE}] Provider already yielded {yielded_count} candidates "
+                    f"(target={self.target_count}). Skipping subsequent fallback providers."
+                )
+                logger.info(msg)
+                if self.emit_cb:
+                    self.emit_cb(msg)
+                break
+
             # Skip local_pool in testing mode
             if self.testing_mode and provider.name == "local_pool":
                 if self.emit_cb:
@@ -212,3 +226,6 @@ class CandidateStream:
                 self.deduplicator.session_phones.add(ten_digit)
 
                 yield cand
+                yielded_count += 1
+                if yielded_count >= self.target_count:
+                    break

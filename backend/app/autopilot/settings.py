@@ -9,7 +9,7 @@ class AutopilotSettings:
 
     discovery_providers: List[str] = field(
         default_factory=lambda: [
-            p.strip() for p in os.getenv("DISCOVERY_PROVIDERS", "google,overpass,local_pool").split(",") if p.strip()
+            p.strip() for p in os.getenv("DISCOVERY_PROVIDERS", "google,local_pool").split(",") if p.strip()
         ]
     )
     search_min_interval_seconds: float = float(os.getenv("SEARCH_MIN_INTERVAL_SECONDS", "4.0"))

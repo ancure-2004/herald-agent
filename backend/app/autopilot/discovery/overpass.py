@@ -18,7 +18,7 @@ logger = logging.getLogger("personal_os.autopilot.discovery.overpass")
 def build_overpass_query(bbox: tuple) -> str:
     south, west, north, east = bbox
     return (
-        f"[out:json][timeout:60];\n"
+        f"[out:json][timeout:5];\n"
         f"(\n"
         f"  nwr[amenity=dentist]({south},{west},{north},{east});\n"
         f"  nwr[healthcare=dentist]({south},{west},{north},{east});\n"
@@ -136,20 +136,17 @@ class OverpassProvider:
         settings = get_autopilot_settings()
         headers = {"User-Agent": settings.contact_user_agent}
 
-        for attempt in range(min(3, len(self.endpoints))):
+        # Strict short timeout (3.0s) and single attempt to prevent stalling
+        for attempt in range(min(1, len(self.endpoints))):
             endpoint = self.endpoints[attempt % len(self.endpoints)]
             try:
-                with httpx.Client(timeout=15.0) as client:
+                with httpx.Client(timeout=3.0) as client:
                     resp = client.post(endpoint, data={"data": query}, headers=headers)
                     if resp.status_code == 200:
                         data = resp.json()
                         return data.get("elements", [])
                     if resp.status_code in (429, 504):
-                        retry_after = int(resp.headers.get("Retry-After", "5"))
-                        logger.warning(
-                            "Overpass endpoint %s returned %d. Sleeping %ds...", endpoint, resp.status_code, retry_after
-                        )
-                        time.sleep(min(retry_after, 10))
+                        logger.warning("Overpass endpoint %s returned %d.", endpoint, resp.status_code)
             except Exception as e:
                 logger.warning("Overpass attempt on %s failed: %s", endpoint, e)
         return []
