@@ -17,6 +17,7 @@ class LeadRepository:
                 joinedload(Lead.messages),
                 joinedload(Lead.events),
                 joinedload(Lead.commitments),
+                joinedload(Lead.calls),
                 joinedload(Lead.stage_rel),
             )
             .filter(Lead.id == lead_id)
@@ -47,6 +48,7 @@ class LeadRepository:
             joinedload(Lead.messages),
             joinedload(Lead.events),
             joinedload(Lead.commitments),
+            joinedload(Lead.calls),
             joinedload(Lead.stage_rel),
         )
 

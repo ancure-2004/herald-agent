@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import Field
 
+from .call import CallOut
 from .common import BaseORMModel, BaseSchema
 from .message import CommitmentOut, MessageOut
 from .package import PackageOut
@@ -47,6 +48,8 @@ class LeadCreate(BaseSchema):
     custom_fields: Dict[str, Any] = Field(default_factory=dict)
     ai_fields: Dict[str, Any] = Field(default_factory=dict)
     deal_value_inr: int = 15000
+    automation_enabled: bool = True
+    needs_followup: bool = False
     facts: List[LeadFactCreate] = Field(default_factory=list)
 
 
@@ -64,6 +67,8 @@ class LeadUpdate(BaseSchema):
     stage_id: Optional[int] = None
     next_action: Optional[str] = None
     next_action_due_at: Optional[datetime] = None
+    automation_enabled: Optional[bool] = None
+    needs_followup: Optional[bool] = None
     do_not_contact: Optional[bool] = None
     do_not_contact_reason: Optional[str] = None
     custom_fields: Optional[Dict[str, Any]] = None
@@ -111,6 +116,8 @@ class LeadOut(BaseORMModel):
     ai_fields: Dict[str, Any]
     what_changed_summary: str
     deal_value_inr: int
+    automation_enabled: bool = True
+    needs_followup: bool = False
     created_at: datetime
     updated_at: datetime
     facts: List[LeadFactOut] = []
@@ -118,3 +125,4 @@ class LeadOut(BaseORMModel):
     messages: List[MessageOut] = []
     events: List[TrackingEventOut] = []
     commitments: List[CommitmentOut] = []
+    calls: List[CallOut] = []

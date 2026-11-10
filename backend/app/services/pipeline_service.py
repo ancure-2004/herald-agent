@@ -15,7 +15,7 @@ from app.core.exceptions import NotFoundError
 from app.db.session import SessionLocal
 from app.models.entities import Lead, LeadFact, Package, RunLog, Stage
 from app.repositories.hustle_repo import HustleRepository
-from app.services.event_bus import broadcast_sse, emit_terminal_log, get_pipeline_state
+from app.services.event_bus import broadcast_sse, emit_terminal_log, get_pipeline_state, set_autopilot_running
 
 logger = logging.getLogger("personal_os.pipeline_service")
 
@@ -73,10 +73,43 @@ class PipelineService:
     ) -> Dict[str, Any]:
         from app.autopilot.discovery.service import DiscoveryService
 
+        if testing_mode:
+            target_count = min(target_count, 2)
+
         if async_mode:
             active_id = JobManager.get_active_run_id()
             if active_id is not None:
                 raise HTTPException(status_code=409, detail=f"Run #{active_id} already in progress")
+
+            hustle = HustleRepository.get_by_id(db, hustle_id)
+            if not hustle:
+                raise NotFoundError(f"Hustle #{hustle_id} not found")
+
+            # Synchronously create RunLog and acquire single-flight lock before returning 202
+            run_log = RunLog(
+                hustle_id=hustle.id,
+                job_type="autopilot_discovery_and_staging",
+                status="running",
+                count_found=0,
+                count_passed=0,
+                count_dropped=0,
+                drop_reasons={},
+                errors=[],
+                trace_logs=[],
+                started_at=datetime.now(timezone.utc),
+            )
+            db.add(run_log)
+            db.commit()
+            db.refresh(run_log)
+
+            try:
+                JobManager.acquire_single_flight(run_log.id)
+            except HTTPException:
+                run_log.status = "conflict"
+                db.commit()
+                raise
+
+            set_autopilot_running(True, run_id=run_log.id)
 
             def _bg_worker():
                 with SessionLocal() as bg_db:
@@ -88,9 +121,12 @@ class PipelineService:
                             locality=locality,
                             testing_mode=testing_mode,
                             log_cb=lambda msg: emit_terminal_log("DISCOVERY", msg),
+                            existing_run_log_id=run_log.id,
                         )
                     except Exception as ex:
                         logger.error("Async discovery run failed: %s", ex)
+                        JobManager.release_single_flight(run_log.id)
+                        set_autopilot_running(False, run_id=run_log.id)
 
             t = threading.Thread(target=_bg_worker, daemon=True)
             t.start()
@@ -98,6 +134,7 @@ class PipelineService:
                 "status": "running",
                 "async": True,
                 "message": "Autopilot lead discovery started in background thread",
+                "run_id": run_log.id,
             }
 
         return DiscoveryService.run_discovery_and_staging(

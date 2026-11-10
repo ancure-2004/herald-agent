@@ -12,6 +12,7 @@ from app.autopilot.discovery.local_pool import LocalPoolProvider
 from app.autopilot.discovery.localities import LOCALITY_PRESETS, resolve_locality
 from app.autopilot.discovery.waterfall import CandidateStream
 from app.autopilot.quota import QuotaGuard
+from app.autopilot.runs.context import CancelToken
 from app.autopilot.runs.job_manager import JobManager
 from app.autopilot.search.cache import DbCache
 from app.autopilot.utils.text import clean_clinic_name, generate_clean_slug
@@ -62,6 +63,7 @@ class DiscoveryService:
         locality: Optional[str] = None,
         testing_mode: bool = False,
         log_cb: Optional[Callable[[str], None]] = None,
+        existing_run_log_id: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Executes standalone lead discovery and stages accepted candidates into the database.
@@ -71,11 +73,14 @@ class DiscoveryService:
         if not hustle:
             raise NotFoundError(f"Hustle #{hustle_id} not found")
 
-        ensure_lead_schema(db)
+        # Removed runtime ensure_lead_schema to prevent AccessExclusiveLock contention
         DbCache.ensure_schema(db)
         QuotaGuard.ensure_schema(db)
 
-        # 1. Enforce Staging Buffer Ceiling
+        # 1. Enforce Staging Buffer Ceiling & Testing Mode Cap
+        if testing_mode:
+            target_count = min(target_count, 2)
+
         current_staged = cls.get_staged_count(db, hustle_id=hustle.id, testing_mode=testing_mode)
         if current_staged >= STAGING_BUFFER_CEILING:
             msg = (
@@ -84,6 +89,17 @@ class DiscoveryService:
             )
             if log_cb:
                 log_cb(f"[STAGING-CAP] {msg}")
+            if existing_run_log_id:
+                try:
+                    rl = db.query(RunLog).filter(RunLog.id == existing_run_log_id).first()
+                    if rl:
+                        rl.status = "completed"
+                        rl.finished_at = datetime.now(timezone.utc)
+                        db.commit()
+                except Exception:
+                    pass
+                set_autopilot_running(False, run_id=existing_run_log_id)
+                JobManager.release_single_flight(existing_run_log_id)
             return {
                 "status": "full",
                 "message": msg,
@@ -93,11 +109,14 @@ class DiscoveryService:
                 "found_count": 0,
                 "dropped_counts": {},
                 "staged_leads": [],
-                "run_id": None,
+                "run_id": existing_run_log_id,
             }
 
         remaining_capacity = STAGING_BUFFER_CEILING - current_staged
-        effective_target = min(target_count, remaining_capacity)
+        if testing_mode:
+            effective_target = min(2, remaining_capacity)
+        else:
+            effective_target = min(target_count, remaining_capacity)
         if effective_target < target_count:
             if log_cb:
                 log_cb(
@@ -105,25 +124,40 @@ class DiscoveryService:
                     f"to respect the {STAGING_BUFFER_CEILING}-lead buffer ceiling (current: {current_staged})."
                 )
 
-        # 2. Create RunLog and acquire single-flight lock
-        run_log = RunLog(
-            hustle_id=hustle.id,
-            job_type="autopilot_discovery_and_staging",
-            status="running",
-            count_found=0,
-            count_passed=0,
-            count_dropped=0,
-            drop_reasons={},
-            errors=[],
-            trace_logs=[],
-            started_at=datetime.now(timezone.utc),
-        )
-        db.add(run_log)
-        db.commit()
-        db.refresh(run_log)
+        # 2. Acquire single-flight lock or use existing synchronously acquired run_log
+        if existing_run_log_id:
+            run_log = db.query(RunLog).filter(RunLog.id == existing_run_log_id).first()
+            if not run_log:
+                run_log = RunLog(
+                    id=existing_run_log_id,
+                    hustle_id=hustle.id,
+                    job_type="autopilot_discovery_and_staging",
+                    status="running",
+                    started_at=datetime.now(timezone.utc),
+                )
+                db.add(run_log)
+                db.commit()
+                db.refresh(run_log)
+            cancel_token = getattr(JobManager, "_ACTIVE_CANCEL_TOKEN", None) or (JobManager.get_active_cancel_token() if hasattr(JobManager, "get_active_cancel_token") else None) or CancelToken()
+        else:
+            run_log = RunLog(
+                hustle_id=hustle.id,
+                job_type="autopilot_discovery_and_staging",
+                status="running",
+                count_found=0,
+                count_passed=0,
+                count_dropped=0,
+                drop_reasons={},
+                errors=[],
+                trace_logs=[],
+                started_at=datetime.now(timezone.utc),
+            )
+            db.add(run_log)
+            db.commit()
+            db.refresh(run_log)
 
-        cancel_token = JobManager.acquire_single_flight(run_log.id)
-        set_autopilot_running(True, run_id=run_log.id)
+            cancel_token = JobManager.acquire_single_flight(run_log.id)
+            set_autopilot_running(True, run_id=run_log.id)
 
         trace_logs: List[str] = []
 
@@ -177,7 +211,7 @@ class DiscoveryService:
             GooglePlacesProvider.reset_quota_status()
 
             for attempt in range(max_presets):
-                if cancel_token.is_cancelled or len(newly_staged) >= effective_target:
+                if cancel_token.is_cancelled or len(newly_staged) >= effective_target or (testing_mode and len(newly_staged) >= 2):
                     break
                 if (current_staged + len(newly_staged)) >= STAGING_BUFFER_CEILING:
                     emit(f"[STAGING-CAP] Reached absolute ceiling of {STAGING_BUFFER_CEILING} staged leads.")
@@ -204,7 +238,7 @@ class DiscoveryService:
                 )
 
                 for cand in stream:
-                    if cancel_token.is_cancelled or len(newly_staged) >= effective_target:
+                    if cancel_token.is_cancelled or len(newly_staged) >= effective_target or (testing_mode and len(newly_staged) >= 2):
                         break
                     if (current_staged + len(newly_staged)) >= STAGING_BUFFER_CEILING:
                         emit(f"[STAGING-CAP] Reached absolute ceiling of {STAGING_BUFFER_CEILING} staged leads.")

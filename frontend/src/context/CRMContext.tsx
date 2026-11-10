@@ -40,10 +40,30 @@ interface AssistantHistoryItem {
   undone?: boolean;
 }
 
+export type CRMTab =
+  | MainTab
+  | "inbox"
+  | "calls"
+  | "discovery"
+  | "building"
+  | "outreach"
+  | "cockpit_overview"
+  | "cockpit_followup"
+  | "cockpit_unreplied"
+  | "cockpit_actions"
+  | "cockpit_calls";
+
 interface CRMContextType {
   // Navigation & View
-  activeTab: MainTab;
-  setActiveTab: (tab: MainTab) => void;
+  activeTab: CRMTab;
+  setActiveTab: (tab: CRMTab) => void;
+  surface: "management" | "cockpit";
+  setSurface: (surface: "management" | "cockpit") => void;
+  cockpitTab: "attention" | "discovery" | "factory" | "outreach";
+  setCockpitTab: (tab: "attention" | "discovery" | "factory" | "outreach") => void;
+  globalAutomationEnabled: boolean;
+  toggleGlobalAutomation: () => Promise<void>;
+  setGlobalAutomationEnabled: (enabled: boolean) => Promise<void>;
   activeSmartView: string;
   setActiveSmartView: (view: string) => void;
   searchQuery: string;
@@ -119,6 +139,19 @@ interface CRMContextType {
   setNewLeadModalOpen: (b: boolean) => void;
   problemModalOpen: boolean;
   setProblemModalOpen: (b: boolean) => void;
+  logCallModalOpen: boolean;
+  setLogCallModalOpen: (b: boolean) => void;
+  logCallLeadId: number | null;
+  setLogCallLeadId: (id: number | null) => void;
+  openLogCallModal: (leadId: number) => void;
+  logReplyModalOpen: boolean;
+  setLogReplyModalOpen: (b: boolean) => void;
+  logReplyLeadId: number | null;
+  setLogReplyLeadId: (id: number | null) => void;
+  openLogReplyModal: (leadId: number) => void;
+  activeInboxLeadId: number | null;
+  setActiveInboxLeadId: (id: number | null) => void;
+  openInboxForLead: (leadId: number) => void;
 
   // Assistant Drawer
   assistantOpen: boolean;
@@ -150,18 +183,36 @@ const CRMContext = createContext<CRMContextType | null>(null);
 export function CRMProvider({ children }: { children: React.ReactNode }) {
   const { isDarkMode, toggleDarkMode } = useTheme();
 
+  // Data state
+  const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
+
   // Navigation & View state
-  const [activeTab, setActiveTab] = useState<MainTab>("dashboard");
+  const [activeTab, setActiveTabRaw] = useState<CRMTab>("dashboard");
+  const [surface, setSurface] = useState<"management" | "cockpit">("management");
+  const [cockpitTab, setCockpitTab] = useState<"attention" | "discovery" | "factory" | "outreach">("attention");
+  const [activeInboxLeadId, setActiveInboxLeadId] = useState<number | null>(null);
+
+  const setActiveTab = useCallback((tab: CRMTab) => {
+    setActiveTabRaw(tab);
+    setSelectedLeadId(null);
+  }, []);
+  const [globalAutomationEnabled, setGlobalAutomationEnabledState] = useState<boolean>(true);
   const [activeSmartView, setActiveSmartView] = useState<string>("all_active");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [pipelineBoardExpanded, setPipelineBoardExpanded] = useState<boolean>(true);
 
+  // Auto-collapse sidebar on phone viewports on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarCollapsed(true);
+    }
+  }, []);
+
   // Data state
   const [hustles, setHustles] = useState<Hustle[]>([]);
   const [activeHustleId, setActiveHustleId] = useState<number>(1);
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
   const [stockPlan, setStockPlan] = useState<StockPlan | null>(null);
   const [sprintPlan, setSprintPlan] = useState<SprintPlan | null>(null);
   const [runs, setRuns] = useState<RunLog[]>([]);
@@ -190,6 +241,27 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const [cmdSearchQuery, setCmdSearchQuery] = useState<string>("");
   const [newLeadModalOpen, setNewLeadModalOpen] = useState<boolean>(false);
   const [problemModalOpen, setProblemModalOpen] = useState<boolean>(false);
+  const [logCallModalOpen, setLogCallModalOpen] = useState<boolean>(false);
+  const [logCallLeadId, setLogCallLeadId] = useState<number | null>(null);
+  const [logReplyModalOpen, setLogReplyModalOpen] = useState<boolean>(false);
+  const [logReplyLeadId, setLogReplyLeadId] = useState<number | null>(null);
+
+  const openLogCallModal = useCallback((leadId: number) => {
+    setLogCallLeadId(leadId);
+    setLogCallModalOpen(true);
+  }, []);
+
+  const openLogReplyModal = useCallback((leadId: number) => {
+    setLogReplyLeadId(leadId);
+    setLogReplyModalOpen(true);
+  }, []);
+
+  const openInboxForLead = useCallback((leadId: number) => {
+    setActiveInboxLeadId(leadId);
+    setSelectedLeadId(null);
+    setSurface("management");
+    setActiveTab("inbox");
+  }, [setActiveTab]);
 
   // Terminal state
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
@@ -214,8 +286,55 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const closeToast = useCallback(() => {
-    setToast(null), [];
+    setToast(null);
   }, []);
+
+  // Sync global automation state from backend settings on mount
+  useEffect(() => {
+    apiFetch<{ automation_enabled?: boolean }>("/api/settings/automation")
+      .then((data) => {
+        if (typeof data.automation_enabled === "boolean") {
+          setGlobalAutomationEnabledState(data.automation_enabled);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const toggleGlobalAutomation = useCallback(async () => {
+    const nextVal = !globalAutomationEnabled;
+    setGlobalAutomationEnabledState(nextVal);
+    try {
+      await apiFetch("/api/settings/automation", {
+        method: "PATCH",
+        body: JSON.stringify({ automation_enabled: nextVal }),
+      });
+      notify(
+        nextVal
+          ? "Global Automation ON: Outbound messages queue for Playwright sender"
+          : "Global Automation OFF: Outbound messages open direct wa.me links",
+        "ok"
+      );
+    } catch {
+      setGlobalAutomationEnabledState(!nextVal);
+      notify("Failed to update global automation settings", "err");
+    }
+  }, [globalAutomationEnabled, notify]);
+
+  const setGlobalAutomationEnabled = useCallback(
+    async (enabled: boolean) => {
+      setGlobalAutomationEnabledState(enabled);
+      try {
+        await apiFetch("/api/settings/automation", {
+          method: "PATCH",
+          body: JSON.stringify({ automation_enabled: enabled }),
+        });
+      } catch {
+        setGlobalAutomationEnabledState(!enabled);
+        notify("Failed to update global automation settings", "err");
+      }
+    },
+    [notify]
+  );
 
   const activeHustle = useMemo(
     () => hustles.find((h) => h.id === activeHustleId) || hustles[0] || null,
@@ -628,6 +747,13 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const value = {
     activeTab,
     setActiveTab,
+    surface,
+    setSurface,
+    cockpitTab,
+    setCockpitTab,
+    globalAutomationEnabled,
+    toggleGlobalAutomation,
+    setGlobalAutomationEnabled,
     activeSmartView,
     setActiveSmartView,
     searchQuery,
@@ -693,6 +819,19 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     setNewLeadModalOpen,
     problemModalOpen,
     setProblemModalOpen,
+    logCallModalOpen,
+    setLogCallModalOpen,
+    logCallLeadId,
+    setLogCallLeadId,
+    openLogCallModal,
+    logReplyModalOpen,
+    setLogReplyModalOpen,
+    logReplyLeadId,
+    setLogReplyLeadId,
+    openLogReplyModal,
+    activeInboxLeadId,
+    setActiveInboxLeadId,
+    openInboxForLead,
     assistantOpen,
     setAssistantOpen,
     assistantMode,

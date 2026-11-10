@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.controllers.lead_controller import LeadController
+from app.schemas.call import CallBriefOut, CallCreate, CallOut
 from app.schemas.lead import CompleteTaskRequest, LeadCreate, LeadOut, LeadUpdate
 
 router = APIRouter(tags=["Leads"])
@@ -94,6 +95,18 @@ def get_lead_recording_status(lead_id: int, db: Session = Depends(get_db)):
 @router.get("/leads/{lead_id}/recording")
 def get_lead_recording(lead_id: int, db: Session = Depends(get_db)):
     return LeadController.get_recording_response(db, lead_id)
+
+
+@router.post("/leads/{lead_id}/calls", response_model=CallOut, status_code=201)
+def log_lead_call(lead_id: int, payload: CallCreate, db: Session = Depends(get_db)):
+    """Logs raw call text, structures into 5 sections + prep brief in <10s, and updates lead."""
+    return LeadController.log_call(db, lead_id, payload)
+
+
+@router.get("/leads/{lead_id}/call-brief", response_model=CallBriefOut)
+def get_lead_call_brief(lead_id: int, db: Session = Depends(get_db)):
+    """Returns pre-call 'what to talk about' briefing card combining call notes and chat history."""
+    return LeadController.get_call_brief(db, lead_id)
 
 
 @router.post("/admin/wipe-leads")

@@ -140,6 +140,20 @@ class DiscoveryDeduplicator:
     def _load_db_identities(self) -> None:
         if not self.db:
             return
+
+        # Always load all primary_phone and phones across ALL leads (including test leads)
+        # to prevent UniqueViolation on ix_leads_primary_phone regardless of ignore_test_leads setting.
+        all_phone_leads = self.db.query(Lead.primary_phone, Lead.phones).all()
+        for p_phone, p_phones in all_phone_leads:
+            if p_phone:
+                p10 = extract_last_10_digits(p_phone)
+                if p10:
+                    self.db_phones.add(p10)
+            for p in p_phones or []:
+                p10 = extract_last_10_digits(str(p))
+                if p10:
+                    self.db_phones.add(p10)
+
         q = self.db.query(Lead)
         if self.ignore_test_leads and hasattr(Lead, "is_test"):
             q = q.filter((Lead.is_test == False) | (Lead.is_test == None))  # noqa: E711, E712

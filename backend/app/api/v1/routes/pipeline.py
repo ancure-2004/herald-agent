@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.controllers.pipeline_controller import PipelineController
+from app.services.event_bus import emit_terminal_log
 
 router = APIRouter(tags=["Pipeline & Autopilot"])
 
@@ -56,11 +57,18 @@ def discover_leads(
     elif testing_mode is not None:
         t_mode = testing_mode
 
+    if t_mode:
+        t_count = min(t_count, 2) if t_count else 2
+
     loc = None
     if payload and "locality" in payload:
         loc = str(payload["locality"])
+    elif payload and "query" in payload:
+        loc = str(payload["query"])
     elif locality is not None:
         loc = locality
+
+    emit_terminal_log("DISCOVERY", f"Starting lead discovery for '{loc or 'Delhi NCR'}' (target: {t_count})", level="info")
 
     is_async = False
     if payload and "async_mode" in payload:
@@ -158,11 +166,18 @@ def trigger_autopilot_refill(
     elif testing_mode is not None:
         t_mode = testing_mode
 
+    if t_mode:
+        b_size = min(b_size, 2) if b_size else 2
+
     loc = None
     if payload and "locality" in payload:
         loc = str(payload["locality"])
+    elif payload and "query" in payload:
+        loc = str(payload["query"])
     elif locality is not None:
         loc = locality
+
+    emit_terminal_log("DISCOVERY", f"Starting lead discovery for '{loc or 'Delhi NCR'}' (target: {b_size})", level="info")
 
     is_async = False
     if payload and "async_mode" in payload:
@@ -212,3 +227,12 @@ def get_dispatch_cockpit_batch(hustle_id: int = Query(1), db: Session = Depends(
 @router.get("/autopilot/status")
 def get_cockpit_state(hustle_id: int = Query(1), db: Session = Depends(get_db)):
     return PipelineController.get_cockpit_state(db, hustle_id)
+
+
+@router.get("/cockpit/attention")
+def get_cockpit_attention(hustle_id: int = Query(1), db: Session = Depends(get_db)):
+    """Surfaces items requiring immediate attention across 4 distinct dashboards in <5s."""
+    from app.services.cockpit_service import CockpitService
+
+    return CockpitService.get_attention_dashboards(db, hustle_id=hustle_id)
+

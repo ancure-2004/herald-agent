@@ -69,11 +69,12 @@ export function useSSE({
               return;
             }
 
-            if (data.type === "terminal_log" && data.line) {
+            if ((data.type === "terminal_log" || data.event === "terminal_log") && (data.line || data.message)) {
               if (typeof data.seq === "number" && data.seq > lastLogSeqRef.current) {
                 lastLogSeqRef.current = data.seq;
               }
-              onTerminalLogRef.current?.(data.line, data.seq);
+              const line = data.line || `[${String(data.service || "SYSTEM").toUpperCase()}] ${data.message || ""}`;
+              onTerminalLogRef.current?.(line, data.seq);
               return;
             }
 
@@ -81,7 +82,7 @@ export function useSSE({
               onPipelineStepRef.current?.(data as unknown as PipelineStepEvent);
             }
 
-            const line = `[${new Date().toLocaleTimeString()}] ${data.type}: ${data.title || data.message || "Event"}`;
+            const line = `[${new Date().toLocaleTimeString()}] ${data.type || "Event"}: ${data.title || data.message || "Event"}`;
             onLiveEventRef.current?.(line);
 
             if (
@@ -102,6 +103,41 @@ export function useSSE({
             // ignore parsing error
           }
         };
+
+        // Attach dedicated event listeners for named SSE events from backend EventBus
+        es.addEventListener("terminal_log", (event: MessageEvent) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (typeof data.seq === "number" && data.seq > lastLogSeqRef.current) {
+              lastLogSeqRef.current = data.seq;
+            }
+            const line =
+              data.line ||
+              `[${(data.service || data.source || "SYSTEM").toUpperCase()}] ${data.message || ""}`;
+            onTerminalLogRef.current?.(line, data.seq);
+          } catch {
+            // ignore parsing error
+          }
+        });
+
+        es.addEventListener("autopilot_state", (event: MessageEvent) => {
+          try {
+            const data = JSON.parse(event.data);
+            const line = `[${new Date().toLocaleTimeString()}] Autopilot State: ${data.is_running ? "Running" : "Idle"}`;
+            onLiveEventRef.current?.(line);
+          } catch {
+            // ignore parsing error
+          }
+        });
+
+        es.addEventListener("pipeline_step", (event: MessageEvent) => {
+          try {
+            const data = JSON.parse(event.data);
+            onPipelineStepRef.current?.(data as unknown as PipelineStepEvent);
+          } catch {
+            // ignore parsing error
+          }
+        });
 
         es.onerror = () => {
           if (isCancelled) return;

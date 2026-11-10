@@ -111,6 +111,8 @@ class LeadService:
             custom_fields=payload.custom_fields,
             ai_fields=payload.ai_fields,
             deal_value_inr=payload.deal_value_inr,
+            automation_enabled=getattr(payload, "automation_enabled", True),
+            needs_followup=getattr(payload, "needs_followup", False),
             what_changed_summary="Lead created manually in CRM.",
         )
         LeadRepository.create(db, lead)

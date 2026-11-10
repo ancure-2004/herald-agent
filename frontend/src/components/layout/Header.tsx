@@ -3,10 +3,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   Bell,
+  Bot,
   ChevronDown,
   ChevronRight,
   Clock,
+  Gauge,
+  LayoutGrid,
   Moon,
+  Power,
   Search,
   Settings,
   ShieldCheck,
@@ -18,6 +22,10 @@ export function Header() {
   const {
     activeTab,
     setActiveTab,
+    surface,
+    setSurface,
+    globalAutomationEnabled,
+    toggleGlobalAutomation,
     activeHustleId,
     setActiveHustleId,
     hustles,
@@ -59,17 +67,13 @@ export function Header() {
   }, [profileMenuOpen]);
 
   return (
-    <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#0F1117]/95 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between gap-3 sm:gap-6 sticky top-0 z-30 transition-colors">
+    <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between gap-3 sm:gap-6 sticky top-0 z-30 transition-colors">
       {/* Left: Brand Identity & Compact Hustle Selector */}
       <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-600/25 text-xs sm:text-sm">
           OS
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 dark:text-white">
-            <span className="hidden xl:inline">Personal OS & CRM</span>
-            <span className="xl:hidden">Personal OS</span>
-          </span>
           <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">/</span>
           <select
             value={activeHustleId}
@@ -77,7 +81,7 @@ export function Header() {
             className="bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none cursor-pointer max-w-[130px] sm:max-w-none truncate"
           >
             {hustles.map((h) => (
-              <option key={h.id} value={h.id} className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">
+              <option key={h.id} value={h.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">
                 {h.name}
               </option>
             ))}
@@ -85,33 +89,41 @@ export function Header() {
         </div>
       </div>
 
-      {/* Center: Dual-Surface Switcher (Command vs Cockpit) */}
+      {/* Center: Dual-Surface Switcher (Management vs Cockpit) */}
       <div className="flex items-center p-1 rounded-2xl bg-slate-100/90 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] shadow-inner shrink-0">
-        {/* Surface 1: Command */}
+        {/* Surface 1: Management */}
         <button
-          onClick={() => setActiveTab("dashboard")}
+          onClick={() => {
+            setSurface("management");
+            if (activeTab === "autopilot" || activeTab.startsWith("cockpit_")) {
+              setActiveTab("dashboard");
+            }
+          }}
           className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
-            isCommandActive
+            isCommandActive && surface !== "cockpit"
               ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25 dark:bg-indigo-600 dark:text-white"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]"
           }`}
-          title="Switch to Command"
+          title="Switch to Management"
         >
-          <span className="text-sm leading-none" role="img" aria-label="Command">📊</span>
-          <span className="hidden sm:inline">Command</span>
+          <LayoutGrid className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Management</span>
         </button>
 
         {/* Surface 2: Cockpit */}
         <button
-          onClick={() => setActiveTab("autopilot")}
+          onClick={() => {
+            setSurface("cockpit");
+            setActiveTab("autopilot");
+          }}
           className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
-            isCockpitActive
+            isCockpitActive || surface === "cockpit"
               ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 dark:bg-emerald-600 dark:text-white"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]"
           }`}
           title="Switch to Cockpit"
         >
-          <span className="text-sm leading-none" role="img" aria-label="Cockpit">⚡</span>
+          <Gauge className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Cockpit</span>
         </button>
       </div>
@@ -129,7 +141,7 @@ export function Header() {
             <Search className="w-4 h-4 text-indigo-500" />
             <span>Search leads, tasks, commands...</span>
           </div>
-          <kbd className="px-2 py-0.5 text-[10px] bg-white dark:bg-[#141721] rounded-lg border border-slate-200 dark:border-white/[0.1] font-mono text-slate-500 dark:text-slate-400 shadow-2xs">
+          <kbd className="px-2 py-0.5 text-[10px] bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 font-mono text-slate-500 dark:text-slate-400 shadow-2xs">
             ⌘K
           </kbd>
         </div>
@@ -137,6 +149,39 @@ export function Header() {
 
       {/* Right Utility Items */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        {/* Global Automation Toggle Pill */}
+        <button
+          type="button"
+          onClick={toggleGlobalAutomation}
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+            globalAutomationEnabled
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
+              : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
+          }`}
+          title={
+            globalAutomationEnabled
+              ? "Automation Active: WhatsApp messages queued for Playwright automation"
+              : "Automation Paused: Outbound messages generate prefilled wa.me links"
+          }
+          aria-label={`Toggle Automation: Currently ${globalAutomationEnabled ? "ON" : "OFF"}`}
+        >
+          {globalAutomationEnabled ? (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <Bot className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">AUTO: ON</span>
+            </>
+          ) : (
+            <>
+              <span className="h-2 w-2 rounded-full bg-amber-500" />
+              <Power className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">AUTO: OFF</span>
+            </>
+          )}
+        </button>
         {/* Mobile Search Button (< 1024px) */}
         <button
           type="button"
@@ -173,7 +218,7 @@ export function Header() {
           aria-label="Notifications"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-[#0F1117]"></span>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-slate-900"></span>
         </button>
 
         {/* Interactive Captain Profile Dropdown Popover */}
@@ -181,7 +226,7 @@ export function Header() {
           <button
             type="button"
             onClick={() => setProfileMenuOpen((prev) => !prev)}
-            className="flex items-center gap-2 pl-1 sm:px-2.5 sm:py-1 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all cursor-pointer border border-transparent hover:border-slate-200/80 dark:hover:border-white/[0.08]"
+            className="flex items-center gap-2 pl-1 sm:px-2.5 sm:py-1 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer border border-transparent hover:border-slate-200/80 dark:hover:border-slate-700"
             title="Captain Profile & Hustle Settings"
             aria-expanded={profileMenuOpen}
           >
@@ -199,9 +244,9 @@ export function Header() {
 
           {/* Floating Popover Menu */}
           {profileMenuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-72 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3">
+            <div className="absolute right-0 top-full mt-2 w-72 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3">
               {/* Header */}
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-white/[0.06]">
+              <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="w-10 h-10 rounded-2xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center font-bold text-white text-sm shadow-md shadow-indigo-500/20">
                   C
                 </div>
@@ -215,7 +260,7 @@ export function Header() {
               </div>
 
               {/* Active Hustle Details */}
-              <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-[#0F1117] border border-slate-200/60 dark:border-white/[0.06] space-y-1">
+              <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 space-y-1">
                 <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
                   Active Hustle
                 </div>

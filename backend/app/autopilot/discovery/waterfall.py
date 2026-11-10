@@ -44,7 +44,7 @@ class CandidateStream:
     ):
         self.query = query
         self.locality = locality
-        self.target_count = target_count
+        self.target_count = min(target_count, 2) if testing_mode else target_count
         self.db = db
         self.testing_mode = testing_mode
         self.emit_cb = emit_cb
@@ -249,5 +249,7 @@ class CandidateStream:
 
                 yield cand
                 yielded_count += 1
+                if self.testing_mode and yielded_count >= 2:
+                    break
                 if yielded_count >= self.target_count:
                     break

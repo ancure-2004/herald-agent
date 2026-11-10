@@ -42,39 +42,184 @@ def broadcast_sse(event_type: str, data: Dict[str, Any]) -> None:
             pass
 
 
-def emit_terminal_log(source: str, message: str) -> str:
-    """Appends a log line to the live terminal buffer and streams it via SSE."""
+def emit_terminal_log(
+    source: str,
+    message: str,
+    level: str = "info",
+    lead_id: Optional[int] = None,
+    hustle_id: Optional[int] = 1,
+    db: Optional[Any] = None,
+) -> str:
+    """Appends a log line to the live terminal buffer, persists to TerminalLog, and streams it via SSE."""
     global TERMINAL_LOG_SEQ
     TERMINAL_LOG_SEQ += 1
-    ts_str = datetime.now().strftime("%H:%M:%S")
+    now = datetime.now()
+    ts_str = now.strftime("%H:%M:%S")
     clean_msg = message.strip()
+
+    # Determine service category
+    src_lower = source.lower()
+    if "discover" in src_lower or "scout" in src_lower:
+        service = "discovery"
+    elif "build" in src_lower or "factory" in src_lower or "auditor" in src_lower:
+        service = "building"
+    elif "outreach" in src_lower or "closer" in src_lower or "call" in src_lower or "message" in src_lower:
+        service = "outreach"
+    else:
+        service = src_lower
+
+    # Infer level if info
+    norm_level = level.lower()
+    if norm_level == "info":
+        if "error" in clean_msg.lower() or "fail" in clean_msg.lower():
+            norm_level = "error"
+        elif "warn" in clean_msg.lower() or "drop" in clean_msg.lower() or "brake" in clean_msg.lower():
+            norm_level = "warn"
 
     if re.match(r"^\[\d{2}:\d{2}:\d{2}\]", clean_msg):
         formatted = f"{clean_msg[:10]} [{source}] {clean_msg[10:].lstrip()}"
     else:
         formatted = f"[{ts_str}] [{source}] {clean_msg}"
 
+    db_id = None
+    try:
+        from app.db.session import SessionLocal
+        from app.models.entities import TerminalLog
+
+        should_close = False
+        active_db = db
+        if active_db is None:
+            active_db = SessionLocal()
+            should_close = True
+        try:
+            t_log = TerminalLog(
+                service=service,
+                level=norm_level,
+                lead_id=lead_id,
+                hustle_id=hustle_id,
+                message=clean_msg,
+                metadata_json={"source": source, "formatted": formatted},
+                created_at=now,
+            )
+            active_db.add(t_log)
+            active_db.commit()
+            active_db.refresh(t_log)
+            db_id = t_log.id
+        finally:
+            if should_close:
+                active_db.close()
+    except Exception:
+        pass
+
+    seq_val = db_id or TERMINAL_LOG_SEQ
     entry = {
-        "seq": TERMINAL_LOG_SEQ,
+        "id": seq_val,
+        "seq": seq_val,
         "ts": ts_str,
         "source": source,
+        "service": service,
+        "level": norm_level,
+        "lead_id": lead_id,
+        "hustle_id": hustle_id,
+        "message": clean_msg,
         "line": formatted,
+        "timestamp": now.isoformat(),
     }
     TERMINAL_LOG_BUFFER.append(entry)
     if len(TERMINAL_LOG_BUFFER) > 250:
         del TERMINAL_LOG_BUFFER[:-250]
 
-    broadcast_sse("terminal_log", {"seq": TERMINAL_LOG_SEQ, "source": source, "line": formatted, "title": formatted})
+    broadcast_sse(
+        "terminal_log",
+        {
+            "seq": seq_val,
+            "id": seq_val,
+            "source": source,
+            "service": service,
+            "level": norm_level,
+            "lead_id": lead_id,
+            "message": clean_msg,
+            "line": formatted,
+            "title": formatted,
+            "timestamp": now.isoformat(),
+        },
+    )
     return formatted
 
 
-def get_terminal_logs(since_seq: Optional[int] = None) -> Any:
-    all_logs = list(TERMINAL_LOG_BUFFER)
+def get_terminal_logs(
+    db: Optional[Any] = None,
+    service: Optional[str] = None,
+    level: Optional[str] = None,
+    lead_id: Optional[int] = None,
+    since_seq: Optional[int] = None,
+    limit: int = 100,
+) -> Any:
+    """Fetches terminal logs from persistent store and merges with active buffer with query filtering."""
+    merged_logs: List[Dict[str, Any]] = []
+    seen_msgs = set()
+
+    # 1. Fetch from database if available
+    if db is not None:
+        try:
+            from app.models.entities import TerminalLog
+
+            query = db.query(TerminalLog)
+            if service and service.strip().lower() != "all":
+                query = query.filter(TerminalLog.service == service.strip().lower())
+            if level:
+                query = query.filter(TerminalLog.level == level.strip().lower())
+            if lead_id is not None:
+                query = query.filter(TerminalLog.lead_id == lead_id)
+            if since_seq is not None:
+                query = query.filter(TerminalLog.id > since_seq)
+
+            db_logs = query.order_by(TerminalLog.id.asc()).limit(limit).all()
+            for l in db_logs:
+                entry = {
+                    "id": l.id,
+                    "seq": l.id,
+                    "service": l.service,
+                    "level": l.level.lower(),
+                    "lead_id": l.lead_id,
+                    "hustle_id": l.hustle_id,
+                    "message": l.message,
+                    "line": f"[{l.service.upper()}] {l.message}",
+                    "created_at": l.created_at.isoformat() if l.created_at else "",
+                    "timestamp": l.created_at.isoformat() if l.created_at else "",
+                }
+                merged_logs.append(entry)
+                seen_msgs.add(l.message)
+        except Exception:
+            pass
+
+    # 2. Merge with active buffer (avoids duplicates)
+    for b_log in TERMINAL_LOG_BUFFER:
+        b_service = (b_log.get("service") or "").lower()
+        b_level = (b_log.get("level") or "").lower()
+        b_lead_id = b_log.get("lead_id")
+        b_seq = b_log.get("seq", 0)
+        b_msg = b_log.get("message", "")
+
+        if service and service.strip().lower() != "all" and b_service != service.strip().lower():
+            continue
+        if level and b_level != level.strip().lower():
+            continue
+        if lead_id is not None and b_lead_id != lead_id:
+            continue
+        if since_seq is not None and b_seq <= since_seq:
+            continue
+
+        if b_msg not in seen_msgs:
+            merged_logs.append(b_log)
+            seen_msgs.add(b_msg)
+
+    sliced_logs = merged_logs[:limit]
     if since_seq is not None:
-        filtered = [l for l in all_logs if l.get("seq", 0) > since_seq]
-        latest_seq = all_logs[-1]["seq"] if all_logs else 0
-        return {"logs": filtered, "latest_seq": latest_seq}
-    return all_logs
+        latest_seq = sliced_logs[-1]["seq"] if sliced_logs else (since_seq or 0)
+        return {"logs": sliced_logs, "latest_seq": latest_seq}
+    return sliced_logs
+
 
 
 def set_autopilot_running(running: bool, run_id: Optional[int] = None) -> None:

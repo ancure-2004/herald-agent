@@ -115,5 +115,18 @@ class LeadController:
         )
 
     @staticmethod
+    def log_call(db: Session, lead_id: int, payload: Any) -> Dict[str, Any]:
+        from app.services.call_service import CallService
+
+        return CallService.log_call(db, lead_id, payload)
+
+    @staticmethod
+    def get_call_brief(db: Session, lead_id: int) -> Dict[str, Any]:
+        from app.services.call_service import CallService
+
+        return CallService.get_call_brief(db, lead_id)
+
+
+    @staticmethod
     def wipe_leads(db: Session) -> Dict[str, Any]:
         return LeadService.wipe_leads(db)

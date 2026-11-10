@@ -28,6 +28,7 @@ class JobManager:
                 )
             _ACTIVE_RUN_ID = prospective_run_id
             _ACTIVE_CANCEL_TOKEN = CancelToken()
+            cls._ACTIVE_CANCEL_TOKEN = _ACTIVE_CANCEL_TOKEN
             return _ACTIVE_CANCEL_TOKEN
 
     @classmethod
@@ -37,6 +38,13 @@ class JobManager:
             if _ACTIVE_RUN_ID == run_id:
                 _ACTIVE_RUN_ID = None
                 _ACTIVE_CANCEL_TOKEN = None
+                if hasattr(cls, "_ACTIVE_CANCEL_TOKEN"):
+                    delattr(cls, "_ACTIVE_CANCEL_TOKEN")
+
+    @classmethod
+    def get_active_cancel_token(cls) -> Optional[CancelToken]:
+        with _MANAGER_LOCK:
+            return getattr(cls, "_ACTIVE_CANCEL_TOKEN", None) or _ACTIVE_CANCEL_TOKEN
 
     @classmethod
     def get_active_run_id(cls) -> Optional[int]:

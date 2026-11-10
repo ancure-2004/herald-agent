@@ -7,8 +7,22 @@ from app.services.event_bus import SSE_SUBSCRIBERS, get_terminal_logs
 
 class EventsController:
     @staticmethod
-    def get_terminal_logs(since_seq: Optional[int] = None) -> Any:
-        return get_terminal_logs(since_seq=since_seq)
+    def get_terminal_logs(
+        db: Optional[Any] = None,
+        service: Optional[str] = None,
+        level: Optional[str] = None,
+        lead_id: Optional[int] = None,
+        since_seq: Optional[int] = None,
+        limit: int = 100,
+    ) -> Any:
+        return get_terminal_logs(
+            db=db,
+            service=service,
+            level=level,
+            lead_id=lead_id,
+            since_seq=since_seq,
+            limit=limit,
+        )
 
     @staticmethod
     def subscribe_sse():

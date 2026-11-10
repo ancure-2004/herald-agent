@@ -48,11 +48,12 @@ def execute_autopilot_run(
     QuotaGuard.ensure_schema(db)
 
     # 1. Clamp target in testing mode
-    if options.testing_mode and options.target_count > settings.test_mode_max_target:
-        msg = f"[TEST] Clamping target_count from {options.target_count} to {settings.test_mode_max_target}"
+    effective_test_cap = min(settings.test_mode_max_target, 2)
+    if options.testing_mode and options.target_count > effective_test_cap:
+        msg = f"[TEST] Clamping target_count from {options.target_count} to {effective_test_cap}"
         if log_cb:
             log_cb(msg)
-        options.target_count = settings.test_mode_max_target
+        options.target_count = effective_test_cap
 
     # 2. Create RunLog at START with status 'running'
     run_log = RunLog(

@@ -1,8 +1,10 @@
 from typing import Any, Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
 
+from app.api.deps import get_db
 from app.controllers.events_controller import EventsController
 
 router = APIRouter(tags=["Events & Telemetry"])
@@ -19,6 +21,20 @@ def stream_events():
 
 
 @router.get("/terminal/logs")
-def get_terminal_logs_endpoint(since_seq: Optional[int] = Query(None)) -> Any:
+def get_terminal_logs_endpoint(
+    service: Optional[str] = Query(None),
+    level: Optional[str] = Query(None),
+    lead_id: Optional[int] = Query(None),
+    since_seq: Optional[int] = Query(None),
+    limit: int = Query(100),
+    db: Session = Depends(get_db),
+) -> Any:
     """Returns terminal logs. When since_seq is provided, returns {'logs': [...], 'latest_seq': N}."""
-    return EventsController.get_terminal_logs(since_seq=since_seq)
+    return EventsController.get_terminal_logs(
+        db=db,
+        service=service,
+        level=level,
+        lead_id=lead_id,
+        since_seq=since_seq,
+        limit=limit,
+    )

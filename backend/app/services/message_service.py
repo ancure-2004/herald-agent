@@ -1,5 +1,6 @@
+import urllib.parse
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -9,8 +10,15 @@ from app.models.entities import Message, OutboxItem, Stage
 from app.repositories.hustle_repo import HustleRepository
 from app.repositories.lead_repo import LeadRepository
 from app.repositories.message_repo import MessageRepository
-from app.schemas.message import MessageCreate, OutboxApproveRequest
-from app.services.event_bus import broadcast_sse
+from app.schemas.message import (
+    ManualReplyRequest,
+    MessageCreate,
+    MessageOut,
+    MessageSendRequest,
+    OutboxApproveRequest,
+)
+from app.services.ai_service import AIService
+from app.services.event_bus import broadcast_sse, emit_terminal_log
 from app.utils.reply import classify_inbound_reply
 from app.utils.safety import (
     check_outbox_safety,
@@ -20,6 +28,13 @@ from app.utils.safety import (
     parse_promises_and_snoozes,
 )
 
+GLOBAL_AUTOMATION_SETTINGS: Dict[str, Any] = {
+    "automation_enabled": True,
+    "whatsapp_sender_mode": "playwright",
+    "auto_reply_analysis": True,
+}
+
+
 
 class MessageService:
     @staticmethod
@@ -28,18 +43,35 @@ class MessageService:
         if not lead:
             raise NotFoundError("Lead not found.")
 
+        # Enforce Channel Restriction Invariant: inbound/outbound messages must adhere to hustle.allowed_channels
+        clean_channel = payload.channel.strip().lower()
+        if payload.direction in ("inbound", "outbound"):
+            hustle = HustleRepository.get_by_id(db, lead.hustle_id)
+            if hustle:
+                allowed = [c.lower() for c in (hustle.allowed_channels or ["whatsapp"])]
+                if clean_channel not in allowed:
+                    raise HTTPException(
+                        status_code=403,
+                        detail=f"Channel restriction: '{payload.channel}' is not permitted for {hustle.name}. Allowed: {allowed}",
+                    )
+
         now = datetime.now(timezone.utc)
         ai_label = payload.ai_label
         if payload.direction == "inbound" and not ai_label:
             ai_label = classify_inbound_reply(payload.text)
 
+        delivery_status = getattr(payload, "delivery_status", None) or "sent"
+        outbox_id = getattr(payload, "outbox_id", None)
+
         msg = Message(
             lead_id=lead.id,
-            channel=payload.channel,
+            channel=clean_channel,
             direction=payload.direction,
             text=payload.text.strip(),
             template_used=payload.template_used,
             ai_label=ai_label,
+            delivery_status=delivery_status,
+            outbox_id=outbox_id,
             created_at=now,
         )
         MessageRepository.create_message(db, msg)
@@ -48,6 +80,7 @@ class MessageService:
         if payload.direction == "inbound" and (ai_label == "stop" or detect_stop_intent(payload.text)):
             lead.do_not_contact = True
             lead.do_not_contact_reason = f"Auto-flagged from inbound reply: '{payload.text[:80]}'"
+            lead.needs_followup = False
             lost_stage = (
                 db.query(Stage)
                 .filter(Stage.hustle_id == lead.hustle_id, Stage.is_lost == True)  # noqa: E712
@@ -63,6 +96,8 @@ class MessageService:
             replied_stage = db.query(Stage).filter(Stage.hustle_id == lead.hustle_id, Stage.slug == "replied").first()
             if replied_stage and not (lead.stage_rel and lead.stage_rel.is_won):
                 lead.stage_id = replied_stage.id
+            lead.status = "REPLIED"
+            lead.needs_followup = False
             lead.what_changed_summary = f"Inbound {payload.channel} reply ({ai_label}): {payload.text[:100]}"
 
         # Parse promises and snoozes ("next Monday", "after Diwali", etc.)
@@ -141,6 +176,8 @@ class MessageService:
                     direction="outbound",
                     text=payload.text,
                     template_used=payload.step_tag,
+                    delivery_status="sent",
+                    outbox_id=outbox_item.id,
                     created_at=now,
                 )
             )
@@ -218,3 +255,200 @@ class MessageService:
         )
         db.commit()
         return {"status": "fallback_applied", "lead_id": lead.id, "preferred_channel": lead.preferred_channel}
+
+    @staticmethod
+    def send_message(db: Session, lead_id: int, payload: MessageSendRequest) -> Dict[str, Any]:
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+
+        clean_channel = payload.channel.strip().lower()
+        hustle = HustleRepository.get_by_id(db, lead.hustle_id)
+        if hustle:
+            allowed = [c.lower() for c in (hustle.allowed_channels or ["whatsapp"])]
+            if clean_channel not in allowed:
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"Channel restriction: '{payload.channel}' is not permitted for {hustle.name}. Allowed: {allowed}",
+                )
+
+        now = datetime.now(timezone.utc)
+        use_automation = payload.automation
+        if use_automation is None:
+            use_automation = lead.automation_enabled and GLOBAL_AUTOMATION_SETTINGS.get("automation_enabled", True)
+
+        if use_automation:
+            unique_key = f"outbox:lead:{lead.id}:ch:{clean_channel}:ts:{int(now.timestamp())}"
+            outbox_item = OutboxItem(
+                lead_id=lead.id,
+                hustle_id=lead.hustle_id,
+                channel=clean_channel,
+                text=payload.text.strip(),
+                unique_key=unique_key,
+                status="queued",
+                scheduled_for=now,
+            )
+            db.add(outbox_item)
+            db.flush()
+
+            msg = Message(
+                lead_id=lead.id,
+                channel=clean_channel,
+                direction="outbound",
+                text=payload.text.strip(),
+                delivery_status="queued",
+                outbox_id=outbox_item.id,
+                created_at=now,
+            )
+            MessageRepository.create_message(db, msg)
+            db.commit()
+            db.refresh(outbox_item)
+            db.refresh(msg)
+
+            broadcast_sse("message_queued", {"lead_id": lead.id, "outbox_id": outbox_item.id, "text": msg.text})
+            emit_terminal_log("OUTREACH", f"Queued WhatsApp message for {lead.name}: {msg.text[:60]}")
+            return {
+                "status": "queued",
+                "outbox_id": outbox_item.id,
+                "wa_url": None,
+                "delivery_status": "queued",
+                "message_id": msg.id,
+            }
+        else:
+            phone_raw = lead.primary_phone or ""
+            digits = "".join(ch for ch in phone_raw if ch.isdigit()).lstrip("0")
+            if len(digits) == 10:
+                digits = "91" + digits
+            elif len(digits) == 12 and digits.startswith("91"):
+                pass
+            encoded_text = urllib.parse.quote(payload.text.strip())
+            wa_url = f"https://wa.me/{digits}?text={encoded_text}" if digits else f"https://wa.me/?text={encoded_text}"
+
+            msg = Message(
+                lead_id=lead.id,
+                channel=clean_channel,
+                direction="outbound",
+                text=payload.text.strip(),
+                delivery_status="sent_manually",
+                outbox_id=None,
+                created_at=now,
+            )
+            MessageRepository.create_message(db, msg)
+            db.commit()
+            db.refresh(msg)
+
+            emit_terminal_log("OUTREACH", f"Generated manual wa.me link for {lead.name}")
+            return {
+                "status": "sent_manually",
+                "outbox_id": None,
+                "wa_url": wa_url,
+                "delivery_status": "sent_manually",
+                "message_id": msg.id,
+            }
+
+    @staticmethod
+    def log_reply(db: Session, lead_id: int, payload: ManualReplyRequest) -> Dict[str, Any]:
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+
+        clean_channel = payload.channel.strip().lower()
+        hustle = HustleRepository.get_by_id(db, lead.hustle_id)
+        if hustle:
+            allowed = [c.lower() for c in (hustle.allowed_channels or ["whatsapp"])]
+            if clean_channel not in allowed:
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"Channel restriction: '{payload.channel}' is not permitted for {hustle.name}. Allowed: {allowed}",
+                )
+
+        msg_ts = payload.created_at or datetime.now(timezone.utc)
+        raw_lines = [l.strip() for l in payload.text.split("\n") if l.strip()]
+        if not raw_lines:
+            raw_lines = [payload.text.strip()]
+
+        created_messages = []
+        is_stop = False
+        for line in raw_lines:
+            ai_label = classify_inbound_reply(line)
+            if ai_label == "stop" or detect_stop_intent(line):
+                is_stop = True
+            msg = Message(
+                lead_id=lead.id,
+                channel=clean_channel,
+                direction="inbound",
+                text=line,
+                ai_label=ai_label,
+                delivery_status="delivered",
+                created_at=msg_ts,
+            )
+            MessageRepository.create_message(db, msg)
+            created_messages.append(msg)
+
+        if is_stop:
+            lead.do_not_contact = True
+            lead.do_not_contact_reason = f"Logged STOP reply: '{raw_lines[0][:80]}'"
+            lead.needs_followup = False
+            lost_stage = (
+                db.query(Stage)
+                .filter(Stage.hustle_id == lead.hustle_id, Stage.is_lost == True)  # noqa: E712
+                .first()
+            )
+            if lost_stage:
+                lead.stage_id = lost_stage.id
+            for ob in lead.outbox_items:
+                if ob.status in ("pending_approval", "queued"):
+                    ob.status = "blocked"
+                    ob.error_message = "Blocked by inbound STOP reply."
+        else:
+            replied_stage = db.query(Stage).filter(Stage.hustle_id == lead.hustle_id, Stage.slug == "replied").first()
+            if replied_stage and not (lead.stage_rel and lead.stage_rel.is_won):
+                lead.stage_id = replied_stage.id
+            lead.status = "REPLIED"
+            lead.needs_followup = False
+            lead.what_changed_summary = f"Logged inbound reply: {raw_lines[0][:100]}"
+
+        db.commit()
+        for m in created_messages:
+            db.refresh(m)
+        db.refresh(lead)
+
+        suggestions = AIService.generate_reply_suggestions(lead, lead.messages)
+        emit_terminal_log("OUTREACH", f"Inbound reply logged for {lead.name} ({len(created_messages)} msgs) -> AI suggestions ready")
+
+        return {
+            "messages": [MessageOut.model_validate(m).model_dump() for m in created_messages],
+            "lead_status": lead.status,
+            "needs_followup": lead.needs_followup,
+            "ai_suggestions": suggestions,
+        }
+
+    @staticmethod
+    def get_reply_suggestions(db: Session, lead_id: int) -> Dict[str, Any]:
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+        suggestions = AIService.generate_reply_suggestions(lead, lead.messages)
+        return {
+            "lead_id": lead.id,
+            "suggestions": suggestions,
+        }
+
+    @staticmethod
+    def get_lead_messages(db: Session, lead_id: int) -> List[Message]:
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+        return db.query(Message).filter(Message.lead_id == lead.id).order_by(Message.created_at.asc()).all()
+
+    @staticmethod
+    def get_automation_settings() -> Dict[str, Any]:
+        return dict(GLOBAL_AUTOMATION_SETTINGS)
+
+    @staticmethod
+    def update_automation_settings(payload: Dict[str, Any]) -> Dict[str, Any]:
+        for k, v in payload.items():
+            if v is not None and k in GLOBAL_AUTOMATION_SETTINGS:
+                GLOBAL_AUTOMATION_SETTINGS[k] = v
+        return dict(GLOBAL_AUTOMATION_SETTINGS)
+
