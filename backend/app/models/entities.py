@@ -394,3 +394,16 @@ class TerminalLog(Base):
 
     lead = relationship("Lead", back_populates="terminal_logs")
     hustle = relationship("Hustle", back_populates="terminal_logs")
+
+
+class AppSetting(Base):
+    """Table 15: app_settings - Durable key/value store for runtime settings (e.g. automation toggle).
+
+    Replaces in-memory globals so server restarts and --reload respect the last saved value.
+    """
+
+    __tablename__ = "app_settings"
+
+    key = Column(String(100), primary_key=True, nullable=False)
+    value = Column(Text, nullable=False, default="")
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

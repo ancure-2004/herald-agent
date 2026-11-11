@@ -98,7 +98,11 @@ def record_walkthrough_batch(
         if testing_mode and existing_path:
             _emit(f"[TESTING MODE] Bypassing cached video for '{lead.name}', executing live walkthrough...")
 
-        demo_url = f"{base_url.rstrip('/')}/modern/{lead.slug}"
+        # Item 7 & 8: Append ?recorder=1 so the demo engine and any tracking
+        # middleware can recognise this as an automated session and not count it
+        # as a real doctor view.  The backend TrackingEventCreate.is_recorder flag
+        # handles the same guard on the /public/track endpoint.
+        demo_url = f"{base_url.rstrip('/')}/modern/{lead.slug}?recorder=1"
         to_record.append(
             {
                 "lead": lead,

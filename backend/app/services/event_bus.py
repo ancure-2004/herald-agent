@@ -47,7 +47,7 @@ def emit_terminal_log(
     message: str,
     level: str = "info",
     lead_id: Optional[int] = None,
-    hustle_id: Optional[int] = 1,
+    hustle_id: Optional[int] = None,  # Item 14: None instead of hardcoded 1
     db: Optional[Any] = None,
 ) -> str:
     """Appends a log line to the live terminal buffer, persists to TerminalLog, and streams it via SSE."""
@@ -81,35 +81,61 @@ def emit_terminal_log(
     else:
         formatted = f"[{ts_str}] [{source}] {clean_msg}"
 
-    db_id = None
-    try:
-        from app.db.session import SessionLocal
-        from app.models.entities import TerminalLog
-
-        should_close = False
-        active_db = db
-        if active_db is None:
-            active_db = SessionLocal()
-            should_close = True
+    # Item 14: Resolve hustle_id from DB when not supplied rather than hardcoding 1.
+    # This is best-effort: if it fails (DB not available, no hustle) we keep None.
+    resolved_hustle_id = hustle_id
+    if resolved_hustle_id is None and db is not None:
         try:
-            t_log = TerminalLog(
-                service=service,
-                level=norm_level,
-                lead_id=lead_id,
-                hustle_id=hustle_id,
-                message=clean_msg,
-                metadata_json={"source": source, "formatted": formatted},
-                created_at=now,
-            )
-            active_db.add(t_log)
-            active_db.commit()
-            active_db.refresh(t_log)
-            db_id = t_log.id
-        finally:
-            if should_close:
-                active_db.close()
-    except Exception:
-        pass
+            from app.models.entities import Hustle as _Hustle
+            first = db.query(_Hustle).order_by(_Hustle.id.asc()).first()
+            if first:
+                resolved_hustle_id = first.id
+        except Exception:
+            pass
+
+    db_id = None
+    # Item 14: Retry up to 3 times on SQLite OperationalError (database is locked)
+    # and log to stderr instead of silently swallowing the error.
+    _max_retries = 3
+    for _attempt in range(_max_retries):
+        try:
+            from app.db.session import SessionLocal
+            from app.models.entities import TerminalLog
+
+            should_close = False
+            active_db = db
+            if active_db is None:
+                active_db = SessionLocal()
+                should_close = True
+            try:
+                t_log = TerminalLog(
+                    service=service,
+                    level=norm_level,
+                    lead_id=lead_id,
+                    hustle_id=resolved_hustle_id,
+                    message=clean_msg,
+                    metadata_json={"source": source, "formatted": formatted},
+                    created_at=now,
+                )
+                active_db.add(t_log)
+                active_db.commit()
+                active_db.refresh(t_log)
+                db_id = t_log.id
+                break  # success — exit retry loop
+            finally:
+                if should_close:
+                    active_db.close()
+        except Exception as _exc:
+            import sys as _sys
+            _exc_str = str(_exc)
+            _is_busy = "locked" in _exc_str.lower() or "busy" in _exc_str.lower()
+            if _is_busy and _attempt < _max_retries - 1:
+                import time as _time
+                _time.sleep(0.05 * (2 ** _attempt))  # 50ms, 100ms backoff
+                continue
+            # Non-retryable or final retry: log to stderr so the error is visible
+            print(f"[event_bus] emit_terminal_log DB write failed (attempt {_attempt+1}): {_exc_str}", file=_sys.stderr)
+            break
 
     seq_val = db_id or TERMINAL_LOG_SEQ
     entry = {
@@ -157,7 +183,10 @@ def get_terminal_logs(
 ) -> Any:
     """Fetches terminal logs from persistent store and merges with active buffer with query filtering."""
     merged_logs: List[Dict[str, Any]] = []
-    seen_msgs = set()
+    # Item 14: Track DB row IDs (not messages) to avoid duplicating rows that are
+    # already in the in-memory buffer.  Identical message text from different steps
+    # must NOT be collapsed — only exact same DB row id is a true duplicate.
+    seen_db_ids: set = set()
 
     # 1. Fetch from database if available
     if db is not None:
@@ -189,17 +218,19 @@ def get_terminal_logs(
                     "timestamp": l.created_at.isoformat() if l.created_at else "",
                 }
                 merged_logs.append(entry)
-                seen_msgs.add(l.message)
+                seen_db_ids.add(l.id)
         except Exception:
             pass
 
-    # 2. Merge with active buffer (avoids duplicates)
+    # 2. Merge with active buffer — skip only entries whose DB id is already present.
+    # Items that only exist in the buffer (db_id=None, seq is TERMINAL_LOG_SEQ) are
+    # always included so in-flight log lines never disappear.
     for b_log in TERMINAL_LOG_BUFFER:
         b_service = (b_log.get("service") or "").lower()
         b_level = (b_log.get("level") or "").lower()
         b_lead_id = b_log.get("lead_id")
         b_seq = b_log.get("seq", 0)
-        b_msg = b_log.get("message", "")
+        b_id = b_log.get("id")
 
         if service and service.strip().lower() != "all" and b_service != service.strip().lower():
             continue
@@ -210,9 +241,10 @@ def get_terminal_logs(
         if since_seq is not None and b_seq <= since_seq:
             continue
 
-        if b_msg not in seen_msgs:
-            merged_logs.append(b_log)
-            seen_msgs.add(b_msg)
+        # Only skip if this buffer entry is already represented by a DB row
+        if b_id and b_id in seen_db_ids:
+            continue
+        merged_logs.append(b_log)
 
     sliced_logs = merged_logs[:limit]
     if since_seq is not None:

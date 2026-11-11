@@ -12,6 +12,11 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
         conn.execute(
             text(
                 """
+                CREATE TABLE IF NOT EXISTS app_settings (
+                    key VARCHAR(100) PRIMARY KEY,
+                    value TEXT NOT NULL DEFAULT '',
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS is_test BOOLEAN DEFAULT FALSE;
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS test_run_id VARCHAR(100);
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'STAGED';
@@ -158,6 +163,18 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_calls_id ON calls (id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_calls_lead_id ON calls (lead_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_calls_created_at ON calls (created_at)"))
+        if not insp.has_table("app_settings"):
+            conn.execute(
+                text(
+                    """
+                    CREATE TABLE app_settings (
+                        key VARCHAR(100) PRIMARY KEY,
+                        value TEXT NOT NULL DEFAULT '',
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """
+                )
+            )
         if not insp.has_table("terminal_logs"):
             conn.execute(
                 text(

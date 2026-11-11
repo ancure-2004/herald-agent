@@ -1,3 +1,13 @@
+# Item 9: Populate os.environ from .env BEFORE importing any app module that calls
+# os.getenv() directly (agents.py, pipeline_service.py, tracking_service.py, etc.).
+# config.py also calls load_dotenv, but main.py imports trigger those modules first.
+try:
+    from pathlib import Path as _Path
+    from dotenv import load_dotenv as _load_dotenv
+    _load_dotenv(_Path(__file__).resolve().parent.parent / ".env", override=False)
+except Exception:
+    pass
+
 import asyncio
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -28,6 +38,27 @@ from app.seed import seed_initial_data
 from app.services.event_bus import emit_terminal_log, set_main_event_loop
 
 
+def _startup_recover_stuck_runs(db) -> int:
+    """Item 10: Mark any RunLog rows still in 'running' status as 'interrupted'.
+
+    These are runs that were alive in a previous server process which crashed or
+    was restarted.  The JobManager in-memory lock was reset when the process died,
+    so these rows are now orphaned — mark them before the new process can start
+    new runs so the UI does not permanently show a phantom 'in progress' state.
+    """
+    from datetime import datetime, timezone
+    from app.models.entities import RunLog
+    stuck = db.query(RunLog).filter(RunLog.status == "running").all()
+    for run in stuck:
+        run.status = "interrupted"
+        run.finished_at = run.finished_at or datetime.now(timezone.utc)
+        run.errors = (run.errors or []) + ["[startup] marked interrupted — previous process ended without completing this run"]
+    if stuck:
+        db.commit()
+        logger.warning(f"Startup: marked {len(stuck)} stuck run(s) as 'interrupted': ids={[r.id for r in stuck]}")
+    return len(stuck)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Production lifespan event manager for application startup and shutdown."""
@@ -41,12 +72,26 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except RuntimeError:
         pass
 
-    # Ensure database tables exist and seed initial lookup data
+    # Ensure database tables exist
     Base.metadata.create_all(bind=engine)
     ensure_schema_columns(engine)
+
     db = SessionLocal()
     try:
-        seed_initial_data(db, include_demo_leads=True)
+        # Item 10: Recover stuck 'running' runs from a previous crashed/restarted process
+        recovered = _startup_recover_stuck_runs(db)
+        if recovered:
+            emit_terminal_log("SYSTEM", f"Startup: recovered {recovered} interrupted pipeline run(s).")
+
+        # Item 12: Only seed sample/demo leads when explicitly opted-in via env var.
+        # Unconditional seeding wiped real leads on every --reload and obfuscated
+        # the stage→status guess logic.  Lookup data (stages, hustles, smart views,
+        # objections) is seeded always; demo leads are gated.
+        import os as _os
+        seed_demo = _os.getenv("SEED_SAMPLE_DATA", "").lower() == "true"
+        seed_initial_data(db, include_demo_leads=seed_demo)
+        if seed_demo:
+            logger.info("SEED_SAMPLE_DATA=true — sample clinic demo leads seeded.")
     except Exception as e:
         logger.warning(f"Initial data seed notice: {e}")
     finally:

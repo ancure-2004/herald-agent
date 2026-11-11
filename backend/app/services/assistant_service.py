@@ -18,6 +18,7 @@ from app.models.entities import (
 from app.repositories.hustle_repo import HustleRepository
 from app.schemas.hustle import ProblemReportCreate, TelegramCommandRequest
 from app.services.event_bus import emit_terminal_log
+from app.services.lead_service import sync_lead_stage_and_status
 from app.utils.safety import compute_stock_plan
 
 ASSISTANT_UNDO_STACK: List[Dict[str, Any]] = []
@@ -119,7 +120,7 @@ class AssistantService:
         if latest_run:
             run_snapshot = {
                 "id": latest_run.id,
-                "step_name": latest_run.step_name,
+                "job_type": latest_run.job_type,
                 "count_found": latest_run.count_found,
                 "count_passed": latest_run.count_passed,
                 "count_dropped": latest_run.count_dropped,
@@ -227,8 +228,13 @@ class AssistantService:
                 if target_lead:
                     break
 
-            if not target_lead and leads:
-                target_lead = leads[0]
+            if not target_lead:
+                return {
+                    "mode": "do",
+                    "reply": "⚠️ I couldn't match a clinic name in your command. Please mention the clinic name more clearly (e.g. 'move Sharma Dental to replied').",
+                    "undo_id": None,
+                    "matched_leads": [],
+                }
 
             if target_lead:
                 old_stage_id = target_lead.stage_id
@@ -248,7 +254,7 @@ class AssistantService:
                         matched_stage = next((s for s in stages if s.slug == "viewed_demo"), None)
                     elif "contacted" in low or "sent" in low:
                         matched_stage = next((s for s in stages if s.slug == "contacted"), None)
-                    elif "won" in low:
+                    elif re.search(r"\bwon\b", low):
                         matched_stage = next((s for s in stages if s.is_won), None)
 
                 m_days = re.search(r"(\d+)\s*day", low)
@@ -268,7 +274,7 @@ class AssistantService:
 
                 changes_desc: List[str] = []
                 if matched_stage:
-                    target_lead.stage_id = matched_stage.id
+                    sync_lead_stage_and_status(db, target_lead, matched_stage)
                     changes_desc.append(f"moved to stage '{matched_stage.name}'")
                 if snooze_days > 0:
                     new_due = datetime.now(timezone.utc) + timedelta(days=snooze_days)

@@ -30,6 +30,64 @@ from app.utils.safety import (
 )
 from app.utils.slug import slugify
 
+# ---------------------------------------------------------------------------
+# Item 13: Stage / Status Single Source of Truth
+# ---------------------------------------------------------------------------
+# The Lead model carries BOTH a stage_id (FK to stages table, the full pipeline
+# position) and a denormalized status string (used by the frontend smart views
+# and the outbox safety guard).  Historically these were updated independently,
+# leading to drift (e.g. stage='viewed_demo' but status still 'STAGED').
+#
+# Rule:
+#   stage.slug           → lead.status
+#   -----------------------  --------------------
+#   staged / queued          STAGED
+#   contacted                CONTACTED
+#   viewed_demo              INTERESTED
+#   package_ready            PACKAGE_READY
+#   negotiating              NEGOTIATING
+#   closed_won / won         WON
+#   closed_lost / lost       LOST
+#   do_not_contact / dnc     DNC
+#   (anything else)          STAGED (safe default)
+#
+# ALWAYS call sync_lead_stage_and_status() when mutating lead.stage_id so that
+# lead.status is never stale.  Do NOT call db.commit() inside this helper —
+# the caller owns the transaction.
+# ---------------------------------------------------------------------------
+
+_STAGE_SLUG_TO_STATUS: dict = {
+    "staged": "STAGED",
+    "queued": "STAGED",
+    "package_ready": "PACKAGE_READY",
+    "contacted": "CONTACTED",
+    "viewed_demo": "INTERESTED",
+    "negotiating": "NEGOTIATING",
+    "closed_won": "WON",
+    "won": "WON",
+    "closed_lost": "LOST",
+    "lost": "LOST",
+    "do_not_contact": "DNC",
+    "dnc": "DNC",
+}
+
+
+def sync_lead_stage_and_status(db, lead, new_stage) -> None:
+    """Item 13: Atomically set lead.stage_id AND lead.status from a Stage object.
+
+    Args:
+        db:        SQLAlchemy Session (caller commits).
+        lead:      Lead ORM instance to mutate.
+        new_stage: Stage ORM instance to move the lead into.
+
+    After this call lead.stage_id == new_stage.id and lead.status is the
+    canonical string derived from new_stage.slug.  The caller must still
+    call db.commit() (or db.flush()) to persist.
+    """
+    lead.stage_id = new_stage.id
+    slug = (new_stage.slug or "").lower().strip()
+    lead.status = _STAGE_SLUG_TO_STATUS.get(slug, "STAGED")
+
 
 class LeadService:
     @staticmethod
@@ -178,8 +236,15 @@ class LeadService:
             next_action_due_at=target_due_at,
         )
 
+        # Apply all payload fields first (this may set stage_id directly)
         for k, v in data.items():
             setattr(lead, k, v)
+
+        # Item 13: If the stage changed, sync status via SSOT helper so they
+        # never drift.  We re-query in case a payload field overwrote stage_id.
+        if "stage_id" in data:
+            final_stage = db.query(Stage).filter(Stage.id == lead.stage_id).first() or target_stage
+            sync_lead_stage_and_status(db, lead, final_stage)
 
         if lead.do_not_contact:
             for item in lead.outbox_items:
@@ -212,7 +277,8 @@ class LeadService:
             target_stage = db.query(Stage).filter(Stage.id == payload.move_to_stage_id).first()
             if not target_stage:
                 raise UnprocessableEntityError("Target stage not found.")
-            lead.stage_id = target_stage.id
+            # Item 13: use SSOT helper to keep stage_id and status in sync
+            sync_lead_stage_and_status(db, lead, target_stage)
 
         if payload.archive:
             lead.is_archived = True
@@ -379,7 +445,8 @@ class LeadService:
         )
         next_act = proposals[0].what if proposals else f"Send post-call WhatsApp follow-up ({call_note[:45]})"
 
-        base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001").rstrip("/")
+        from app.core.config import get_settings as _get_settings
+        base_url = _get_settings().DEMO_ENGINE_BASE_URL.rstrip("/")
         demo_url = f"{base_url}/demo/{lead.slug}"
         if lead.packages and lead.packages[-1].asset_links:
             demo_url = lead.packages[-1].asset_links.get("choice_page") or demo_url

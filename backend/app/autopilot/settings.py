@@ -1,4 +1,17 @@
+# Item 9: AutopilotSettings fields use os.getenv() at module load time (class-attribute
+# defaults are evaluated when Python first imports this module). load_dotenv() must run
+# BEFORE that evaluation so the .env values are in os.environ in time.
 import os
+
+try:
+    from pathlib import Path
+    from dotenv import load_dotenv
+    # Walk up: autopilot/settings.py → autopilot/ → app/ → backend/
+    _BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+    load_dotenv(_BACKEND_DIR / ".env", override=False)
+except Exception:
+    pass
+
 from dataclasses import dataclass, field
 from typing import List
 

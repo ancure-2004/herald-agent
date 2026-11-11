@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -54,10 +54,10 @@ class MessageController:
         return MessageService.get_lead_messages(db, lead_id)
 
     @staticmethod
-    def get_automation_settings() -> Dict[str, Any]:
-        return MessageService.get_automation_settings()
+    def get_automation_settings(db: Optional[Session] = None) -> Dict[str, Any]:
+        return MessageService.get_automation_settings(db)
 
     @staticmethod
-    def update_automation_settings(payload: Dict[str, Any]) -> Dict[str, Any]:
-        return MessageService.update_automation_settings(payload)
+    def update_automation_settings(payload: Dict[str, Any], db: Optional[Session] = None) -> Dict[str, Any]:
+        return MessageService.update_automation_settings(payload, db)
 

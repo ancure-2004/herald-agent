@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { neonQuery } from "@/lib/neon-db";
 
+const BACKEND_API_URL = process.env.PERSONAL_OS_API_URL || "http://localhost:8000";
+
 const BOT_AGENTS = [
   "whatsapp",
   "telegrambot",
@@ -22,6 +24,20 @@ export async function POST(req: NextRequest) {
     const designChosen = String(body.design_chosen || "").trim();
     const durationSeconds = Number(body.duration_seconds || 0);
     const userAgent = req.headers.get("user-agent") || String(body.user_agent || "");
+
+    // Recorder guard: skip ALL Neon writes and backend forwarding when this request
+    // comes from the automated walkthrough recorder.  We detect it three ways:
+    //   1. body.is_recorder flag sent explicitly by ViewTracker.tsx
+    //   2. ?recorder=1 on the API URL itself (direct call)
+    //   3. Referer header contains "recorder=1" (the page URL the browser loaded)
+    const referer = req.headers.get("referer") || "";
+    const apiUrlRecorder = req.nextUrl?.searchParams?.get("recorder") === "1";
+    const refererRecorder = referer.includes("recorder=1");
+    const bodyRecorder = String(body.is_recorder ?? "0") !== "0" && body.is_recorder !== false;
+    const isRecorder = apiUrlRecorder || refererRecorder || bodyRecorder;
+    if (isRecorder) {
+      return NextResponse.json({ logged: false, reason: "recorder" });
+    }
 
     if (!slug) {
       return NextResponse.json({ error: "Missing slug" }, { status: 400 });
@@ -125,6 +141,26 @@ export async function POST(req: NextRequest) {
          WHERE id = $4`,
         [finalScore, JSON.stringify(reasons), summary, lead.id]
       );
+    }
+
+    // Forward non-bot events to the backend SQLite-based tracking service
+    // so the Python CRM also reflects hot views from the demo engine.
+    // Fire-and-forget: 3s timeout, failures are silently ignored.
+    if (!isBot) {
+      fetch(`${BACKEND_API_URL}/api/v1/public/track`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lead_slug: slug,
+          event_type: eventType,
+          section,
+          design_chosen: designChosen,
+          duration_seconds: durationSeconds,
+          user_agent: userAgent,
+          is_recorder: false,
+        }),
+        signal: AbortSignal.timeout(3000),
+      }).catch(() => {});
     }
 
     return NextResponse.json({ logged: true, is_bot: isBot });

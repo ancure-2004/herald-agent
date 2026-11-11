@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
@@ -110,5 +110,21 @@ def get_lead_call_brief(lead_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/admin/wipe-leads")
-def wipe_leads(db: Session = Depends(get_db)):
+def wipe_leads(
+    db: Session = Depends(get_db),
+    x_confirm_wipe: Optional[str] = Header(default=None, alias="X-Confirm-Wipe"),
+):
+    """Permanently deletes all leads, messages, and packages.
+
+    Requires the header ``X-Confirm-Wipe: PERMANENTLY_DELETE_ALL`` to prevent
+    accidental calls (Item 1).
+    """
+    if x_confirm_wipe != "PERMANENTLY_DELETE_ALL":
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Safety interlock: you must pass the header "
+                "'X-Confirm-Wipe: PERMANENTLY_DELETE_ALL' to execute this operation."
+            ),
+        )
     return LeadController.wipe_leads(db)

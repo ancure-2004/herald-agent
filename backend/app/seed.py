@@ -1238,23 +1238,28 @@ def seed_initial_data(db: Session, include_demo_leads: bool = True) -> Hustle:
             },
         ]
 
+        # Item 12: Use the same SSOT slug→status mapping as sync_lead_stage_and_status
+        # so seed data never diverges from production stage transitions.
+        _SEED_SLUG_TO_STATUS = {
+            "staged": "STAGED",
+            "discovered": "STAGED",
+            "queued": "STAGED",
+            "package_ready": "PACKAGE_READY",
+            "contacted": "CONTACTED",
+            "viewed_demo": "INTERESTED",
+            "negotiating": "NEGOTIATING",
+            "closed_won": "WON",
+            "won": "WON",
+            "closed_lost": "LOST",
+            "lost": "LOST",
+            "do_not_contact": "DNC",
+            "dnc": "DNC",
+            "archived": "DNC",
+        }
         for item in sample_leads:
             status = item.get("status")
             if not status:
-                if item["stage_slug"] == "discovered":
-                    status = "STAGED"
-                elif item["stage_slug"] in ("package_ready", "queued"):
-                    status = "DEMO_READY"
-                elif item["stage_slug"] in ("contacted", "viewed_demo"):
-                    status = "CONTACTED"
-                elif item["stage_slug"] == "replied":
-                    status = "REPLIED"
-                elif item["stage_slug"] == "won":
-                    status = "WON"
-                elif item["stage_slug"] == "lost":
-                    status = "LOST"
-                else:
-                    status = "STAGED"
+                status = _SEED_SLUG_TO_STATUS.get(item["stage_slug"].lower(), "STAGED")
 
             lead = Lead(
                 hustle_id=dental.id,

@@ -1,11 +1,22 @@
-from functools import lru_cache
+# Item 9: load_dotenv MUST run before pydantic_settings and before any os.getenv() calls
+# in this process. BaseSettings reads .env into Pydantic fields only — it does NOT
+# populate os.environ, so every direct os.getenv() call in agents.py, services/, etc.
+# would fall back to the hardcoded default without this explicit call.
 from pathlib import Path
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BACKEND_DIR / ".env", override=False)
+except ImportError:
+    pass  # python-dotenv not installed; .env values must come from the shell environment
+
+from functools import lru_cache
 from typing import List, Optional
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
 MONOREPO_ROOT = BACKEND_DIR.parent
 
 

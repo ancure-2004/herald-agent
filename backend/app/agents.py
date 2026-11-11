@@ -127,7 +127,7 @@ def run_scout_agent(
 
     is_dental = "dental" in (hustle.slug or "").lower() or "dental" in (hustle.name or "").lower()
     allow_ig_research = (
-        False if is_dental else bool((hustle.pipeline_config or {}).get("enable_instagram_discovery", False))
+        False if is_dental else bool((getattr(hustle, "pipeline_config", None) or {}).get("enable_instagram_discovery", False))
     )
 
     enrichment_lookup = _load_local_enrichment_Lookup()

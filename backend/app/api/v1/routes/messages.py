@@ -58,15 +58,15 @@ def get_reply_suggestions(lead_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/settings/automation", response_model=AutomationSettingsSchema)
-def get_automation_settings():
-    """Returns global outreach automation settings."""
-    return MessageController.get_automation_settings()
+def get_automation_settings(db: Session = Depends(get_db)):
+    """Returns global outreach automation settings (DB-persisted)."""
+    return MessageController.get_automation_settings(db)
 
 
 @router.patch("/settings/automation", response_model=AutomationSettingsSchema)
-def update_automation_settings(payload: AutomationSettingsUpdate):
-    """Updates global outreach automation settings."""
-    return MessageController.update_automation_settings(payload.model_dump(exclude_unset=True))
+def update_automation_settings(payload: AutomationSettingsUpdate, db: Session = Depends(get_db)):
+    """Updates global outreach automation settings and persists to DB so restarts respect the toggle."""
+    return MessageController.update_automation_settings(payload.model_dump(exclude_unset=True), db)
 
 
 @router.put("/messages/{message_id}")

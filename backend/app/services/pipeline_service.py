@@ -1,7 +1,7 @@
 import logging
 import os
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException
@@ -18,6 +18,54 @@ from app.repositories.hustle_repo import HustleRepository
 from app.services.event_bus import broadcast_sse, emit_terminal_log, get_pipeline_state, set_autopilot_running
 
 logger = logging.getLogger("personal_os.pipeline_service")
+
+# Item 11: DB-backed lock helpers
+# ---------------------------------------------------------------------------
+# The in-memory JobManager lock is reset when the server process restarts or
+# when mcp_server.py runs in a different process.  These helpers treat the
+# RunLog table as the authoritative lock: a row with status='running' that is
+# younger than STALE_RUN_TIMEOUT_SECONDS is considered an active lock.
+# ---------------------------------------------------------------------------
+_STALE_RUN_TIMEOUT_SECONDS = 3600  # 1 hour: runs older than this are force-released
+
+
+def _db_check_active_run(db: Session) -> Optional[RunLog]:
+    """Return the most recent 'running' RunLog if one exists and is not stale."""
+    stale_cutoff = datetime.now(timezone.utc) - timedelta(seconds=_STALE_RUN_TIMEOUT_SECONDS)
+    candidate = (
+        db.query(RunLog)
+        .filter(RunLog.status == "running")
+        .order_by(RunLog.id.desc())
+        .first()
+    )
+    if candidate is None:
+        return None
+    started = candidate.started_at
+    if started and started.tzinfo is None:
+        started = started.replace(tzinfo=timezone.utc)
+    if started and started < stale_cutoff:
+        # Stale: treat as interrupted and release the DB lock
+        candidate.status = "interrupted"
+        candidate.finished_at = candidate.finished_at or datetime.now(timezone.utc)
+        candidate.errors = (candidate.errors or []) + [
+            "[db_lock] auto-released: exceeded stale timeout of "
+            f"{_STALE_RUN_TIMEOUT_SECONDS}s without finishing"
+        ]
+        db.commit()
+        logger.warning("DB lock: stale run #%d auto-released.", candidate.id)
+        return None
+    return candidate
+
+
+def _db_assert_no_active_run(db: Session) -> None:
+    """Raise HTTP 409 if another run is active in the DB (cross-process safe)."""
+    active = _db_check_active_run(db)
+    if active is not None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run #{active.id} already in progress (DB lock). "
+                   "Cancel it before starting a new run.",
+        )
 
 
 class PipelineService:
@@ -77,9 +125,11 @@ class PipelineService:
             target_count = min(target_count, 2)
 
         if async_mode:
+            # Item 11: Check both in-memory lock (same process) and DB lock (cross-process)
             active_id = JobManager.get_active_run_id()
             if active_id is not None:
                 raise HTTPException(status_code=409, detail=f"Run #{active_id} already in progress")
+            _db_assert_no_active_run(db)  # cross-process / mcp_server.py check
 
             hustle = HustleRepository.get_by_id(db, hustle_id)
             if not hustle:
@@ -158,9 +208,11 @@ class PipelineService:
         from app.autopilot.build.factory_service import DemoFactoryService
 
         if async_mode:
+            # Item 11: DB lock check for build_batch cross-process safety
             active_id = JobManager.get_active_run_id()
             if active_id is not None:
                 raise HTTPException(status_code=409, detail=f"Run #{active_id} already in progress")
+            _db_assert_no_active_run(db)
 
             def _bg_worker():
                 with SessionLocal() as bg_db:
@@ -224,7 +276,8 @@ class PipelineService:
         if not hustle:
             raise NotFoundError("Hustle not found.")
 
-        base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001")
+        from app.core.config import get_settings as _get_settings
+        base_url = _get_settings().DEMO_ENGINE_BASE_URL
         mode_tag = " [TESTING MODE: LIVE-ONLY / NO-CACHE]" if testing_mode else ""
 
         def _worker(
@@ -256,10 +309,11 @@ class PipelineService:
             emit_terminal_log(
                 "REFILL-BATCH", f"Spawning async background Autopilot run (target_count={batch_size}){mode_tag}..."
             )
-            # Check single flight before thread start
+            # Item 11: Check in-memory AND DB lock before spawning thread
             active_id = JobManager.get_active_run_id()
             if active_id is not None:
                 raise HTTPException(status_code=409, detail=f"Run #{active_id} already in progress")
+            _db_assert_no_active_run(db)
 
             t = threading.Thread(
                 target=_worker,
@@ -344,7 +398,8 @@ class PipelineService:
 
     @staticmethod
     def verify_links(db: Session) -> Dict[str, Any]:
-        base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001")
+        from app.core.config import get_settings as _get_settings
+        base_url = _get_settings().DEMO_ENGINE_BASE_URL
         emit_terminal_log("VERIFY-LINKS", f"Starting HTTP 200 verification on {base_url}...")
         report = sync_verified_links_to_batch_json(
             db=db,
@@ -446,7 +501,8 @@ class PipelineService:
             for b in built_leads_data[:8]
         ]
 
-        base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001").rstrip("/")
+        from app.core.config import get_settings as _get_settings
+        base_url = _get_settings().DEMO_ENGINE_BASE_URL.rstrip("/")
         scaffold_payload = [
             {
                 "clinic_slug": p.lead.slug if p.lead else f"clinic-{p.id}",

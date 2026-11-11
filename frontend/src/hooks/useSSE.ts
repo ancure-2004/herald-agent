@@ -139,6 +139,39 @@ export function useSSE({
           }
         });
 
+        // Named SSE events that should trigger a data refresh (leads list, pipeline view).
+        // onmessage only fires for unnamed events (no `event:` line), so these named
+        // events must each have their own addEventListener — they would be silently
+        // dropped otherwise.
+        const REFRESH_EVENTS = [
+          "tracking_view",
+          "run_complete",
+          "outreach_sent",
+          "autopilot_run",
+          "scout_complete",
+          "auditor_complete",
+          "closer_complete",
+          "reply_received",
+        ] as const;
+
+        for (const evName of REFRESH_EVENTS) {
+          es.addEventListener(evName, (event: MessageEvent) => {
+            try {
+              const data = JSON.parse(event.data);
+              const line = `[${new Date().toLocaleTimeString()}] ${evName}: ${
+                data.title || data.message || data.lead_name || evName
+              }`;
+              onLiveEventRef.current?.(line);
+              onRefreshTriggerRef.current?.();
+            } catch {
+              // ignore parsing error
+            }
+          });
+        }
+
+        // heartbeat: keep-alive — no UI action needed
+        es.addEventListener("heartbeat", () => {});
+
         es.onerror = () => {
           if (isCancelled) return;
           // Close immediately to manage backoff explicitly

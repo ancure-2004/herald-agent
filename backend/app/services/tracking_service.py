@@ -1,7 +1,6 @@
 import json
-import os
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 
 from sqlalchemy.orm import Session, joinedload
@@ -12,6 +11,12 @@ from app.repositories.tracking_repo import TrackingRepository
 from app.schemas.tracking import TrackingEventCreate
 from app.services.event_bus import broadcast_sse, emit_terminal_log
 from app.utils.safety import compute_intent_score
+
+# Item 7: Debounce window for repeat "page_view" events from an open tab.
+# A second view ping from the same lead within this window is recorded in DB
+# (so the event log is complete) but does NOT re-trigger intent scoring or
+# stage bumps, preventing 15-second tab heartbeats from inflating scores.
+_VIEW_DEBOUNCE_MINUTES = 15
 
 BOT_USER_AGENTS = [
     "whatsapp",
@@ -64,8 +69,37 @@ class TrackingService:
         if not lead:
             raise NotFoundError("Lead not found for tracking.")
 
+        # Item 7: Ignore automated recorder visits entirely — they must never
+        # count as a real demo view, change stage, or trigger a Telegram alert.
+        if payload.is_recorder:
+            return {
+                "status": "ignored_recorder",
+                "is_bot": False,
+                "intent_score": lead.intent_score,
+                "lead_id": lead.id,
+                "event_type": payload.event_type,
+            }
+
         ua_lower = (payload.user_agent or "").lower()
         is_bot = any(b in ua_lower for b in BOT_USER_AGENTS)
+
+        # Item 7: Debounce rapid repeat page_view pings from the same open tab.
+        # We still write the event to DB for the audit trail but skip all
+        # downstream side-effects (scoring, stage bump, Telegram, SSE hot-lead).
+        is_debounced = False
+        if not is_bot and payload.event_type in ("page_view", "tab_ping"):
+            cutoff = datetime.now(timezone.utc) - timedelta(minutes=_VIEW_DEBOUNCE_MINUTES)
+            recent = (
+                db.query(TrackingEvent)
+                .filter(
+                    TrackingEvent.lead_id == lead.id,
+                    TrackingEvent.event_type == payload.event_type,
+                    TrackingEvent.created_at >= cutoff,
+                )
+                .first()
+            )
+            if recent:
+                is_debounced = True
 
         ev = TrackingEvent(
             lead_id=lead.id,
@@ -79,7 +113,7 @@ class TrackingService:
         )
         TrackingRepository.record_event(db, ev)
 
-        if not is_bot:
+        if not is_bot and not is_debounced:
             intent, reasons = compute_intent_score(lead.events, lead.messages)
             lead.intent_score = intent
             lead.intent_reasons = reasons
@@ -99,15 +133,19 @@ class TrackingService:
                 db.query(Stage).filter(Stage.hustle_id == lead.hustle_id, Stage.slug == "viewed_demo").first()
             )
             if viewed_stage and lead.stage_rel and lead.stage_rel.slug in ("package_ready", "queued", "contacted"):
-                lead.stage_id = viewed_stage.id
+                # Item 13: use SSOT helper so stage_id and status stay in sync
+                from app.services.lead_service import sync_lead_stage_and_status
+                sync_lead_stage_and_status(db, lead, viewed_stage)
 
         db.commit()
 
         alert_title = f"HOT VIEW: {lead.name} ({payload.event_type}{': ' + payload.design_chosen if payload.design_chosen else ''}) • Intent {lead.intent_score}"
-        if not is_bot:
+        if not is_bot and not is_debounced:
             emit_terminal_log("HOT-LEAD-ALERT", alert_title)
-            tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-            tg_chat = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+            from app.core.config import get_settings as _get_settings
+            _cfg = _get_settings()
+            tg_token = (_cfg.TELEGRAM_BOT_TOKEN or "").strip()
+            tg_chat = (_cfg.TELEGRAM_CHAT_ID or "").strip()
             if tg_token and tg_chat:
                 try:
                     tg_url = f"https://api.telegram.org/bot{tg_token}/sendMessage"
@@ -127,20 +165,22 @@ class TrackingService:
                 except Exception:
                     pass
 
-        broadcast_sse(
-            "tracking_view",
-            {
-                "lead_id": lead.id,
-                "lead_name": lead.name,
-                "event_type": payload.event_type,
-                "design_chosen": payload.design_chosen,
-                "intent_score": lead.intent_score,
-                "is_bot": is_bot,
-                "title": alert_title,
-            },
-        )
+        # Only fire the hot-lead SSE broadcast when it's a real, non-debounced event
+        if not is_bot and not is_debounced:
+            broadcast_sse(
+                "tracking_view",
+                {
+                    "lead_id": lead.id,
+                    "lead_name": lead.name,
+                    "event_type": payload.event_type,
+                    "design_chosen": payload.design_chosen,
+                    "intent_score": lead.intent_score,
+                    "is_bot": is_bot,
+                    "title": alert_title,
+                },
+            )
         return {
-            "status": "tracked",
+            "status": "debounced" if is_debounced else "tracked",
             "is_bot": is_bot,
             "intent_score": lead.intent_score,
             "lead_id": lead.id,
