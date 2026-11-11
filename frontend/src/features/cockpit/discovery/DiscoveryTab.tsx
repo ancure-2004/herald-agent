@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { DiscoveryLead, CockpitStateResponse } from "../types";
-import { initialDiscoveryLeads } from "../mockData";
 import { LeadDataTable } from "./LeadDataTable";
 import { FloatingActionBar } from "./FloatingActionBar";
 import { LiveLogTerminal } from "@/components/ui/LiveLogTerminal";
@@ -103,8 +102,19 @@ export function mapLeadToDiscoveryLead(lead: Record<string, any>): DiscoveryLead
   };
 }
 
+// Module-level cache: lives as long as the app session, so switching away from
+// this tab and back shows the last real data immediately while a quiet refresh runs.
+type DiscoveryTabCache = {
+  leads: DiscoveryLead[];
+  stagedCount: number;
+  discoveredTodayCount: number;
+  filteredCount: number;
+};
+let discoveryTabCache: DiscoveryTabCache | null = null;
+
 export const DiscoveryTab: React.FC = () => {
-  const [leads, setLeads] = useState<DiscoveryLead[]>(initialDiscoveryLeads);
+  const [leads, setLeads] = useState<DiscoveryLead[]>(() => discoveryTabCache?.leads ?? []);
+  const [hasLoaded, setHasLoaded] = useState<boolean>(() => discoveryTabCache !== null);
   const [isLoadingLeads, setIsLoadingLeads] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterView>("all");
@@ -119,9 +129,9 @@ export const DiscoveryTab: React.FC = () => {
   const [isStopping, setIsStopping] = useState<boolean>(false);
 
   // Cockpit Telemetry State for KPIs
-  const [stagedCount, setStagedCount] = useState<number>(42);
-  const [discoveredTodayCount, setDiscoveredTodayCount] = useState<number>(18);
-  const [filteredCount, setFilteredCount] = useState<number>(12);
+  const [stagedCount, setStagedCount] = useState<number>(() => discoveryTabCache?.stagedCount ?? 0);
+  const [discoveredTodayCount, setDiscoveredTodayCount] = useState<number>(() => discoveryTabCache?.discoveredTodayCount ?? 0);
+  const [filteredCount, setFilteredCount] = useState<number>(() => discoveryTabCache?.filteredCount ?? 0);
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -133,12 +143,13 @@ export const DiscoveryTab: React.FC = () => {
     setIsLoadingLeads(true);
     try {
       const dbLeads = await apiFetch<Array<Record<string, any>>>("/api/leads?hustle_id=1");
-      if (Array.isArray(dbLeads) && dbLeads.length > 0) {
+      if (Array.isArray(dbLeads)) {
         setLeads(dbLeads.map(mapLeadToDiscoveryLead));
       }
     } catch {
-      // Retain fallback seed data if offline or network error
+      // Offline or network error: keep whatever is already shown (cached real data, or empty state)
     } finally {
+      setHasLoaded(true);
       setIsLoadingLeads(false);
     }
   }, []);
@@ -171,6 +182,12 @@ export const DiscoveryTab: React.FC = () => {
     syncLeadsFromDb();
     fetchCockpitTelemetry();
   }, [syncLeadsFromDb, fetchCockpitTelemetry]);
+
+  // Persist real data to the module cache once the first load has completed
+  useEffect(() => {
+    if (!hasLoaded) return;
+    discoveryTabCache = { leads, stagedCount, discoveredTodayCount, filteredCount };
+  }, [hasLoaded, leads, stagedCount, discoveredTodayCount, filteredCount]);
 
   // Periodic poll during active discovery
   useEffect(() => {
@@ -610,13 +627,26 @@ export const DiscoveryTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Spreadsheet Grid Table */}
-      <LeadDataTable
-        leads={filteredLeads}
-        selectedIds={selectedIds}
-        onToggleSelect={handleToggleSelect}
-        onSelectAll={handleSelectAll}
-      />
+      {/* Spreadsheet Grid Table: loader on first load, empty state if the DB has 0 leads */}
+      {!hasLoaded ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400">
+          <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+          <span>Loading leads from database...</span>
+        </div>
+      ) : leads.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 text-center">
+          <Database className="w-6 h-6 text-slate-400" />
+          <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">No leads yet</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">Run Lead Discovery to fill the staging buffer.</div>
+        </div>
+      ) : (
+        <LeadDataTable
+          leads={filteredLeads}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onSelectAll={handleSelectAll}
+        />
+      )}
 
       {/* Floating Bulk Action Bar */}
       <FloatingActionBar

@@ -9,12 +9,7 @@ import {
   DispatchEngineSettings,
   DeliverabilityStatus,
 } from "../types";
-import {
-  initialQueueItems,
-  initialCapacityMetrics,
-  initialMailboxAccounts,
-  initialDispatchSettings,
-} from "../mockData";
+import { initialDispatchSettings } from "../mockData";
 import { RadialQuotaGauge } from "./RadialQuotaGauge";
 import { StackedCapacityBar } from "./StackedCapacityBar";
 import { SafetyControlsCard } from "./SafetyControlsCard";
@@ -24,6 +19,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   RotateCcw,
+  Loader2,
 } from "lucide-react";
 
 export function mapBatchClinicsToQueueItems(clinics: Array<Record<string, any>>): QueueItem[] {
@@ -57,10 +53,29 @@ export function mapBatchClinicsToQueueItems(clinics: Array<Record<string, any>>)
   });
 }
 
+// Module-level cache: lives as long as the app session, so switching away from
+// this tab and back shows the last real data immediately while a quiet refresh runs.
+type OutreachTabCache = {
+  queue: QueueItem[];
+  metrics: DailyCapacityMetrics;
+};
+let outreachTabCache: OutreachTabCache | null = null;
+
+const EMPTY_CAPACITY_METRICS: DailyCapacityMetrics = {
+  totalDailyCap: 50,
+  totalSentToday: 0,
+  warmupSentToday: 0,
+  campaignSentToday: 0,
+  inFlightScheduled: 0,
+  remainingSafeHeadroom: 50,
+  overallUtilizationPercentage: 0,
+};
+
 export const OutreachTab: React.FC = () => {
-  const [queue, setQueue] = useState<QueueItem[]>(initialQueueItems);
-  const [metrics, setMetrics] = useState<DailyCapacityMetrics>(initialCapacityMetrics);
-  const [mailboxes] = useState<MailboxAccount[]>(initialMailboxAccounts);
+  const [queue, setQueue] = useState<QueueItem[]>(() => outreachTabCache?.queue ?? []);
+  const [metrics, setMetrics] = useState<DailyCapacityMetrics>(() => outreachTabCache?.metrics ?? EMPTY_CAPACITY_METRICS);
+  const [hasLoaded, setHasLoaded] = useState<boolean>(() => outreachTabCache !== null);
+  const [mailboxes] = useState<MailboxAccount[]>([]);
   const [settings, setSettings] = useState<DispatchEngineSettings>(initialDispatchSettings);
   const [filter, setFilter] = useState<QueueItemStatus | "ALL">("ALL");
   const [notification, setNotification] = useState<string | null>(null);
@@ -75,7 +90,7 @@ export const OutreachTab: React.FC = () => {
     setIsSyncing(true);
     try {
       const res = await apiFetch<{ clinics?: Array<Record<string, any>>; total?: number }>("/api/batch?hustle_id=1");
-      if (res?.clinics && res.clinics.length > 0) {
+      if (Array.isArray(res?.clinics)) {
         const mappedItems = mapBatchClinicsToQueueItems(res.clinics);
         setQueue(mappedItems);
 
@@ -95,8 +110,9 @@ export const OutreachTab: React.FC = () => {
         });
       }
     } catch {
-      // Retain fallback
+      // Offline or network error: keep whatever is already shown
     } finally {
+      setHasLoaded(true);
       setIsSyncing(false);
     }
   }, []);
@@ -104,6 +120,12 @@ export const OutreachTab: React.FC = () => {
   useEffect(() => {
     syncOutreachQueueFromDb();
   }, [syncOutreachQueueFromDb]);
+
+  // Persist real data to the module cache once the first load has completed
+  useEffect(() => {
+    if (!hasLoaded) return;
+    outreachTabCache = { queue, metrics };
+  }, [hasLoaded, queue, metrics]);
 
   const handleUpdateSettings = (updated: Partial<DispatchEngineSettings>) => {
     setSettings((prev) => ({ ...prev, ...updated }));
@@ -266,11 +288,24 @@ export const OutreachTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Dispatch Queue Table */}
-      <DispatchQueueTable
-        items={filteredQueue}
-        onSendNow={handleSendNow}
-      />
+      {/* Dispatch Queue Table: loader on first load, empty state if the DB has 0 items */}
+      {!hasLoaded ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] text-xs font-mono text-slate-500 dark:text-slate-400">
+          <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+          <span>Loading outreach queue from database...</span>
+        </div>
+      ) : queue.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-xl bg-white dark:bg-[#141721] border border-dashed border-slate-300 dark:border-white/[0.12] text-center">
+          <ShieldCheck className="w-6 h-6 text-slate-400" />
+          <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">Outreach queue is empty</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">Push verified leads from Discovery or Demo Factory to queue messages.</div>
+        </div>
+      ) : (
+        <DispatchQueueTable
+          items={filteredQueue}
+          onSendNow={handleSendNow}
+        />
+      )}
     </div>
   );
 };

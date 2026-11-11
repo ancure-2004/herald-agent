@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { DemoRun, RunStatus } from "../types";
-import { initialDemoRuns } from "../mockData";
 import { RunMatrixTable } from "./RunMatrixTable";
 import { MultiDevicePreviewDrawer } from "./MultiDevicePreviewDrawer";
 import { BuildLogDrawer } from "./BuildLogDrawer";
@@ -93,8 +92,32 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
   return runs;
 }
 
+// Module-level cache: lives as long as the app session, so switching away from
+// this tab and back shows the last real data immediately while a quiet refresh runs.
+type DemoKpiMetrics = {
+  totalGenerated: number;
+  activeBuilds: number;
+  queuedRuns: number;
+  liveReady: number;
+  passRate: string;
+};
+type DemoFactoryTabCache = {
+  runs: DemoRun[];
+  kpiMetrics: DemoKpiMetrics;
+};
+let demoFactoryTabCache: DemoFactoryTabCache | null = null;
+
+const EMPTY_DEMO_KPIS: DemoKpiMetrics = {
+  totalGenerated: 0,
+  activeBuilds: 0,
+  queuedRuns: 0,
+  liveReady: 0,
+  passRate: "100%",
+};
+
 export const DemoFactoryTab: React.FC = () => {
-  const [runs, setRuns] = useState<DemoRun[]>(initialDemoRuns);
+  const [runs, setRuns] = useState<DemoRun[]>(() => demoFactoryTabCache?.runs ?? []);
+  const [hasLoaded, setHasLoaded] = useState<boolean>(() => demoFactoryTabCache !== null);
   const [filter, setFilter] = useState<RunStatus | "ALL">("ALL");
   const [activeLogRun, setActiveLogRun] = useState<DemoRun | null>(null);
   const [activePreviewRun, setActivePreviewRun] = useState<DemoRun | null>(null);
@@ -104,13 +127,7 @@ export const DemoFactoryTab: React.FC = () => {
   const [isLaunchingBatch, setIsLaunchingBatch] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
-  const [kpiMetrics, setKpiMetrics] = useState({
-    totalGenerated: 142,
-    activeBuilds: 2,
-    queuedRuns: 1,
-    liveReady: 126,
-    passRate: "98.4%",
-  });
+  const [kpiMetrics, setKpiMetrics] = useState<DemoKpiMetrics>(() => demoFactoryTabCache?.kpiMetrics ?? EMPTY_DEMO_KPIS);
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -121,36 +138,34 @@ export const DemoFactoryTab: React.FC = () => {
     setIsSyncing(true);
     try {
       const [dbLeads, cockpitState] = await Promise.all([
-        apiFetch<Array<Record<string, any>>>("/api/leads?hustle_id=1").catch(() => []),
+        apiFetch<Array<Record<string, any>>>("/api/leads?hustle_id=1").catch(() => null),
         apiFetch<Record<string, any>>("/api/autopilot/cockpit-state?hustle_id=1").catch(() => null),
       ]);
 
-      let currentRuns = initialDemoRuns;
+      // A network failure (null) keeps what is already on screen; an empty array clears to the empty state
       if (Array.isArray(dbLeads)) {
         const mapped = mapPackagesToDemoRuns(dbLeads);
-        if (mapped.length > 0) {
-          currentRuns = mapped;
-          setRuns(mapped);
-        }
+        setRuns(mapped);
+
+        // Compute dynamic KPIs from live data
+        const total = cockpitState?.metrics?.demosBuilt || mapped.length;
+        const ready = mapped.filter((r) => r.status === "READY").length;
+        const building = mapped.filter((r) => r.status === "BUILDING" || r.status === "DEPLOYING").length;
+        const queued = mapped.filter((r) => r.status === "QUEUED").length;
+        const passPct = total > 0 ? ((ready / total) * 100).toFixed(1) + "%" : "100%";
+
+        setKpiMetrics({
+          totalGenerated: total,
+          activeBuilds: building,
+          queuedRuns: queued,
+          liveReady: ready,
+          passRate: passPct,
+        });
       }
-
-      // Compute dynamic KPIs from live data
-      const total = cockpitState?.metrics?.demosBuilt || currentRuns.length;
-      const ready = currentRuns.filter((r) => r.status === "READY").length;
-      const building = currentRuns.filter((r) => r.status === "BUILDING" || r.status === "DEPLOYING").length;
-      const queued = currentRuns.filter((r) => r.status === "QUEUED").length;
-      const passPct = total > 0 ? ((ready / total) * 100).toFixed(1) + "%" : "100%";
-
-      setKpiMetrics({
-        totalGenerated: total,
-        activeBuilds: building,
-        queuedRuns: queued,
-        liveReady: ready,
-        passRate: passPct,
-      });
     } catch {
-      // Retain fallback
+      // Keep existing data on error
     } finally {
+      setHasLoaded(true);
       setIsSyncing(false);
     }
   }, []);
@@ -158,6 +173,12 @@ export const DemoFactoryTab: React.FC = () => {
   useEffect(() => {
     syncRunsFromDb();
   }, [syncRunsFromDb]);
+
+  // Persist real data to the module cache once the first load has completed
+  useEffect(() => {
+    if (!hasLoaded) return;
+    demoFactoryTabCache = { runs, kpiMetrics };
+  }, [hasLoaded, runs, kpiMetrics]);
 
   const filteredRuns = useMemo(() => {
     if (filter === "ALL") return runs;
@@ -361,13 +382,26 @@ export const DemoFactoryTab: React.FC = () => {
         </div>
       </div>
 
-      {/* High-Density Run Matrix Table */}
-      <RunMatrixTable
-        runs={filteredRuns}
-        onOpenLogs={handleOpenLogs}
-        onOpenPreview={handleOpenPreview}
-        onRetryRun={handleRetry}
-      />
+      {/* High-Density Run Matrix Table: loader on first load, empty state if the DB has 0 runs */}
+      {!hasLoaded ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400">
+          <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+          <span>Loading demo runs from database...</span>
+        </div>
+      ) : runs.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 text-center">
+          <Sparkles className="w-6 h-6 text-slate-400" />
+          <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">No demo runs yet</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">Launch a Demo Batch to start building websites.</div>
+        </div>
+      ) : (
+        <RunMatrixTable
+          runs={filteredRuns}
+          onOpenLogs={handleOpenLogs}
+          onOpenPreview={handleOpenPreview}
+          onRetryRun={handleRetry}
+        />
+      )}
 
       {/* Embedded Live Log Execution Stream */}
       <div className="pt-2">
