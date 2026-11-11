@@ -27,16 +27,16 @@ export function OutreachHubSubpage() {
   const [dryRunMode, setDryRunMode] = useState<boolean>(true);
 
   // Telemetry counts
-  const waSent = stockPlan?.today_channel_sends?.whatsapp ?? 8;
-  const waLimit = stockPlan?.channel_limits?.whatsapp ?? 20;
+  const waSent = stockPlan?.today_channel_sends?.whatsapp ?? 0;
+  const waLimit = stockPlan?.channel_limits?.whatsapp ?? 0;
   const waPct = Math.min(100, Math.round((waSent / (waLimit || 1)) * 100));
 
-  const emailSent = stockPlan?.today_channel_sends?.email ?? 4;
-  const emailLimit = stockPlan?.channel_limits?.email ?? 30;
+  const emailSent = stockPlan?.today_channel_sends?.email ?? 0;
+  const emailLimit = stockPlan?.channel_limits?.email ?? 0;
   const emailPct = Math.min(100, Math.round((emailSent / (emailLimit || 1)) * 100));
 
-  const igSent = stockPlan?.today_channel_sends?.instagram ?? 1;
-  const igLimit = stockPlan?.channel_limits?.instagram ?? 15;
+  const igSent = stockPlan?.today_channel_sends?.instagram ?? 0;
+  const igLimit = stockPlan?.channel_limits?.instagram ?? 0;
   const igPct = Math.min(100, Math.round((igSent / (igLimit || 1)) * 100));
 
   const handleSimulateSend = (channel: "WA" | "EMAIL" | "FALLBACK") => {

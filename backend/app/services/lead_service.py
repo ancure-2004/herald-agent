@@ -500,29 +500,18 @@ class LeadService:
 
         # 2. Check DENTAL_RECORDER_DIR recordings
         try:
-            import re
-
             from app.autopilot.config import DENTAL_RECORDER_DIR, PROJECTS_ROOT
 
             clean_slug = (lead.slug or "").lower().strip()
-            safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "-", lead.name or "").strip("-").lower()
-            canonical_name = f"Clinic-{lead.id}-{clean_slug}"
+            canonical_name = f"Clinic-{clean_slug}"
 
             recordings_dir = DENTAL_RECORDER_DIR / "recordings"
             if recordings_dir.exists():
                 for ext in [".mp4", ".webm"]:
-                    for name_cand in [canonical_name, f"Clinic-{clean_slug}", clean_slug, safe_name]:
+                    for name_cand in [canonical_name, clean_slug]:
                         p = recordings_dir / f"{name_cand}{ext}"
                         if p.exists() and p.stat().st_size > 1000:
                             return str(p)
-
-                for p in recordings_dir.glob("*.mp4"):
-                    p_lower = p.stem.lower()
-                    if (
-                        (clean_slug and clean_slug in p_lower)
-                        or (safe_name and safe_name in p_lower)
-                    ) and p.stat().st_size > 1000:
-                        return str(p)
 
             # 3. Check PROJECTS_ROOT / Dental-Clinic-Clients (strictly require slug match to avoid cross-batch collision)
             clients_dir = PROJECTS_ROOT / "Dental-Clinic-Clients"
