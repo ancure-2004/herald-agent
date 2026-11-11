@@ -898,7 +898,7 @@ def seed_initial_data(db: Session, include_demo_leads: bool = True) -> Hustle:
                 "locality": "Sector 76",
                 "city": "Noida",
                 "address": "Plot 2, Amrapali Silicon City Gate 2, Sector 76, Noida 201301",
-                "primary_phone": "+919811998877",
+                "primary_phone": "+919582390243",
                 "instagram_handle": "dentiquenoida76",
                 "stage_slug": "replied",
                 "status": "REPLIED",
