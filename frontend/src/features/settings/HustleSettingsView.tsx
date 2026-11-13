@@ -14,6 +14,7 @@ export function HustleSettingsView() {
   const [settingsIgLimit, setSettingsIgLimit] = useState<number>(15);
   const [settingsEmailLimit, setSettingsEmailLimit] = useState<number>(30);
   const [settingsIgDiscovery, setSettingsIgDiscovery] = useState<boolean>(false);
+  const [settingsBatchSize, setSettingsBatchSize] = useState<number>(25);
 
   useEffect(() => {
     if (!activeHustle) return;
@@ -28,6 +29,7 @@ export function HustleSettingsView() {
     setSettingsIgDiscovery(
       isDental ? false : (activeHustle.pipeline_steps || []).includes("find_instagram")
     );
+    setSettingsBatchSize(activeHustle.channel_limits?.batch_size ?? 25);
   }, [activeHustle]);
 
   if (!activeHustle) return null;
@@ -59,6 +61,7 @@ export function HustleSettingsView() {
             whatsapp: Number(settingsWaLimit),
             instagram: Number(settingsIgLimit),
             email: Number(settingsEmailLimit),
+            batch_size: Number(settingsBatchSize) || 25,
           },
           pipeline_steps: baseSteps,
         }),
@@ -181,6 +184,44 @@ export function HustleSettingsView() {
               className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:border-indigo-500 rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white transition-all"
             />
           </div>
+        </div>
+
+        {/* Pipeline & Outreach Batch Size */}
+        <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.06] space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold text-slate-900 dark:text-white">
+                Pipeline &amp; Outreach Batch Size (Leads per Batch)
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Default: 25 leads per batch for Discovery, Kanban grouping &amp; Daily Outreach
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {[10, 15, 25, 50].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setSettingsBatchSize(n)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold border transition-colors cursor-pointer ${
+                    settingsBatchSize === n
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/[0.1] hover:border-indigo-400"
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+          <input
+            type="number"
+            min={5}
+            max={100}
+            value={settingsBatchSize}
+            onChange={(e) => setSettingsBatchSize(Number(e.target.value))}
+            className="w-32 bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:border-indigo-500 rounded-xl px-3 py-2 font-mono text-xs text-slate-900 dark:text-white transition-all"
+          />
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">

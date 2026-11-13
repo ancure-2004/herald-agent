@@ -7,12 +7,18 @@ import { Shield, Clock, Sliders, CheckCircle2, Pause, Play } from "lucide-react"
 interface SafetyControlsCardProps {
   settings: DispatchEngineSettings;
   onUpdateSettings: (settings: Partial<DispatchEngineSettings>) => void;
+  /** When true the parent's live WA automation is running; overrides masterQueueRunning display */
+  isLiveRunning?: boolean;
 }
 
 export const SafetyControlsCard: React.FC<SafetyControlsCardProps> = ({
   settings,
   onUpdateSettings,
+  isLiveRunning = false,
 }) => {
+  // The displayed "active" state is the live subprocess running state if available,
+  // otherwise fall back to the local settings toggle.
+  const isActive = isLiveRunning || settings.masterQueueRunning;
   return (
     <div className="p-4 rounded-xl bg-[#111215] border border-white/[0.08] shadow-sm space-y-4">
       <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
@@ -23,18 +29,19 @@ export const SafetyControlsCard: React.FC<SafetyControlsCardProps> = ({
           </h3>
         </div>
 
-        {/* Master Queue Switch */}
+        {/* Master Queue Switch — wired to live WA automation */}
         <button
-          onClick={() => onUpdateSettings({ masterQueueRunning: !settings.masterQueueRunning })}
+          onClick={() => onUpdateSettings({ masterQueueRunning: !isActive })}
           className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm transition-all ${
-            settings.masterQueueRunning
-              ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/30"
+            isActive
+              ? "bg-emerald-600 hover:bg-rose-600 text-white shadow-emerald-900/30"
               : "bg-slate-800 hover:bg-slate-700 text-slate-300"
           }`}
+          title={isActive ? "Click to stop WA automation" : "Click to start WA automation"}
         >
-          {settings.masterQueueRunning ? (
+          {isActive ? (
             <>
-              <Play className="w-3 h-3 fill-white" />
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
               <span>Queue: ACTIVE</span>
             </>
           ) : (

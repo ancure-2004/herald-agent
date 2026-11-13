@@ -13,17 +13,22 @@ export interface SSEMessagePayload {
   [key: string]: unknown;
 }
 
+// Outreach/autopilot events that drive running-state UI (Stop buttons, badges, inbox refresh).
+const OUTREACH_EVENTS = ["autopilot_started", "autopilot_stopped", "closer_complete", "outbox_sent", "message_sent"] as const;
+
 export function useSSE({
   onTerminalLog,
   onLiveEvent,
   onRefreshTrigger,
   onPipelineStep,
+  onOutreachEvent,
   enabled = true,
 }: {
   onTerminalLog?: (line: string, seq?: number) => void;
   onLiveEvent?: (line: string) => void;
   onRefreshTrigger?: () => void;
   onPipelineStep?: (event: PipelineStepEvent) => void;
+  onOutreachEvent?: (eventName: string, data: Record<string, unknown>) => void;
   enabled?: boolean;
 } = {}) {
   const lastLogSeqRef = useRef<number>(0);
@@ -34,12 +39,14 @@ export function useSSE({
   const onLiveEventRef = useRef(onLiveEvent);
   const onRefreshTriggerRef = useRef(onRefreshTrigger);
   const onPipelineStepRef = useRef(onPipelineStep);
+  const onOutreachEventRef = useRef(onOutreachEvent);
 
   useEffect(() => {
     onTerminalLogRef.current = onTerminalLog;
     onLiveEventRef.current = onLiveEvent;
     onRefreshTriggerRef.current = onRefreshTrigger;
     onPipelineStepRef.current = onPipelineStep;
+    onOutreachEventRef.current = onOutreachEvent;
   });
 
   useEffect(() => {
@@ -80,6 +87,10 @@ export function useSSE({
 
             if (data.type === "pipeline_step") {
               onPipelineStepRef.current?.(data as unknown as PipelineStepEvent);
+            }
+
+            if ((OUTREACH_EVENTS as readonly string[]).includes(data.type)) {
+              onOutreachEventRef.current?.(data.type, data as unknown as Record<string, unknown>);
             }
 
             const line = `[${new Date().toLocaleTimeString()}] ${data.type || "Event"}: ${data.title || data.message || "Event"}`;
@@ -152,6 +163,8 @@ export function useSSE({
           "auditor_complete",
           "closer_complete",
           "reply_received",
+          "outbox_sent",
+          "message_sent",
         ] as const;
 
         for (const evName of REFRESH_EVENTS) {
@@ -170,6 +183,16 @@ export function useSSE({
         }
 
         // heartbeat: keep-alive — no UI action needed
+        for (const evName of OUTREACH_EVENTS) {
+          es.addEventListener(evName, (event: MessageEvent) => {
+            try {
+              onOutreachEventRef.current?.(evName, JSON.parse(event.data));
+            } catch {
+              // ignore parsing error
+            }
+          });
+        }
+
         es.addEventListener("heartbeat", () => {});
 
         es.onerror = () => {

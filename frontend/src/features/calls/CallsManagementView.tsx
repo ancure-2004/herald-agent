@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   PhoneCall,
   Sparkles,
@@ -52,61 +52,156 @@ export function CallsManagementView() {
   const {
     leads,
     selectedLeadId,
-    setSelectedLeadId,
+    // Note: setSelectedLeadId intentionally NOT called when switching clinics
+    // inside CallsManagementView to avoid opening the global LeadDetailModal.
     openLogCallModal,
     notify,
     loadAll,
   } = useCRM();
 
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  // ---------------------------------------------------------------------------
+  // Local clinic selection — does NOT touch the global selectedLeadId so the
+  // LeadDetailModal stays closed while the user works inside this view.
+  // ---------------------------------------------------------------------------
+  const [activeCallLeadId, setActiveCallLeadId] = useState<number | null>(() => {
+    return selectedLeadId || (leads[0]?.id ?? null);
+  });
+
+  // Keep combobox in sync when leads list first loads or selectedLeadId changes
+  // from outside (e.g. user clicked a lead row in the table view before coming here).
+  useEffect(() => {
+    if (selectedLeadId && selectedLeadId !== activeCallLeadId) {
+      setActiveCallLeadId(selectedLeadId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLeadId]);
+
+  useEffect(() => {
+    if (!activeCallLeadId && leads.length > 0) {
+      setActiveCallLeadId(leads[0].id);
+    }
+  }, [leads, activeCallLeadId]);
+
+  const activeLead = useMemo(
+    () => leads.find((l) => l.id === activeCallLeadId) || leads[0] || null,
+    [leads, activeCallLeadId]
+  );
+
+  // ---------------------------------------------------------------------------
+  // Combobox state
+  // ---------------------------------------------------------------------------
+  const [comboOpen, setComboOpen] = useState(false);
+  const [comboSearch, setComboSearch] = useState("");
+  const comboRef = useRef<HTMLDivElement>(null);
+  const comboInputRef = useRef<HTMLInputElement>(null);
+
+  const filteredLeads = useMemo(() => {
+    if (!comboSearch.trim()) return leads;
+    const q = comboSearch.toLowerCase();
+    return leads.filter(
+      (l) =>
+        l.name.toLowerCase().includes(q) ||
+        (l.doctor_name ?? "").toLowerCase().includes(q) ||
+        (l.locality ?? "").toLowerCase().includes(q) ||
+        (l.primary_phone ?? "").toLowerCase().includes(q)
+    );
+  }, [leads, comboSearch]);
+
+  // Close combobox on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (comboRef.current && !comboRef.current.contains(e.target as Node)) {
+        setComboOpen(false);
+        setComboSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSelectClinic = useCallback(
+    (leadId: number) => {
+      setActiveCallLeadId(leadId);
+      setComboOpen(false);
+      setComboSearch("");
+    },
+    []
+  );
+
+  // ---------------------------------------------------------------------------
+  // Pre-call prep brief
+  // ---------------------------------------------------------------------------
   const [callBrief, setCallBrief] = useState<CallBrief | null>(null);
   const [loadingBrief, setLoadingBrief] = useState<boolean>(false);
   const [copiedBrief, setCopiedBrief] = useState<boolean>(false);
 
-  // Inline Log Call Form state
-  const [rawText, setRawText] = useState<string>("");
-  const [durationSeconds, setDurationSeconds] = useState<number>(180);
-  const [outcome, setOutcome] = useState<string>("connected");
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
-  // Past calls
-  const [callsList, setCallsList] = useState<StructuredCall[]>([]);
-  const [expandedCallId, setExpandedCallId] = useState<number | null>(null);
-
-  const activeLead = useMemo(() => {
-    return leads.find((l) => l.id === selectedLeadId) || leads[0] || null;
-  }, [leads, selectedLeadId]);
-
-  // Fetch pre-call prep brief for active lead
-  const fetchCallBrief = async (leadId: number) => {
+  const fetchCallBrief = useCallback(async (leadId: number) => {
     setLoadingBrief(true);
     try {
       const res = await apiFetch<CallBrief>(`/api/leads/${leadId}/call-brief`);
       setCallBrief(res);
     } catch {
-      // Fallback structured brief
+      const lead = leads.find((l) => l.id === leadId);
       setCallBrief({
         lead_id: leadId,
-        clinic_name: activeLead?.name || "Dental Clinic",
-        doctor_name: activeLead?.doctor_name || "Doctor",
-        prep_brief: `Context for Dr. ${activeLead?.doctor_name || "Doctor"}:
-1. Focus on mobile patient discovery in ${activeLead?.locality || "Delhi NCR"}.
+        clinic_name: lead?.name || "Dental Clinic",
+        doctor_name: lead?.doctor_name || "Doctor",
+        prep_brief: `Context for Dr. ${lead?.doctor_name || "Doctor"}:
+1. Focus on mobile patient discovery in ${lead?.locality || "Delhi NCR"}.
 2. Address objection regarding Practo integration by showing WhatsApp direct-to-OPD booking button.
-3. Offer the 14-day risk-free preview link: https://preview.dentalos.in/${activeLead?.slug || "demo"}.
+3. Offer the 14-day risk-free preview link: https://preview.dentalos.in/${lead?.slug || "demo"}.
 4. Goal for this call: Confirm partner decision meeting date.`,
       });
     } finally {
       setLoadingBrief(false);
     }
-  };
+  }, [leads]);
 
-  useEffect(() => {
-    if (activeLead?.id) {
-      fetchCallBrief(activeLead.id);
+  // ---------------------------------------------------------------------------
+  // Past calls — loaded whenever active clinic changes
+  // ---------------------------------------------------------------------------
+  const [callsList, setCallsList] = useState<StructuredCall[]>([]);
+  const [expandedCallId, setExpandedCallId] = useState<number | null>(null);
+
+  const loadCallsForLead = useCallback(async (lead: any) => {
+    // Optimistically seed from inline data if available
+    const inlineCalls: StructuredCall[] = Array.isArray((lead as any)?.calls) ? (lead as any).calls : [];
+    if (inlineCalls.length > 0) {
+      setCallsList(inlineCalls);
+      setExpandedCallId(inlineCalls[0]?.id ?? null);
+    } else {
+      setCallsList([]);
+      setExpandedCallId(null);
     }
+
+    // Then fetch from API
+    try {
+      const loaded = await apiFetch<StructuredCall[]>(`/api/leads/${lead.id}/calls`);
+      const arr = Array.isArray(loaded) ? loaded : [];
+      setCallsList(arr);
+      setExpandedCallId(arr[0]?.id ?? null);
+    } catch {
+      // Keep inline seed
+      if (inlineCalls.length === 0) setCallsList([]);
+    }
+  }, []);
+
+  // Trigger on clinic switch
+  useEffect(() => {
+    if (!activeLead) return;
+    fetchCallBrief(activeLead.id);
+    loadCallsForLead(activeLead);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLead?.id]);
 
-  // Handle inline call logging
+  // ---------------------------------------------------------------------------
+  // Inline Log Call Form
+  // ---------------------------------------------------------------------------
+  const [rawText, setRawText] = useState<string>("");
+  const [durationSeconds, setDurationSeconds] = useState<number>(180);
+  const [outcome, setOutcome] = useState<string>("connected");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
   const handleLogCall = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rawText.trim() || !activeLead) {
@@ -127,7 +222,6 @@ export function CallsManagementView() {
         body: JSON.stringify(payload),
       });
 
-      // Add to calls list
       setCallsList((prev) => [res, ...prev]);
       setExpandedCallId(res.id);
       setRawText("");
@@ -149,22 +243,12 @@ export function CallsManagementView() {
     notify("Call preparation brief copied to clipboard", "ok");
   };
 
-  // Filtered leads for selector
-  const filteredLeads = useMemo(() => {
-    if (!searchQuery.trim()) return leads;
-    const q = searchQuery.toLowerCase().trim();
-    return leads.filter(
-      (l) =>
-        l.name.toLowerCase().includes(q) ||
-        (l.doctor_name || "").toLowerCase().includes(q) ||
-        (l.locality || "").toLowerCase().includes(q) ||
-        (l.primary_phone || "").toLowerCase().includes(q)
-    );
-  }, [leads, searchQuery]);
-
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
   return (
     <div className="h-full flex flex-col gap-6 overflow-y-auto text-slate-900 dark:text-slate-100 p-1">
-      {/* Top Banner & Active Lead Selector */}
+      {/* Top Banner & Unified Clinic Combobox */}
       <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
@@ -183,68 +267,108 @@ export function CallsManagementView() {
           </div>
         </div>
 
-        {/* Quick Search & Clinic Dropdown Selector */}
-        <div className="w-full md:w-96 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-              Selected Lead / Clinic ({filteredLeads.length} of {leads.length}):
-            </label>
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-              >
-                Clear filter
-              </button>
-            )}
-          </div>
-
-          {/* Quick Prominent Search Bar */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && filteredLeads.length > 0) {
-                  setSelectedLeadId(filteredLeads[0].id);
-                }
-              }}
-              placeholder="Search clinic, doctor, or phone..."
-              className="w-full pl-9 pr-8 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
-                title="Clear search"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Real-time Filtered Dropdown */}
-          <select
-            value={activeLead?.id || ""}
-            onChange={(e) => setSelectedLeadId(Number(e.target.value))}
-            className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        {/* ---------------------------------------------------------------- */}
+        {/* Unified Searchable Combobox                                      */}
+        {/* ---------------------------------------------------------------- */}
+        <div ref={comboRef} className="w-full md:w-96 relative">
+          {/* Trigger button — shows currently selected clinic */}
+          <button
+            type="button"
+            onClick={() => {
+              setComboOpen((v) => !v);
+              if (!comboOpen) {
+                setTimeout(() => comboInputRef.current?.focus(), 50);
+              }
+            }}
+            className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all cursor-pointer text-left"
           >
-            {filteredLeads.length === 0 ? (
-              <option value="" disabled>
-                No clinics match "{searchQuery}"
-              </option>
+            {activeLead ? (
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-xs text-indigo-600 dark:text-indigo-400 shrink-0">
+                  {activeLead.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-slate-900 dark:text-white truncate">{activeLead.name}</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Dr. {activeLead.doctor_name || "Doctor"} · {activeLead.locality || "Delhi NCR"}
+                    {activeLead.primary_phone ? ` · ${activeLead.primary_phone}` : ""}
+                  </div>
+                </div>
+              </div>
             ) : (
-              filteredLeads.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name} - Dr. {l.doctor_name || "Doctor"} ({l.locality || "Delhi NCR"})
-                </option>
-              ))
+              <span className="text-xs text-slate-400">Select a clinic…</span>
             )}
-          </select>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Search className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${comboOpen ? "rotate-180" : ""}`} />
+            </div>
+          </button>
+
+          {/* Dropdown */}
+          {comboOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+              {/* Search inside dropdown */}
+              <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <input
+                    ref={comboInputRef}
+                    type="text"
+                    value={comboSearch}
+                    onChange={(e) => setComboSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && filteredLeads.length > 0) {
+                        handleSelectClinic(filteredLeads[0].id);
+                      }
+                      if (e.key === "Escape") {
+                        setComboOpen(false);
+                        setComboSearch("");
+                      }
+                    }}
+                    placeholder="Search clinic, doctor, locality, phone…"
+                    className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  />
+                </div>
+              </div>
+
+              {/* Results list */}
+              <div className="max-h-72 overflow-y-auto">
+                {filteredLeads.length === 0 ? (
+                  <div className="py-6 text-center text-xs text-slate-400">
+                    No clinics match "{comboSearch}"
+                  </div>
+                ) : (
+                  filteredLeads.map((l) => {
+                    const isActive = l.id === activeCallLeadId;
+                    return (
+                      <button
+                        key={l.id}
+                        type="button"
+                        onClick={() => handleSelectClinic(l.id)}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors cursor-pointer ${
+                          isActive
+                            ? "bg-indigo-50 dark:bg-indigo-950/60"
+                            : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                        }`}
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-[10px] text-indigo-600 dark:text-indigo-400 shrink-0">
+                          {l.name.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-semibold text-slate-900 dark:text-white truncate">{l.name}</div>
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            Dr. {l.doctor_name || "Doctor"} · {l.locality || "Delhi NCR"}
+                            {l.primary_phone ? ` · ${l.primary_phone}` : ""}
+                          </div>
+                        </div>
+                        {isActive && <Check className="w-3.5 h-3.5 text-indigo-500 shrink-0" />}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -433,7 +557,7 @@ Next step: send the comparison PDF on WhatsApp."
                 </h2>
               </div>
               <span className="text-[11px] text-slate-400">
-                {callsList.length} calls logged this session
+                {callsList.length} call log{callsList.length !== 1 ? "s" : ""} for {activeLead.name}
               </span>
             </div>
 
@@ -443,7 +567,7 @@ Next step: send the comparison PDF on WhatsApp."
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  No Calls Structured In Current Session
+                  No Call Logs for {activeLead.name}
                 </h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
                   Log a raw call transcript on the left to see instant AI extraction of Summary, Interests, Objections, Commitments, and Next Steps.

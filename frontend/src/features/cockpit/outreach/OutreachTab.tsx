@@ -20,6 +20,8 @@ import {
   CheckCircle2,
   RotateCcw,
   Loader2,
+  Play,
+  Square,
 } from "lucide-react";
 
 export function mapBatchClinicsToQueueItems(clinics: Array<Record<string, any>>): QueueItem[] {
@@ -80,6 +82,7 @@ export const OutreachTab: React.FC = () => {
   const [filter, setFilter] = useState<QueueItemStatus | "ALL">("ALL");
   const [notification, setNotification] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [isWaRunning, setIsWaRunning] = useState<boolean>(false);
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -89,7 +92,18 @@ export const OutreachTab: React.FC = () => {
   const syncOutreachQueueFromDb = useCallback(async () => {
     setIsSyncing(true);
     try {
-      const res = await apiFetch<{ clinics?: Array<Record<string, any>>; total?: number }>("/api/batch?hustle_id=1");
+      const [res, cockpitState] = await Promise.all([
+        apiFetch<{ clinics?: Array<Record<string, any>>; total?: number }>("/api/batch?hustle_id=1").catch(() => null),
+        apiFetch<Record<string, any>>("/api/autopilot/cockpit-state?hustle_id=1").catch(() => null),
+      ]);
+
+      // Sync live running state
+      if (cockpitState?.is_running !== undefined) {
+        const task = cockpitState.active_task as string | null;
+        const isCloserRunning = cockpitState.is_running && (!task || task.startsWith("closer"));
+        setIsWaRunning(isCloserRunning);
+      }
+
       if (Array.isArray(res?.clinics)) {
         const mappedItems = mapBatchClinicsToQueueItems(res.clinics);
         setQueue(mappedItems);
@@ -121,20 +135,71 @@ export const OutreachTab: React.FC = () => {
     syncOutreachQueueFromDb();
   }, [syncOutreachQueueFromDb]);
 
+  // SSE subscription to track live WA automation state
+  useEffect(() => {
+    const evtSource = new EventSource("/api/events/stream");
+
+    const handleStarted = (e: MessageEvent) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (!data.task || data.task === "closer" || String(data.task).startsWith("closer")) {
+          setIsWaRunning(true);
+        }
+      } catch {
+        setIsWaRunning(true);
+      }
+    };
+    const handleStopped = () => setIsWaRunning(false);
+
+    evtSource.addEventListener("autopilot_started", handleStarted);
+    evtSource.addEventListener("autopilot_stopped", handleStopped);
+    evtSource.addEventListener("run_completed", handleStopped);
+
+    return () => { evtSource.close(); };
+  }, []);
+
   // Persist real data to the module cache once the first load has completed
   useEffect(() => {
     if (!hasLoaded) return;
     outreachTabCache = { queue, metrics };
   }, [hasLoaded, queue, metrics]);
 
-  const handleUpdateSettings = (updated: Partial<DispatchEngineSettings>) => {
+  const handleUpdateSettings = async (updated: Partial<DispatchEngineSettings>) => {
     setSettings((prev) => ({ ...prev, ...updated }));
     if (updated.masterQueueRunning !== undefined) {
-      showNotification(
-        updated.masterQueueRunning
-          ? "Master Queue Resumed: Pacing timers active"
-          : "Master Queue Paused: All countdowns frozen safely"
-      );
+      if (updated.masterQueueRunning) {
+        // Start WA automation via real API
+        await handleStartWaAutomation();
+      } else {
+        // Stop WA automation via real API
+        await handleStopWaAutomation();
+      }
+    }
+  };
+
+  const handleStartWaAutomation = async () => {
+    setIsWaRunning(true);
+    try {
+      await apiFetch<{ status?: string }>("/api/agents/closer/run", {
+        method: "POST",
+        body: JSON.stringify({ hustle_id: 1, channel: "whatsapp", dry_run: false }),
+      });
+      showNotification("WA Automation started — live dispatch running");
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Failed to start WA automation";
+      showNotification(errMsg);
+      setIsWaRunning(false);
+    }
+  };
+
+  const handleStopWaAutomation = async () => {
+    try {
+      await apiFetch<{ status?: string }>("/api/autopilot/stop", { method: "POST" });
+      showNotification("WA Automation stopped");
+    } catch {
+      showNotification("Stop request sent");
+    } finally {
+      setIsWaRunning(false);
     }
   };
 
@@ -218,6 +283,7 @@ export const OutreachTab: React.FC = () => {
       <SafetyControlsCard
         settings={settings}
         onUpdateSettings={handleUpdateSettings}
+        isLiveRunning={isWaRunning}
       />
 
       {/* Queue Filter Bar */}
@@ -281,10 +347,32 @@ export const OutreachTab: React.FC = () => {
             <RotateCcw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
           </button>
 
-          <div className="text-xs font-mono text-slate-500 dark:text-slate-400 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Anti-Spam Paced Dispatch Active</span>
-          </div>
+          {/* Live WA running indicator */}
+          {isWaRunning && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>WA Automation Running</span>
+            </div>
+          )}
+
+          {/* Primary WA Start / Stop action button */}
+          {isWaRunning ? (
+            <button
+              onClick={handleStopWaAutomation}
+              className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer active:scale-95"
+            >
+              <Square className="w-3.5 h-3.5 fill-white" />
+              <span>Stop WA Automation</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleStartWaAutomation}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer active:scale-95"
+            >
+              <Play className="w-3.5 h-3.5 fill-white" />
+              <span>Start WA Automation</span>
+            </button>
+          )}
         </div>
       </div>
 

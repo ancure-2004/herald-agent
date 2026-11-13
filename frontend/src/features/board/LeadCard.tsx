@@ -46,6 +46,9 @@ export function LeadCard({
   const { openLogCallModal, openInboxForLead, notify } = useCRM();
   const [advanceDropdownOpen, setAdvanceDropdownOpen] = useState<boolean>(false);
 
+  // Batch the lead was assigned to (lead.custom_fields.batch_id), e.g. "BATCH-01"
+  const batchId = (lead as Lead & { custom_fields?: Record<string, unknown> | null }).custom_fields?.batch_id;
+
   const isOverdue =
     lead.next_action_due_at &&
     new Date(lead.next_action_due_at).getTime() < Date.now();
@@ -74,6 +77,15 @@ export function LeadCard({
         </span>
 
         <div className="flex items-center gap-1.5">
+          {batchId && (
+            <span
+              className="font-mono text-[9px] font-bold tracking-tight text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700"
+              title={`Batch ${String(batchId)}`}
+            >
+              {String(batchId)}
+            </span>
+          )}
+
           {lead.intent_score >= 50 && (
             <span className="flex items-center gap-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded-md border border-rose-200 dark:border-rose-800/60">
               <Flame className="w-2.5 h-2.5 fill-rose-500" />

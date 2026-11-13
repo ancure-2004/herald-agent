@@ -4,8 +4,9 @@ from fastapi import APIRouter, Body, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
+from app.autopilot.runs.job_manager import JobManager
 from app.controllers.pipeline_controller import PipelineController
-from app.services.event_bus import emit_terminal_log
+from app.services.event_bus import emit_terminal_log, is_autopilot_running
 
 router = APIRouter(tags=["Pipeline & Autopilot"])
 
@@ -219,14 +220,41 @@ def verify_and_sync_links(db: Session = Depends(get_db)):
 
 
 @router.get("/batch")
-def get_dispatch_cockpit_batch(hustle_id: int = Query(1), db: Session = Depends(get_db)):
-    return PipelineController.get_cockpit_batch(db, hustle_id)
+def get_dispatch_cockpit_batch(
+    hustle_id: int = Query(1),
+    batch_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """Returns the dispatch cockpit payload, optionally filtered to a specific batch."""
+    return PipelineController.get_cockpit_batch(db, hustle_id, batch_id=batch_id)
+
+
+@router.post("/batch/rebalance")
+def rebalance_batches(
+    hustle_id: int = Query(1),
+    force_rebatch: bool = Query(True),
+    db: Session = Depends(get_db),
+):
+    """Re-slice uncontacted leads into batch_size chunks. Use after changing batch_size in settings."""
+    from app.agents import ensure_hustle_lead_batches
+
+    result = ensure_hustle_lead_batches(db, hustle_id=hustle_id, force_rebatch=force_rebatch)
+    return {"ok": True, **result}
 
 
 @router.get("/autopilot/cockpit-state")
 @router.get("/autopilot/status")
 def get_cockpit_state(hustle_id: int = Query(1), db: Session = Depends(get_db)):
-    return PipelineController.get_cockpit_state(db, hustle_id)
+    state = PipelineController.get_cockpit_state(db, hustle_id)
+    # Unified live-running flag: covers token-based runs, subprocess-only agents, and the flag
+    composite_running = bool(
+        is_autopilot_running()
+        or JobManager.get_active_run_id() is not None
+        or JobManager.has_active_processes()
+    )
+    state["is_running"] = composite_running
+    state["active_task"] = JobManager.get_active_task_type()
+    return state
 
 
 @router.get("/cockpit/attention")

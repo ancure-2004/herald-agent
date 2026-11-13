@@ -7,6 +7,8 @@ import {
   ArrowUpDown,
   Calendar,
   CheckCircle2,
+  Layers,
+  RefreshCw,
   Clock,
   Eye,
   Flame,
@@ -24,6 +26,7 @@ import {
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { KanbanColumn } from "./KanbanColumn";
+import { apiFetch } from "@/lib/api/client";
 
 export function KanbanBoardView() {
   const {
@@ -54,10 +57,31 @@ export function KanbanBoardView() {
     setNewLeadModalOpen,
     openLogCallModal,
     openInboxForLead,
+    loadAll,
+    notify,
   } = useCRM();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [hideEmptyStages, setHideEmptyStages] = useState<boolean>(true);
+  const [batchGroupingEnabled, setBatchGroupingEnabled] = useState<boolean>(true);
+  const [syncingBatches, setSyncingBatches] = useState<boolean>(false);
+
+  const handleSyncBatches = async () => {
+    if (!activeHustle || syncingBatches) return;
+    setSyncingBatches(true);
+    try {
+      await apiFetch("/api/batch/rebalance", {
+        method: "POST",
+        body: JSON.stringify({ hustle_id: activeHustle.id, force_rebatch: false }),
+      });
+      await loadAll();
+      notify("Organized unbatched leads into batches!");
+    } catch (err) {
+      notify(`Batch sync failed: ${err instanceof Error ? err.message : "unknown error"}`);
+    } finally {
+      setSyncingBatches(false);
+    }
+  };
 
   const isAllActive = activeSmartView === "all_active";
 
@@ -335,6 +359,33 @@ export function KanbanBoardView() {
         {/* Total In View Badge & Hide Empty Stages Toggle */}
         <div className="flex items-center gap-2 text-xs">
           {isAllActive && (
+            <>
+              <button
+                onClick={() => setBatchGroupingEnabled(!batchGroupingEnabled)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                  batchGroupingEnabled
+                    ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
+                    : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                }`}
+                title="Toggle batch grouping for early volume stages"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>{batchGroupingEnabled ? "Mode: Hybrid Batches" : "Mode: All Individual Cards"}</span>
+              </button>
+
+              <button
+                onClick={handleSyncBatches}
+                disabled={syncingBatches}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 disabled:opacity-50 disabled:cursor-wait"
+                title="Assign unbatched leads into batches"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${syncingBatches ? "animate-spin" : ""}`} />
+                <span>{syncingBatches ? "Syncing…" : `Sync Batches (${activeHustle.channel_limits?.batch_size ?? 25}/batch)`}</span>
+              </button>
+            </>
+          )}
+
+          {isAllActive && (
             <button
               onClick={() => setHideEmptyStages(!hideEmptyStages)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
@@ -406,6 +457,7 @@ export function KanbanBoardView() {
                 draggingLeadId={draggingLeadId}
                 selectedLeadId={selectedLeadId}
                 hideEmpty={hideEmptyStages}
+                batchGroupingEnabled={batchGroupingEnabled}
                 stageColorClass={dotColor}
                 onDragOver={(e) => {
                   e.preventDefault();

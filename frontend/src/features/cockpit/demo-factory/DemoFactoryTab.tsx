@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   Plus,
   Loader2,
+  Square,
 } from "lucide-react";
 
 export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRun[] {
@@ -125,6 +126,7 @@ export const DemoFactoryTab: React.FC = () => {
   const [isPreviewDrawerOpen, setIsPreviewDrawerOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [isLaunchingBatch, setIsLaunchingBatch] = useState<boolean>(false);
+  const [isBuildRunning, setIsBuildRunning] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   const [kpiMetrics, setKpiMetrics] = useState<DemoKpiMetrics>(() => demoFactoryTabCache?.kpiMetrics ?? EMPTY_DEMO_KPIS);
@@ -141,6 +143,11 @@ export const DemoFactoryTab: React.FC = () => {
         apiFetch<Array<Record<string, any>>>("/api/leads?hustle_id=1").catch(() => null),
         apiFetch<Record<string, any>>("/api/autopilot/cockpit-state?hustle_id=1").catch(() => null),
       ]);
+
+      // Sync live running state from server
+      if (cockpitState?.is_running !== undefined) {
+        setIsBuildRunning(Boolean(cockpitState.is_running));
+      }
 
       // A network failure (null) keeps what is already on screen; an empty array clears to the empty state
       if (Array.isArray(dbLeads)) {
@@ -168,6 +175,26 @@ export const DemoFactoryTab: React.FC = () => {
       setHasLoaded(true);
       setIsSyncing(false);
     }
+  }, []);
+
+  // SSE subscription to track live running state
+  useEffect(() => {
+    const evtSource = new EventSource("/api/events/stream");
+
+    const handleStarted = () => setIsBuildRunning(true);
+    const handleStopped = () => {
+      setIsBuildRunning(false);
+      setIsLaunchingBatch(false);
+    };
+
+    evtSource.addEventListener("autopilot_started", handleStarted);
+    evtSource.addEventListener("autopilot_stopped", handleStopped);
+    evtSource.addEventListener("run_completed", handleStopped);
+    evtSource.addEventListener("auditor_complete", handleStopped);
+
+    return () => {
+      evtSource.close();
+    };
   }, []);
 
   useEffect(() => {
@@ -226,6 +253,7 @@ export const DemoFactoryTab: React.FC = () => {
 
   const handleLaunchBatch = async () => {
     setIsLaunchingBatch(true);
+    setIsBuildRunning(true);
     try {
       const res = await apiFetch<{ status?: string; message?: string }>("/api/autopilot/build-batch", {
         method: "POST",
@@ -236,8 +264,22 @@ export const DemoFactoryTab: React.FC = () => {
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : "Failed to launch batch";
       showNotification(errMsg);
+      setIsLaunchingBatch(false);
+      setIsBuildRunning(false);
     } finally {
-      setTimeout(() => setIsLaunchingBatch(false), 2000);
+      setIsLaunchingBatch(false);
+    }
+  };
+
+  const handleStopBatch = async () => {
+    try {
+      await apiFetch<{ status?: string }>("/api/autopilot/stop", { method: "POST" });
+      showNotification("Automation stopped");
+    } catch {
+      showNotification("Stop request sent");
+    } finally {
+      setIsBuildRunning(false);
+      setIsLaunchingBatch(false);
     }
   };
 
@@ -362,23 +404,32 @@ export const DemoFactoryTab: React.FC = () => {
             <RotateCcw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
           </button>
 
-          <button
-            onClick={handleLaunchBatch}
-            disabled={isLaunchingBatch}
-            className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
-          >
-            {isLaunchingBatch ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Launching Batch...</span>
-              </>
-            ) : (
-              <>
-                <Plus className="w-3.5 h-3.5" />
-                <span>Launch Demo Batch (+10)</span>
-              </>
-            )}
-          </button>
+          {/* Running indicator badge */}
+          {(isBuildRunning || isLaunchingBatch) && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-300 dark:border-sky-700/60 text-sky-700 dark:text-sky-300 text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
+              <span>Automation Running...</span>
+            </div>
+          )}
+
+          {isBuildRunning || isLaunchingBatch ? (
+            <button
+              onClick={handleStopBatch}
+              className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer active:scale-95"
+            >
+              <Square className="w-3.5 h-3.5 fill-white" />
+              <span>Stop Automation</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleLaunchBatch}
+              disabled={isLaunchingBatch}
+              className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Launch Demo Batch (+10)</span>
+            </button>
+          )}
         </div>
       </div>
 

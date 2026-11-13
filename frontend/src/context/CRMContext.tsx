@@ -174,7 +174,10 @@ interface CRMContextType {
   handleSyncBatchLinks: () => Promise<void>;
   handleRunScout: () => Promise<void>;
   handleRunAuditor: (recordVideo?: boolean) => Promise<void>;
-  handleRunCloser: (channel: "whatsapp" | "instagram" | "email", dryRun?: boolean) => Promise<void>;
+  handleRunCloser: (channel: "whatsapp" | "instagram" | "email", dryRun?: boolean, clinicId?: number, batchId?: string) => Promise<void>;
+  handleStopAutomation: () => Promise<void>;
+  isOutreachRunning: boolean;
+  activeOutreachChannel: "whatsapp" | "email" | "instagram" | null;
   handleConfirmCommitment: (commitmentId: number) => Promise<void>;
 }
 
@@ -268,6 +271,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     "[SYSTEM] Unified Live Execution Terminal ready. Trigger 'Run Refill Batch Now', 'Verify Links', or any Sub-Agent (1. Scout / 2. Auditor / 3. Closer) to stream live logs here...",
   ]);
   const [activeTerminalJob, setActiveTerminalJob] = useState<string | null>(null);
+  const [isOutreachRunning, setIsOutreachRunning] = useState<boolean>(false);
+  const [activeOutreachChannel, setActiveOutreachChannel] = useState<"whatsapp" | "email" | "instagram" | null>(null);
   const [showPreviousRuns, setShowPreviousRuns] = useState<boolean>(false);
   const [latestPipelineStep, setLatestPipelineStep] = useState<PipelineStepEvent | null>(null);
   const terminalContainerRef = useRef<HTMLDivElement | null>(null);
@@ -458,7 +463,37 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     onLiveEvent: handleLiveEvent,
     onRefreshTrigger: handleRefreshTrigger,
     onPipelineStep: (step) => setLatestPipelineStep(step),
+    onOutreachEvent: (evName, data) => {
+      if (evName === "autopilot_started" && data.task === "closer") {
+        const ch = String(data.channel || "").toLowerCase();
+        setIsOutreachRunning(true);
+        setActiveOutreachChannel(ch === "whatsapp" || ch === "email" || ch === "instagram" ? ch : null);
+      } else if (evName === "autopilot_stopped" || evName === "closer_complete") {
+        setIsOutreachRunning(false);
+        setActiveOutreachChannel(null);
+      }
+    },
   });
+
+  // Rehydrate running state after a reload (active_task looks like "closer_whatsapp").
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ is_running: boolean; active_task: string | null }>(
+      `/api/autopilot/cockpit-state?hustle_id=${activeHustleId}`
+    )
+      .then((state) => {
+        if (cancelled || !state.is_running || !state.active_task?.startsWith("closer")) return;
+        const ch = state.active_task.replace("closer_", "");
+        setIsOutreachRunning(true);
+        setActiveOutreachChannel(ch === "whatsapp" || ch === "email" || ch === "instagram" ? ch : null);
+      })
+      .catch(() => {
+        // Non-fatal: the badge simply stays hidden until the next run starts.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeHustleId]);
 
   // Action Handlers
   const handleStageChange = async (lead: Lead, newStageId: number) => {
@@ -632,7 +667,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleRunCloser = async (channel: "whatsapp" | "instagram" | "email", dryRun: boolean = true) => {
+  const handleRunCloser = async (channel: "whatsapp" | "instagram" | "email", dryRun: boolean = true, clinicId?: number, batchId?: string) => {
+    setIsOutreachRunning(true);
+    setActiveOutreachChannel(channel);
     setActiveTerminalJob(`3. Closer Agent (${channel.toUpperCase()} • ${dryRun ? "Dry-Run" : "LIVE"})`);
     appendTerminalLines([
       `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '3. Closer Agent' (${channel.toUpperCase()} • ${dryRun ? "Dry-Run Safe Test" : "LIVE"})...`,
@@ -646,7 +683,14 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         dispatch_log: string;
       }>("/api/agents/closer/run", {
         method: "POST",
-        body: JSON.stringify({ hustle_id: activeHustleId, channel, dry_run: dryRun }),
+        timeoutMs: 3600000,
+        body: JSON.stringify({
+          hustle_id: activeHustleId,
+          channel,
+          dry_run: dryRun,
+          ...(clinicId != null ? { clinic_id: clinicId } : {}),
+          ...(batchId ? { batch_id: batchId } : {}),
+        }),
       });
       await syncTerminalLogs();
       notify(
@@ -654,12 +698,49 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       );
       loadAll();
     } catch (err) {
+      const isTimeoutOrAbort =
+        err instanceof Error &&
+        (err.message.includes("timed out") || err.message.includes("aborted"));
       appendTerminalLines([
         `[${new Date().toLocaleTimeString()}] [ERROR] Closer Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
       ]);
-      notify(err instanceof Error ? err.message : "Closer Agent failed", "err");
+      // If the fetch timed out / was aborted, the backend subprocess may still be running
+      // during a WhatsApp pacing delay. Skip the error toast — SSE autopilot_stopped /
+      // closer_complete events will reset state once the subprocess actually finishes.
+      if (!isTimeoutOrAbort) {
+        notify(err instanceof Error ? err.message : "Closer Agent failed", "err");
+      }
     } finally {
       setActiveTerminalJob(null);
+      // Guard: only reset outreach flags if the backend subprocess is actually done.
+      // During a 183s WhatsApp pacing delay the process is still running even though
+      // the HTTP request may have timed out or been aborted on the frontend.
+      try {
+        const state = await apiFetch<{ is_running: boolean }>(
+          `/api/autopilot/cockpit-state?hustle_id=${activeHustleId}`
+        );
+        if (!state.is_running) {
+          setIsOutreachRunning(false);
+          setActiveOutreachChannel(null);
+        }
+        // If still running, leave flags set. SSE autopilot_stopped / closer_complete
+        // events (wired in useSSE above) will clear them when the process ends.
+      } catch {
+        // cockpit-state check failed — reset safely so the UI is never permanently stuck.
+        setIsOutreachRunning(false);
+        setActiveOutreachChannel(null);
+      }
+    }
+  };
+
+  const handleStopAutomation = async () => {
+    try {
+      await apiFetch("/api/autopilot/stop", { method: "POST" });
+      setIsOutreachRunning(false);
+      setActiveOutreachChannel(null);
+      notify("Outreach automation stopped");
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Failed to stop outreach automation", "err");
     }
   };
 
@@ -851,6 +932,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     handleRunScout,
     handleRunAuditor,
     handleRunCloser,
+    handleStopAutomation,
+    isOutreachRunning,
+    activeOutreachChannel,
     handleConfirmCommitment,
   };
 

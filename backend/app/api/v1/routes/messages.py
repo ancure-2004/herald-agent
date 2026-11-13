@@ -95,3 +95,30 @@ def mark_cockpit_sent(payload: Dict[str, Any], db: Session = Depends(get_db)):
 def mark_cockpit_unreachable(payload: Dict[str, Any], db: Session = Depends(get_db)):
     return MessageController.mark_unreachable(db, payload)
 
+
+@router.post("/update-messages")
+def update_messages(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    """Saves custom pitch overrides for a lead (wa_msg1, wa_msg2, ig_dm_invite,
+    ig_reply_caption, email_subject, email_body).  Only non-empty fields are updated."""
+    return MessageController.update_messages(db, payload)
+
+
+@router.post("/reset-messages")
+def reset_messages(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    """Removes all saved pitch overrides for a lead, reverting to generated defaults."""
+    return MessageController.reset_messages(db, payload)
+
+
+@router.post("/update-clinic-contact")
+def update_clinic_contact(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    """Updates a lead's contact details: phone (normalized), email, ig_handle (@ stripped),
+    and target_channel (whatsapp / instagram / email)."""
+    return MessageController.update_clinic_contact(db, payload)
+
+
+@router.post("/unmark-sent")
+def unmark_sent(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    """Resets a lead back to the package_ready stage and cancels any sent OutboxItem rows,
+    allowing the pitch to be re-sent after edits."""
+    return MessageController.unmark_sent(db, payload)
+

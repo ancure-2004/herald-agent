@@ -250,6 +250,48 @@ class MessageService:
 
         hustle = HustleRepository.get_by_id(db, lead.hustle_id)
 
+        # Queued custom message (sent instantly from the Messaging tab): finalize the existing row, never duplicate it.
+        queued_outbox = MessageService._find_queued_outbox(db, lead.id, channel, payload.get("queued_outbox_id"))
+        if queued_outbox:
+            now = datetime.now(timezone.utc)
+            queued_outbox.status = "sent"
+            queued_outbox.sent_at = now
+            existing_msg = (
+                db.query(Message)
+                .filter(Message.lead_id == lead.id, Message.outbox_id == queued_outbox.id)
+                .order_by(Message.id.desc())
+                .first()
+            )
+            if existing_msg is None:
+                existing_msg = (
+                    db.query(Message)
+                    .filter(
+                        Message.lead_id == lead.id,
+                        Message.direction == "outbound",
+                        Message.delivery_status == "queued",
+                    )
+                    .order_by(Message.id.desc())
+                    .first()
+                )
+            if existing_msg:
+                existing_msg.delivery_status = "sent"
+            db.commit()
+            broadcast_sse(
+                "message_sent",
+                {
+                    "lead_id": lead.id,
+                    "message_id": existing_msg.id if existing_msg else None,
+                    "outbox_id": queued_outbox.id,
+                },
+            )
+            broadcast_sse("outbox_sent", {"lead_id": lead.id, "channel": channel, "unique_key": queued_outbox.unique_key})
+            return {
+                "status": "sent",
+                "unique_key": queued_outbox.unique_key,
+                "lead_id": lead.id,
+                "today_channel_sends": get_today_channel_send_count(db, lead.hustle_id or 1, channel),
+            }
+
         # Determine the demo URL for the message text
         from app.core.config import get_settings
         demo_base = get_settings().DEMO_ENGINE_BASE_URL
@@ -355,6 +397,60 @@ class MessageService:
         return {"status": "fallback_applied", "lead_id": lead.id, "preferred_channel": lead.preferred_channel}
 
     @staticmethod
+    def _find_queued_outbox(db: Session, lead_id: int, channel: str, queued_outbox_id: Any = None) -> Optional[OutboxItem]:
+        """Returns the queued custom OutboxItem for this lead/channel, preferring an explicit id if given."""
+        q = db.query(OutboxItem).filter(
+            OutboxItem.lead_id == lead_id,
+            OutboxItem.channel == channel,
+            OutboxItem.status == "queued",
+        )
+        if queued_outbox_id:
+            try:
+                match = q.filter(OutboxItem.id == int(queued_outbox_id)).first()
+            except (TypeError, ValueError):
+                match = None
+            if match:
+                return match
+        return q.order_by(OutboxItem.id.desc()).first()
+
+    @staticmethod
+    def _launch_instant_dispatch(lead_id: int, channel: str) -> None:
+        """Runs the dispatcher for one lead in a daemon thread so the HTTP send returns immediately."""
+        import threading
+
+        def _worker() -> None:
+            from app.agents import run_closer_agent
+            from app.db.session import SessionLocal
+
+            bg_db = SessionLocal()
+            try:
+                lead = LeadRepository.get_by_id(bg_db, lead_id)
+                if not lead:
+                    return
+                bg_hustle = HustleRepository.get_by_id(bg_db, lead.hustle_id)
+                if not bg_hustle:
+                    return
+                result = run_closer_agent(
+                    db=bg_db,
+                    hustle=bg_hustle,
+                    channel=channel,
+                    dry_run=False,
+                    clinic_id=lead.id,
+                    log_cb=lambda m: emit_terminal_log("OUTREACH-INSTANT", m),
+                )
+                broadcast_sse(
+                    "closer_complete",
+                    {"lead_id": lead_id, "channel": channel, "dispatch_log": bool(result.get("dispatch_log"))},
+                )
+            except Exception as exc:
+                logger.error(f"Instant dispatch failed for lead #{lead_id}: {exc}")
+                emit_terminal_log("OUTREACH-INSTANT", f"Instant dispatch failed: {exc}")
+            finally:
+                bg_db.close()
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    @staticmethod
     def send_message(db: Session, lead_id: int, payload: MessageSendRequest) -> Dict[str, Any]:
         lead = LeadRepository.get_by_id(db, lead_id)
         if not lead:
@@ -441,6 +537,7 @@ class MessageService:
 
             broadcast_sse("message_queued", {"lead_id": lead.id, "outbox_id": outbox_item.id, "text": msg.text})
             emit_terminal_log("OUTREACH", f"Queued WhatsApp message for {lead.name}: {msg.text[:60]}")
+            MessageService._launch_instant_dispatch(lead.id, clean_channel)
             return {
                 "status": "queued",
                 "outbox_id": outbox_item.id,
@@ -574,6 +671,129 @@ class MessageService:
         if not lead:
             raise NotFoundError("Lead not found.")
         return db.query(Message).filter(Message.lead_id == lead.id).order_by(Message.created_at.asc()).all()
+
+    # -------------------------------------------------------------------------
+    # Dispatch Cockpit persistence helpers
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def update_messages(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Saves custom pitch overrides into lead.custom_fields["pitch_overrides"].
+
+        Only non-empty string values are written so callers can send partial
+        payloads and leave other fields untouched.
+        """
+        lead_id = int(payload.get("id") or 0)
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+
+        override_keys = ["wa_msg1", "wa_msg2", "ig_dm_invite", "ig_reply_caption", "email_subject", "email_body"]
+        cf = dict(lead.custom_fields or {})
+        overrides = dict(cf.get("pitch_overrides") or {})
+        for key in override_keys:
+            val = payload.get(key)
+            if val is not None and str(val).strip():
+                overrides[key] = str(val).strip()
+        cf["pitch_overrides"] = overrides
+        lead.custom_fields = cf
+        db.commit()
+        broadcast_sse("lead_updated", {"lead_id": lead.id, "has_custom_edits": True})
+        return {"success": True, "has_custom_edits": True}
+
+    @staticmethod
+    def reset_messages(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Removes pitch_overrides from lead.custom_fields, reverting to defaults."""
+        lead_id = int(payload.get("id") or 0)
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+
+        cf = dict(lead.custom_fields or {})
+        cf.pop("pitch_overrides", None)
+        lead.custom_fields = cf
+        db.commit()
+        broadcast_sse("lead_updated", {"lead_id": lead.id, "has_custom_edits": False})
+        return {"success": True, "has_custom_edits": False}
+
+    @staticmethod
+    def update_clinic_contact(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Updates lead contact details (phone, email, ig_handle, target_channel)."""
+        lead_id = int(payload.get("id") or 0)
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+
+        raw_phone_val = payload.get("phone") if "phone" in payload else payload.get("primary_phone")
+        if raw_phone_val is not None:
+            # Normalize to international format (e.g. 919876543210)
+            raw = str(raw_phone_val).strip()
+            digits = "".join(c for c in raw if c.isdigit()).lstrip("0")
+            if len(digits) == 10:
+                normalized = "91" + digits
+            elif len(digits) == 12 and digits.startswith("91"):
+                normalized = digits
+            else:
+                normalized = raw
+            lead.primary_phone = normalized or raw
+            phones: List[str] = list(lead.phones or [])
+            if lead.primary_phone not in phones:
+                phones.insert(0, lead.primary_phone)
+            lead.phones = phones
+
+        if "email" in payload:
+            lead.email = str(payload["email"]).strip() or None  # type: ignore[assignment]
+
+        if "ig_handle" in payload:
+            raw_ig = str(payload["ig_handle"]).strip().lstrip("@")
+            lead.instagram_handle = raw_ig or None  # type: ignore[assignment]
+
+        if "target_channel" in payload:
+            ch = str(payload["target_channel"]).strip().lower()
+            if ch in ("whatsapp", "instagram", "email"):
+                lead.preferred_channel = ch
+
+        db.commit()
+        broadcast_sse("lead_updated", {"lead_id": lead.id})
+        return {
+            "success": True,
+            "primary_phone": lead.primary_phone,
+            "email": lead.email,
+            "ig_handle": lead.instagram_handle,
+            "target_channel": lead.preferred_channel,
+        }
+
+    @staticmethod
+    def unmark_sent(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Resets a lead back to package_ready and cancels any sent OutboxItem rows.
+
+        Used from the Dispatch Cockpit when a send needs to be undone (e.g. the
+        message was delivered to the wrong number or the content needs editing).
+        """
+        lead_id = int(payload.get("id") or 0)
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+
+        from app.models.entities import Stage as StageModel
+
+        package_ready_stage = (
+            db.query(StageModel)
+            .filter(StageModel.hustle_id == lead.hustle_id, StageModel.slug == "package_ready")
+            .first()
+        )
+        if package_ready_stage:
+            lead.stage_id = package_ready_stage.id
+
+        # Mark all "sent" OutboxItems for this lead as cancelled so they can be
+        # re-queued without hitting the idempotency key guard.
+        for ob in lead.outbox_items:
+            if ob.status == "sent":
+                ob.status = "cancelled"
+
+        db.commit()
+        broadcast_sse("outbox_sent", {"lead_id": lead.id, "action": "unmark_sent"})
+        return {"success": True}
 
     @staticmethod
     def get_automation_settings(db: Optional[Session] = None) -> Dict[str, Any]:  # type: ignore[name-defined]

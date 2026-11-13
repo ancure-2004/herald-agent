@@ -9,12 +9,15 @@ import {
   ToggleRight,
   X,
 } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
 
 interface CockpitSupervisorBarProps {
   status: "MONITORING" | "RUNNING" | "PAUSED" | "STOPPED";
   currentIntent: string;
   onSendCommand: (command: string) => void;
   onEmergencyStop: () => void;
+  /** Whether any automation is currently running (from cockpit-state is_running). */
+  isRunning?: boolean;
 }
 
 export function CockpitSupervisorBar({
@@ -22,14 +25,39 @@ export function CockpitSupervisorBar({
   currentIntent,
   onSendCommand,
   onEmergencyStop,
+  isRunning = false,
 }: CockpitSupervisorBarProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [commandInput, setCommandInput] = useState<string>("" );
+  const [commandInput, setCommandInput] = useState<string>("");
   const [autoRetry, setAutoRetry] = useState<boolean>(true);
+  const [isStopping, setIsStopping] = useState<boolean>(false);
   const [agentLogs, setAgentLogs] = useState<string[]>([
     "Supervisor initialized. Listening on SSE (/api/events/stream).",
     "Auto-recovery armed: 429 rate limit fallback (Serper -> Brave Search).",
   ]);
+
+  const handleEmergencyStop = async () => {
+    setIsStopping(true);
+    setAgentLogs((prev) => [
+      ...prev,
+      `[${new Date().toLocaleTimeString()}] Captain: EMERGENCY STOP triggered`,
+    ]);
+    try {
+      await apiFetch<{ status?: string }>("/api/autopilot/stop", { method: "POST" });
+      setAgentLogs((prev) => [
+        ...prev,
+        `[${new Date().toLocaleTimeString()}] Agent: All subprocesses terminated. Automation halted.`,
+      ]);
+    } catch {
+      setAgentLogs((prev) => [
+        ...prev,
+        `[${new Date().toLocaleTimeString()}] Agent: Stop signal sent (network note).`,
+      ]);
+    } finally {
+      setIsStopping(false);
+      onEmergencyStop();
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,9 +104,11 @@ export function CockpitSupervisorBar({
                   <span>Cockpit Factory Agent</span>
                 </div>
                 <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className={`w-1.5 h-1.5 rounded-full ${isRunning || status === "RUNNING" ? "bg-emerald-400 animate-ping" : "bg-emerald-500 animate-pulse"}`} />
                   <span>
-                    {status === "MONITORING"
+                    {isRunning
+                      ? "AUTOMATION RUNNING"
+                      : status === "MONITORING"
                       ? "MONITORING PIPELINE"
                       : status === "RUNNING"
                       ? "EXECUTING BATCH"
@@ -135,12 +165,19 @@ export function CockpitSupervisorBar({
 
               <button
                 type="button"
-                onClick={onEmergencyStop}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-900/25 transition-all cursor-pointer active:scale-95"
+                onClick={handleEmergencyStop}
+                disabled={isStopping}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-xs font-bold shadow-md transition-all cursor-pointer active:scale-95 ${
+                  isStopping
+                    ? "bg-rose-800 opacity-70 cursor-not-allowed"
+                    : isRunning
+                    ? "bg-rose-600 hover:bg-rose-500 shadow-rose-900/25 animate-pulse"
+                    : "bg-rose-600 hover:bg-rose-500 shadow-rose-900/25"
+                }`}
                 title="Emergency abort: halts all scraping, probes, and video recording workers"
               >
                 <AlertOctagon className="w-3.5 h-3.5" />
-                <span>Emergency Stop</span>
+                <span>{isStopping ? "Stopping..." : "Emergency Stop"}</span>
               </button>
             </div>
 

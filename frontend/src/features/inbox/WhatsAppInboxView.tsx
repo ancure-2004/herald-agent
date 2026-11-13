@@ -179,7 +179,12 @@ export function WhatsAppInboxView() {
         window.open(res.wa_url, "_blank");
         notify("Opened WhatsApp with prefilled message & logged as sent manually", "ok");
       } else {
-        notify("Message queued for autonomous Playwright dispatcher", "ok");
+        notify(
+          localAutomation
+            ? "Sending message now via WhatsApp automation..."
+            : "Message queued for autonomous Playwright dispatcher",
+          "ok"
+        );
       }
 
       setComposerText("");

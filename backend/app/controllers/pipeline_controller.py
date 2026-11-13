@@ -82,8 +82,8 @@ class PipelineController:
         return PipelineService.verify_links(db)
 
     @staticmethod
-    def get_cockpit_batch(db: Session, hustle_id: int = 1) -> List[Dict[str, Any]]:
-        return PipelineService.get_cockpit_batch(db, hustle_id)
+    def get_cockpit_batch(db: Session, hustle_id: int = 1, batch_id: Optional[str] = None) -> Dict[str, Any]:
+        return PipelineService.get_cockpit_batch(db, hustle_id, batch_id=batch_id)
 
     @staticmethod
     def get_cockpit_state(db: Session, hustle_id: int = 1) -> Dict[str, Any]:

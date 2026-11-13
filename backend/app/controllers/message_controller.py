@@ -54,6 +54,22 @@ class MessageController:
         return MessageService.get_lead_messages(db, lead_id)
 
     @staticmethod
+    def update_messages(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return MessageService.update_messages(db, payload)
+
+    @staticmethod
+    def reset_messages(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return MessageService.reset_messages(db, payload)
+
+    @staticmethod
+    def update_clinic_contact(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return MessageService.update_clinic_contact(db, payload)
+
+    @staticmethod
+    def unmark_sent(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return MessageService.unmark_sent(db, payload)
+
+    @staticmethod
     def get_automation_settings(db: Optional[Session] = None) -> Dict[str, Any]:
         return MessageService.get_automation_settings(db)
 

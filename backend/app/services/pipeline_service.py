@@ -15,7 +15,7 @@ from app.core.exceptions import NotFoundError
 from app.db.session import SessionLocal
 from app.models.entities import Lead, LeadFact, Package, RunLog, Stage
 from app.repositories.hustle_repo import HustleRepository
-from app.services.event_bus import broadcast_sse, emit_terminal_log, get_pipeline_state, set_autopilot_running
+from app.services.event_bus import broadcast_sse, emit_terminal_log, get_pipeline_state, is_autopilot_running, set_autopilot_running
 
 logger = logging.getLogger("personal_os.pipeline_service")
 
@@ -101,13 +101,16 @@ class PipelineService:
     def cancel_run(run_id: Optional[int] = None) -> Dict[str, Any]:
         active_id = JobManager.get_active_run_id()
         target_id = run_id if run_id is not None else active_id
-        if not target_id:
-            return {"status": "no_run_active", "detail": "No autopilot run is currently executing"}
-        cancelled = JobManager.cancel_active_run(target_id)
-        if cancelled:
-            emit_terminal_log("AUTOPILOT", f"Cancellation requested for Run #{target_id}")
-            return {"status": "cancelling", "run_id": target_id}
-        return {"status": "not_running", "run_id": target_id}
+
+        # Attempt cancellation even if target_id is None (subprocess-only or flag-only run)
+        stopped = JobManager.cancel_active_run(target_id)
+
+        if stopped:
+            emit_terminal_log("AUTOPILOT", f"Automation stopped (run_id={target_id})")
+            return {"status": "cancelled", "stopped": True, "run_id": target_id}
+
+        # Nothing was running at all
+        return {"status": "no_run_active", "stopped": False, "detail": "No autopilot run is currently executing"}
 
     @classmethod
     def discover_leads(
@@ -417,8 +420,8 @@ class PipelineService:
         return report
 
     @staticmethod
-    def get_cockpit_batch(db: Session, hustle_id: int = 1) -> List[Dict[str, Any]]:
-        return build_cockpit_batch_payload(db=db, hustle_id=hustle_id)
+    def get_cockpit_batch(db: Session, hustle_id: int = 1, batch_id: Optional[str] = None) -> Dict[str, Any]:
+        return build_cockpit_batch_payload(db=db, hustle_id=hustle_id, batch_id=batch_id)
 
     @staticmethod
     def get_cockpit_state(db: Session, hustle_id: int = 1) -> Dict[str, Any]:
