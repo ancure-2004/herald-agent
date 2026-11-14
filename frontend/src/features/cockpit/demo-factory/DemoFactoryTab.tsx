@@ -7,6 +7,7 @@ import { MultiDevicePreviewDrawer } from "./MultiDevicePreviewDrawer";
 import { BuildLogDrawer } from "./BuildLogDrawer";
 import { LiveLogTerminal } from "@/components/ui/LiveLogTerminal";
 import { apiFetch } from "@/lib/api/client";
+import { autopilotApi } from "@/api/autopilotApi";
 import {
   Sparkles,
   RotateCcw,
@@ -15,7 +16,23 @@ import {
   Plus,
   Loader2,
   Square,
+  RefreshCw,
+  ChevronDown,
 } from "lucide-react";
+
+interface BatchInfo {
+  batch_id: string;
+  total: number;
+  ready_unsent: number;
+  sent: number;
+  stage_counts: Record<string, number>;
+}
+
+interface BatchMeta {
+  batch_size: number;
+  batches: BatchInfo[];
+  active_batch_id: string;
+}
 
 export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRun[] {
   const runs: DemoRun[] = [];
@@ -23,13 +40,17 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
   for (const lead of leads) {
     if (!lead.packages || lead.packages.length === 0) continue;
 
+    const leadBatchId = (lead.custom_fields && typeof lead.custom_fields === "object" && lead.custom_fields.batch_id)
+      ? String(lead.custom_fields.batch_id)
+      : "BATCH-01";
+
     for (const pkg of lead.packages) {
       const links = pkg.asset_links || {};
       const modernUrl = links.modern || `http://localhost:3001/modern/${lead.slug || lead.id}`;
 
       runs.push({
         id: `run_pkg_${pkg.id}`,
-        batchId: `batch_${pkg.id}`,
+        batchId: leadBatchId,
         clinic: {
           id: String(lead.id),
           name: lead.name,
@@ -129,11 +150,49 @@ export const DemoFactoryTab: React.FC = () => {
   const [isBuildRunning, setIsBuildRunning] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
+  // Batch state
+  const [batchMeta, setBatchMeta] = useState<BatchMeta | null>(null);
+  const [selectedBatchId, setSelectedBatchId] = useState<string>("ALL");
+  const [batchLoading, setBatchLoading] = useState<boolean>(false);
+  const [rebalancing, setRebalancing] = useState<boolean>(false);
+
   const [kpiMetrics, setKpiMetrics] = useState<DemoKpiMetrics>(() => demoFactoryTabCache?.kpiMetrics ?? EMPTY_DEMO_KPIS);
 
   const showNotification = (msg: string) => {
     setNotification(msg);
     setTimeout(() => setNotification(null), 3000);
+  };
+
+  const fetchBatchMeta = useCallback(async () => {
+    setBatchLoading(true);
+    try {
+      const res = await apiFetch<BatchMeta>("/api/batch?hustle_id=1");
+      if (res && Array.isArray(res.batches)) {
+        setBatchMeta({
+          batch_size: res.batch_size || 25,
+          batches: res.batches,
+          active_batch_id: res.active_batch_id || "BATCH-01",
+        });
+      }
+    } catch {
+      // Non-fatal fallback
+    } finally {
+      setBatchLoading(false);
+    }
+  }, []);
+
+  const handleRebalance = async () => {
+    setRebalancing(true);
+    try {
+      await autopilotApi.rebalanceBatches(1, true);
+      showNotification("Re-batched leads into organized batches");
+      await fetchBatchMeta();
+      await syncRunsFromDb();
+    } catch (err: unknown) {
+      showNotification(err instanceof Error ? err.message : "Re-batch failed");
+    } finally {
+      setRebalancing(false);
+    }
   };
 
   const syncRunsFromDb = useCallback(async () => {
@@ -185,6 +244,8 @@ export const DemoFactoryTab: React.FC = () => {
     const handleStopped = () => {
       setIsBuildRunning(false);
       setIsLaunchingBatch(false);
+      fetchBatchMeta();
+      syncRunsFromDb();
     };
 
     evtSource.addEventListener("autopilot_started", handleStarted);
@@ -195,11 +256,12 @@ export const DemoFactoryTab: React.FC = () => {
     return () => {
       evtSource.close();
     };
-  }, []);
+  }, [fetchBatchMeta, syncRunsFromDb]);
 
   useEffect(() => {
     syncRunsFromDb();
-  }, [syncRunsFromDb]);
+    fetchBatchMeta();
+  }, [syncRunsFromDb, fetchBatchMeta]);
 
   // Persist real data to the module cache once the first load has completed
   useEffect(() => {
@@ -208,9 +270,16 @@ export const DemoFactoryTab: React.FC = () => {
   }, [hasLoaded, runs, kpiMetrics]);
 
   const filteredRuns = useMemo(() => {
-    if (filter === "ALL") return runs;
-    return runs.filter((r) => r.status === filter);
-  }, [runs, filter]);
+    return runs.filter((r) => {
+      if (selectedBatchId !== "ALL" && r.batchId !== selectedBatchId) {
+        return false;
+      }
+      if (filter !== "ALL" && r.status !== filter) {
+        return false;
+      }
+      return true;
+    });
+  }, [runs, filter, selectedBatchId]);
 
   const handleOpenLogs = (run: DemoRun) => {
     setActiveLogRun(run);
@@ -255,12 +324,23 @@ export const DemoFactoryTab: React.FC = () => {
     setIsLaunchingBatch(true);
     setIsBuildRunning(true);
     try {
+      const payload: { hustle_id: number; batch_id?: string; batch_size?: number; async_mode: boolean } = {
+        hustle_id: 1,
+        batch_size: batchMeta?.batch_size || 25,
+        async_mode: true,
+      };
+      if (selectedBatchId && selectedBatchId !== "ALL") {
+        payload.batch_id = selectedBatchId;
+      }
       const res = await apiFetch<{ status?: string; message?: string }>("/api/autopilot/build-batch", {
         method: "POST",
-        body: JSON.stringify({ batch_size: 10, async_mode: true }),
+        body: JSON.stringify(payload),
       });
-      showNotification(res?.message || "Launched on-demand Demo Factory build batch! Streaming live build logs below...");
-      setTimeout(() => syncRunsFromDb(), 3500);
+      showNotification(res?.message || `Launched Demo Factory build batch (${payload.batch_id || `All - ${payload.batch_size} leads`})!`);
+      setTimeout(() => {
+        syncRunsFromDb();
+        fetchBatchMeta();
+      }, 3500);
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : "Failed to launch batch";
       showNotification(errMsg);
@@ -348,7 +428,7 @@ export const DemoFactoryTab: React.FC = () => {
       </div>
 
       {/* Toolbar & Filters */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
         {/* Status Filter Tabs */}
         <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs">
           <button
@@ -391,17 +471,41 @@ export const DemoFactoryTab: React.FC = () => {
           </button>
         </div>
 
-        {/* Action Buttons: Refresh + Launch New Batch */}
-        <div className="flex items-center gap-2">
+        {/* Action Controls: Batch Dropdown, Re-Batch Stock, Unified Refresh, and Launch/Stop */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Batch Selector Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedBatchId}
+              onChange={(e) => setSelectedBatchId(e.target.value)}
+              disabled={batchLoading}
+              className="appearance-none pl-3 pr-7 py-1.5 rounded-xl bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.1] text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer disabled:opacity-50 transition-all min-w-[190px]"
+            >
+              <option value="ALL" className="bg-white dark:bg-slate-900">
+                All Batches ({runs.length} runs)
+              </option>
+              {batchMeta?.batches.map((b) => {
+                const stagedCount = b.stage_counts?.staged ?? 0;
+                const builtCount = runs.filter((r) => r.batchId === b.batch_id).length;
+                return (
+                  <option key={b.batch_id} value={b.batch_id} className="bg-white dark:bg-slate-900">
+                    {b.batch_id} ({stagedCount} staged · {builtCount} built)
+                  </option>
+                );
+              })}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+          </div>
+
+          {/* Re-Batch Stock button */}
           <button
-            onClick={() => {
-              syncRunsFromDb();
-              showNotification("Refreshed demo runs from database");
-            }}
-            className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-            title="Refresh Runs from Database"
+            type="button"
+            onClick={handleRebalance}
+            disabled={rebalancing}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-slate-200 dark:border-white/[0.1] text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 hover:border-indigo-300 dark:hover:border-indigo-500/40 transition-all cursor-pointer disabled:opacity-50"
           >
-            <RotateCcw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${rebalancing ? "animate-spin" : ""}`} />
+            <span>{rebalancing ? "Re-batching..." : "Re-Batch Stock"}</span>
           </button>
 
           {/* Running indicator badge */}
@@ -412,6 +516,7 @@ export const DemoFactoryTab: React.FC = () => {
             </div>
           )}
 
+          {/* Launch Demo Batch or Stop Automation button */}
           {isBuildRunning || isLaunchingBatch ? (
             <button
               onClick={handleStopBatch}
@@ -427,7 +532,13 @@ export const DemoFactoryTab: React.FC = () => {
               className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Launch Demo Batch (+10)</span>
+              <span>
+                Launch Demo Batch (
+                {selectedBatchId && selectedBatchId !== "ALL"
+                  ? selectedBatchId
+                  : `Batch Size: ${batchMeta?.batch_size || 25}`}
+                )
+              </span>
             </button>
           )}
         </div>

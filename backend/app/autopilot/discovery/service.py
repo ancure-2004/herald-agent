@@ -377,6 +377,13 @@ class DiscoveryService:
             run_log.finished_at = datetime.now(timezone.utc)
             db.commit()
 
+            # Ensure newly staged leads receive clean batch_id assignments
+            try:
+                from app.agents import ensure_hustle_lead_batches
+                ensure_hustle_lead_batches(db, hustle.id, force_rebatch=False)
+            except Exception as batch_err:
+                logger.warning(f"Could not auto-assign batches after discovery: {batch_err}")
+
             final_total_staged = cls.get_staged_count(db, hustle_id=hustle.id, testing_mode=testing_mode)
             emit(
                 f"[DISCOVERY] Run #{run_log.id} finished: {len(newly_staged)} newly staged. "

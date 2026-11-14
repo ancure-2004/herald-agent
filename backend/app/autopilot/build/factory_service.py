@@ -54,15 +54,16 @@ class DemoFactoryService:
         cls,
         db: Session,
         hustle_id: int = 1,
-        batch_size: int = 10,
+        batch_id: Optional[str] = None,
+        batch_size: Optional[int] = None,
         testing_mode: bool = False,
         base_url: Optional[str] = None,
         log_cb: Optional[Callable[[str], None]] = None,
     ) -> Dict[str, Any]:
         """
         Executes batch demo building and walkthrough video recording for staged leads.
-        Pulls oldest staged leads (FIFO), enriches research, scaffolds payloads, validates gates,
-        records videos, and advances state to DEMO_READY with immediate commits.
+        Pulls staged leads filtered by batch_id (or earliest active BATCH-XX), enriches research,
+        scaffolds payloads, validates gates, records videos, and advances state to DEMO_READY.
         """
         hustle = HustleRepository.get_by_id(db, hustle_id)
         if not hustle:
@@ -70,9 +71,14 @@ class DemoFactoryService:
 
         ensure_lead_schema(db)
 
-        # Enforce batch_size constraints (default 10, max 30)
-        batch_val = 10 if batch_size is None else int(batch_size)
-        batch_size = max(1, min(batch_val, 30))
+        # If batch_size is not provided, read hustle.channel_limits.batch_size (default 25)
+        if batch_size is None:
+            default_bs = int((hustle.channel_limits or {}).get("batch_size") or 25)
+            batch_size = default_bs
+        else:
+            batch_size = int(batch_size)
+        batch_size = max(1, min(batch_size, 30))
+
         base_url = (base_url or os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001")).rstrip("/")
 
         # Initialize RunLog
@@ -106,21 +112,14 @@ class DemoFactoryService:
                     pass
 
         try:
-            emit(
-                f"[DEMO-FACTORY] Starting batch demo build #{run_log.id} "
-                f"(batch_size={batch_size}, testing_mode={testing_mode})..."
-            )
+            # Ensure lead batches are cleanly assigned
+            try:
+                from app.agents import ensure_hustle_lead_batches
+                ensure_hustle_lead_batches(db, hustle.id, force_rebatch=False)
+            except Exception as batch_err:
+                emit(f"[DEMO-FACTORY] Note: batch ensure notice: {batch_err}")
 
-            emit_pipeline_step(
-                node_id="node-4",
-                step_name="SCAFFOLD",
-                status="RUNNING",
-                clinic_name="Selecting staged leads for manufacturing...",
-                metrics={"processed": 0, "total": batch_size, "badge_text": f"Batch: {batch_size}"},
-                payload=[],
-            )
-
-            # a) Select oldest N leads from DB where status == 'STAGED' and is_archived == False (FIFO order by Lead.id.asc())
+            # a) Query candidate staged leads for this hustle
             q = db.query(Lead).filter(
                 Lead.hustle_id == hustle.id,
                 Lead.status == "STAGED",
@@ -129,10 +128,43 @@ class DemoFactoryService:
             if not testing_mode and hasattr(Lead, "is_test"):
                 q = q.filter((Lead.is_test == False) | (Lead.is_test == None))  # noqa: E711, E712
 
-            staged_leads: List[Lead] = q.order_by(Lead.id.asc()).limit(batch_size).all()
+            all_staged = q.order_by(Lead.id.asc()).all()
+
+            # Determine target batch_id
+            target_batch_id: Optional[str] = batch_id
+            if not target_batch_id:
+                # Pick the earliest BATCH-XX that has STAGED leads
+                for l in all_staged:
+                    bid = (l.custom_fields or {}).get("batch_id")
+                    if bid and bid.startswith("BATCH-"):
+                        target_batch_id = bid
+                        break
+
+            # Filter staged leads to target_batch_id if determined, otherwise use all staged
+            if target_batch_id:
+                staged_leads = [
+                    l for l in all_staged
+                    if (l.custom_fields or {}).get("batch_id") == target_batch_id
+                ][:batch_size]
+            else:
+                staged_leads = all_staged[:batch_size]
+
+            emit(
+                f"[DEMO-FACTORY] Starting batch demo build #{run_log.id} "
+                f"(batch_id={target_batch_id or 'ALL'}, batch_size={batch_size}, testing_mode={testing_mode})..."
+            )
+
+            emit_pipeline_step(
+                node_id="node-4",
+                step_name="SCAFFOLD",
+                status="RUNNING",
+                clinic_name="Selecting staged leads for manufacturing...",
+                metrics={"processed": 0, "total": len(staged_leads), "badge_text": f"Batch: {target_batch_id or 'ALL'}"},
+                payload=[],
+            )
 
             if not staged_leads:
-                emit("[DEMO-FACTORY] Zero staged leads available in queue.")
+                emit(f"[DEMO-FACTORY] Zero staged leads available in queue for batch {target_batch_id or 'ALL'}.")
                 emit_pipeline_step(
                     node_id="node-4",
                     step_name="SCAFFOLD",
@@ -147,6 +179,7 @@ class DemoFactoryService:
                 db.commit()
                 return {
                     "status": "succeeded",
+                    "batch_id": target_batch_id,
                     "batch_size": batch_size,
                     "built_count": 0,
                     "failed_count": 0,
@@ -474,6 +507,7 @@ class DemoFactoryService:
             run_log.count_dropped = len(failed_leads)
             run_log.drop_reasons = {
                 "_structured": {
+                    "batch_id": target_batch_id,
                     "built_leads": built_leads,
                     "failed_leads": failed_leads,
                     "batch_size": batch_size,
@@ -511,6 +545,7 @@ class DemoFactoryService:
 
             return {
                 "status": run_status,
+                "batch_id": target_batch_id,
                 "batch_size": batch_size,
                 "built_count": len(built_leads),
                 "failed_count": len(failed_leads),

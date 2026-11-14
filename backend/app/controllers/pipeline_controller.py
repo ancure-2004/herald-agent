@@ -61,13 +61,15 @@ class PipelineController:
     def build_batch(
         db: Session,
         hustle_id: int = 1,
-        batch_size: int = 10,
+        batch_id: Optional[str] = None,
+        batch_size: Optional[int] = None,
         testing_mode: bool = False,
         async_mode: bool = False,
     ) -> Dict[str, Any]:
         return PipelineService.build_batch(
             db,
             hustle_id=hustle_id,
+            batch_id=batch_id,
             batch_size=batch_size,
             testing_mode=testing_mode,
             async_mode=async_mode,

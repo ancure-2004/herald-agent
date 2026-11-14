@@ -95,6 +95,7 @@ def build_batch(
     response: Response,
     payload: Optional[Dict[str, Any]] = Body(None),
     hustle_id: Optional[int] = Query(None),
+    batch_id: Optional[str] = Query(None),
     batch_size: Optional[int] = Query(None),
     testing_mode: Optional[bool] = Query(None),
     async_mode: Optional[bool] = Query(None),
@@ -106,8 +107,14 @@ def build_batch(
     elif hustle_id is not None:
         h_id = hustle_id
 
-    b_size = 10
-    if payload and "batch_size" in payload:
+    b_id = None
+    if payload and "batch_id" in payload:
+        b_id = str(payload["batch_id"]).strip() or None
+    elif batch_id is not None:
+        b_id = str(batch_id).strip() or None
+
+    b_size = None
+    if payload and "batch_size" in payload and payload["batch_size"] is not None:
         b_size = int(payload["batch_size"])
     elif batch_size is not None:
         b_size = batch_size
@@ -127,6 +134,7 @@ def build_batch(
     res = PipelineController.build_batch(
         db=db,
         hustle_id=h_id,
+        batch_id=b_id,
         batch_size=b_size,
         testing_mode=t_mode,
         async_mode=is_async,

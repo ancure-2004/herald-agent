@@ -207,7 +207,8 @@ class PipelineService:
         cls,
         db: Session,
         hustle_id: int = 1,
-        batch_size: int = 10,
+        batch_id: Optional[str] = None,
+        batch_size: Optional[int] = None,
         testing_mode: bool = False,
         async_mode: bool = False,
     ) -> Dict[str, Any]:
@@ -226,6 +227,7 @@ class PipelineService:
                         DemoFactoryService.build_batch(
                             db=bg_db,
                             hustle_id=hustle_id,
+                            batch_id=batch_id,
                             batch_size=batch_size,
                             testing_mode=testing_mode,
                             log_cb=lambda msg: emit_terminal_log("DEMO-FACTORY", msg),
@@ -244,6 +246,7 @@ class PipelineService:
         return DemoFactoryService.build_batch(
             db=db,
             hustle_id=hustle_id,
+            batch_id=batch_id,
             batch_size=batch_size,
             testing_mode=testing_mode,
             log_cb=lambda msg: emit_terminal_log("DEMO-FACTORY", msg),

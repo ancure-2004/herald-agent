@@ -101,6 +101,7 @@ export const RunMatrixTable: React.FC<RunMatrixTableProps> = ({
         <thead>
           <tr className="h-10 bg-slate-50 dark:bg-[#17181D] border-b border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-400 font-medium select-none text-[11px]">
             <th className="px-4 py-2 min-w-[220px]">Clinic &amp; City</th>
+            <th className="px-3 py-2 min-w-[100px]">Batch</th>
             <th className="px-3 py-2 min-w-[140px]">Template Theme</th>
             <th className="px-3 py-2 min-w-[130px]">Status</th>
             <th className="px-3 py-2 min-w-[100px]">Duration</th>
@@ -131,6 +132,14 @@ export const RunMatrixTable: React.FC<RunMatrixTableProps> = ({
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                     {run.clinic.city}, {run.clinic.state}
                   </div>
+                </td>
+
+                {/* Batch ID Badge */}
+                <td className="px-3 py-2">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/50 font-mono text-[10px] font-bold">
+                    <Layers className="w-3 h-3 text-indigo-500 opacity-70" />
+                    <span>{run.batchId || "BATCH-01"}</span>
+                  </span>
                 </td>
 
                 {/* Template Theme Badge */}
