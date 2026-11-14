@@ -5,16 +5,27 @@ Exposes CRM intelligence, 4-tier lead discovery, and specialized agents (Scout, 
 to external AI harnesses (Antigravity, Claude Code, Cursor).
 """
 
+# Item 9: mcp_server.py runs as a standalone process (invoked by Claude Code / Cursor).
+# It has no guarantee that main.py ran first, so it must load .env itself before any
+# app module import triggers os.getenv() at module level.
+try:
+    from pathlib import Path as _Path
+    from dotenv import load_dotenv as _load_dotenv
+    _load_dotenv(_Path(__file__).resolve().parent / ".env", override=False)
+except Exception:
+    pass
+
 import json
 import sys
 import traceback
 from typing import Any, Dict, List
 
+from app.agents import run_auditor_agent, run_closer_agent, run_scout_agent
+from app.autopilot import run_live_autopilot_discovery
 from app.database import SessionLocal
 from app.models import Hustle, Lead, Stage
-from app.agents import run_scout_agent, run_auditor_agent, run_closer_agent
-from app.autopilot import run_live_autopilot_discovery
-
+from app.services.lead_service import sync_lead_stage_and_status  # Item 13 SSOT
+from app.services.pipeline_service import _db_assert_no_active_run  # Item 11 DB lock
 
 TOOLS: List[Dict[str, Any]] = [
     {
@@ -169,8 +180,12 @@ def execute_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
             lead = db.query(Lead).filter(Lead.id == int(args["lead_id"])).first()
             if not lead:
                 return {"error": f"Lead #{args.get('lead_id')} not found"}
-            old_stage = lead.stage_id
-            lead.stage_id = int(args["stage_id"])
+            new_stage = db.query(Stage).filter(Stage.id == int(args["stage_id"])).first()
+            if not new_stage:
+                return {"error": f"Stage #{args.get('stage_id')} not found"}
+            old_stage_id = lead.stage_id
+            # Item 13: use SSOT helper so stage_id and status stay in sync
+            sync_lead_stage_and_status(db, lead, new_stage)
             if args.get("next_action"):
                 lead.next_action = args["next_action"]
             db.commit()
@@ -178,8 +193,9 @@ def execute_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
                 "ok": True,
                 "lead_id": lead.id,
                 "name": lead.name,
-                "old_stage_id": old_stage,
+                "old_stage_id": old_stage_id,
                 "new_stage_id": lead.stage_id,
+                "new_status": lead.status,
             }
 
         if name == "run_refill_batch":
@@ -188,6 +204,13 @@ def execute_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
             hustle = db.query(Hustle).filter(Hustle.id == hustle_id).first()
             if not hustle:
                 return {"error": f"Hustle #{hustle_id} not found"}
+            # Item 11: DB-backed lock check (cross-process safe — mcp_server.py is a
+            # separate process from the FastAPI server so the in-memory JobManager lock
+            # is not visible here; the RunLog table is the only shared state).
+            try:
+                _db_assert_no_active_run(db)
+            except Exception as lock_exc:
+                return {"error": str(lock_exc)}
             return run_live_autopilot_discovery(
                 db=db,
                 hustle=hustle,
@@ -195,23 +218,35 @@ def execute_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
             )
 
         if name == "run_scout_agent":
+            _scout_hid = int(args.get("hustle_id") or 1)
+            _scout_hustle = db.query(Hustle).filter(Hustle.id == _scout_hid).first()
+            if not _scout_hustle:
+                return {"error": f"Hustle #{_scout_hid} not found"}
             return run_scout_agent(
                 db=db,
-                hustle_id=int(args.get("hustle_id") or 1),
+                hustle=_scout_hustle,
                 batch_size=int(args.get("batch_size") or 2),
             )
 
         if name == "run_auditor_agent":
+            _audit_hid = int(args.get("hustle_id") or 1)
+            _audit_hustle = db.query(Hustle).filter(Hustle.id == _audit_hid).first()
+            if not _audit_hustle:
+                return {"error": f"Hustle #{_audit_hid} not found"}
             return run_auditor_agent(
                 db=db,
-                hustle_id=int(args.get("hustle_id") or 1),
+                hustle=_audit_hustle,
                 record_video=bool(args.get("record_video", False)),
             )
 
         if name == "run_closer_agent":
+            _closer_hid = int(args.get("hustle_id") or 1)
+            _closer_hustle = db.query(Hustle).filter(Hustle.id == _closer_hid).first()
+            if not _closer_hustle:
+                return {"error": f"Hustle #{_closer_hid} not found"}
             return run_closer_agent(
                 db=db,
-                hustle_id=int(args.get("hustle_id") or 1),
+                hustle=_closer_hustle,
                 channel=str(args.get("channel") or "whatsapp"),
                 dry_run=bool(args.get("dry_run", True)),
             )

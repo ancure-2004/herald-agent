@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { isRecorderUrl, sendTrackingBeacon } from "@/lib/tracking";
 
 interface ViewTrackerProps {
   slug: string;
   design: "modern" | "premium" | "warm" | "switcher";
 }
+
+export { isRecorderUrl };
 
 export async function sendDemoEvent(
   slug: string,
@@ -14,22 +17,13 @@ export async function sendDemoEvent(
   designChosen: string = "",
   durationSeconds: number = 0
 ) {
-  try {
-    await fetch("/api/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        slug,
-        event_type: eventType,
-        section,
-        design_chosen: designChosen,
-        duration_seconds: durationSeconds,
-      }),
-      keepalive: true,
-    });
-  } catch {
-    // non-blocking telemetry
-  }
+  return sendTrackingBeacon({
+    slug,
+    eventType,
+    section,
+    designChosen,
+    durationSeconds,
+  });
 }
 
 export default function ViewTracker({ slug, design }: ViewTrackerProps) {

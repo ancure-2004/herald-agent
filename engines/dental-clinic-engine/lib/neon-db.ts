@@ -1,38 +1,14 @@
-const DEFAULT_NEON_URL =
-  "postgresql://neondb_owner:npg_5HjJUYDR3bMx@ep-still-shape-azt0qlm8-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require";
+// Neon is no longer used. All data now comes from the local FastAPI backend.
+// neonQuery is kept as a safe no-op so any legacy caller returns [] instead of
+// hitting an expired Neon account (402 Quota Exceeded).
 
-function getNeonConfig() {
-  const connStr = process.env.DATABASE_URL || DEFAULT_NEON_URL;
-  const hostMatch = connStr.match(/@([^/]+)\//);
-  const host = hostMatch ? hostMatch[1] : "ep-still-shape-azt0qlm8-pooler.c-3.ap-southeast-1.aws.neon.tech";
-  return {
-    connStr,
-    endpoint: `https://${host}/sql`,
-  };
-}
+const BACKEND_API_URL = process.env.PERSONAL_OS_API_URL || "http://localhost:8000";
 
 export async function neonQuery<T = Record<string, unknown>>(
-  query: string,
-  params: unknown[] = []
+  _query: string,
+  _params: unknown[] = []
 ): Promise<T[]> {
-  const { connStr, endpoint } = getNeonConfig();
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Neon-Connection-String": connStr,
-    },
-    body: JSON.stringify({ query, params }),
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Neon SQL error (${res.status}): ${errText}`);
-  }
-
-  const data = (await res.json()) as { rows?: T[] };
-  return data.rows || [];
+  return [];
 }
 
 export interface NeonClinicPackageRow {
@@ -57,28 +33,38 @@ export interface NeonClinicPackageRow {
   expires_at: string | null;
 }
 
+/**
+ * Fetches the raw clinic package from the local FastAPI backend with timeout and error handling.
+ */
 export async function fetchClinicPackageFromNeon(
-  slug: string
+  slug: string,
+  timeoutMs: number = 4000
 ): Promise<NeonClinicPackageRow | null> {
   try {
-    const rows = await neonQuery<NeonClinicPackageRow>(
-      `SELECT l.id AS lead_id, l.slug, l.name, l.doctor_name, l.primary_phone,
-              p.id AS package_id, p.clinic_payload, p.status, p.expires_at
-       FROM leads l
-       JOIN packages p ON p.lead_id = l.id
-       WHERE l.slug = $1
-       ORDER BY p.id DESC
-       LIMIT 1`,
-      [slug]
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    const res = await fetch(
+      `${BACKEND_API_URL}/api/v1/public/clinic/${encodeURIComponent(slug)}`,
+      {
+        cache: "no-store",
+        signal: controller.signal,
+      }
     );
-    if (!rows.length) return null;
-    const row = rows[0];
+    clearTimeout(timeout);
+
+    if (!res.ok) return null;
+    const row = (await res.json()) as NeonClinicPackageRow;
     if (typeof row.clinic_payload === "string") {
-      row.clinic_payload = JSON.parse(row.clinic_payload);
+      try {
+        row.clinic_payload = JSON.parse(row.clinic_payload);
+      } catch {
+        return null;
+      }
     }
     return row;
   } catch (err) {
-    console.error("Failed to fetch clinic package from Neon:", err);
+    // Timeout or connection refused (backend offline) gracefully handled so caller falls back
     return null;
   }
 }

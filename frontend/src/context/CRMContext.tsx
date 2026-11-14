@@ -2,8 +2,12 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api/client";
+import { autopilotApi, leadsApi, settingsApi } from "@/api";
 import { useSSE } from "@/hooks/useSSE";
 import { useTheme } from "@/hooks/useTheme";
+import { PipelineStepEvent } from "@/features/cockpit/types";
+import { useSSEEvents } from "@/hooks/useSSEEvents";
+import { useLeadMutations } from "@/hooks/useLeadMutations";
 import {
   CopilotSuggestion,
   Hustle,
@@ -39,10 +43,30 @@ interface AssistantHistoryItem {
   undone?: boolean;
 }
 
+export type CRMTab =
+  | MainTab
+  | "inbox"
+  | "calls"
+  | "discovery"
+  | "building"
+  | "outreach"
+  | "cockpit_overview"
+  | "cockpit_followup"
+  | "cockpit_unreplied"
+  | "cockpit_actions"
+  | "cockpit_calls";
+
 interface CRMContextType {
   // Navigation & View
-  activeTab: MainTab;
-  setActiveTab: (tab: MainTab) => void;
+  activeTab: CRMTab;
+  setActiveTab: (tab: CRMTab) => void;
+  surface: "management" | "cockpit";
+  setSurface: (surface: "management" | "cockpit") => void;
+  cockpitTab: "attention" | "discovery" | "factory" | "outreach";
+  setCockpitTab: (tab: "attention" | "discovery" | "factory" | "outreach") => void;
+  globalAutomationEnabled: boolean;
+  toggleGlobalAutomation: () => Promise<void>;
+  setGlobalAutomationEnabled: (enabled: boolean) => Promise<void>;
   activeSmartView: string;
   setActiveSmartView: (view: string) => void;
   searchQuery: string;
@@ -85,6 +109,7 @@ interface CRMContextType {
   showPreviousRuns: boolean;
   setShowPreviousRuns: React.Dispatch<React.SetStateAction<boolean>>;
   terminalContainerRef: React.RefObject<HTMLDivElement | null>;
+  latestPipelineStep: PipelineStepEvent | null;
 
   // Sorting & Filtering
   sortBy: "fit" | "intent" | "deal" | "name" | "due";
@@ -117,6 +142,19 @@ interface CRMContextType {
   setNewLeadModalOpen: (b: boolean) => void;
   problemModalOpen: boolean;
   setProblemModalOpen: (b: boolean) => void;
+  logCallModalOpen: boolean;
+  setLogCallModalOpen: (b: boolean) => void;
+  logCallLeadId: number | null;
+  setLogCallLeadId: (id: number | null) => void;
+  openLogCallModal: (leadId: number) => void;
+  logReplyModalOpen: boolean;
+  setLogReplyModalOpen: (b: boolean) => void;
+  logReplyLeadId: number | null;
+  setLogReplyLeadId: (id: number | null) => void;
+  openLogReplyModal: (leadId: number) => void;
+  activeInboxLeadId: number | null;
+  setActiveInboxLeadId: (id: number | null) => void;
+  openInboxForLead: (leadId: number) => void;
 
   // Assistant Drawer
   assistantOpen: boolean;
@@ -134,12 +172,15 @@ interface CRMContextType {
   loadAll: () => Promise<void>;
   handleStageChange: (lead: Lead, newStageId: number) => Promise<void>;
   handleApproveAndSend: (lead: Lead) => Promise<void>;
-  handleTriggerRefill: () => Promise<void>;
+  handleTriggerRefill: (batchSize?: number, testingMode?: boolean, locality?: string) => Promise<void>;
   handleDayModeChange: (mode: "normal" | "away" | "off") => Promise<void>;
   handleSyncBatchLinks: () => Promise<void>;
   handleRunScout: () => Promise<void>;
   handleRunAuditor: (recordVideo?: boolean) => Promise<void>;
-  handleRunCloser: (channel: "whatsapp" | "instagram" | "email", dryRun?: boolean) => Promise<void>;
+  handleRunCloser: (channel: "whatsapp" | "instagram" | "email", dryRun?: boolean, clinicId?: number, batchId?: string) => Promise<void>;
+  handleStopAutomation: () => Promise<void>;
+  isOutreachRunning: boolean;
+  activeOutreachChannel: "whatsapp" | "email" | "instagram" | null;
   handleConfirmCommitment: (commitmentId: number) => Promise<void>;
 }
 
@@ -148,18 +189,36 @@ const CRMContext = createContext<CRMContextType | null>(null);
 export function CRMProvider({ children }: { children: React.ReactNode }) {
   const { isDarkMode, toggleDarkMode } = useTheme();
 
+  // Data state
+  const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
+
   // Navigation & View state
-  const [activeTab, setActiveTab] = useState<MainTab>("dashboard");
+  const [activeTab, setActiveTabRaw] = useState<CRMTab>("dashboard");
+  const [surface, setSurface] = useState<"management" | "cockpit">("management");
+  const [cockpitTab, setCockpitTab] = useState<"attention" | "discovery" | "factory" | "outreach">("attention");
+  const [activeInboxLeadId, setActiveInboxLeadId] = useState<number | null>(null);
+
+  const setActiveTab = useCallback((tab: CRMTab) => {
+    setActiveTabRaw(tab);
+    setSelectedLeadId(null);
+  }, []);
+  const [globalAutomationEnabled, setGlobalAutomationEnabledState] = useState<boolean>(true);
   const [activeSmartView, setActiveSmartView] = useState<string>("all_active");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [pipelineBoardExpanded, setPipelineBoardExpanded] = useState<boolean>(true);
 
+  // Auto-collapse sidebar on phone viewports on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarCollapsed(true);
+    }
+  }, []);
+
   // Data state
   const [hustles, setHustles] = useState<Hustle[]>([]);
   const [activeHustleId, setActiveHustleId] = useState<number>(1);
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
   const [stockPlan, setStockPlan] = useState<StockPlan | null>(null);
   const [sprintPlan, setSprintPlan] = useState<SprintPlan | null>(null);
   const [runs, setRuns] = useState<RunLog[]>([]);
@@ -168,7 +227,6 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   // UI status
   const [loading, setLoading] = useState<boolean>(true);
   const [toast, setToast] = useState<ToastState | null>(null);
-  const [liveFeed, setLiveFeed] = useState<string[]>([]);
 
   // Sorting & Filtering
   const [sortPopoverOpen, setSortPopoverOpen] = useState<boolean>(false);
@@ -188,12 +246,35 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const [cmdSearchQuery, setCmdSearchQuery] = useState<string>("");
   const [newLeadModalOpen, setNewLeadModalOpen] = useState<boolean>(false);
   const [problemModalOpen, setProblemModalOpen] = useState<boolean>(false);
+  const [logCallModalOpen, setLogCallModalOpen] = useState<boolean>(false);
+  const [logCallLeadId, setLogCallLeadId] = useState<number | null>(null);
+  const [logReplyModalOpen, setLogReplyModalOpen] = useState<boolean>(false);
+  const [logReplyLeadId, setLogReplyLeadId] = useState<number | null>(null);
+
+  const openLogCallModal = useCallback((leadId: number) => {
+    setLogCallLeadId(leadId);
+    setLogCallModalOpen(true);
+  }, []);
+
+  const openLogReplyModal = useCallback((leadId: number) => {
+    setLogReplyLeadId(leadId);
+    setLogReplyModalOpen(true);
+  }, []);
+
+  const openInboxForLead = useCallback((leadId: number) => {
+    setActiveInboxLeadId(leadId);
+    setSelectedLeadId(null);
+    setSurface("management");
+    setActiveTab("inbox");
+  }, [setActiveTab]);
 
   // Terminal state
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
     "[SYSTEM] Unified Live Execution Terminal ready. Trigger 'Run Refill Batch Now', 'Verify Links', or any Sub-Agent (1. Scout / 2. Auditor / 3. Closer) to stream live logs here...",
   ]);
   const [activeTerminalJob, setActiveTerminalJob] = useState<string | null>(null);
+  const [isOutreachRunning, setIsOutreachRunning] = useState<boolean>(false);
+  const [activeOutreachChannel, setActiveOutreachChannel] = useState<"whatsapp" | "email" | "instagram" | null>(null);
   const [showPreviousRuns, setShowPreviousRuns] = useState<boolean>(false);
   const terminalContainerRef = useRef<HTMLDivElement | null>(null);
   const lastLogSeqRef = useRef<number>(0);
@@ -211,8 +292,50 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const closeToast = useCallback(() => {
-    setToast(null), [];
+    setToast(null);
   }, []);
+
+  // Sync global automation state from backend settings on mount
+  useEffect(() => {
+    settingsApi
+      .getAutomation()
+      .then((data) => {
+        if (typeof data.automation_enabled === "boolean") {
+          setGlobalAutomationEnabledState(data.automation_enabled);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const toggleGlobalAutomation = useCallback(async () => {
+    const nextVal = !globalAutomationEnabled;
+    setGlobalAutomationEnabledState(nextVal);
+    try {
+      await settingsApi.updateAutomation({ automation_enabled: nextVal });
+      notify(
+        nextVal
+          ? "Global Automation ON: Outbound messages queue for Playwright sender"
+          : "Global Automation OFF: Outbound messages open direct wa.me links",
+        "ok"
+      );
+    } catch {
+      setGlobalAutomationEnabledState(!nextVal);
+      notify("Failed to update global automation settings", "err");
+    }
+  }, [globalAutomationEnabled, notify]);
+
+  const setGlobalAutomationEnabled = useCallback(
+    async (enabled: boolean) => {
+      setGlobalAutomationEnabledState(enabled);
+      try {
+        await settingsApi.updateAutomation({ automation_enabled: enabled });
+      } catch {
+        setGlobalAutomationEnabledState(!enabled);
+        notify("Failed to update global automation settings", "err");
+      }
+    },
+    [notify]
+  );
 
   const activeHustle = useMemo(
     () => hustles.find((h) => h.id === activeHustleId) || hustles[0] || null,
@@ -267,13 +390,15 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const loadAll = useCallback(async () => {
     try {
       const [hList, lList, sPlan, spPlan, rList] = await Promise.all([
-        apiFetch<Hustle[]>("/api/hustles"),
-        apiFetch<Lead[]>(
-          `/api/leads?hustle_id=${activeHustleId}&smart_view=${encodeURIComponent(activeSmartView)}&search=${encodeURIComponent(searchQuery)}`
-        ),
+        settingsApi.listHustles(),
+        leadsApi.list({
+          hustle_id: activeHustleId,
+          smart_view: activeSmartView,
+          search: searchQuery,
+        }),
         apiFetch<StockPlan>(`/api/stock-plan?hustle_id=${activeHustleId}`),
         apiFetch<SprintPlan>(`/api/sprint?hustle_id=${activeHustleId}`),
-        apiFetch<RunLog[]>(`/api/runs?hustle_id=${activeHustleId}`),
+        autopilotApi.listRuns(activeHustleId),
       ]);
       setHustles(hList);
       setLeads(lList);
@@ -297,7 +422,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       setCopilotSuggestions([]);
       return;
     }
-    apiFetch<CopilotSuggestion[]>(`/api/leads/${selectedLeadId}/reply-copilot`)
+    leadsApi
+      .getReplyCopilot(selectedLeadId)
       .then((suggs) => setCopilotSuggestions(suggs))
       .catch(() => setCopilotSuggestions([]));
   }, [selectedLeadId]);
@@ -318,111 +444,99 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     }
   }, [terminalLogs]);
 
-  // Wire up SSE
-  const handleTerminalLog = useCallback(
-    (line: string) => appendTerminalLines([line]),
-    [appendTerminalLines]
-  );
-  const handleLiveEvent = useCallback(
-    (line: string) => setLiveFeed((prev) => [line, ...prev].slice(0, 30)),
-    []
-  );
-  const handleRefreshTrigger = useCallback(() => {
-    loadAll();
-  }, [loadAll]);
+  const onOutreachChange = useCallback((running: boolean, channel: "whatsapp" | "email" | "instagram" | null) => {
+    setIsOutreachRunning(running);
+    setActiveOutreachChannel(channel);
+  }, []);
 
-  useSSE({
-    onTerminalLog: handleTerminalLog,
-    onLiveEvent: handleLiveEvent,
-    onRefreshTrigger: handleRefreshTrigger,
+  const { liveFeed, latestPipelineStep } = useSSEEvents({
+    appendTerminalLines,
+    loadAll,
+    onOutreachChange,
   });
 
+  // Rehydrate running state after a reload (active_task looks like "closer_whatsapp").
+  useEffect(() => {
+    let cancelled = false;
+    autopilotApi
+      .getCockpitState(activeHustleId)
+      .then((state) => {
+        if (cancelled || !state.is_running || typeof state.active_task !== "string" || !state.active_task.startsWith("closer")) return;
+        const ch = state.active_task.replace("closer_", "");
+        setIsOutreachRunning(true);
+        setActiveOutreachChannel(ch === "whatsapp" || ch === "email" || ch === "instagram" ? ch : null);
+      })
+      .catch(() => {
+        // Non-fatal: the badge simply stays hidden until the next run starts.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeHustleId]);
+
   // Action Handlers
-  const handleStageChange = async (lead: Lead, newStageId: number) => {
-    if (lead.stage_id === newStageId) return;
-    setLeads((prev) =>
-      prev.map((l) => (l.id === lead.id ? { ...l, stage_id: newStageId } : l))
-    );
-    try {
-      await apiFetch(`/api/leads/${lead.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ stage_id: newStageId }),
-      });
-      notify(`Moved "${lead.name}" to next stage`);
-      loadAll();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to update stage", "err");
-      loadAll();
-    }
-  };
+  const { handleStageChange, handleApproveAndSend } = useLeadMutations({
+    setLeads,
+    loadAll,
+    notify,
+  });
 
-  const handleApproveAndSend = async (lead: Lead) => {
-    try {
-      await apiFetch(`/api/leads/${lead.id}/approve-send`, {
-        method: "POST",
-        body: JSON.stringify({
-          channel: lead.preferred_channel || "whatsapp",
-          sender_note: "Approved via CRM Review Tray",
-        }),
-      });
-      notify(`Sent demo pitch to ${lead.name} via ${lead.preferred_channel || "WhatsApp"}`);
-      loadAll();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to approve and send", "err");
-    }
-  };
-
-  const handleTriggerRefill = async () => {
-    setActiveTerminalJob("7-Step Refill Batch");
-    appendTerminalLines([
-      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Run Refill Batch Now' (7-step pipeline)...`,
-    ]);
-    try {
-      notify("Running 7-step Autopilot Refill Batch (live logs streaming in terminal)...");
-      const res = await apiFetch<{ run_id: number; message: string; trace_logs?: string[] }>(
-        "/api/autopilot/run-refill",
-        {
-          method: "POST",
-          body: JSON.stringify({ hustle_id: activeHustleId, batch_size: 2 }),
-        }
-      );
-      await syncTerminalLogs();
-      notify(`Refill completed: Run #${res.run_id} (${res.message})`);
-      loadAll();
-    } catch (err) {
+  const handleTriggerRefill = useCallback(
+    async (
+      batchSize: number = 3,
+      testingMode: boolean = false,
+      locality?: string
+    ) => {
+      setActiveTerminalJob("7-Step Refill Batch");
+      const modeTag = testingMode ? " [TESTING MODE: LIVE-ONLY / NO CACHE]" : "";
       appendTerminalLines([
-        `[${new Date().toLocaleTimeString()}] [ERROR] Refill failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Run Refill Batch Now' (target=${batchSize}${locality ? `, locality=${locality}` : ""})${modeTag}...`,
       ]);
-      notify(err instanceof Error ? err.message : "Failed to trigger refill", "err");
-    } finally {
-      setActiveTerminalJob(null);
-    }
-  };
+      try {
+        notify(`Running 7-step Autopilot Refill Batch (target=${batchSize})${modeTag}...`);
+        const res = await autopilotApi.triggerRefill({
+          hustle_id: activeHustleId,
+          batch_size: batchSize,
+          testing_mode: testingMode,
+          locality: locality,
+        });
+        await syncTerminalLogs();
+        notify(`Refill completed: Run #${res.run_id} (${res.message || "Success"})`);
+        await loadAll();
+      } catch (err) {
+        appendTerminalLines([
+          `[${new Date().toLocaleTimeString()}] [ERROR] Refill failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        ]);
+        notify(err instanceof Error ? err.message : "Failed to trigger refill", "err");
+        await loadAll();
+      } finally {
+        setActiveTerminalJob(null);
+      }
+    },
+    [activeHustleId, appendTerminalLines, loadAll, notify, syncTerminalLogs]
+  );
 
-  const handleDayModeChange = async (mode: "normal" | "away" | "off") => {
-    try {
-      await apiFetch("/api/schedule/day-mode", {
-        method: "POST",
-        body: JSON.stringify({ hustle_id: activeHustleId, mode }),
-      });
-      notify(`Day mode set to ${mode.toUpperCase()}`);
-      loadAll();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to change day mode", "err");
-    }
-  };
+  const handleDayModeChange = useCallback(
+    async (mode: "normal" | "away" | "off") => {
+      try {
+        await settingsApi.setDayMode(mode, activeHustleId);
+        notify(`Day mode set to ${mode.toUpperCase()}`);
+        loadAll();
+      } catch (err) {
+        notify(err instanceof Error ? err.message : "Failed to change day mode", "err");
+      }
+    },
+    [activeHustleId, loadAll, notify]
+  );
 
-  const handleSyncBatchLinks = async () => {
+  const handleSyncBatchLinks = useCallback(async () => {
     setActiveTerminalJob("Verify Links & Sync batch.json");
     appendTerminalLines([
       `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Verify Links & Sync batch.json'...`,
     ]);
     try {
       notify("Verifying HTTP 200 on all 4 client routes...");
-      const res = await apiFetch<{ verified: number; total: number }>("/api/packages/sync-batch-json", {
-        method: "POST",
-        body: JSON.stringify({ hustle_id: activeHustleId }),
-      });
+      const res = await autopilotApi.syncBatchLinks(activeHustleId);
       await syncTerminalLogs();
       notify(`Self-check passed: ${res.verified}/${res.total} templates verified live & synced`);
       loadAll();
@@ -434,22 +548,19 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setActiveTerminalJob(null);
     }
-  };
+  }, [activeHustleId, appendTerminalLines, loadAll, notify, syncTerminalLogs]);
 
-  const handleRunScout = async () => {
+  const handleRunScout = useCallback(async () => {
     setActiveTerminalJob("1. Scout Agent");
     appendTerminalLines([
       `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '1. Scout Agent' (Discovery + IG/Email Enrichment)...`,
     ]);
     try {
       notify("Scout Agent running: Discovering no-website clinics & enriching IG/Email dossiers...");
-      const res = await apiFetch<{ discovered_new: number; enriched_leads: number; trace_logs: string[] }>(
-        "/api/agents/scout/run",
-        {
-          method: "POST",
-          body: JSON.stringify({ hustle_id: activeHustleId, batch_size: 2 }),
-        }
-      );
+      const res = await autopilotApi.runScoutAgent({
+        hustle_id: activeHustleId,
+        batch_size: 2,
+      });
       await syncTerminalLogs();
       notify(`Scout complete: ${res.discovered_new} new clinics built, ${res.enriched_leads} dossiers enriched!`);
       loadAll();
@@ -461,156 +572,215 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setActiveTerminalJob(null);
     }
-  };
+  }, [activeHustleId, appendTerminalLines, loadAll, notify, syncTerminalLogs]);
 
-  const handleRunAuditor = async (recordVideo: boolean = false) => {
-    setActiveTerminalJob(recordVideo ? "2. Auditor Agent (QA + Record MP4)" : "2. Auditor Agent (HTTP 200 + Link MP4)");
-    appendTerminalLines([
-      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '2. Auditor Agent' (${recordVideo ? "HTTP 200 Check + Playwright MP4 Recording" : "HTTP 200 Audit + Link MP4s"})...`,
-    ]);
-    try {
-      notify(
-        recordVideo
-          ? "Auditor Agent running: Verifying HTTP 200 + recording MP4 walkthrough..."
-          : "Auditor Agent running: Auditing all 4 routes & attaching MP4 videos..."
-      );
-      const res = await apiFetch<{
-        verified_links_count: number;
-        attached_videos_count: number;
-        video_files: string[];
-        recorder_log: string;
-      }>("/api/agents/auditor/run", {
-        method: "POST",
-        body: JSON.stringify({ hustle_id: activeHustleId, record_video: recordVideo }),
-      });
-      await syncTerminalLogs();
-      notify(`Auditor complete: ${res.verified_links_count} verified & ${res.attached_videos_count} MP4s linked!`);
-      loadAll();
-    } catch (err) {
+  const handleRunAuditor = useCallback(
+    async (recordVideo: boolean = false) => {
+      setActiveTerminalJob(recordVideo ? "2. Auditor Agent (QA + Record MP4)" : "2. Auditor Agent (HTTP 200 + Link MP4)");
       appendTerminalLines([
-        `[${new Date().toLocaleTimeString()}] [ERROR] Auditor Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '2. Auditor Agent' (${recordVideo ? "HTTP 200 Check + Playwright MP4 Recording" : "HTTP 200 Audit + Link MP4s"})...`,
       ]);
-      notify(err instanceof Error ? err.message : "Auditor Agent failed", "err");
-    } finally {
-      setActiveTerminalJob(null);
-    }
-  };
-
-  const handleRunCloser = async (channel: "whatsapp" | "instagram" | "email", dryRun: boolean = true) => {
-    setActiveTerminalJob(`3. Closer Agent (${channel.toUpperCase()} • ${dryRun ? "Dry-Run" : "LIVE"})`);
-    appendTerminalLines([
-      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '3. Closer Agent' (${channel.toUpperCase()} • ${dryRun ? "Dry-Run Safe Test" : "LIVE"})...`,
-    ]);
-    try {
-      notify(`Closer Agent dispatching (${channel.toUpperCase()} • ${dryRun ? "Dry-Run Safe Test" : "LIVE"})...`);
-      const res = await apiFetch<{
-        channel: string;
-        dry_run: boolean;
-        drafted_hot_followups: number;
-        dispatch_log: string;
-      }>("/api/agents/closer/run", {
-        method: "POST",
-        body: JSON.stringify({ hustle_id: activeHustleId, channel, dry_run: dryRun }),
-      });
-      await syncTerminalLogs();
-      notify(
-        `Closer (${channel.toUpperCase()}) finished & drafted ${res.drafted_hot_followups} hot-viewer follow-ups!`
-      );
-      loadAll();
-    } catch (err) {
-      appendTerminalLines([
-        `[${new Date().toLocaleTimeString()}] [ERROR] Closer Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
-      ]);
-      notify(err instanceof Error ? err.message : "Closer Agent failed", "err");
-    } finally {
-      setActiveTerminalJob(null);
-    }
-  };
-
-  const handleConfirmCommitment = async (commitmentId: number) => {
-    try {
-      await apiFetch(`/api/commitments/${commitmentId}/confirm`, {
-        method: "POST",
-      });
-      notify("1-Tap Commitment confirmed & scheduled on calendar!");
-      loadAll();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to confirm commitment", "err");
-    }
-  };
-
-  const handleAskDoSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!assistantPrompt.trim()) return;
-    setAssistantLoading(true);
-    const currentPrompt = assistantPrompt.trim();
-    try {
-      const res = await apiFetch<{
-        mode: string;
-        action_taken: string;
-        reply: string;
-        matched_leads: Array<{
-          id: number;
-          name: string;
-          doctor: string;
-          locality: string;
-          stage_id: number;
-          fit_score: number;
-          intent_score: number;
-          phone: string | null;
-        }>;
-        undo_available: boolean;
-        undo_id: string | null;
-      }>("/api/assistant/ask-do", {
-        method: "POST",
-        body: JSON.stringify({
-          prompt: currentPrompt,
+      try {
+        notify(
+          recordVideo
+            ? "Auditor Agent running: Verifying HTTP 200 + recording MP4 walkthrough..."
+            : "Auditor Agent running: Auditing all 4 routes & attaching MP4 videos..."
+        );
+        const res = await autopilotApi.runAuditorAgent({
           hustle_id: activeHustleId,
-          mode: assistantMode,
-        }),
-      });
-      setAssistantHistory((prev) => [
-        {
-          id: `${Date.now()}`,
-          mode: res.mode,
-          prompt: currentPrompt,
-          reply: res.reply,
-          matched_leads: res.matched_leads || [],
-          undo_available: res.undo_available,
-          undo_id: res.undo_id,
-        },
-        ...prev,
-      ]);
-      setAssistantPrompt("");
-      if (res.mode === "do") {
+          record_video: recordVideo,
+        });
+        await syncTerminalLogs();
+        notify(
+          `Auditor complete: ${res.verified_links_count} links verified, ${res.attached_videos_count} MP4 videos linked/recorded!`
+        );
         loadAll();
+      } catch (err) {
+        appendTerminalLines([
+          `[${new Date().toLocaleTimeString()}] [ERROR] Auditor Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        ]);
+        notify(err instanceof Error ? err.message : "Auditor Agent failed", "err");
+      } finally {
+        setActiveTerminalJob(null);
       }
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Assistant request failed", "err");
-    } finally {
-      setAssistantLoading(false);
-    }
-  };
+    },
+    [activeHustleId, appendTerminalLines, loadAll, notify, syncTerminalLogs]
+  );
 
-  const handleAssistantUndo = async (undoId: string | null, entryId: string) => {
+  const handleRunCloser = useCallback(
+    async (
+      channel: "whatsapp" | "instagram" | "email" = "whatsapp",
+      dryRun: boolean = false,
+      clinicId?: number,
+      batchId?: string
+    ) => {
+      setActiveTerminalJob(`3. Closer Agent (${channel.toUpperCase()}${dryRun ? " DRY RUN" : ""})`);
+      setIsOutreachRunning(true);
+      setActiveOutreachChannel(channel);
+      appendTerminalLines([
+        `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '3. Closer Agent' (Channel=${channel}, DryRun=${dryRun}${clinicId ? `, ClinicID=${clinicId}` : ""}${batchId ? `, BatchID=${batchId}` : ""})...`,
+      ]);
+      try {
+        notify(`Closer Agent running (${channel.toUpperCase()})...`);
+        const res = await autopilotApi.runCloserAgent({
+          hustle_id: activeHustleId,
+          channel: channel,
+          dry_run: dryRun,
+          ...(clinicId != null ? { clinic_id: clinicId } : {}),
+          ...(batchId ? { batch_id: batchId } : {}),
+        });
+        await syncTerminalLogs();
+        notify(
+          `Closer (${channel.toUpperCase()}) finished & drafted ${res.drafted_hot_followups} hot-viewer follow-ups!`
+        );
+        loadAll();
+      } catch (err) {
+        const isTimeoutOrAbort =
+          err instanceof Error &&
+          (err.message.includes("timed out") || err.message.includes("aborted"));
+        appendTerminalLines([
+          `[${new Date().toLocaleTimeString()}] [ERROR] Closer Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        ]);
+        // If the fetch timed out / was aborted, the backend subprocess may still be running
+        // during a WhatsApp pacing delay. Skip the error toast — SSE autopilot_stopped /
+        // closer_complete events will reset state once the subprocess actually finishes.
+        if (!isTimeoutOrAbort) {
+          notify(err instanceof Error ? err.message : "Closer Agent failed", "err");
+        }
+      } finally {
+        setActiveTerminalJob(null);
+        // Guard: only reset outreach flags if the backend subprocess is actually done.
+        // During a 183s WhatsApp pacing delay the process is still running even though
+        // the HTTP request may have timed out or been aborted on the frontend.
+        try {
+          const state = await autopilotApi.getCockpitState(activeHustleId);
+          if (!state.is_running) {
+            setIsOutreachRunning(false);
+            setActiveOutreachChannel(null);
+          }
+          // If still running, leave flags set. SSE autopilot_stopped / closer_complete
+          // events (wired in useSSE above) will clear them when the process ends.
+        } catch {
+          // cockpit-state check failed — reset safely so the UI is never permanently stuck.
+          setIsOutreachRunning(false);
+          setActiveOutreachChannel(null);
+        }
+      }
+    },
+    [activeHustleId, appendTerminalLines, loadAll, notify, syncTerminalLogs]
+  );
+
+  const handleStopAutomation = useCallback(async () => {
     try {
-      const res = await apiFetch<{ ok: boolean; message: string }>("/api/assistant/undo", {
-        method: "POST",
-        body: JSON.stringify({ undo_id: undoId }),
-      });
-      notify(res.message || "Action undone!");
-      setAssistantHistory((prev) =>
-        prev.map((item) => (item.id === entryId ? { ...item, undone: true, undo_available: false } : item))
-      );
-      loadAll();
+      await autopilotApi.stop();
+      setIsOutreachRunning(false);
+      setActiveOutreachChannel(null);
+      notify("Outreach automation stopped");
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to undo action", "err");
+      notify(err instanceof Error ? err.message : "Failed to stop outreach automation", "err");
     }
-  };
+  }, [notify]);
 
-  const value = {
+  const handleConfirmCommitment = useCallback(
+    async (commitmentId: number) => {
+      try {
+        await apiFetch(`/api/commitments/${commitmentId}/confirm`, {
+          method: "POST",
+        });
+        notify("1-Tap Commitment confirmed & scheduled on calendar!");
+        loadAll();
+      } catch (err) {
+        notify(err instanceof Error ? err.message : "Failed to confirm commitment", "err");
+      }
+    },
+    [loadAll, notify]
+  );
+
+  const handleAskDoSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!assistantPrompt.trim()) return;
+      setAssistantLoading(true);
+      const currentPrompt = assistantPrompt.trim();
+      try {
+        const res = await apiFetch<{
+          mode: string;
+          action_taken: string;
+          reply: string;
+          matched_leads: Array<{
+            id: number;
+            name: string;
+            doctor: string;
+            locality: string;
+            stage_id: number;
+            fit_score: number;
+            intent_score: number;
+            phone: string | null;
+          }>;
+          undo_available: boolean;
+          undo_id: string | null;
+        }>("/api/assistant/ask-do", {
+          method: "POST",
+          body: JSON.stringify({
+            prompt: currentPrompt,
+            hustle_id: activeHustleId,
+            mode: assistantMode,
+          }),
+        });
+        setAssistantHistory((prev) => [
+          {
+            id: `${Date.now()}`,
+            mode: res.mode,
+            prompt: currentPrompt,
+            reply: res.reply,
+            matched_leads: res.matched_leads || [],
+            undo_available: res.undo_available,
+            undo_id: res.undo_id,
+          },
+          ...prev,
+        ]);
+        setAssistantPrompt("");
+        if (res.mode === "do") {
+          loadAll();
+        }
+      } catch (err) {
+        notify(err instanceof Error ? err.message : "Assistant request failed", "err");
+      } finally {
+        setAssistantLoading(false);
+      }
+    },
+    [activeHustleId, assistantMode, assistantPrompt, loadAll, notify]
+  );
+
+  const handleAssistantUndo = useCallback(
+    async (undoId: string | null, entryId: string) => {
+      try {
+        const res = await apiFetch<{ ok: boolean; message: string }>("/api/assistant/undo", {
+          method: "POST",
+          body: JSON.stringify({ undo_id: undoId }),
+        });
+        notify(res.message || "Action undone!");
+        setAssistantHistory((prev) =>
+          prev.map((item) => (item.id === entryId ? { ...item, undone: true, undo_available: false } : item))
+        );
+        loadAll();
+      } catch (err) {
+        notify(err instanceof Error ? err.message : "Failed to undo action", "err");
+      }
+    },
+    [loadAll, notify]
+  );
+
+  const value = useMemo(() => ({
     activeTab,
     setActiveTab,
+    surface,
+    setSurface,
+    cockpitTab,
+    setCockpitTab,
+    globalAutomationEnabled,
+    toggleGlobalAutomation,
+    setGlobalAutomationEnabled,
     activeSmartView,
     setActiveSmartView,
     searchQuery,
@@ -649,6 +819,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     showPreviousRuns,
     setShowPreviousRuns,
     terminalContainerRef,
+    latestPipelineStep,
     sortBy,
     setSortBy,
     sortOrder,
@@ -675,6 +846,19 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     setNewLeadModalOpen,
     problemModalOpen,
     setProblemModalOpen,
+    logCallModalOpen,
+    setLogCallModalOpen,
+    logCallLeadId,
+    setLogCallLeadId,
+    openLogCallModal,
+    logReplyModalOpen,
+    setLogReplyModalOpen,
+    logReplyLeadId,
+    setLogReplyLeadId,
+    openLogReplyModal,
+    activeInboxLeadId,
+    setActiveInboxLeadId,
+    openInboxForLead,
     assistantOpen,
     setAssistantOpen,
     assistantMode,
@@ -694,8 +878,86 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     handleRunScout,
     handleRunAuditor,
     handleRunCloser,
+    handleStopAutomation,
+    isOutreachRunning,
+    activeOutreachChannel,
     handleConfirmCommitment,
-  };
+  }), [
+    activeTab,
+    setActiveTab,
+    surface,
+    cockpitTab,
+    globalAutomationEnabled,
+    toggleGlobalAutomation,
+    setGlobalAutomationEnabled,
+    activeSmartView,
+    searchQuery,
+    sidebarCollapsed,
+    pipelineBoardExpanded,
+    isDarkMode,
+    toggleDarkMode,
+    hustles,
+    activeHustleId,
+    activeHustle,
+    leads,
+    selectedLeadId,
+    selectedLead,
+    stockPlan,
+    sprintPlan,
+    runs,
+    copilotSuggestions,
+    bufferHealthPct,
+    loading,
+    toast,
+    notify,
+    closeToast,
+    liveFeed,
+    terminalLogs,
+    activeTerminalJob,
+    showPreviousRuns,
+    latestPipelineStep,
+    sortBy,
+    sortOrder,
+    filterMinFit,
+    filterVerifiedOnly,
+    dashScheduleFilter,
+    sortPopoverOpen,
+    filterPopoverOpen,
+    draggingLeadId,
+    dragOverStageId,
+    cmdKOpen,
+    cmdSearchQuery,
+    newLeadModalOpen,
+    problemModalOpen,
+    logCallModalOpen,
+    logCallLeadId,
+    openLogCallModal,
+    logReplyModalOpen,
+    logReplyLeadId,
+    openLogReplyModal,
+    activeInboxLeadId,
+    openInboxForLead,
+    assistantOpen,
+    assistantMode,
+    assistantPrompt,
+    assistantLoading,
+    assistantHistory,
+    handleAskDoSubmit,
+    handleAssistantUndo,
+    loadAll,
+    handleStageChange,
+    handleApproveAndSend,
+    handleTriggerRefill,
+    handleDayModeChange,
+    handleSyncBatchLinks,
+    handleRunScout,
+    handleRunAuditor,
+    handleRunCloser,
+    handleStopAutomation,
+    isOutreachRunning,
+    activeOutreachChannel,
+    handleConfirmCommitment,
+  ]);
 
   return <CRMContext.Provider value={value}>{children}</CRMContext.Provider>;
 }

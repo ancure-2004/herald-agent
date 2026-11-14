@@ -6,28 +6,26 @@ Lead Intake -> Clinic Dossier Persistence -> Engine Validation -> Recorder Queue
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from sqlalchemy.orm import Session
 
-from app.models import Lead, Package, Stage
-
-from ..adapters import (
+from app.autopilot.adapters import (
     default_clinic_engine,
     default_recorder,
-    generate_email_pitch,
-    generate_instagram_pitch,
     generate_whatsapp_pitch,
 )
-from ..orchestrator import (
+from app.autopilot.build.payload import (
     build_canonical_clinic_payload,
-    clean_clinic_name,
-    extract_locality,
-    generate_clean_slug,
-    parse_places_opening_hours,
-    run_self_check_gate,
-    verify_live_demo_links,
+    format_consultation_fee,
 )
+from app.autopilot.build.self_check import run_self_check_gate
+from app.autopilot.recording.link_verifier import verify_live_demo_links
+from app.autopilot.recording.naming import recording_name
+from app.autopilot.research.hours import parse_places_opening_hours
+from app.autopilot.utils.address import extract_locality
+from app.autopilot.utils.text import clean_clinic_name, generate_clean_slug
+from app.models import Lead
 
 logger = logging.getLogger("personal_os.autopilot.dental_pipeline")
 
@@ -59,11 +57,20 @@ class DentalPipeline:
         c_name = clean_clinic_name(lead.name)
         meta = getattr(lead, "custom_fields", {}) or getattr(lead, "crm_metadata", {}) or {}
         slug = getattr(lead, "slug", "") or meta.get("slug") or generate_clean_slug(c_name)
-        locality = getattr(lead, "locality", "") or meta.get("locality") or extract_locality(getattr(lead, "address", "") or "")
+        locality = (
+            getattr(lead, "locality", "")
+            or meta.get("locality")
+            or extract_locality(getattr(lead, "address", "") or "")
+        )
         hours = parse_places_opening_hours(None)
-        fee = int(meta.get("consultation_fee") or 500)
-        rating = meta.get("rating") or getattr(lead, "rating", 4.9) or 4.9
-        review_count = meta.get("review_count") or getattr(lead, "review_count", 42) or 42
+
+        fee_val = meta.get("consultation_fee")
+        fee_formatted = format_consultation_fee(fee_val)
+
+        rating_val = meta.get("rating") if meta.get("rating") is not None else getattr(lead, "rating", None)
+        review_count_val = (
+            meta.get("review_count") if meta.get("review_count") is not None else getattr(lead, "review_count", None)
+        )
 
         payload = build_canonical_clinic_payload(
             slug=slug,
@@ -73,9 +80,9 @@ class DentalPipeline:
             locality=locality,
             address=getattr(lead, "address", "") or locality,
             phone_raw_str=getattr(lead, "primary_phone", "") or "+919811000000",
-            rating=str(rating),
-            review_count=str(review_count),
-            consultation_fee=f"₹{fee}",
+            rating=str(rating_val) if rating_val is not None else None,
+            review_count=str(review_count_val) if review_count_val is not None else None,
+            consultation_fee=fee_formatted,
             opening_hours=hours,
         )
 
@@ -98,20 +105,18 @@ class DentalPipeline:
             "doc_name": getattr(lead, "doctor_name", ""),
             "locality": locality,
             "phone": getattr(lead, "primary_phone", ""),
-            "rating": rating,
-            "review_count": review_count,
+            "rating": rating_val,
+            "review_count": review_count_val,
         }
         outreach = {
             "whatsapp": generate_whatsapp_pitch(clinic_info, base_url),
-            "instagram": generate_instagram_pitch(clinic_info, base_url),
-            "email": generate_email_pitch(clinic_info, base_url),
         }
 
         # 5. Queue in batch.json if verified
         recorder_queued = False
         if auto_queue_recorder and links_ok:
             batch_items = self.recorder.read_batch_json()
-            item_name = f"Clinic-{lead.id}-{slug}"
+            item_name = recording_name(lead)
             item_url = f"{base_url.rstrip('/')}/modern/{slug}"
             if not any(item.get("name") == item_name for item in batch_items):
                 batch_items.append({"name": item_name, "url": item_url})

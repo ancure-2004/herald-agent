@@ -1,10 +1,11 @@
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.controllers.lead_controller import LeadController
+from app.schemas.call import CallBriefOut, CallCreate, CallOut
 from app.schemas.lead import CompleteTaskRequest, LeadCreate, LeadOut, LeadUpdate
 
 router = APIRouter(tags=["Leads"])
@@ -17,6 +18,7 @@ def list_leads(
     smart_view: Optional[str] = Query(None),
     include_archived: bool = Query(False),
     search: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     return LeadController.list_leads(
@@ -26,6 +28,7 @@ def list_leads(
         smart_view=smart_view,
         include_archived=include_archived,
         search=search,
+        status=status,
     )
 
 
@@ -84,6 +87,44 @@ def generate_post_call_draft(lead_id: int, payload: Dict[str, Any], db: Session 
     return LeadController.post_call_draft(db, lead_id, payload)
 
 
+@router.get("/leads/{lead_id}/recording/status")
+def get_lead_recording_status(lead_id: int, db: Session = Depends(get_db)):
+    return LeadController.get_recording_status(db, lead_id)
+
+
+@router.get("/leads/{lead_id}/recording")
+def get_lead_recording(lead_id: int, db: Session = Depends(get_db)):
+    return LeadController.get_recording_response(db, lead_id)
+
+
+@router.post("/leads/{lead_id}/calls", response_model=CallOut, status_code=201)
+def log_lead_call(lead_id: int, payload: CallCreate, db: Session = Depends(get_db)):
+    """Logs raw call text, structures into 5 sections + prep brief in <10s, and updates lead."""
+    return LeadController.log_call(db, lead_id, payload)
+
+
+@router.get("/leads/{lead_id}/call-brief", response_model=CallBriefOut)
+def get_lead_call_brief(lead_id: int, db: Session = Depends(get_db)):
+    """Returns pre-call 'what to talk about' briefing card combining call notes and chat history."""
+    return LeadController.get_call_brief(db, lead_id)
+
+
 @router.post("/admin/wipe-leads")
-def wipe_leads(db: Session = Depends(get_db)):
+def wipe_leads(
+    db: Session = Depends(get_db),
+    x_confirm_wipe: Optional[str] = Header(default=None, alias="X-Confirm-Wipe"),
+):
+    """Permanently deletes all leads, messages, and packages.
+
+    Requires the header ``X-Confirm-Wipe: PERMANENTLY_DELETE_ALL`` to prevent
+    accidental calls (Item 1).
+    """
+    if x_confirm_wipe != "PERMANENTLY_DELETE_ALL":
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Safety interlock: you must pass the header "
+                "'X-Confirm-Wipe: PERMANENTLY_DELETE_ALL' to execute this operation."
+            ),
+        )
     return LeadController.wipe_leads(db)

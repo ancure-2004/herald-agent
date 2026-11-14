@@ -113,7 +113,7 @@ export default function CosmeticSuiteGrid({ siteConfig }: { siteConfig: WarmView
                       Clinical Highlights:
                     </p>
                     <ul className="space-y-1.5 text-xs text-slate-700">
-                      {service.keyBenefits.map((benefit, bIdx) => (
+                      {(service.keyBenefits || []).map((benefit, bIdx) => (
                         <li key={bIdx} className="flex items-start gap-2">
                           <Check className="w-3.5 h-3.5 text-rose-600 font-bold shrink-0 mt-0.5" />
                           <span className="font-medium">{benefit}</span>

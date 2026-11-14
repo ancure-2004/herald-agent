@@ -1,4 +1,4 @@
-.PHONY: help install run dev test lint format typecheck audit clean validate-clinics record-batch dev-engine
+.PHONY: help install run dev test test-live lint format typecheck audit clean validate-clinics record-batch dev-engine
 
 PYTHON := .venv/bin/python
 UVICORN := .venv/bin/uvicorn
@@ -28,7 +28,10 @@ dev:
 	$(UVICORN) app.main:app --host 0.0.0.0 --port 8000 --reload
 
 test:
-	$(PYTEST) -v
+	$(PYTEST) -v -m "not live"
+
+test-live: ## Run live network smoke tests (max 3 req)
+	$(PYTEST) -v -m live tests/
 
 lint:
 	$(RUFF) check app/ tests/

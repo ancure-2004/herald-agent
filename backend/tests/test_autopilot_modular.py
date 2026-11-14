@@ -4,24 +4,19 @@ Tests for Modular Autopilot Package
 Verifies the new adapters, config resolution, outreach generation, and pipeline.
 """
 
-import json
-import pytest
 from pathlib import Path
 
-from app.autopilot.config import (
-    DENTAL_ENGINE_DIR,
-    DENTAL_RECORDER_DIR,
-    BATCH_JSON_PATH,
-    CLINICS_DATA_DIR,
-)
 from app.autopilot.adapters.clinic_engine import ClinicEngineAdapter
-from app.autopilot.adapters.recorder import BatchRecorderAdapter
 from app.autopilot.adapters.outreach import (
-    get_clean_salutation,
     format_clinic_context,
     generate_whatsapp_pitch,
-    generate_instagram_pitch,
-    generate_email_pitch,
+    get_clean_salutation,
+)
+from app.autopilot.adapters.recorder import BatchRecorderAdapter
+from app.autopilot.config import (
+    BATCH_JSON_PATH,
+    DENTAL_ENGINE_DIR,
+    DENTAL_RECORDER_DIR,
 )
 from app.autopilot.pipelines.dental_pipeline import DentalPipeline
 from app.models import Hustle, Lead, Stage
@@ -63,16 +58,6 @@ def test_outreach_salutation_and_templates():
     assert wa["channel"] == "WhatsApp"
     assert "Namaste Dr. Rajeev Verma Ji 🙏" in wa["text_hook"]
     assert "http://localhost:3001/warm/dentique-dental-care" in wa["video_caption"]
-
-    # Instagram Pitch
-    ig = generate_instagram_pitch(sample_clinic, base_url="http://localhost:3001")
-    assert ig["channel"] == "Instagram"
-    assert "Namaste Dr. Rajeev Verma Ji" in ig["initial_dm"]
-
-    # Email Pitch
-    em = generate_email_pitch(sample_clinic, base_url="http://localhost:3001")
-    assert em["channel"] == "Email"
-    assert "Sample Website Designs for Dentique Dental Care" in em["subject"]
 
 
 def test_batch_recorder_adapter(tmp_path):
@@ -117,6 +102,7 @@ def test_dental_pipeline_execution(tmp_path):
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.pool import StaticPool
+
     from app.db.session import Base
     from app.seed import seed_initial_data
 

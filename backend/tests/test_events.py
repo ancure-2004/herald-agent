@@ -1,5 +1,6 @@
 import json
-from app.services.event_bus import broadcast_sse, emit_terminal_log, get_terminal_logs
+
+from app.services.event_bus import emit_terminal_log
 
 
 def test_terminal_logs_endpoint(client):

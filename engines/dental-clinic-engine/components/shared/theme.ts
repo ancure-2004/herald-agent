@@ -14,8 +14,8 @@ export interface BaseClinicViewModel {
   phone: string;
   phoneRaw: string;
   whatsapp: string;
-  rating: string;
-  reviewCount: string;
+  rating?: string;
+  reviewCount?: string;
   consultationFee?: string;
   mapEmbedUrl: string;
   directionsUrl: string;

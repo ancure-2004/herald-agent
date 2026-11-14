@@ -22,6 +22,7 @@ from app.repositories.hustle_repo import HustleRepository
 from app.repositories.lead_repo import LeadRepository
 from app.schemas.lead import CompleteTaskRequest, LeadCreate, LeadUpdate
 from app.services.event_bus import broadcast_sse, emit_terminal_log
+from app.services.sse_publisher import EventPublisher
 from app.utils.safety import (
     assert_active_lead_has_next_step,
     assert_no_duplicate_contact,
@@ -29,6 +30,64 @@ from app.utils.safety import (
     parse_promises_and_snoozes,
 )
 from app.utils.slug import slugify
+
+# ---------------------------------------------------------------------------
+# Item 13: Stage / Status Single Source of Truth
+# ---------------------------------------------------------------------------
+# The Lead model carries BOTH a stage_id (FK to stages table, the full pipeline
+# position) and a denormalized status string (used by the frontend smart views
+# and the outbox safety guard).  Historically these were updated independently,
+# leading to drift (e.g. stage='viewed_demo' but status still 'STAGED').
+#
+# Rule:
+#   stage.slug           → lead.status
+#   -----------------------  --------------------
+#   staged / queued          STAGED
+#   contacted                CONTACTED
+#   viewed_demo              INTERESTED
+#   package_ready            PACKAGE_READY
+#   negotiating              NEGOTIATING
+#   closed_won / won         WON
+#   closed_lost / lost       LOST
+#   do_not_contact / dnc     DNC
+#   (anything else)          STAGED (safe default)
+#
+# ALWAYS call sync_lead_stage_and_status() when mutating lead.stage_id so that
+# lead.status is never stale.  Do NOT call db.commit() inside this helper —
+# the caller owns the transaction.
+# ---------------------------------------------------------------------------
+
+_STAGE_SLUG_TO_STATUS: dict = {
+    "staged": "STAGED",
+    "queued": "STAGED",
+    "package_ready": "PACKAGE_READY",
+    "contacted": "CONTACTED",
+    "viewed_demo": "INTERESTED",
+    "negotiating": "NEGOTIATING",
+    "closed_won": "WON",
+    "won": "WON",
+    "closed_lost": "LOST",
+    "lost": "LOST",
+    "do_not_contact": "DNC",
+    "dnc": "DNC",
+}
+
+
+def sync_lead_stage_and_status(db, lead, new_stage) -> None:
+    """Item 13: Atomically set lead.stage_id AND lead.status from a Stage object.
+
+    Args:
+        db:        SQLAlchemy Session (caller commits).
+        lead:      Lead ORM instance to mutate.
+        new_stage: Stage ORM instance to move the lead into.
+
+    After this call lead.stage_id == new_stage.id and lead.status is the
+    canonical string derived from new_stage.slug.  The caller must still
+    call db.commit() (or db.flush()) to persist.
+    """
+    lead.stage_id = new_stage.id
+    slug = (new_stage.slug or "").lower().strip()
+    lead.status = _STAGE_SLUG_TO_STATUS.get(slug, "STAGED")
 
 
 class LeadService:
@@ -40,6 +99,7 @@ class LeadService:
         smart_view: Optional[str] = None,
         include_archived: bool = False,
         search: Optional[str] = None,
+        status: Optional[str] = None,
     ) -> List[Lead]:
         return LeadRepository.list_leads(
             db=db,
@@ -48,6 +108,7 @@ class LeadService:
             smart_view=smart_view,
             include_archived=include_archived,
             search=search,
+            status=status,
         )
 
     @staticmethod
@@ -109,6 +170,8 @@ class LeadService:
             custom_fields=payload.custom_fields,
             ai_fields=payload.ai_fields,
             deal_value_inr=payload.deal_value_inr,
+            automation_enabled=getattr(payload, "automation_enabled", True),
+            needs_followup=getattr(payload, "needs_followup", False),
             what_changed_summary="Lead created manually in CRM.",
         )
         LeadRepository.create(db, lead)
@@ -138,7 +201,7 @@ class LeadService:
 
         db.commit()
         db.refresh(lead)
-        broadcast_sse("lead_created", {"lead_id": lead.id, "name": lead.name})
+        EventPublisher.publish_lead_created(lead.id, lead.name)
         return lead
 
     @staticmethod
@@ -174,8 +237,15 @@ class LeadService:
             next_action_due_at=target_due_at,
         )
 
+        # Apply all payload fields first (this may set stage_id directly)
         for k, v in data.items():
             setattr(lead, k, v)
+
+        # Item 13: If the stage changed, sync status via SSOT helper so they
+        # never drift.  We re-query in case a payload field overwrote stage_id.
+        if "stage_id" in data:
+            final_stage = db.query(Stage).filter(Stage.id == lead.stage_id).first() or target_stage
+            sync_lead_stage_and_status(db, lead, final_stage)
 
         if lead.do_not_contact:
             for item in lead.outbox_items:
@@ -195,7 +265,7 @@ class LeadService:
 
         db.commit()
         db.refresh(lead)
-        broadcast_sse("lead_updated", {"lead_id": lead.id, "stage_id": lead.stage_id})
+        EventPublisher.publish_lead_updated(lead.id, stage_id=lead.stage_id)
         return lead
 
     @staticmethod
@@ -208,7 +278,8 @@ class LeadService:
             target_stage = db.query(Stage).filter(Stage.id == payload.move_to_stage_id).first()
             if not target_stage:
                 raise UnprocessableEntityError("Target stage not found.")
-            lead.stage_id = target_stage.id
+            # Item 13: use SSOT helper to keep stage_id and status in sync
+            sync_lead_stage_and_status(db, lead, target_stage)
 
         if payload.archive:
             lead.is_archived = True
@@ -235,7 +306,7 @@ class LeadService:
 
         db.commit()
         db.refresh(lead)
-        broadcast_sse("task_completed", {"lead_id": lead.id, "next_action": lead.next_action})
+        EventPublisher.publish_task_completed(lead.id, next_action=lead.next_action)
         return lead
 
     @staticmethod
@@ -375,7 +446,8 @@ class LeadService:
         )
         next_act = proposals[0].what if proposals else f"Send post-call WhatsApp follow-up ({call_note[:45]})"
 
-        base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001").rstrip("/")
+        from app.core.config import get_settings as _get_settings
+        base_url = _get_settings().DEMO_ENGINE_BASE_URL.rstrip("/")
         demo_url = f"{base_url}/demo/{lead.slug}"
         if lead.packages and lead.packages[-1].asset_links:
             demo_url = lead.packages[-1].asset_links.get("choice_page") or demo_url
@@ -412,6 +484,51 @@ class LeadService:
         }
 
     @staticmethod
+    def find_lead_recording_path(db: Session, lead_id: int) -> Optional[str]:
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+
+        from app.autopilot.recording.naming import find_lead_recording_path as find_canonical_path
+        canonical = find_canonical_path(lead)
+        if canonical:
+            return canonical
+
+        # Check PROJECTS_ROOT / Dental-Clinic-Clients with exact canonical file match: Clinic-{slug}.mp4
+        try:
+            from app.autopilot.config import PROJECTS_ROOT
+            clean_slug = (lead.slug or "").lower().strip()
+            if clean_slug:
+                clients_dir = PROJECTS_ROOT / "Dental-Clinic-Clients"
+                if clients_dir.exists():
+                    exact_file = f"Clinic-{clean_slug}.mp4"
+                    for p in clients_dir.glob(f"**/{exact_file}"):
+                        if p.exists() and p.stat().st_size > 1000:
+                            return str(p)
+        except Exception:
+            pass
+
+        return None
+
+    @staticmethod
+    def get_recording_status(db: Session, lead_id: int) -> Dict[str, Any]:
+        path_str = LeadService.find_lead_recording_path(db, lead_id)
+        if path_str and os.path.exists(path_str):
+            size_mb = round(os.path.getsize(path_str) / (1024 * 1024), 2)
+            return {
+                "has_recording": True,
+                "url": f"/api/leads/{lead_id}/recording",
+                "filename": os.path.basename(path_str),
+                "size_mb": size_mb,
+            }
+        return {
+            "has_recording": False,
+            "url": None,
+            "filename": None,
+            "size_mb": 0.0,
+        }
+
+    @staticmethod
     def wipe_leads(db: Session) -> Dict[str, Any]:
         db.query(TrackingEvent).delete()
         db.query(Commitment).delete()
@@ -421,5 +538,5 @@ class LeadService:
         db.query(LeadFact).delete()
         db.query(Lead).delete()
         db.commit()
-        broadcast_sse("leads_wiped", {"active_leads": 0})
+        EventPublisher.publish_leads_wiped()
         return {"status": "clean_slate", "remaining_leads": 0}

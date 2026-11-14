@@ -8,8 +8,9 @@ ENV
 # Next.js & TypeScript build outputs
 .next
 out
-build
+/build
 dist
+!backend/app/autopilot/build/
 *.tsbuildinfo
 
 # Python cache & artifacts

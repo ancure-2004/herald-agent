@@ -1,14 +1,1 @@
-[
-  {
-    "name": "Clinic-29-joy-dental-clinic",
-    "url": "http://localhost:3001/modern/joy-dental-clinic",
-    "choice_url": "http://localhost:3001/demo/joy-dental-clinic",
-    "verified": true
-  },
-  {
-    "name": "Clinic-30-maxwell-dental-clinic",
-    "url": "http://localhost:3001/modern/maxwell-dental-clinic",
-    "choice_url": "http://localhost:3001/demo/maxwell-dental-clinic",
-    "verified": true
-  }
-]
+[]

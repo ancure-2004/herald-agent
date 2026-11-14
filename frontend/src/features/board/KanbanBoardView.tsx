@@ -7,12 +7,15 @@ import {
   ArrowUpDown,
   Calendar,
   CheckCircle2,
+  Layers,
+  RefreshCw,
   Clock,
   Eye,
   Flame,
   LayoutGrid,
   MapPin,
   MessageSquare,
+  Phone,
   Plus,
   Search,
   Send,
@@ -22,6 +25,8 @@ import {
   X,
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
+import { KanbanColumn } from "./KanbanColumn";
+import { autopilotApi } from "@/api/autopilotApi";
 
 export function KanbanBoardView() {
   const {
@@ -50,9 +55,30 @@ export function KanbanBoardView() {
     selectedLeadId,
     setSelectedLeadId,
     setNewLeadModalOpen,
+    openLogCallModal,
+    openInboxForLead,
+    loadAll,
+    notify,
   } = useCRM();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [hideEmptyStages, setHideEmptyStages] = useState<boolean>(true);
+  const [batchGroupingEnabled, setBatchGroupingEnabled] = useState<boolean>(true);
+  const [syncingBatches, setSyncingBatches] = useState<boolean>(false);
+
+  const handleSyncBatches = async () => {
+    if (!activeHustle || syncingBatches) return;
+    setSyncingBatches(true);
+    try {
+      await autopilotApi.rebalanceBatches(activeHustle.id, false);
+      await loadAll();
+      notify("Organized unbatched leads into batches!");
+    } catch (err) {
+      notify(`Batch sync failed: ${err instanceof Error ? err.message : "unknown error"}`);
+    } finally {
+      setSyncingBatches(false);
+    }
+  };
 
   const isAllActive = activeSmartView === "all_active";
 
@@ -186,7 +212,7 @@ export function KanbanBoardView() {
   return (
     <div className="space-y-4">
       {/* Top Bar with Search, Filter, Sort, and Total in view */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-xs relative">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 backdrop-blur-xl shadow-xs relative">
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Compact Search Bar */}
           <div className="relative">
@@ -196,7 +222,7 @@ export function KanbanBoardView() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search pipeline..."
-              className="pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08] focus:outline-none focus:border-indigo-500 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 w-36 sm:w-48 transition-all"
+              className="pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-indigo-500 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 w-36 sm:w-48 transition-all"
             />
             {searchQuery && (
               <button
@@ -218,7 +244,7 @@ export function KanbanBoardView() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                 filterPopoverOpen || filterMinFit > 0 || filterVerifiedOnly
                   ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
-                  : "bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300"
+                  : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -229,9 +255,9 @@ export function KanbanBoardView() {
             </button>
 
             {filterPopoverOpen && (
-              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.12] shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/[0.06]">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">Quick Filters</span>
+              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-bold text-slate-900 dark:text-slate-100">Quick Filters</span>
                   <button
                     onClick={() => {
                       setFilterMinFit(0);
@@ -279,7 +305,7 @@ export function KanbanBoardView() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                 sortPopoverOpen
                   ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
-                  : "bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300"
+                  : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
               }`}
             >
               <ArrowUpDown className="w-3.5 h-3.5" />
@@ -287,9 +313,9 @@ export function KanbanBoardView() {
             </button>
 
             {sortPopoverOpen && (
-              <div className="absolute left-0 mt-2 w-80 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.12] shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/[0.06]">
-                  <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <div className="absolute left-0 mt-2 w-80 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <span>Sort Options</span>
                     <span className="text-[10px] font-normal text-slate-400">(CustomerGo style)</span>
                   </div>
@@ -299,26 +325,26 @@ export function KanbanBoardView() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.06]">
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-slate-800">
                     <div className="text-slate-400 text-xs font-mono">::</div>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as any)}
-                      className="flex-1 bg-transparent text-xs font-medium text-slate-800 dark:text-white focus:outline-none cursor-pointer"
+                      className="flex-1 bg-transparent text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer"
                     >
-                      <option value="fit" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">AI Fit Score</option>
-                      <option value="intent" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Buyer Intent Score</option>
-                      <option value="deal" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Projected Deal Value</option>
-                      <option value="name" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Clinic / Lead Name</option>
-                      <option value="due" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Next Action Due Date</option>
+                      <option value="fit" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">AI Fit Score</option>
+                      <option value="intent" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Buyer Intent Score</option>
+                      <option value="deal" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Projected Deal Value</option>
+                      <option value="name" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Clinic / Lead Name</option>
+                      <option value="due" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Next Action Due Date</option>
                     </select>
                     <select
                       value={sortOrder}
                       onChange={(e) => setSortOrder(e.target.value as any)}
                       className="bg-transparent text-xs font-semibold text-indigo-600 dark:text-indigo-400 focus:outline-none cursor-pointer"
                     >
-                      <option value="desc" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Descending ↓</option>
-                      <option value="asc" className="bg-white dark:bg-[#141721] text-slate-800 dark:text-white">Ascending ↑</option>
+                      <option value="desc" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Descending ↓</option>
+                      <option value="asc" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Ascending ↑</option>
                     </select>
                   </div>
                 </div>
@@ -327,10 +353,52 @@ export function KanbanBoardView() {
           </div>
         </div>
 
-        {/* Total In View Badge */}
+        {/* Total In View Badge & Hide Empty Stages Toggle */}
         <div className="flex items-center gap-2 text-xs">
-          <div className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 font-medium">
-            Total in view: <strong className="text-slate-900 dark:text-white font-mono font-bold">{totalCount}</strong>
+          {isAllActive && (
+            <>
+              <button
+                onClick={() => setBatchGroupingEnabled(!batchGroupingEnabled)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                  batchGroupingEnabled
+                    ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
+                    : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                }`}
+                title="Toggle batch grouping for early volume stages"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>{batchGroupingEnabled ? "Mode: Hybrid Batches" : "Mode: All Individual Cards"}</span>
+              </button>
+
+              <button
+                onClick={handleSyncBatches}
+                disabled={syncingBatches}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 disabled:opacity-50 disabled:cursor-wait"
+                title="Assign unbatched leads into batches"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${syncingBatches ? "animate-spin" : ""}`} />
+                <span>{syncingBatches ? "Syncing…" : `Sync Batches (${activeHustle.channel_limits?.batch_size ?? 25}/batch)`}</span>
+              </button>
+            </>
+          )}
+
+          {isAllActive && (
+            <button
+              onClick={() => setHideEmptyStages(!hideEmptyStages)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                hideEmptyStages
+                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-xs"
+                  : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+              }`}
+              title={hideEmptyStages ? "Empty stages collapsed. Click to show all." : "Showing all stages. Click to hide empty."}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>{hideEmptyStages ? "Hide Empty Stages" : "Show All Stages"}</span>
+            </button>
+          )}
+
+          <div className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium">
+            Total in view: <strong className="text-slate-900 dark:text-slate-100 font-mono font-bold">{totalCount}</strong>
           </div>
         </div>
       </div>
@@ -338,7 +406,7 @@ export function KanbanBoardView() {
       {/* DUAL DISPLAY MODE: Full-Scale Kanban for All Active vs Focused List View for Smart Filters */}
       {isAllActive ? (
         /* ==================== 1. FULL-SCALE KANBAN COLUMNS ==================== */
-        <div className="flex gap-4 overflow-x-auto pb-6">
+        <div className="flex gap-4 overflow-x-auto pb-6 snap-x snap-mandatory touch-pan-x">
           {activeHustle.stages.map((stage, sIdx) => {
             const stageLeads = leads.filter((l) => l.stage_id === stage.id);
             const query = searchQuery.trim().toLowerCase();
@@ -377,8 +445,17 @@ export function KanbanBoardView() {
             const dotColor = stageColors[sIdx % stageColors.length];
 
             return (
-              <div
+              <KanbanColumn
                 key={stage.id}
+                stage={stage}
+                allStages={activeHustle.stages}
+                leads={filteredLeads}
+                isDragOver={dragOverStageId === stage.id}
+                draggingLeadId={draggingLeadId}
+                selectedLeadId={selectedLeadId}
+                hideEmpty={hideEmptyStages}
+                batchGroupingEnabled={batchGroupingEnabled}
+                stageColorClass={dotColor}
                 onDragOver={(e) => {
                   e.preventDefault();
                   e.dataTransfer.dropEffect = "move";
@@ -403,179 +480,11 @@ export function KanbanBoardView() {
                   }
                   setDraggingLeadId(null);
                 }}
-                className={`flex-1 min-w-[280px] sm:min-w-[310px] max-w-[360px] flex flex-col rounded-2xl bg-slate-100/70 dark:bg-[#0F1117] border transition-all duration-200 ${
-                  dragOverStageId === stage.id
-                    ? "border-indigo-500 ring-2 ring-indigo-500/30 bg-indigo-500/[0.04]"
-                    : "border-slate-200/80 dark:border-white/[0.08]"
-                }`}
-              >
-                {/* Stage Column Header */}
-                <div className="p-4 flex items-center justify-between border-b border-slate-200/60 dark:border-white/[0.05]">
-                  <div className="flex items-center gap-2.5">
-                    <span className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">
-                      {stage.name}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white dark:bg-white/[0.06] text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-white/[0.06] shadow-2xs">
-                      {filteredLeads.length}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => setNewLeadModalOpen(true)}
-                    className="p-1 rounded-lg hover:bg-white dark:hover:bg-white/[0.08] text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
-                    title="Add lead to stage"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* Stage Cards Container */}
-                <div className="p-3 flex-1 overflow-y-auto space-y-3 min-h-[450px]">
-                  {filteredLeads.length === 0 ? (
-                    <div className="h-44 border-2 border-dashed border-slate-200 dark:border-white/[0.06] rounded-2xl flex flex-col items-center justify-center text-slate-400 p-4 text-center">
-                      <LayoutGrid className="w-6 h-6 opacity-40 mb-1" />
-                      <span className="text-xs font-medium">No leads in stage</span>
-                      <span className="text-[10px] opacity-70">Drag leads here to advance</span>
-                    </div>
-                  ) : (
-                    filteredLeads.map((lead) => {
-                      const isSelected = selectedLeadId === lead.id;
-                      const isDragging = draggingLeadId === lead.id;
-                      const isOverdue =
-                        lead.next_action_due_at &&
-                        new Date(lead.next_action_due_at).getTime() < Date.now();
-
-                      return (
-                        <div
-                          key={lead.id}
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData("text/plain", String(lead.id));
-                            e.dataTransfer.effectAllowed = "move";
-                            setDraggingLeadId(lead.id);
-                          }}
-                          onDragEnd={() => {
-                            setDraggingLeadId(null);
-                            setDragOverStageId(null);
-                          }}
-                          onClick={() => setSelectedLeadId(lead.id)}
-                          className={`p-4 rounded-2xl bg-white dark:bg-[#141721] border transition-all duration-150 cursor-grab active:cursor-grabbing select-none space-y-2.5 relative group ${
-                            isDragging ? "opacity-30 scale-95" : "opacity-100"
-                          } ${
-                            isSelected
-                              ? "border-indigo-500 shadow-md ring-2 ring-indigo-500/20"
-                              : "border-slate-200/90 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.18] shadow-xs hover:shadow-md"
-                          }`}
-                        >
-                          {/* Top Card Line: Deal Value + Fit Badge */}
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-500/20 text-[11px]">
-                              ₹{(lead.deal_value_inr || 25000).toLocaleString()}
-                            </span>
-
-                            <div className="flex items-center gap-1.5">
-                              {lead.intent_score >= 50 && (
-                                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 px-1.5 py-0.5 rounded-md border border-rose-200 dark:border-rose-500/20">
-                                  <Flame className="w-2.5 h-2.5 fill-rose-500" />
-                                  {lead.intent_score}
-                                </span>
-                              )}
-                              <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
-                                {lead.fit_score}% fit
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Clinic Title & Locality */}
-                          <div>
-                            <div className="font-bold text-slate-900 dark:text-white text-sm tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                              {lead.name}
-                            </div>
-                            <div className="text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1 pt-0.5">
-                              {lead.doctor_name && (
-                                <span className="font-medium text-slate-700 dark:text-slate-300 truncate max-w-[140px]">
-                                  {lead.doctor_name}
-                                </span>
-                              )}
-                              {lead.doctor_name && <span>•</span>}
-                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                              <span className="truncate">{lead.locality || lead.city}</span>
-                            </div>
-                          </div>
-
-                          {/* Highlight Reason / 2-Source Tag */}
-                          {lead.facts && lead.facts.some((f) => f.verified_by_two_sources) && (
-                            <div className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded-lg">
-                              <ShieldCheck className="w-3 h-3" />
-                              <span>2-Source Verified</span>
-                            </div>
-                          )}
-
-                          {/* Next Action Step (Pipedrive Rule Display) */}
-                          {lead.next_action && (
-                            <div
-                              className={`p-2 rounded-xl text-xs flex items-start gap-2 border ${
-                                isOverdue
-                                  ? "bg-rose-50/70 dark:bg-rose-950/30 border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300"
-                                  : "bg-slate-50 dark:bg-white/[0.03] border-slate-200/60 dark:border-white/[0.05] text-slate-700 dark:text-slate-300"
-                              }`}
-                            >
-                              <Clock className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${isOverdue ? "text-rose-500" : "text-slate-400"}`} />
-                              <div className="min-w-0 flex-1">
-                                <div className="text-[10px] font-bold uppercase tracking-wider opacity-75">
-                                  {isOverdue ? "Overdue Action" : "Next Step"}
-                                </div>
-                                <div className="text-xs truncate font-medium">
-                                  {lead.next_action}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Card Footer: Metadata Counters */}
-                          <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400 dark:text-slate-500">
-                            <div className="flex items-center gap-3">
-                              <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
-                                <MessageSquare className="w-3 h-3" />
-                                <span>{lead.messages?.length || 0}</span>
-                              </span>
-                              <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
-                                <Eye className="w-3 h-3" />
-                                <span>{((lead as any).demo_views_count ?? lead.events?.length ?? 0)}</span>
-                              </span>
-                              <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
-                                <ShieldCheck className="w-3 h-3" />
-                                <span>{lead.facts?.length || 0}</span>
-                              </span>
-                            </div>
-                            {lead.next_action_due_at && (
-                              <span className="flex items-center gap-1 font-mono text-[10px]">
-                                <Calendar className="w-3 h-3 text-slate-400" />
-                                <span>{new Date(lead.next_action_due_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Quick Review Tray Approve Button if in package_ready */}
-                          {stage.slug === "package_ready" && !lead.do_not_contact && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleApproveAndSend(lead);
-                              }}
-                              className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all cursor-pointer"
-                            >
-                              <Send className="w-3.5 h-3.5" />
-                              <span>Approve & Send Pitch</span>
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
+                onLeadSelect={(id) => setSelectedLeadId(id)}
+                onAdvanceLeadStage={(lead, stageId) => handleStageChange(lead, stageId)}
+                onApproveAndSend={handleApproveAndSend}
+                onAddLead={() => setNewLeadModalOpen(true)}
+              />
             );
           })}
         </div>
@@ -583,14 +492,14 @@ export function KanbanBoardView() {
         /* ==================== 2. FOCUSED LIST VIEW FOR SMART FILTERS ==================== */
         <div className="space-y-4 pb-6">
           {/* Header Banner / Chip */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-white/90 dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs backdrop-blur-md">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-white/90 dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs backdrop-blur-md">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-800 flex items-center justify-center">
                 <CurrentViewIcon className={`w-5 h-5 ${currentViewInfo.color}`} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                     {currentViewInfo.label}
                   </h3>
                   <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20">
@@ -613,11 +522,11 @@ export function KanbanBoardView() {
 
           {/* Focused List Rows / Empty State */}
           {focusedLeads.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center mx-auto text-slate-400">
+            <div className="p-12 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
                 <CurrentViewIcon className="w-6 h-6" />
               </div>
-              <div className="text-sm font-bold text-slate-900 dark:text-white">
+              <div className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 No leads found in &quot;{currentViewInfo.label}&quot;
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
@@ -638,7 +547,7 @@ export function KanbanBoardView() {
                   <div
                     key={lead.id}
                     onClick={() => setSelectedLeadId(lead.id)}
-                    className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-400 dark:hover:border-indigo-500/50 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                    className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500/50 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group"
                   >
                     {/* Left: Clinic / Doctor info */}
                     <div className="flex items-start gap-3 min-w-0 md:w-1/3">
@@ -646,7 +555,7 @@ export function KanbanBoardView() {
                         {lead.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
+                        <div className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
                           {lead.name}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
@@ -664,7 +573,7 @@ export function KanbanBoardView() {
                     {/* Middle: Stage & Scores & Next Action */}
                     <div className="flex flex-wrap items-center gap-2 md:gap-4 flex-1">
                       {/* Current Stage Badge */}
-                      <span className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/[0.06] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-white/[0.08]">
+                      <span className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800">
                         {stage?.name || "Pipeline Lead"}
                       </span>
 
@@ -695,10 +604,10 @@ export function KanbanBoardView() {
                       )}
                     </div>
 
-                    {/* Right: Deal Value & Action Button */}
-                    <div className="flex items-center justify-between md:justify-end gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-white/[0.06]">
-                      <div className="text-right">
-                        <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2.5 py-1 rounded-xl">
+                    {/* Right: Deal Value & Quick Actions */}
+                    <div className="flex items-center justify-between md:justify-end gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
+                      <div className="text-right mr-1">
+                        <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-xl">
                           ₹{(lead.deal_value_inr || 25000).toLocaleString()}
                         </div>
                       </div>
@@ -707,11 +616,37 @@ export function KanbanBoardView() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          openInboxForLead(lead.id);
+                        }}
+                        className="py-1.5 px-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                        title="Open WhatsApp chat"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Chat</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openLogCallModal(lead.id);
+                        }}
+                        className="py-1.5 px-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                        title="Log raw call & generate AI notes"
+                      >
+                        <Phone className="w-3.5 h-3.5" />
+                        <span>Call</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedLeadId(lead.id);
                         }}
-                        className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1 shadow-md shadow-indigo-600/25 transition-all cursor-pointer group-hover:scale-105"
+                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1 shadow-md shadow-indigo-600/25 transition-all cursor-pointer group-hover:scale-105"
                       >
-                        <span>Inspect Deal</span>
+                        <span>Inspect</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>

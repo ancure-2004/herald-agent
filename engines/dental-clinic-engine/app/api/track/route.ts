@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { neonQuery } from "@/lib/neon-db";
+
+const BACKEND_API_URL = process.env.PERSONAL_OS_API_URL || "http://localhost:8000";
 
 const BOT_AGENTS = [
   "whatsapp",
@@ -15,13 +16,34 @@ const BOT_AGENTS = [
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const slug = String(body.slug || "").trim();
-    const eventType = String(body.event_type || "page_view").trim();
-    const section = String(body.section || "hero").trim();
-    const designChosen = String(body.design_chosen || "").trim();
+    let body: Record<string, unknown> = {};
+    try {
+      body = (await req.json()) as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    }
+
+    const slug = typeof body.slug === "string" ? body.slug.trim() : "";
+    const eventType = typeof body.event_type === "string" ? body.event_type.trim() : "page_view";
+    const section = typeof body.section === "string" ? body.section.trim() : "hero";
+    const designChosen = typeof body.design_chosen === "string" ? body.design_chosen.trim() : "";
     const durationSeconds = Number(body.duration_seconds || 0);
-    const userAgent = req.headers.get("user-agent") || String(body.user_agent || "");
+    const userAgent = req.headers.get("user-agent") || (typeof body.user_agent === "string" ? body.user_agent : "");
+
+    // Recorder guard: skip ALL writes and backend forwarding when this request
+    // comes from the automated walkthrough recorder. We detect it across all 3 entrypoints:
+    //   1. ?recorder=1 on the API URL itself (direct query)
+    //   2. Referer header contains "recorder=1" (the page URL the browser loaded)
+    //   3. body.is_recorder flag sent explicitly by ViewTracker.tsx or caller
+    const referer = req.headers.get("referer") || "";
+    const apiUrlRecorder = req.nextUrl?.searchParams?.get("recorder") === "1";
+    const refererRecorder = referer.includes("recorder=1");
+    const bodyRecorder = String(body.is_recorder ?? "0") !== "0" && body.is_recorder !== false;
+    const isRecorder = apiUrlRecorder || refererRecorder || bodyRecorder;
+
+    if (isRecorder) {
+      return NextResponse.json({ logged: false, reason: "recorder" });
+    }
 
     if (!slug) {
       return NextResponse.json({ error: "Missing slug" }, { status: 400 });
@@ -30,101 +52,39 @@ export async function POST(req: NextRequest) {
     const uaLower = userAgent.toLowerCase();
     const isBot = BOT_AGENTS.some((b) => uaLower.includes(b));
 
-    const leadRows = await neonQuery<{ id: number; hustle_id: number; stage_id: number }>(
-      `SELECT id, hustle_id, stage_id FROM leads WHERE slug = $1 LIMIT 1`,
-      [slug]
-    );
-    if (!leadRows.length) {
-      return NextResponse.json({ logged: false, reason: "lead_not_in_neon" });
-    }
-
-    const lead = leadRows[0];
-    const pkgRows = await neonQuery<{ id: number }>(
-      `SELECT id FROM packages WHERE lead_id = $1 ORDER BY id DESC LIMIT 1`,
-      [lead.id]
-    );
-    const packageId = pkgRows.length ? pkgRows[0].id : null;
-
-    await neonQuery(
-      `INSERT INTO events (lead_id, package_id, event_type, section, design_chosen, duration_seconds, user_agent, is_bot, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
-      [lead.id, packageId, eventType, section, designChosen, durationSeconds, userAgent.slice(0, 390), isBot]
-    );
-
+    // Forward non-bot events to the FastAPI backend, which is the single
+    // source of truth for tracking with 15-minute debounce and real-time SSE.
     if (!isBot) {
-      // Compute updated intent score from non-bot events in Neon
-      const statsRows = await neonQuery<{
-        views: string;
-        choices: string;
-        taps: string;
-        dwell: string;
-      }>(
-        `SELECT
-           COUNT(*) FILTER (WHERE event_type = 'page_view') AS views,
-           COUNT(*) FILTER (WHERE event_type = 'design_choice') AS choices,
-           COUNT(*) FILTER (WHERE event_type = 'whatsapp_tap') AS taps,
-           COALESCE(SUM(duration_seconds), 0) AS dwell
-         FROM events
-         WHERE lead_id = $1 AND is_bot = FALSE`,
-        [lead.id]
-      );
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3500);
 
-      const s = statsRows[0] || { views: "1", choices: "0", taps: "0", dwell: "0" };
-      const views = Number(s.views || 0);
-      const choices = Number(s.choices || 0);
-      const taps = Number(s.taps || 0);
-      const dwell = Number(s.dwell || 0);
+        const res = await fetch(`${BACKEND_API_URL}/api/v1/public/track`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lead_slug: slug,
+            event_type: eventType,
+            section,
+            design_chosen: designChosen,
+            duration_seconds: durationSeconds,
+            user_agent: userAgent,
+            is_recorder: false,
+          }),
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
 
-      let score = 0;
-      const reasons: string[] = [];
-      if (views >= 1) {
-        score += 25;
-        reasons.push(`Opened demo link (${views}x) (+25)`);
+        if (!res.ok) {
+          console.error("Track forward failed:", res.status);
+          return NextResponse.json({ logged: false, backend_status: res.status }, { status: 200 });
+        }
+      } catch (upstreamErr) {
+        // Graceful handling when FastAPI backend is busy or times out
+        console.warn("Track upstream backend timeout/unreachable:", upstreamErr);
+        return NextResponse.json({ logged: false, reason: "upstream_timeout" }, { status: 200 });
       }
-      if (views >= 2) {
-        score += 15;
-        reasons.push("Repeat demo visits (+15)");
-      }
-      if (dwell >= 30) {
-        score += 15;
-        reasons.push(`Spent ${dwell}s exploring sections (+15)`);
-      }
-      if (choices >= 1) {
-        score += 25;
-        reasons.push(`Selected '${designChosen || "preferred"}' design (+25)`);
-      }
-      if (taps >= 1) {
-        score += 25;
-        reasons.push("Tapped WhatsApp CTA button on demo (+25)");
-      }
-      const finalScore = Math.min(99, score);
-
-      let summary = `Opened live demo (${views}x, ${dwell}s dwell).`;
-      if (eventType === "design_choice" && designChosen) {
-        summary = `Doctor selected the '${designChosen.toUpperCase()}' design on the live preview!`;
-      } else if (eventType === "whatsapp_tap") {
-        summary = `Doctor tapped the WhatsApp button on the '${designChosen || "live"}' demo!`;
-      }
-
-      // Move stage to viewed_demo if currently in discovered / package_ready / queued / contacted
-      await neonQuery(
-        `UPDATE leads
-         SET intent_score = $1,
-             intent_reasons = $2::json,
-             what_changed_summary = $3,
-             stage_id = COALESCE(
-               (SELECT s.id FROM stages s
-                JOIN stages cur ON cur.id = leads.stage_id
-                WHERE s.hustle_id = leads.hustle_id
-                  AND s.slug = 'viewed_demo'
-                  AND cur.slug IN ('discovered', 'package_ready', 'queued', 'contacted')
-                LIMIT 1),
-               leads.stage_id
-             ),
-             updated_at = NOW()
-         WHERE id = $4`,
-        [finalScore, JSON.stringify(reasons), summary, lead.id]
-      );
     }
 
     return NextResponse.json({ logged: true, is_bot: isBot });

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useCRM } from "@/context/CRMContext";
-import { apiFetch } from "@/lib/api/client";
+import { leadsApi } from "@/api/leadsApi";
 import { Modal } from "@/components/ui/Modal";
 
 export function AddLeadModal() {
@@ -36,23 +36,20 @@ export function AddLeadModal() {
     try {
       const firstStage = activeHustle?.stages[0]?.id || 1;
       const defaultDue = new Date(Date.now() + 2 * 86400000).toISOString();
-      await apiFetch("/api/leads", {
-        method: "POST",
-        body: JSON.stringify({
-          hustle_id: activeHustleId,
-          stage_id: firstStage,
-          name: newLeadName.trim(),
-          doctor_name: newLeadDoctor.trim(),
-          locality: newLeadLocality.trim(),
-          primary_phone: newLeadPhone.trim() || null,
-          instagram_handle: newLeadIg.trim() || null,
-          next_action: newLeadNextAction.trim(),
-          next_action_due_at: defaultDue,
-          fit_score: 85,
-          fit_reasons: ["Manual intake lead", "Targeted dental clinic"],
-          intent_score: 50,
-        }),
-      });
+      await leadsApi.create({
+        hustle_id: activeHustleId,
+        stage_id: firstStage,
+        name: newLeadName.trim(),
+        doctor_name: newLeadDoctor.trim(),
+        locality: newLeadLocality.trim(),
+        primary_phone: newLeadPhone.trim() || null,
+        instagram_handle: newLeadIg.trim() || null,
+        next_action: newLeadNextAction.trim(),
+        next_action_due_at: defaultDue,
+        fit_score: 85,
+        fit_reasons: ["Manual intake lead", "Targeted dental clinic"],
+        intent_score: 50,
+      } as any);
 
       notify(`Added "${newLeadName}" to pipeline`);
       setNewLeadModalOpen(false);

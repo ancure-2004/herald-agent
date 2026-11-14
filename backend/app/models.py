@@ -4,7 +4,9 @@ Re-exports database models from `app.models` for backward compatibility.
 """
 
 from app.models.entities import (
+    AppSetting,
     AvailabilityDay,
+    Call,
     Commitment,
     Hustle,
     Job,
@@ -18,12 +20,15 @@ from app.models.entities import (
     RunLog,
     SmartView,
     Stage,
+    TerminalLog,
     TrackingEvent,
     utcnow,
 )
 
 __all__ = [
+    "AppSetting",
     "AvailabilityDay",
+    "Call",
     "Commitment",
     "Hustle",
     "Job",
@@ -37,6 +42,7 @@ __all__ = [
     "RunLog",
     "SmartView",
     "Stage",
+    "TerminalLog",
     "TrackingEvent",
     "utcnow",
 ]

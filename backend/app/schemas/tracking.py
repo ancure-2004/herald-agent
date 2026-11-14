@@ -13,6 +13,9 @@ class TrackingEventCreate(BaseSchema):
     design_chosen: str = ""
     duration_seconds: int = 0
     user_agent: str = ""
+    # Item 7: Recorder / preview flag — set to True when the automated Playwright
+    # recorder opens the demo URL so this visit is never counted as a real view.
+    is_recorder: bool = False
 
 
 class TrackingEventOut(BaseORMModel):

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { env } from "@/config/env";
+import { PipelineStepEvent } from "@/features/cockpit/types";
 
 export interface SSEMessagePayload {
   type: string;
@@ -12,15 +13,22 @@ export interface SSEMessagePayload {
   [key: string]: unknown;
 }
 
+// Outreach/autopilot events that drive running-state UI (Stop buttons, badges, inbox refresh).
+const OUTREACH_EVENTS = ["autopilot_started", "autopilot_stopped", "closer_complete", "outbox_sent", "message_sent"] as const;
+
 export function useSSE({
   onTerminalLog,
   onLiveEvent,
   onRefreshTrigger,
+  onPipelineStep,
+  onOutreachEvent,
   enabled = true,
 }: {
   onTerminalLog?: (line: string, seq?: number) => void;
   onLiveEvent?: (line: string) => void;
   onRefreshTrigger?: () => void;
+  onPipelineStep?: (event: PipelineStepEvent) => void;
+  onOutreachEvent?: (eventName: string, data: Record<string, unknown>) => void;
   enabled?: boolean;
 } = {}) {
   const lastLogSeqRef = useRef<number>(0);
@@ -30,11 +38,15 @@ export function useSSE({
   const onTerminalLogRef = useRef(onTerminalLog);
   const onLiveEventRef = useRef(onLiveEvent);
   const onRefreshTriggerRef = useRef(onRefreshTrigger);
+  const onPipelineStepRef = useRef(onPipelineStep);
+  const onOutreachEventRef = useRef(onOutreachEvent);
 
   useEffect(() => {
     onTerminalLogRef.current = onTerminalLog;
     onLiveEventRef.current = onLiveEvent;
     onRefreshTriggerRef.current = onRefreshTrigger;
+    onPipelineStepRef.current = onPipelineStep;
+    onOutreachEventRef.current = onOutreachEvent;
   });
 
   useEffect(() => {
@@ -64,15 +76,24 @@ export function useSSE({
               return;
             }
 
-            if (data.type === "terminal_log" && data.line) {
+            if ((data.type === "terminal_log" || data.event === "terminal_log") && (data.line || data.message)) {
               if (typeof data.seq === "number" && data.seq > lastLogSeqRef.current) {
                 lastLogSeqRef.current = data.seq;
               }
-              onTerminalLogRef.current?.(data.line, data.seq);
+              const line = data.line || `[${String(data.service || "SYSTEM").toUpperCase()}] ${data.message || ""}`;
+              onTerminalLogRef.current?.(line, data.seq);
               return;
             }
 
-            const line = `[${new Date().toLocaleTimeString()}] ${data.type}: ${data.title || data.message || "Event"}`;
+            if (data.type === "pipeline_step") {
+              onPipelineStepRef.current?.(data as unknown as PipelineStepEvent);
+            }
+
+            if ((OUTREACH_EVENTS as readonly string[]).includes(data.type)) {
+              onOutreachEventRef.current?.(data.type, data as unknown as Record<string, unknown>);
+            }
+
+            const line = `[${new Date().toLocaleTimeString()}] ${data.type || "Event"}: ${data.title || data.message || "Event"}`;
             onLiveEventRef.current?.(line);
 
             if (
@@ -93,6 +114,86 @@ export function useSSE({
             // ignore parsing error
           }
         };
+
+        // Attach dedicated event listeners for named SSE events from backend EventBus
+        es.addEventListener("terminal_log", (event: MessageEvent) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (typeof data.seq === "number" && data.seq > lastLogSeqRef.current) {
+              lastLogSeqRef.current = data.seq;
+            }
+            const line =
+              data.line ||
+              `[${(data.service || data.source || "SYSTEM").toUpperCase()}] ${data.message || ""}`;
+            onTerminalLogRef.current?.(line, data.seq);
+          } catch {
+            // ignore parsing error
+          }
+        });
+
+        es.addEventListener("autopilot_state", (event: MessageEvent) => {
+          try {
+            const data = JSON.parse(event.data);
+            const line = `[${new Date().toLocaleTimeString()}] Autopilot State: ${data.is_running ? "Running" : "Idle"}`;
+            onLiveEventRef.current?.(line);
+          } catch {
+            // ignore parsing error
+          }
+        });
+
+        es.addEventListener("pipeline_step", (event: MessageEvent) => {
+          try {
+            const data = JSON.parse(event.data);
+            onPipelineStepRef.current?.(data as unknown as PipelineStepEvent);
+          } catch {
+            // ignore parsing error
+          }
+        });
+
+        // Named SSE events that should trigger a data refresh (leads list, pipeline view).
+        // onmessage only fires for unnamed events (no `event:` line), so these named
+        // events must each have their own addEventListener — they would be silently
+        // dropped otherwise.
+        const REFRESH_EVENTS = [
+          "tracking_view",
+          "run_complete",
+          "outreach_sent",
+          "autopilot_run",
+          "scout_complete",
+          "auditor_complete",
+          "closer_complete",
+          "reply_received",
+          "outbox_sent",
+          "message_sent",
+        ] as const;
+
+        for (const evName of REFRESH_EVENTS) {
+          es.addEventListener(evName, (event: MessageEvent) => {
+            try {
+              const data = JSON.parse(event.data);
+              const line = `[${new Date().toLocaleTimeString()}] ${evName}: ${
+                data.title || data.message || data.lead_name || evName
+              }`;
+              onLiveEventRef.current?.(line);
+              onRefreshTriggerRef.current?.();
+            } catch {
+              // ignore parsing error
+            }
+          });
+        }
+
+        // heartbeat: keep-alive — no UI action needed
+        for (const evName of OUTREACH_EVENTS) {
+          es.addEventListener(evName, (event: MessageEvent) => {
+            try {
+              onOutreachEventRef.current?.(evName, JSON.parse(event.data));
+            } catch {
+              // ignore parsing error
+            }
+          });
+        }
+
+        es.addEventListener("heartbeat", () => {});
 
         es.onerror = () => {
           if (isCancelled) return;

@@ -50,6 +50,7 @@ class Hustle(Base):
     stages = relationship("Stage", back_populates="hustle", cascade="all, delete-orphan", order_by="Stage.order")
     leads = relationship("Lead", back_populates="hustle")
     smart_views = relationship("SmartView", back_populates="hustle", cascade="all, delete-orphan")
+    terminal_logs = relationship("TerminalLog", back_populates="hustle")
 
 
 class Stage(Base):
@@ -91,6 +92,7 @@ class Lead(Base):
     email = Column(String(250), nullable=True, index=True)
     instagram_handle = Column(String(150), unique=True, nullable=True, index=True)
     preferred_channel = Column(String(50), default="whatsapp")
+    status = Column(String(50), default="STAGED", nullable=True, index=True)
     fit_score = Column(Integer, default=0)
     fit_reasons = Column(JSON, default=list)
     intent_score = Column(Integer, default=0)
@@ -105,6 +107,10 @@ class Lead(Base):
     ai_fields = Column(JSON, default=dict)
     what_changed_summary = Column(Text, default="")
     deal_value_inr = Column(Integer, default=15000)
+    automation_enabled = Column(Boolean, default=True, index=True)
+    needs_followup = Column(Boolean, default=False, index=True)
+    is_test = Column(Boolean, default=False, index=True)
+    test_run_id = Column(String(100), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), default=utcnow)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
@@ -120,6 +126,10 @@ class Lead(Base):
     )
     commitments = relationship("Commitment", back_populates="lead", cascade="all, delete-orphan")
     outbox_items = relationship("OutboxItem", back_populates="lead", cascade="all, delete-orphan")
+    calls = relationship(
+        "Call", back_populates="lead", cascade="all, delete-orphan", order_by="Call.created_at.desc()"
+    )
+    terminal_logs = relationship("TerminalLog", back_populates="lead")
 
 
 class LeadFact(Base):
@@ -176,10 +186,13 @@ class Message(Base):
     text = Column(Text, nullable=False)
     template_used = Column(String(150), default="")
     ai_label = Column(String(80), default="")
+    delivery_status = Column(String(30), default="sent", index=True)
+    outbox_id = Column(Integer, ForeignKey("outbox.id", ondelete="SET NULL"), nullable=True, index=True)
     metadata_json = Column(JSON, default=dict)
     created_at = Column(DateTime(timezone=True), default=utcnow, index=True)
 
     lead = relationship("Lead", back_populates="messages")
+    outbox_item = relationship("OutboxItem", foreign_keys=[outbox_id])
 
 
 class TrackingEvent(Base):
@@ -342,3 +355,55 @@ class ProblemReport(Base):
     context_brief = Column(JSON, default=dict)
     status = Column(String(50), default="open")
     created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class Call(Base):
+    """Table 13: calls - Raw call logs, AI-structured 5-section notes, and prep briefs."""
+
+    __tablename__ = "calls"
+
+    id = Column(Integer, primary_key=True, index=True)
+    lead_id = Column(Integer, ForeignKey("leads.id", ondelete="CASCADE"), nullable=False, index=True)
+    raw_text = Column(Text, nullable=False)
+    summary = Column(Text, default="")
+    interests = Column(JSON, default=list)
+    objections = Column(JSON, default=list)
+    commitments = Column(JSON, default=list)
+    next_steps = Column(JSON, default=list)
+    prep_brief = Column(Text, default="")
+    duration_seconds = Column(Integer, default=0)
+    outcome = Column(String(50), default="completed")
+    created_at = Column(DateTime(timezone=True), default=utcnow, index=True)
+
+    lead = relationship("Lead", back_populates="calls")
+
+
+class TerminalLog(Base):
+    """Table 14: terminal_logs - Structured logs for Discovery, Building, and Outreach terminals."""
+
+    __tablename__ = "terminal_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    service = Column(String(50), nullable=False, index=True)
+    level = Column(String(20), default="info", index=True)
+    lead_id = Column(Integer, ForeignKey("leads.id", ondelete="SET NULL"), nullable=True, index=True)
+    hustle_id = Column(Integer, ForeignKey("hustles.id", ondelete="SET NULL"), nullable=True, index=True)
+    message = Column(Text, nullable=False)
+    metadata_json = Column(JSON, default=dict)
+    created_at = Column(DateTime(timezone=True), default=utcnow, index=True)
+
+    lead = relationship("Lead", back_populates="terminal_logs")
+    hustle = relationship("Hustle", back_populates="terminal_logs")
+
+
+class AppSetting(Base):
+    """Table 15: app_settings - Durable key/value store for runtime settings (e.g. automation toggle).
+
+    Replaces in-memory globals so server restarts and --reload respect the last saved value.
+    """
+
+    __tablename__ = "app_settings"
+
+    key = Column(String(100), primary_key=True, nullable=False)
+    value = Column(Text, nullable=False, default="")
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

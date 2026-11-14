@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, X } from "lucide-react";
 
 export interface ToastProps {
   toast: { type: "ok" | "err"; text: string } | null;
@@ -20,9 +20,9 @@ export function Toast({ toast, onClose }: ToastProps) {
       <button
         onClick={onClose}
         aria-label="Dismiss notification"
-        className="ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold p-1 cursor-pointer"
+        className="ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold p-1 cursor-pointer flex items-center justify-center"
       >
-        ✕
+        <X className="w-3.5 h-3.5" />
       </button>
     </div>
   );

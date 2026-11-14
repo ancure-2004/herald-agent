@@ -1,10 +1,13 @@
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+
+IST = ZoneInfo("Asia/Kolkata")
 
 from app.models.entities import (
     AvailabilityDay,
@@ -17,9 +20,9 @@ from app.models.entities import (
     Stage,
     TrackingEvent,
 )
+# Lead and Message are used in get_today_channel_send_count for cross-path counting
 
 STOP_KEYWORDS = [
-    r"\bstop\b",
     r"\bunsubscribe\b",
     r"\bdon'?t message\b",
     r"\bdo not contact\b",
@@ -27,21 +30,59 @@ STOP_KEYWORDS = [
     r"\bremove me\b",
     r"\bnot interested\s+please\s+stop\b",
     r"\bspam\b",
+    # Hinglish opt-out phrases
+    r"\bmat\s+bhejo\b",
+    r"\bmt\s+bhejo\b",
+    r"\bband\s+karo\b",
+    r"\bbnd\s+karo\b",
+    r"\bmessage\s+mat\s+karo\b",
+    r"\bmsg\s+mat\s+karo\b",
+    r"\bbhejna\s+band\b",
 ]
+
+# Negative-context phrases containing "stop" that are NOT opt-outs
+# (e.g. "don't stop", "stop by tomorrow").
+_STOP_NEGATIVE_CONTEXT = re.compile(
+    r"don'?t\s+stop|do\s+not\s+stop|never\s+stop|stop\s+by|stop\s+over",
+    re.IGNORECASE,
+)
 
 
 def normalize_phone(raw: Optional[str]) -> Optional[str]:
-    """Normalizes Indian and international phone numbers to digits-only (+91XXXXXXXXXX)."""
+    """Normalizes Indian mobile and landline numbers to E.164 (+91XXXXXXXXXX).
+
+    Handles:
+    - 10-digit mobile  [6-9]XXXXXXXXX           → +91XXXXXXXXXX
+    - 11-digit  0 + mobile  (0[6-9]XXXXXXXXX)   → +91XXXXXXXXXX
+    - 12-digit  91XXXXXXXXXX                     → +91XXXXXXXXXX
+    - 13-digit  091XXXXXXXXXX                    → +91XXXXXXXXXX
+    - Indian STD landlines with trunk prefix 0:
+        011-XXXXXXXX (Delhi 8-digit, 11 total)   → +9111XXXXXXXX
+        0XX-XXXXXXX / 0XXX-XXXXXX (10–12 digits) → +91{digits[1:]}
+    """
     if not raw:
         return None
     digits = re.sub(r"\D", "", str(raw))
     if not digits:
         return None
+    # 10-digit mobile: [6-9]XXXXXXXXX
     if len(digits) == 10 and digits[0] in "6789":
         return f"+91{digits}"
-    if len(digits) == 11 and digits.startswith("0") and digits[1] in "6789":
+    # 11-digit: trunk-0 + 10-digit mobile (0[6-9]XXXXXXXXX)
+    if len(digits) == 11 and digits[0] == "0" and digits[1] in "6789":
         return f"+91{digits[1:]}"
+    # 12-digit: 91 + 10 digits (already country-prefixed, mobile or landline)
     if len(digits) == 12 and digits.startswith("91"):
+        return f"+{digits}"
+    # 13-digit: 091 + 10 digits (rare prefix variant)
+    if len(digits) == 13 and digits.startswith("091"):
+        return f"+91{digits[3:]}"
+    # Indian STD landlines with leading trunk-0: strip the 0 and prepend +91.
+    # Covers: 011-XXXXXXXX (Delhi, 11 digits), 044-XXXXXXX, 022-XXXXXXXX, etc.
+    if digits[0] == "0" and 9 <= len(digits) <= 12:
+        return f"+91{digits[1:]}"
+    # Already +91-prefixed without country-code digit (len >= 11 starting with 91)
+    if digits.startswith("91") and len(digits) >= 11:
         return f"+{digits}"
     return f"+{digits}"
 
@@ -120,27 +161,102 @@ def assert_active_lead_has_next_step(
 
 
 def detect_stop_intent(text: str) -> bool:
-    """Scans text for stop/unsubscribe intent keywords."""
+    """Scans text for stop/unsubscribe intent keywords.
+
+    Guards against false positives:
+    - "Don't stop by tomorrow" or "never stop" do NOT trigger DNC.
+    - Bare \\bstop\\b only fires when no negative-context phrase is present.
+    - Hinglish opt-out phrases (mat bhejo, band karo, etc.) always trigger.
+    """
     if not text:
         return False
     lowered = text.lower()
-    return any(re.search(pat, lowered) for pat in STOP_KEYWORDS)
+    # Always-opt-out keywords (never false-positive).
+    if any(re.search(pat, lowered) for pat in STOP_KEYWORDS):
+        return True
+    # Bare \bstop\b — only fire when no negative-context phrase is present.
+    if re.search(r"\bstop\b", lowered) and not _STOP_NEGATIVE_CONTEXT.search(lowered):
+        return True
+    return False
 
 
 def get_today_channel_send_count(db: Session, hustle_id: int, channel: str) -> int:
-    """Counts how many messages were marked sent today on this channel for this hustle."""
-    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    return (
+    """Counts outbound messages sent TODAY (IST midnight-to-midnight) for this hustle+channel.
+
+    Counts both OutboxItem rows (status='sent') AND direct Message rows (direction='outbound',
+    delivery_status in sent/sent_manually/queued) so the daily cap covers all send paths.
+    """
+    # IST midnight for today
+    now_ist = datetime.now(IST)
+    today_ist_start = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)
+    # Convert to UTC for DB comparison (DB stores UTC)
+    today_start_utc = today_ist_start.astimezone(timezone.utc)
+
+    outbox_count = (
         db.query(func.count(OutboxItem.id))
         .filter(
             OutboxItem.hustle_id == hustle_id,
             OutboxItem.channel == channel,
             OutboxItem.status == "sent",
-            OutboxItem.sent_at >= today_start,
+            OutboxItem.sent_at >= today_start_utc,
         )
         .scalar()
         or 0
     )
+
+    # Also count direct chat sends (not linked to an OutboxItem) so send_message path is covered
+    direct_chat_count = (
+        db.query(func.count(Message.id))
+        .join(Lead, Message.lead_id == Lead.id)
+        .filter(
+            Lead.hustle_id == hustle_id,
+            Message.channel == channel,
+            Message.direction == "outbound",
+            Message.outbox_id == None,  # noqa: E711 — only direct (non-outbox) messages
+            Message.delivery_status.in_(["sent", "sent_manually", "queued"]),
+            Message.created_at >= today_start_utc,
+        )
+        .scalar()
+        or 0
+    )
+
+    return outbox_count + direct_chat_count
+
+
+def can_send_to_lead(
+    db: Session,
+    lead: Lead,
+    hustle: Hustle,
+    channel: str,
+) -> Tuple[bool, str]:
+    """Shared pre-send guard used by BOTH pitch approval and chat send.
+
+    Returns (True, "") when the send is allowed, or (False, reason) when blocked.
+    Call this BEFORE dispatching any message to WhatsApp/external script.
+    """
+    if lead.do_not_contact or lead.is_archived:
+        reason = (
+            f"Lead '{lead.name}' is marked Do-Not-Contact "
+            f"({lead.do_not_contact_reason or 'opted out'})."
+        )
+        return False, reason
+
+    allowed = [c.lower() for c in (hustle.allowed_channels or [])]
+    if allowed and channel.lower() not in allowed:
+        return False, f"Channel '{channel}' is not enabled for hustle '{hustle.name}'. Allowed: {allowed}."
+
+    limits = hustle.channel_limits or {}
+    daily_limit = int(limits.get(channel.lower(), 0))
+    if daily_limit > 0:
+        sent_today = get_today_channel_send_count(db, hustle.id, channel)
+        if sent_today >= daily_limit:
+            return (
+                False,
+                f"Daily limit reached: hustle '{hustle.name}' allows {daily_limit} "
+                f"'{channel}' sends/day (already sent {sent_today} today in IST).",
+            )
+
+    return True, ""
 
 
 def check_outbox_safety(
@@ -159,18 +275,11 @@ def check_outbox_safety(
     """
     ch = channel.lower().strip()
 
-    if lead.do_not_contact:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Safety brake: Lead '{lead.name}' is marked Do-Not-Contact ({lead.do_not_contact_reason or 'opted out'}).",
-        )
-
-    allowed = [c.lower() for c in (hustle.allowed_channels or [])]
-    if allowed and ch not in allowed:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Safety brake: Channel '{ch}' is not enabled for hustle '{hustle.name}'. Allowed: {allowed}.",
-        )
+    # Reuse the shared can_send_to_lead guard for DNC + channel + daily-limit checks
+    allowed_to_send, block_reason = can_send_to_lead(db, lead, hustle, ch)
+    if not allowed_to_send:
+        status_code = 429 if "Daily limit" in block_reason else 403
+        raise HTTPException(status_code=status_code, detail=f"Safety brake: {block_reason}")
 
     existing_key = db.query(OutboxItem).filter(OutboxItem.unique_key == unique_key).first()
     if existing_key:
@@ -178,16 +287,6 @@ def check_outbox_safety(
             status_code=409,
             detail=f"No-double-send brake: Outbox item with unique_key '{unique_key}' already exists (status: {existing_key.status}).",
         )
-
-    limits = hustle.channel_limits or {}
-    daily_limit = int(limits.get(ch, 0))
-    if daily_limit > 0:
-        sent_today = get_today_channel_send_count(db, hustle.id, ch)
-        if sent_today >= daily_limit:
-            raise HTTPException(
-                status_code=429,
-                detail=f"Daily limit reached: Hustle '{hustle.name}' allows {daily_limit} '{ch}' sends/day (already sent {sent_today} today).",
-            )
 
 
 def compute_fit_score(
@@ -348,63 +447,72 @@ def compute_stock_plan(db: Session, hustle: Hustle) -> Dict[str, Any]:
     }
 
 
+def _make_due_at_ist(base_utc: datetime, days_offset: int, hour_ist: int = 18) -> datetime:
+    """Returns a timezone-aware UTC datetime = base_utc + days_offset days at hour_ist:00 IST."""
+    base_ist = base_utc.astimezone(IST)
+    target_ist = (base_ist + timedelta(days=days_offset)).replace(
+        hour=hour_ist, minute=0, second=0, microsecond=0
+    )
+    return target_ist.astimezone(timezone.utc)
+
+
 def parse_promises_and_snoozes(
     lead_id: int,
     text: str,
     direction: str,
     ref_time: datetime,
 ) -> List[Commitment]:
-    """Promise and snooze parser."""
+    """Promise and snooze parser. All due_at timestamps are computed in IST (item 23)."""
     proposals: List[Commitment] = []
     lowered = text.lower()
     who = "lead" if direction == "inbound" else "us"
 
+    # Ensure ref_time is timezone-aware
+    if ref_time.tzinfo is None:
+        ref_time = ref_time.replace(tzinfo=timezone.utc)
+
     if "next monday" in lowered:
-        days_ahead = (0 - ref_time.weekday() + 7) % 7 or 7
-        due = ref_time + timedelta(days=days_ahead)
+        days_ahead = (0 - ref_time.astimezone(IST).weekday() + 7) % 7 or 7
         proposals.append(
             Commitment(
                 lead_id=lead_id,
                 who_owes_it=who,
                 what="Follow up next Monday",
                 raw_phrase="next Monday",
-                due_at=due.replace(hour=18, minute=0, second=0, microsecond=0),
+                due_at=_make_due_at_ist(ref_time, days_ahead),
                 status="proposed",
             )
         )
     elif "after diwali" in lowered:
-        due = ref_time + timedelta(days=5)
         proposals.append(
             Commitment(
                 lead_id=lead_id,
                 who_owes_it="us",
                 what="Follow up after Diwali break",
                 raw_phrase="after Diwali",
-                due_at=due.replace(hour=18, minute=0, second=0, microsecond=0),
+                due_at=_make_due_at_ist(ref_time, 5),
                 status="proposed",
             )
         )
     elif "next week" in lowered:
-        due = ref_time + timedelta(days=7)
         proposals.append(
             Commitment(
                 lead_id=lead_id,
                 who_owes_it="us",
                 what="Check back next week",
                 raw_phrase="next week",
-                due_at=due.replace(hour=18, minute=0, second=0, microsecond=0),
+                due_at=_make_due_at_ist(ref_time, 7),
                 status="proposed",
             )
         )
     elif "tomorrow" in lowered or "kal" in lowered.split():
-        due = ref_time + timedelta(days=1)
         proposals.append(
             Commitment(
                 lead_id=lead_id,
                 who_owes_it=who,
                 what="Follow up tomorrow",
                 raw_phrase="tomorrow",
-                due_at=due.replace(hour=18, minute=0, second=0, microsecond=0),
+                due_at=_make_due_at_ist(ref_time, 1),
                 status="proposed",
             )
         )
@@ -412,7 +520,7 @@ def parse_promises_and_snoozes(
 
 
 def check_daily_channel_limit(db: Session, hustle: Hustle, channel: str) -> Tuple[bool, int, int]:
-    """Safety Check 1: Verifies daily outreach cap for a channel."""
+    """Safety Check 1: Verifies daily outreach cap for a channel (IST-based count)."""
     limits = hustle.channel_limits or {}
     max_allowed = int(limits.get(channel.lower(), 20))
     sent_today = get_today_channel_send_count(db, hustle.id, channel)
