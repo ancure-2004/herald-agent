@@ -237,3 +237,34 @@ export interface CopilotSuggestion {
 }
 
 export type MainTab = "dashboard" | "board" | "table" | "sprint" | "autopilot" | "settings";
+
+// Re-export cockpit types for centralized import
+export type {
+  NodeStatus,
+  PipelineStepEvent,
+  CockpitStateResponse,
+  NodeInspectionData,
+  BatchRunMetrics,
+  OutreachTelemetryState,
+  OutreachLogEntry,
+  DeliverabilityStatus,
+  VerificationDetails,
+  EnrichmentState,
+  LeadEnrichment,
+  DiscoveryLead,
+  RunStatus,
+  LogLevel,
+  TemplateId,
+  ClinicLeadRef,
+  BuildStage,
+  LogEntry,
+  PreviewConfig,
+  DemoRun,
+  BatchJob,
+  QueueItemStatus,
+  PriorityLevel,
+  QueueItem,
+  DailyCapacityMetrics,
+  MailboxAccount,
+  DispatchEngineSettings,
+} from "@/features/cockpit/types";

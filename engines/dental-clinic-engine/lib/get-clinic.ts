@@ -304,7 +304,11 @@ function defaultTemplates(clinic: Clinic): Record<TemplateType, AnyRecord> {
 }
 
 // Accepts nested or flat payloads and returns a complete, schema-ready bundle.
-function normalizeNeonPayload(row: NeonClinicPackageRow) {
+/**
+ * Normalizes both flat DB payloads and nested data/clinics/<slug>/ JSONs
+ * cleanly before Zod Schema.parse().
+ */
+export function normalizeClinicPayload(row: NeonClinicPackageRow) {
   const payload = row.clinic_payload as AnyRecord;
 
   // Nested format keeps the clinic under payload.clinic; flat format IS the clinic.
@@ -328,6 +332,17 @@ function normalizeNeonPayload(row: NeonClinicPackageRow) {
   };
 }
 
+function safeReadJson(filePath: string): AnyRecord | null {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    const text = fs.readFileSync(filePath, "utf8");
+    if (!text || text.includes("\0")) return null;
+    return JSON.parse(text) as AnyRecord;
+  } catch {
+    return null;
+  }
+}
+
 export async function getClinic<T extends TemplateType>(
   slug: string,
   template: T
@@ -335,7 +350,7 @@ export async function getClinic<T extends TemplateType>(
   // 1. First check the backend (local Postgres) for dynamic zero-redeploy clinics
   const neonPkg = await fetchClinicPackageFromNeon(slug);
   if (neonPkg && neonPkg.clinic_payload) {
-    const bundle = normalizeNeonPayload(neonPkg);
+    const bundle = normalizeClinicPayload(neonPkg);
 
     const clinic = ClinicSchema.parse(bundle.clinic);
     const claims = ClaimsFileSchema.parse(bundle.claims);
@@ -355,7 +370,7 @@ export async function getClinic<T extends TemplateType>(
     return adaptToWarm(clinic, claims, services, faqs, warmConfig) as TemplateViewModel<T>;
   }
 
-  // 2. Fallback to static disk JSON files under data/clinics/<slug>/
+  // 2. Fallback to static disk JSON files under data/clinics/<slug>/ with type-safe documented defaults
   const clinicDir = path.join(dataDirectory, slug);
 
   if (!fs.existsSync(clinicDir) || !fs.statSync(clinicDir).isDirectory()) {
@@ -363,34 +378,27 @@ export async function getClinic<T extends TemplateType>(
   }
 
   const clinicPath = path.join(clinicDir, 'clinic.json');
-  if (!fs.existsSync(clinicPath)) {
-    throw new Error(`Missing clinic.json for clinic: ${slug}`);
+  const clinicRaw = safeReadJson(clinicPath);
+  if (!clinicRaw) {
+    throw new Error(`Missing or corrupted clinic.json for clinic: ${slug}`);
   }
-  const clinicRaw = JSON.parse(fs.readFileSync(clinicPath, 'utf8'));
   const clinic = ClinicSchema.parse(clinicRaw);
 
   const claimsPath = path.join(clinicDir, 'claims.json');
-  const claimsRaw = fs.existsSync(claimsPath)
-    ? JSON.parse(fs.readFileSync(claimsPath, 'utf8'))
-    : {};
+  const claimsRaw = safeReadJson(claimsPath) ?? defaultClaims(clinic);
   const claims = ClaimsFileSchema.parse(claimsRaw);
 
   const servicesPath = path.join(clinicDir, 'services.json');
-  const servicesRaw = fs.existsSync(servicesPath)
-    ? JSON.parse(fs.readFileSync(servicesPath, 'utf8'))
-    : { services: [] };
+  const servicesRaw = safeReadJson(servicesPath) ?? defaultServices();
   const services = ServicesFileSchema.parse(servicesRaw);
 
   const faqsPath = path.join(clinicDir, 'faqs.json');
-  const faqsRaw = fs.existsSync(faqsPath)
-    ? JSON.parse(fs.readFileSync(faqsPath, 'utf8'))
-    : { faqs: [] };
+  const faqsRaw = safeReadJson(faqsPath) ?? defaultFaqs(clinic);
   const faqs = FaqsFileSchema.parse(faqsRaw);
 
+  const defaults = defaultTemplates(clinic);
   const templatePath = path.join(clinicDir, 'templates', `${template}.json`);
-  const templateRaw = fs.existsSync(templatePath)
-    ? JSON.parse(fs.readFileSync(templatePath, 'utf8'))
-    : {};
+  const templateRaw = safeReadJson(templatePath) ?? defaults[template];
 
   if (template === 'modern') {
     const modernConfig = ModernTemplateConfigSchema.parse(templateRaw);
@@ -418,7 +426,7 @@ export async function getAllClinicSlugs(): Promise<string[]> {
         if (!entry.isDirectory()) return false;
         if (entry.name === 'sample-clinic') return false;
         const clinicJson = path.join(dataDirectory, entry.name, 'clinic.json');
-        return fs.existsSync(clinicJson);
+        return safeReadJson(clinicJson) !== null;
       })
       .map((entry) => entry.name);
   } catch (error) {

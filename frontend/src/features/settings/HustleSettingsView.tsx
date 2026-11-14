@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useCRM } from "@/context/CRMContext";
-import { apiFetch } from "@/lib/api/client";
+import { settingsApi } from "@/api/settingsApi";
 
 export function HustleSettingsView() {
   const { activeHustle, notify, loadAll } = useCRM();
@@ -51,21 +51,18 @@ export function HustleSettingsView() {
       baseSteps.unshift("find_instagram");
     }
     try {
-      await apiFetch(`/api/hustles/${activeHustle.id}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          autonomy_mode: settingsAutonomy,
-          search_query: settingsQuery,
-          minimum_stock_days: Number(settingsMinDays),
-          channel_limits: {
-            whatsapp: Number(settingsWaLimit),
-            instagram: Number(settingsIgLimit),
-            email: Number(settingsEmailLimit),
-            batch_size: Number(settingsBatchSize) || 25,
-          },
-          pipeline_steps: baseSteps,
-        }),
-      });
+      await settingsApi.updateHustle(activeHustle.id, {
+        autonomy_mode: settingsAutonomy,
+        search_query: settingsQuery,
+        minimum_stock_days: Number(settingsMinDays),
+        channel_limits: {
+          whatsapp: Number(settingsWaLimit),
+          instagram: Number(settingsIgLimit),
+          email: Number(settingsEmailLimit),
+          batch_size: Number(settingsBatchSize) || 25,
+        },
+        pipeline_steps: baseSteps,
+      } as any);
       notify("Hustle blueprint & limits saved successfully!");
       loadAll();
     } catch (err) {

@@ -24,7 +24,7 @@ import {
   Eye,
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
-import { apiFetch } from "@/lib/api/client";
+import { leadsApi } from "@/api/leadsApi";
 
 export function LeadDetailModal() {
   const {
@@ -57,7 +57,7 @@ export function LeadDetailModal() {
     setRecordingInfo(null);
     if (selectedLead?.id) {
       setCheckingRecording(true);
-      apiFetch<{ has_recording: boolean; size_mb?: number }>(`/api/leads/${selectedLead.id}/recording/status`)
+      leadsApi.getRecordingStatus(selectedLead.id)
         .then((res) => setRecordingInfo(res))
         .catch(() => setRecordingInfo({ has_recording: false }))
         .finally(() => setCheckingRecording(false));

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.agents import build_cockpit_batch_payload
 from app.autopilot.config import DENTAL_RECORDER_DIR
@@ -102,14 +102,17 @@ class PipelineService:
         active_id = JobManager.get_active_run_id()
         target_id = run_id if run_id is not None else active_id
 
-        # Attempt cancellation even if target_id is None (subprocess-only or flag-only run)
-        stopped = JobManager.cancel_active_run(target_id)
+        if target_id is None and not JobManager.has_active_processes():
+            return {"status": "no_run_active", "stopped": False, "detail": "No autopilot run is currently executing"}
 
+        stopped = JobManager.cancel_active_run(target_id)
         if stopped:
             emit_terminal_log("AUTOPILOT", f"Automation stopped (run_id={target_id})")
-            return {"status": "cancelled", "stopped": True, "run_id": target_id}
+            return {"status": "cancelling", "stopped": True, "run_id": target_id}
 
-        # Nothing was running at all
+        if run_id is not None:
+            return {"status": "not_running", "stopped": False, "run_id": run_id}
+
         return {"status": "no_run_active", "stopped": False, "detail": "No autopilot run is currently executing"}
 
     @classmethod
@@ -438,6 +441,7 @@ class PipelineService:
         last_run = db.query(RunLog).filter(RunLog.hustle_id == hustle_id).order_by(RunLog.id.desc()).first()
         packages = (
             db.query(Package)
+            .options(joinedload(Package.lead))
             .join(Lead)
             .filter(Lead.hustle_id == hustle_id, (Lead.is_test == False) | Lead.is_test.is_(None))
             .order_by(Package.id.desc())

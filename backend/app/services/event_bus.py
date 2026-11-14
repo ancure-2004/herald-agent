@@ -308,3 +308,7 @@ def get_pipeline_state() -> Dict[str, Any]:
 def is_autopilot_running() -> bool:
     """Returns True if the autopilot running flag is currently set."""
     return bool(PIPELINE_STATE_BUFFER.get("is_running", False))
+
+
+# Re-export EventPublisher for centralized access
+from app.services.sse_publisher import EventPublisher  # noqa: E402

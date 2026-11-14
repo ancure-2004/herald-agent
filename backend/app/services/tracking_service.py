@@ -10,6 +10,7 @@ from app.models.entities import Lead, Stage, TrackingEvent
 from app.repositories.tracking_repo import TrackingRepository
 from app.schemas.tracking import TrackingEventCreate
 from app.services.event_bus import broadcast_sse, emit_terminal_log
+from app.services.sse_publisher import EventPublisher
 from app.utils.safety import compute_intent_score
 
 # Item 7: Debounce window for repeat "page_view" events from an open tab.
@@ -167,17 +168,14 @@ class TrackingService:
 
         # Only fire the hot-lead SSE broadcast when it's a real, non-debounced event
         if not is_bot and not is_debounced:
-            broadcast_sse(
-                "tracking_view",
-                {
-                    "lead_id": lead.id,
-                    "lead_name": lead.name,
-                    "event_type": payload.event_type,
-                    "design_chosen": payload.design_chosen,
-                    "intent_score": lead.intent_score,
-                    "is_bot": is_bot,
-                    "title": alert_title,
-                },
+            EventPublisher.publish_tracking_view(
+                lead_id=lead.id,
+                lead_name=lead.name,
+                event_type=payload.event_type,
+                design_chosen=payload.design_chosen,
+                intent_score=lead.intent_score,
+                is_bot=is_bot,
+                title=alert_title,
             )
         return {
             "status": "debounced" if is_debounced else "tracked",

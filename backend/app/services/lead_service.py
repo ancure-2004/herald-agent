@@ -22,6 +22,7 @@ from app.repositories.hustle_repo import HustleRepository
 from app.repositories.lead_repo import LeadRepository
 from app.schemas.lead import CompleteTaskRequest, LeadCreate, LeadUpdate
 from app.services.event_bus import broadcast_sse, emit_terminal_log
+from app.services.sse_publisher import EventPublisher
 from app.utils.safety import (
     assert_active_lead_has_next_step,
     assert_no_duplicate_contact,
@@ -200,7 +201,7 @@ class LeadService:
 
         db.commit()
         db.refresh(lead)
-        broadcast_sse("lead_created", {"lead_id": lead.id, "name": lead.name})
+        EventPublisher.publish_lead_created(lead.id, lead.name)
         return lead
 
     @staticmethod
@@ -264,7 +265,7 @@ class LeadService:
 
         db.commit()
         db.refresh(lead)
-        broadcast_sse("lead_updated", {"lead_id": lead.id, "stage_id": lead.stage_id})
+        EventPublisher.publish_lead_updated(lead.id, stage_id=lead.stage_id)
         return lead
 
     @staticmethod
@@ -305,7 +306,7 @@ class LeadService:
 
         db.commit()
         db.refresh(lead)
-        broadcast_sse("task_completed", {"lead_id": lead.id, "next_action": lead.next_action})
+        EventPublisher.publish_task_completed(lead.id, next_action=lead.next_action)
         return lead
 
     @staticmethod
@@ -488,37 +489,22 @@ class LeadService:
         if not lead:
             raise NotFoundError("Lead not found.")
 
-        # 1. Check Package video_file_path if it exists on disk and is valid
-        if lead.packages:
-            for pkg in reversed(lead.packages):
-                if (
-                    pkg.video_file_path
-                    and os.path.exists(pkg.video_file_path)
-                    and os.path.getsize(pkg.video_file_path) > 1000
-                ):
-                    return pkg.video_file_path
+        from app.autopilot.recording.naming import find_lead_recording_path as find_canonical_path
+        canonical = find_canonical_path(lead)
+        if canonical:
+            return canonical
 
-        # 2. Check DENTAL_RECORDER_DIR recordings
+        # Check PROJECTS_ROOT / Dental-Clinic-Clients with exact canonical file match: Clinic-{slug}.mp4
         try:
-            from app.autopilot.config import DENTAL_RECORDER_DIR, PROJECTS_ROOT
-
+            from app.autopilot.config import PROJECTS_ROOT
             clean_slug = (lead.slug or "").lower().strip()
-            canonical_name = f"Clinic-{clean_slug}"
-
-            recordings_dir = DENTAL_RECORDER_DIR / "recordings"
-            if recordings_dir.exists():
-                for ext in [".mp4", ".webm"]:
-                    for name_cand in [canonical_name, clean_slug]:
-                        p = recordings_dir / f"{name_cand}{ext}"
+            if clean_slug:
+                clients_dir = PROJECTS_ROOT / "Dental-Clinic-Clients"
+                if clients_dir.exists():
+                    exact_file = f"Clinic-{clean_slug}.mp4"
+                    for p in clients_dir.glob(f"**/{exact_file}"):
                         if p.exists() and p.stat().st_size > 1000:
                             return str(p)
-
-            # 3. Check PROJECTS_ROOT / Dental-Clinic-Clients (strictly require slug match to avoid cross-batch collision)
-            clients_dir = PROJECTS_ROOT / "Dental-Clinic-Clients"
-            if clients_dir.exists() and clean_slug:
-                for p in clients_dir.glob(f"**/*{clean_slug}*/*.mp4"):
-                    if p.exists() and p.stat().st_size > 1000:
-                        return str(p)
         except Exception:
             pass
 
@@ -552,5 +538,5 @@ class LeadService:
         db.query(LeadFact).delete()
         db.query(Lead).delete()
         db.commit()
-        broadcast_sse("leads_wiped", {"active_leads": 0})
+        EventPublisher.publish_leads_wiped()
         return {"status": "clean_slate", "remaining_leads": 0}

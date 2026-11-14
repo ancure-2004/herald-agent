@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { KanbanColumn } from "./KanbanColumn";
-import { apiFetch } from "@/lib/api/client";
+import { autopilotApi } from "@/api/autopilotApi";
 
 export function KanbanBoardView() {
   const {
@@ -70,10 +70,7 @@ export function KanbanBoardView() {
     if (!activeHustle || syncingBatches) return;
     setSyncingBatches(true);
     try {
-      await apiFetch("/api/batch/rebalance", {
-        method: "POST",
-        body: JSON.stringify({ hustle_id: activeHustle.id, force_rebatch: false }),
-      });
+      await autopilotApi.rebalanceBatches(activeHustle.id, false);
       await loadAll();
       notify("Organized unbatched leads into batches!");
     } catch (err) {

@@ -89,10 +89,13 @@ def isolated_db_and_client():
 
     app.dependency_overrides[get_db] = override_get_db
 
-    # Ensure single-flight lock is completely clean
+    # Ensure single-flight lock and active procs are completely clean
     active_id = JobManager.get_active_run_id()
     if active_id is not None:
         JobManager.release_single_flight(active_id)
+    with jm_module._MANAGER_LOCK:
+        jm_module._ACTIVE_PROCS.clear()
+        jm_module._ACTIVE_TASK_TYPE = None
 
     with TestClient(app) as test_client:
         yield {

@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { apiFetch } from "@/lib/api/client";
+import { autopilotApi } from "@/api/autopilotApi";
 import { LiveLogTerminal } from "@/components/ui/LiveLogTerminal";
 
 interface BatchInfo {
@@ -185,9 +186,7 @@ export function OutreachHubSubpage() {
   const handleRebalance = async () => {
     setRebalancing(true);
     try {
-      await apiFetch(`/api/batch/rebalance?hustle_id=${activeHustleId}&force_rebatch=true`, {
-        method: "POST",
-      });
+      await autopilotApi.rebalanceBatches(activeHustleId, true);
       notify("Leads re-batched successfully!");
       await fetchBatchMeta();
     } catch (err) {

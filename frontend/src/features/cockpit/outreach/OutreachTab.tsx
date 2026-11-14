@@ -14,7 +14,9 @@ import { RadialQuotaGauge } from "./RadialQuotaGauge";
 import { StackedCapacityBar } from "./StackedCapacityBar";
 import { SafetyControlsCard } from "./SafetyControlsCard";
 import { DispatchQueueTable } from "./DispatchQueueTable";
+import { QueueFilterBar } from "./QueueFilterBar";
 import { apiFetch } from "@/lib/api/client";
+import { autopilotApi } from "@/api/autopilotApi";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -194,7 +196,7 @@ export const OutreachTab: React.FC = () => {
 
   const handleStopWaAutomation = async () => {
     try {
-      await apiFetch<{ status?: string }>("/api/autopilot/stop", { method: "POST" });
+      await autopilotApi.stop();
       showNotification("WA Automation stopped");
     } catch {
       showNotification("Stop request sent");
@@ -287,94 +289,25 @@ export const OutreachTab: React.FC = () => {
       />
 
       {/* Queue Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs">
-          <button
-            onClick={() => setFilter("ALL")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              filter === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
-          >
-            All Items ({queue.length})
-          </button>
-
-          <button
-            onClick={() => setFilter("scheduled")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              filter === "scheduled" ? "bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-xs font-bold" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
-          >
-            Scheduled ({queue.filter((q) => q.status === "scheduled").length})
-          </button>
-
-          <button
-            onClick={() => setFilter("sending")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              filter === "sending" ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
-          >
-            Sending ({queue.filter((q) => q.status === "sending").length})
-          </button>
-
-          <button
-            onClick={() => setFilter("throttled")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              filter === "throttled" ? "bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs font-bold" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
-          >
-            Throttled ({queue.filter((q) => q.status === "throttled").length})
-          </button>
-
-          <button
-            onClick={() => setFilter("sent")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              filter === "sent" ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs font-bold" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
-          >
-            Sent ({queue.filter((q) => q.status === "sent").length})
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              syncOutreachQueueFromDb();
-              showNotification("Refreshed outreach queue from database");
-            }}
-            className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-            title="Refresh Queue from Database"
-          >
-            <RotateCcw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
-          </button>
-
-          {/* Live WA running indicator */}
-          {isWaRunning && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>WA Automation Running</span>
-            </div>
-          )}
-
-          {/* Primary WA Start / Stop action button */}
-          {isWaRunning ? (
-            <button
-              onClick={handleStopWaAutomation}
-              className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer active:scale-95"
-            >
-              <Square className="w-3.5 h-3.5 fill-white" />
-              <span>Stop WA Automation</span>
-            </button>
-          ) : (
-            <button
-              onClick={handleStartWaAutomation}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer active:scale-95"
-            >
-              <Play className="w-3.5 h-3.5 fill-white" />
-              <span>Start WA Automation</span>
-            </button>
-          )}
-        </div>
-      </div>
+      <QueueFilterBar
+        filter={filter}
+        setFilter={setFilter}
+        counts={{
+          all: queue.length,
+          scheduled: queue.filter((q) => q.status === "scheduled").length,
+          sending: queue.filter((q) => q.status === "sending").length,
+          throttled: queue.filter((q) => q.status === "throttled").length,
+          sent: queue.filter((q) => q.status === "sent").length,
+        }}
+        isSyncing={isSyncing}
+        isWaRunning={isWaRunning}
+        onRefresh={() => {
+          syncOutreachQueueFromDb();
+          showNotification("Refreshed outreach queue from database");
+        }}
+        onStartWa={handleStartWaAutomation}
+        onStopWa={handleStopWaAutomation}
+      />
 
       {/* Dispatch Queue Table: loader on first load, empty state if the DB has 0 items */}
       {!hasLoaded ? (

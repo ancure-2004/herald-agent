@@ -667,7 +667,7 @@ class MessageService:
 
     @staticmethod
     def get_lead_messages(db: Session, lead_id: int) -> List[Message]:
-        lead = LeadRepository.get_by_id(db, lead_id)
+        lead = db.query(Lead).filter(Lead.id == lead_id).first()
         if not lead:
             raise NotFoundError("Lead not found.")
         return db.query(Message).filter(Message.lead_id == lead.id).order_by(Message.created_at.asc()).all()

@@ -2,9 +2,12 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api/client";
+import { autopilotApi, leadsApi, settingsApi } from "@/api";
 import { useSSE } from "@/hooks/useSSE";
 import { useTheme } from "@/hooks/useTheme";
 import { PipelineStepEvent } from "@/features/cockpit/types";
+import { useSSEEvents } from "@/hooks/useSSEEvents";
+import { useLeadMutations } from "@/hooks/useLeadMutations";
 import {
   CopilotSuggestion,
   Hustle,
@@ -224,7 +227,6 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   // UI status
   const [loading, setLoading] = useState<boolean>(true);
   const [toast, setToast] = useState<ToastState | null>(null);
-  const [liveFeed, setLiveFeed] = useState<string[]>([]);
 
   // Sorting & Filtering
   const [sortPopoverOpen, setSortPopoverOpen] = useState<boolean>(false);
@@ -274,7 +276,6 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const [isOutreachRunning, setIsOutreachRunning] = useState<boolean>(false);
   const [activeOutreachChannel, setActiveOutreachChannel] = useState<"whatsapp" | "email" | "instagram" | null>(null);
   const [showPreviousRuns, setShowPreviousRuns] = useState<boolean>(false);
-  const [latestPipelineStep, setLatestPipelineStep] = useState<PipelineStepEvent | null>(null);
   const terminalContainerRef = useRef<HTMLDivElement | null>(null);
   const lastLogSeqRef = useRef<number>(0);
 
@@ -296,7 +297,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
 
   // Sync global automation state from backend settings on mount
   useEffect(() => {
-    apiFetch<{ automation_enabled?: boolean }>("/api/settings/automation")
+    settingsApi
+      .getAutomation()
       .then((data) => {
         if (typeof data.automation_enabled === "boolean") {
           setGlobalAutomationEnabledState(data.automation_enabled);
@@ -309,10 +311,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     const nextVal = !globalAutomationEnabled;
     setGlobalAutomationEnabledState(nextVal);
     try {
-      await apiFetch("/api/settings/automation", {
-        method: "PATCH",
-        body: JSON.stringify({ automation_enabled: nextVal }),
-      });
+      await settingsApi.updateAutomation({ automation_enabled: nextVal });
       notify(
         nextVal
           ? "Global Automation ON: Outbound messages queue for Playwright sender"
@@ -329,10 +328,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     async (enabled: boolean) => {
       setGlobalAutomationEnabledState(enabled);
       try {
-        await apiFetch("/api/settings/automation", {
-          method: "PATCH",
-          body: JSON.stringify({ automation_enabled: enabled }),
-        });
+        await settingsApi.updateAutomation({ automation_enabled: enabled });
       } catch {
         setGlobalAutomationEnabledState(!enabled);
         notify("Failed to update global automation settings", "err");
@@ -394,13 +390,15 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const loadAll = useCallback(async () => {
     try {
       const [hList, lList, sPlan, spPlan, rList] = await Promise.all([
-        apiFetch<Hustle[]>("/api/hustles"),
-        apiFetch<Lead[]>(
-          `/api/leads?hustle_id=${activeHustleId}&smart_view=${encodeURIComponent(activeSmartView)}&search=${encodeURIComponent(searchQuery)}`
-        ),
+        settingsApi.listHustles(),
+        leadsApi.list({
+          hustle_id: activeHustleId,
+          smart_view: activeSmartView,
+          search: searchQuery,
+        }),
         apiFetch<StockPlan>(`/api/stock-plan?hustle_id=${activeHustleId}`),
         apiFetch<SprintPlan>(`/api/sprint?hustle_id=${activeHustleId}`),
-        apiFetch<RunLog[]>(`/api/runs?hustle_id=${activeHustleId}`),
+        autopilotApi.listRuns(activeHustleId),
       ]);
       setHustles(hList);
       setLeads(lList);
@@ -424,7 +422,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       setCopilotSuggestions([]);
       return;
     }
-    apiFetch<CopilotSuggestion[]>(`/api/leads/${selectedLeadId}/reply-copilot`)
+    leadsApi
+      .getReplyCopilot(selectedLeadId)
       .then((suggs) => setCopilotSuggestions(suggs))
       .catch(() => setCopilotSuggestions([]));
   }, [selectedLeadId]);
@@ -445,44 +444,24 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     }
   }, [terminalLogs]);
 
-  // Wire up SSE
-  const handleTerminalLog = useCallback(
-    (line: string) => appendTerminalLines([line]),
-    [appendTerminalLines]
-  );
-  const handleLiveEvent = useCallback(
-    (line: string) => setLiveFeed((prev) => [line, ...prev].slice(0, 30)),
-    []
-  );
-  const handleRefreshTrigger = useCallback(() => {
-    loadAll();
-  }, [loadAll]);
+  const onOutreachChange = useCallback((running: boolean, channel: "whatsapp" | "email" | "instagram" | null) => {
+    setIsOutreachRunning(running);
+    setActiveOutreachChannel(channel);
+  }, []);
 
-  useSSE({
-    onTerminalLog: handleTerminalLog,
-    onLiveEvent: handleLiveEvent,
-    onRefreshTrigger: handleRefreshTrigger,
-    onPipelineStep: (step) => setLatestPipelineStep(step),
-    onOutreachEvent: (evName, data) => {
-      if (evName === "autopilot_started" && data.task === "closer") {
-        const ch = String(data.channel || "").toLowerCase();
-        setIsOutreachRunning(true);
-        setActiveOutreachChannel(ch === "whatsapp" || ch === "email" || ch === "instagram" ? ch : null);
-      } else if (evName === "autopilot_stopped" || evName === "closer_complete") {
-        setIsOutreachRunning(false);
-        setActiveOutreachChannel(null);
-      }
-    },
+  const { liveFeed, latestPipelineStep } = useSSEEvents({
+    appendTerminalLines,
+    loadAll,
+    onOutreachChange,
   });
 
   // Rehydrate running state after a reload (active_task looks like "closer_whatsapp").
   useEffect(() => {
     let cancelled = false;
-    apiFetch<{ is_running: boolean; active_task: string | null }>(
-      `/api/autopilot/cockpit-state?hustle_id=${activeHustleId}`
-    )
+    autopilotApi
+      .getCockpitState(activeHustleId)
       .then((state) => {
-        if (cancelled || !state.is_running || !state.active_task?.startsWith("closer")) return;
+        if (cancelled || !state.is_running || typeof state.active_task !== "string" || !state.active_task.startsWith("closer")) return;
         const ch = state.active_task.replace("closer_", "");
         setIsOutreachRunning(true);
         setActiveOutreachChannel(ch === "whatsapp" || ch === "email" || ch === "instagram" ? ch : null);
@@ -496,104 +475,68 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   }, [activeHustleId]);
 
   // Action Handlers
-  const handleStageChange = async (lead: Lead, newStageId: number) => {
-    if (lead.stage_id === newStageId) return;
-    setLeads((prev) =>
-      prev.map((l) => (l.id === lead.id ? { ...l, stage_id: newStageId } : l))
-    );
-    try {
-      await apiFetch(`/api/leads/${lead.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ stage_id: newStageId }),
-      });
-      notify(`Moved "${lead.name}" to next stage`);
-      loadAll();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to update stage", "err");
-      loadAll();
-    }
-  };
+  const { handleStageChange, handleApproveAndSend } = useLeadMutations({
+    setLeads,
+    loadAll,
+    notify,
+  });
 
-  const handleApproveAndSend = async (lead: Lead) => {
-    try {
-      await apiFetch(`/api/leads/${lead.id}/approve-send`, {
-        method: "POST",
-        body: JSON.stringify({
-          channel: lead.preferred_channel || "whatsapp",
-          sender_note: "Approved via CRM Review Tray",
-        }),
-      });
-      notify(`Sent demo pitch to ${lead.name} via ${lead.preferred_channel || "WhatsApp"}`);
-      loadAll();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to approve and send", "err");
-    }
-  };
-
-  const handleTriggerRefill = async (
-    batchSize: number = 3,
-    testingMode: boolean = false,
-    locality?: string
-  ) => {
-    setActiveTerminalJob("7-Step Refill Batch");
-    const modeTag = testingMode ? " [TESTING MODE: LIVE-ONLY / NO CACHE]" : "";
-    appendTerminalLines([
-      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Run Refill Batch Now' (target=${batchSize}${locality ? `, locality=${locality}` : ""})${modeTag}...`,
-    ]);
-    try {
-      notify(`Running 7-step Autopilot Refill Batch (target=${batchSize})${modeTag}...`);
-      const res = await apiFetch<{ run_id: number; message: string; trace_logs?: string[] }>(
-        "/api/autopilot/run-refill",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            hustle_id: activeHustleId,
-            batch_size: batchSize,
-            testing_mode: testingMode,
-            locality: locality,
-          }),
-          timeoutMs: 300000,
-        }
-      );
-      await syncTerminalLogs();
-      notify(`Refill completed: Run #${res.run_id} (${res.message || "Success"})`);
-      await loadAll();
-    } catch (err) {
+  const handleTriggerRefill = useCallback(
+    async (
+      batchSize: number = 3,
+      testingMode: boolean = false,
+      locality?: string
+    ) => {
+      setActiveTerminalJob("7-Step Refill Batch");
+      const modeTag = testingMode ? " [TESTING MODE: LIVE-ONLY / NO CACHE]" : "";
       appendTerminalLines([
-        `[${new Date().toLocaleTimeString()}] [ERROR] Refill failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Run Refill Batch Now' (target=${batchSize}${locality ? `, locality=${locality}` : ""})${modeTag}...`,
       ]);
-      notify(err instanceof Error ? err.message : "Failed to trigger refill", "err");
-      await loadAll();
-    } finally {
-      setActiveTerminalJob(null);
-    }
-  };
+      try {
+        notify(`Running 7-step Autopilot Refill Batch (target=${batchSize})${modeTag}...`);
+        const res = await autopilotApi.triggerRefill({
+          hustle_id: activeHustleId,
+          batch_size: batchSize,
+          testing_mode: testingMode,
+          locality: locality,
+        });
+        await syncTerminalLogs();
+        notify(`Refill completed: Run #${res.run_id} (${res.message || "Success"})`);
+        await loadAll();
+      } catch (err) {
+        appendTerminalLines([
+          `[${new Date().toLocaleTimeString()}] [ERROR] Refill failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        ]);
+        notify(err instanceof Error ? err.message : "Failed to trigger refill", "err");
+        await loadAll();
+      } finally {
+        setActiveTerminalJob(null);
+      }
+    },
+    [activeHustleId, appendTerminalLines, loadAll, notify, syncTerminalLogs]
+  );
 
-  const handleDayModeChange = async (mode: "normal" | "away" | "off") => {
-    try {
-      await apiFetch("/api/schedule/day-mode", {
-        method: "POST",
-        body: JSON.stringify({ hustle_id: activeHustleId, mode }),
-      });
-      notify(`Day mode set to ${mode.toUpperCase()}`);
-      loadAll();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to change day mode", "err");
-    }
-  };
+  const handleDayModeChange = useCallback(
+    async (mode: "normal" | "away" | "off") => {
+      try {
+        await settingsApi.setDayMode(mode, activeHustleId);
+        notify(`Day mode set to ${mode.toUpperCase()}`);
+        loadAll();
+      } catch (err) {
+        notify(err instanceof Error ? err.message : "Failed to change day mode", "err");
+      }
+    },
+    [activeHustleId, loadAll, notify]
+  );
 
-  const handleSyncBatchLinks = async () => {
+  const handleSyncBatchLinks = useCallback(async () => {
     setActiveTerminalJob("Verify Links & Sync batch.json");
     appendTerminalLines([
       `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered 'Verify Links & Sync batch.json'...`,
     ]);
     try {
       notify("Verifying HTTP 200 on all 4 client routes...");
-      const res = await apiFetch<{ verified: number; total: number }>("/api/packages/sync-batch-json", {
-        method: "POST",
-        body: JSON.stringify({ hustle_id: activeHustleId }),
-        timeoutMs: 300000,
-      });
+      const res = await autopilotApi.syncBatchLinks(activeHustleId);
       await syncTerminalLogs();
       notify(`Self-check passed: ${res.verified}/${res.total} templates verified live & synced`);
       loadAll();
@@ -605,22 +548,19 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setActiveTerminalJob(null);
     }
-  };
+  }, [activeHustleId, appendTerminalLines, loadAll, notify, syncTerminalLogs]);
 
-  const handleRunScout = async () => {
+  const handleRunScout = useCallback(async () => {
     setActiveTerminalJob("1. Scout Agent");
     appendTerminalLines([
       `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '1. Scout Agent' (Discovery + IG/Email Enrichment)...`,
     ]);
     try {
       notify("Scout Agent running: Discovering no-website clinics & enriching IG/Email dossiers...");
-      const res = await apiFetch<{ discovered_new: number; enriched_leads: number; trace_logs: string[] }>(
-        "/api/agents/scout/run",
-        {
-          method: "POST",
-          body: JSON.stringify({ hustle_id: activeHustleId, batch_size: 2 }),
-        }
-      );
+      const res = await autopilotApi.runScoutAgent({
+        hustle_id: activeHustleId,
+        batch_size: 2,
+      });
       await syncTerminalLogs();
       notify(`Scout complete: ${res.discovered_new} new clinics built, ${res.enriched_leads} dossiers enriched!`);
       loadAll();
@@ -632,200 +572,206 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setActiveTerminalJob(null);
     }
-  };
+  }, [activeHustleId, appendTerminalLines, loadAll, notify, syncTerminalLogs]);
 
-  const handleRunAuditor = async (recordVideo: boolean = false) => {
-    setActiveTerminalJob(recordVideo ? "2. Auditor Agent (QA + Record MP4)" : "2. Auditor Agent (HTTP 200 + Link MP4)");
-    appendTerminalLines([
-      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '2. Auditor Agent' (${recordVideo ? "HTTP 200 Check + Playwright MP4 Recording" : "HTTP 200 Audit + Link MP4s"})...`,
-    ]);
-    try {
-      notify(
-        recordVideo
-          ? "Auditor Agent running: Verifying HTTP 200 + recording MP4 walkthrough..."
-          : "Auditor Agent running: Auditing all 4 routes & attaching MP4 videos..."
-      );
-      const res = await apiFetch<{
-        verified_links_count: number;
-        attached_videos_count: number;
-        video_files: string[];
-        recorder_log: string;
-      }>("/api/agents/auditor/run", {
-        method: "POST",
-        body: JSON.stringify({ hustle_id: activeHustleId, record_video: recordVideo }),
-      });
-      await syncTerminalLogs();
-      notify(`Auditor complete: ${res.verified_links_count} verified & ${res.attached_videos_count} MP4s linked!`);
-      loadAll();
-    } catch (err) {
+  const handleRunAuditor = useCallback(
+    async (recordVideo: boolean = false) => {
+      setActiveTerminalJob(recordVideo ? "2. Auditor Agent (QA + Record MP4)" : "2. Auditor Agent (HTTP 200 + Link MP4)");
       appendTerminalLines([
-        `[${new Date().toLocaleTimeString()}] [ERROR] Auditor Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '2. Auditor Agent' (${recordVideo ? "HTTP 200 Check + Playwright MP4 Recording" : "HTTP 200 Audit + Link MP4s"})...`,
       ]);
-      notify(err instanceof Error ? err.message : "Auditor Agent failed", "err");
-    } finally {
-      setActiveTerminalJob(null);
-    }
-  };
-
-  const handleRunCloser = async (channel: "whatsapp" | "instagram" | "email", dryRun: boolean = true, clinicId?: number, batchId?: string) => {
-    setIsOutreachRunning(true);
-    setActiveOutreachChannel(channel);
-    setActiveTerminalJob(`3. Closer Agent (${channel.toUpperCase()} • ${dryRun ? "Dry-Run" : "LIVE"})`);
-    appendTerminalLines([
-      `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '3. Closer Agent' (${channel.toUpperCase()} • ${dryRun ? "Dry-Run Safe Test" : "LIVE"})...`,
-    ]);
-    try {
-      notify(`Closer Agent dispatching (${channel.toUpperCase()} • ${dryRun ? "Dry-Run Safe Test" : "LIVE"})...`);
-      const res = await apiFetch<{
-        channel: string;
-        dry_run: boolean;
-        drafted_hot_followups: number;
-        dispatch_log: string;
-      }>("/api/agents/closer/run", {
-        method: "POST",
-        timeoutMs: 3600000,
-        body: JSON.stringify({
+      try {
+        notify(
+          recordVideo
+            ? "Auditor Agent running: Verifying HTTP 200 + recording MP4 walkthrough..."
+            : "Auditor Agent running: Auditing all 4 routes & attaching MP4 videos..."
+        );
+        const res = await autopilotApi.runAuditorAgent({
           hustle_id: activeHustleId,
-          channel,
+          record_video: recordVideo,
+        });
+        await syncTerminalLogs();
+        notify(
+          `Auditor complete: ${res.verified_links_count} links verified, ${res.attached_videos_count} MP4 videos linked/recorded!`
+        );
+        loadAll();
+      } catch (err) {
+        appendTerminalLines([
+          `[${new Date().toLocaleTimeString()}] [ERROR] Auditor Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        ]);
+        notify(err instanceof Error ? err.message : "Auditor Agent failed", "err");
+      } finally {
+        setActiveTerminalJob(null);
+      }
+    },
+    [activeHustleId, appendTerminalLines, loadAll, notify, syncTerminalLogs]
+  );
+
+  const handleRunCloser = useCallback(
+    async (
+      channel: "whatsapp" | "instagram" | "email" = "whatsapp",
+      dryRun: boolean = false,
+      clinicId?: number,
+      batchId?: string
+    ) => {
+      setActiveTerminalJob(`3. Closer Agent (${channel.toUpperCase()}${dryRun ? " DRY RUN" : ""})`);
+      setIsOutreachRunning(true);
+      setActiveOutreachChannel(channel);
+      appendTerminalLines([
+        `[${new Date().toLocaleTimeString()}] [UI] >>> Triggered '3. Closer Agent' (Channel=${channel}, DryRun=${dryRun}${clinicId ? `, ClinicID=${clinicId}` : ""}${batchId ? `, BatchID=${batchId}` : ""})...`,
+      ]);
+      try {
+        notify(`Closer Agent running (${channel.toUpperCase()})...`);
+        const res = await autopilotApi.runCloserAgent({
+          hustle_id: activeHustleId,
+          channel: channel,
           dry_run: dryRun,
           ...(clinicId != null ? { clinic_id: clinicId } : {}),
           ...(batchId ? { batch_id: batchId } : {}),
-        }),
-      });
-      await syncTerminalLogs();
-      notify(
-        `Closer (${channel.toUpperCase()}) finished & drafted ${res.drafted_hot_followups} hot-viewer follow-ups!`
-      );
-      loadAll();
-    } catch (err) {
-      const isTimeoutOrAbort =
-        err instanceof Error &&
-        (err.message.includes("timed out") || err.message.includes("aborted"));
-      appendTerminalLines([
-        `[${new Date().toLocaleTimeString()}] [ERROR] Closer Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
-      ]);
-      // If the fetch timed out / was aborted, the backend subprocess may still be running
-      // during a WhatsApp pacing delay. Skip the error toast — SSE autopilot_stopped /
-      // closer_complete events will reset state once the subprocess actually finishes.
-      if (!isTimeoutOrAbort) {
-        notify(err instanceof Error ? err.message : "Closer Agent failed", "err");
-      }
-    } finally {
-      setActiveTerminalJob(null);
-      // Guard: only reset outreach flags if the backend subprocess is actually done.
-      // During a 183s WhatsApp pacing delay the process is still running even though
-      // the HTTP request may have timed out or been aborted on the frontend.
-      try {
-        const state = await apiFetch<{ is_running: boolean }>(
-          `/api/autopilot/cockpit-state?hustle_id=${activeHustleId}`
+        });
+        await syncTerminalLogs();
+        notify(
+          `Closer (${channel.toUpperCase()}) finished & drafted ${res.drafted_hot_followups} hot-viewer follow-ups!`
         );
-        if (!state.is_running) {
+        loadAll();
+      } catch (err) {
+        const isTimeoutOrAbort =
+          err instanceof Error &&
+          (err.message.includes("timed out") || err.message.includes("aborted"));
+        appendTerminalLines([
+          `[${new Date().toLocaleTimeString()}] [ERROR] Closer Agent failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        ]);
+        // If the fetch timed out / was aborted, the backend subprocess may still be running
+        // during a WhatsApp pacing delay. Skip the error toast — SSE autopilot_stopped /
+        // closer_complete events will reset state once the subprocess actually finishes.
+        if (!isTimeoutOrAbort) {
+          notify(err instanceof Error ? err.message : "Closer Agent failed", "err");
+        }
+      } finally {
+        setActiveTerminalJob(null);
+        // Guard: only reset outreach flags if the backend subprocess is actually done.
+        // During a 183s WhatsApp pacing delay the process is still running even though
+        // the HTTP request may have timed out or been aborted on the frontend.
+        try {
+          const state = await autopilotApi.getCockpitState(activeHustleId);
+          if (!state.is_running) {
+            setIsOutreachRunning(false);
+            setActiveOutreachChannel(null);
+          }
+          // If still running, leave flags set. SSE autopilot_stopped / closer_complete
+          // events (wired in useSSE above) will clear them when the process ends.
+        } catch {
+          // cockpit-state check failed — reset safely so the UI is never permanently stuck.
           setIsOutreachRunning(false);
           setActiveOutreachChannel(null);
         }
-        // If still running, leave flags set. SSE autopilot_stopped / closer_complete
-        // events (wired in useSSE above) will clear them when the process ends.
-      } catch {
-        // cockpit-state check failed — reset safely so the UI is never permanently stuck.
-        setIsOutreachRunning(false);
-        setActiveOutreachChannel(null);
       }
-    }
-  };
+    },
+    [activeHustleId, appendTerminalLines, loadAll, notify, syncTerminalLogs]
+  );
 
-  const handleStopAutomation = async () => {
+  const handleStopAutomation = useCallback(async () => {
     try {
-      await apiFetch("/api/autopilot/stop", { method: "POST" });
+      await autopilotApi.stop();
       setIsOutreachRunning(false);
       setActiveOutreachChannel(null);
       notify("Outreach automation stopped");
     } catch (err) {
       notify(err instanceof Error ? err.message : "Failed to stop outreach automation", "err");
     }
-  };
+  }, [notify]);
 
-  const handleConfirmCommitment = async (commitmentId: number) => {
-    try {
-      await apiFetch(`/api/commitments/${commitmentId}/confirm`, {
-        method: "POST",
-      });
-      notify("1-Tap Commitment confirmed & scheduled on calendar!");
-      loadAll();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to confirm commitment", "err");
-    }
-  };
-
-  const handleAskDoSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!assistantPrompt.trim()) return;
-    setAssistantLoading(true);
-    const currentPrompt = assistantPrompt.trim();
-    try {
-      const res = await apiFetch<{
-        mode: string;
-        action_taken: string;
-        reply: string;
-        matched_leads: Array<{
-          id: number;
-          name: string;
-          doctor: string;
-          locality: string;
-          stage_id: number;
-          fit_score: number;
-          intent_score: number;
-          phone: string | null;
-        }>;
-        undo_available: boolean;
-        undo_id: string | null;
-      }>("/api/assistant/ask-do", {
-        method: "POST",
-        body: JSON.stringify({
-          prompt: currentPrompt,
-          hustle_id: activeHustleId,
-          mode: assistantMode,
-        }),
-      });
-      setAssistantHistory((prev) => [
-        {
-          id: `${Date.now()}`,
-          mode: res.mode,
-          prompt: currentPrompt,
-          reply: res.reply,
-          matched_leads: res.matched_leads || [],
-          undo_available: res.undo_available,
-          undo_id: res.undo_id,
-        },
-        ...prev,
-      ]);
-      setAssistantPrompt("");
-      if (res.mode === "do") {
+  const handleConfirmCommitment = useCallback(
+    async (commitmentId: number) => {
+      try {
+        await apiFetch(`/api/commitments/${commitmentId}/confirm`, {
+          method: "POST",
+        });
+        notify("1-Tap Commitment confirmed & scheduled on calendar!");
         loadAll();
+      } catch (err) {
+        notify(err instanceof Error ? err.message : "Failed to confirm commitment", "err");
       }
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Assistant request failed", "err");
-    } finally {
-      setAssistantLoading(false);
-    }
-  };
+    },
+    [loadAll, notify]
+  );
 
-  const handleAssistantUndo = async (undoId: string | null, entryId: string) => {
-    try {
-      const res = await apiFetch<{ ok: boolean; message: string }>("/api/assistant/undo", {
-        method: "POST",
-        body: JSON.stringify({ undo_id: undoId }),
-      });
-      notify(res.message || "Action undone!");
-      setAssistantHistory((prev) =>
-        prev.map((item) => (item.id === entryId ? { ...item, undone: true, undo_available: false } : item))
-      );
-      loadAll();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to undo action", "err");
-    }
-  };
+  const handleAskDoSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!assistantPrompt.trim()) return;
+      setAssistantLoading(true);
+      const currentPrompt = assistantPrompt.trim();
+      try {
+        const res = await apiFetch<{
+          mode: string;
+          action_taken: string;
+          reply: string;
+          matched_leads: Array<{
+            id: number;
+            name: string;
+            doctor: string;
+            locality: string;
+            stage_id: number;
+            fit_score: number;
+            intent_score: number;
+            phone: string | null;
+          }>;
+          undo_available: boolean;
+          undo_id: string | null;
+        }>("/api/assistant/ask-do", {
+          method: "POST",
+          body: JSON.stringify({
+            prompt: currentPrompt,
+            hustle_id: activeHustleId,
+            mode: assistantMode,
+          }),
+        });
+        setAssistantHistory((prev) => [
+          {
+            id: `${Date.now()}`,
+            mode: res.mode,
+            prompt: currentPrompt,
+            reply: res.reply,
+            matched_leads: res.matched_leads || [],
+            undo_available: res.undo_available,
+            undo_id: res.undo_id,
+          },
+          ...prev,
+        ]);
+        setAssistantPrompt("");
+        if (res.mode === "do") {
+          loadAll();
+        }
+      } catch (err) {
+        notify(err instanceof Error ? err.message : "Assistant request failed", "err");
+      } finally {
+        setAssistantLoading(false);
+      }
+    },
+    [activeHustleId, assistantMode, assistantPrompt, loadAll, notify]
+  );
 
-  const value = {
+  const handleAssistantUndo = useCallback(
+    async (undoId: string | null, entryId: string) => {
+      try {
+        const res = await apiFetch<{ ok: boolean; message: string }>("/api/assistant/undo", {
+          method: "POST",
+          body: JSON.stringify({ undo_id: undoId }),
+        });
+        notify(res.message || "Action undone!");
+        setAssistantHistory((prev) =>
+          prev.map((item) => (item.id === entryId ? { ...item, undone: true, undo_available: false } : item))
+        );
+        loadAll();
+      } catch (err) {
+        notify(err instanceof Error ? err.message : "Failed to undo action", "err");
+      }
+    },
+    [loadAll, notify]
+  );
+
+  const value = useMemo(() => ({
     activeTab,
     setActiveTab,
     surface,
@@ -936,7 +882,82 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     isOutreachRunning,
     activeOutreachChannel,
     handleConfirmCommitment,
-  };
+  }), [
+    activeTab,
+    setActiveTab,
+    surface,
+    cockpitTab,
+    globalAutomationEnabled,
+    toggleGlobalAutomation,
+    setGlobalAutomationEnabled,
+    activeSmartView,
+    searchQuery,
+    sidebarCollapsed,
+    pipelineBoardExpanded,
+    isDarkMode,
+    toggleDarkMode,
+    hustles,
+    activeHustleId,
+    activeHustle,
+    leads,
+    selectedLeadId,
+    selectedLead,
+    stockPlan,
+    sprintPlan,
+    runs,
+    copilotSuggestions,
+    bufferHealthPct,
+    loading,
+    toast,
+    notify,
+    closeToast,
+    liveFeed,
+    terminalLogs,
+    activeTerminalJob,
+    showPreviousRuns,
+    latestPipelineStep,
+    sortBy,
+    sortOrder,
+    filterMinFit,
+    filterVerifiedOnly,
+    dashScheduleFilter,
+    sortPopoverOpen,
+    filterPopoverOpen,
+    draggingLeadId,
+    dragOverStageId,
+    cmdKOpen,
+    cmdSearchQuery,
+    newLeadModalOpen,
+    problemModalOpen,
+    logCallModalOpen,
+    logCallLeadId,
+    openLogCallModal,
+    logReplyModalOpen,
+    logReplyLeadId,
+    openLogReplyModal,
+    activeInboxLeadId,
+    openInboxForLead,
+    assistantOpen,
+    assistantMode,
+    assistantPrompt,
+    assistantLoading,
+    assistantHistory,
+    handleAskDoSubmit,
+    handleAssistantUndo,
+    loadAll,
+    handleStageChange,
+    handleApproveAndSend,
+    handleTriggerRefill,
+    handleDayModeChange,
+    handleSyncBatchLinks,
+    handleRunScout,
+    handleRunAuditor,
+    handleRunCloser,
+    handleStopAutomation,
+    isOutreachRunning,
+    activeOutreachChannel,
+    handleConfirmCommitment,
+  ]);
 
   return <CRMContext.Provider value={value}>{children}</CRMContext.Provider>;
 }

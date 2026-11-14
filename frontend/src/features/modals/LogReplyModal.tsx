@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { MessageSquare, Calendar, X, Clock, Send, Sparkles, CheckCircle2 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
-import { apiFetch } from "@/lib/api/client";
+import { messagesApi } from "@/api/messagesApi";
 
 export function LogReplyModal() {
   const {
@@ -53,10 +53,7 @@ export function LogReplyModal() {
         payload.created_at = new Date(timestamp).toISOString();
       }
 
-      const res = await apiFetch<any>(`/api/leads/${activeLead.id}/messages/log-reply`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
+      const res = await messagesApi.logReply(activeLead.id, payload as any);
 
       notify(
         `Reply logged for ${activeLead.name}! Stage updated, follow-up cleared.`,

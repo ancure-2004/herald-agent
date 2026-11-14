@@ -167,6 +167,14 @@ def test_whatsapp_send_phone_normalization_variants(challenger_client):
     """Stress tests wa.me URL generation across various phone number formatting styles."""
     client, SessionLocal = challenger_client
 
+    # Raise daily WhatsApp limit for the hustle in this fixture so seeded messages do not trigger HTTP 429
+    db_setup = SessionLocal()
+    hustle = db_setup.query(Hustle).first()
+    if hustle:
+        hustle.channel_limits = {"whatsapp": 100, "sms": 50, "email": 100}
+        db_setup.commit()
+    db_setup.close()
+
     test_cases = [
         ("9811122233", "https://wa.me/919811122233"),
         ("+91 98111 22233", "https://wa.me/919811122233"),

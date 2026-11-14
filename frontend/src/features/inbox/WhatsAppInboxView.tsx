@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { apiFetch } from "@/lib/api/client";
+import { messagesApi } from "@/api/messagesApi";
 import { Lead, Message } from "@/types";
 
 interface ReplySuggestion {
@@ -95,9 +96,7 @@ export function WhatsAppInboxView() {
   const fetchSuggestions = async (leadId: number) => {
     setLoadingSuggestions(true);
     try {
-      const res = await apiFetch<{ lead_id: number; suggestions: ReplySuggestion[] }>(
-        `/api/leads/${leadId}/reply-suggestions`
-      );
+      const res = await messagesApi.getReplySuggestions(leadId);
       if (res.suggestions && res.suggestions.length > 0) {
         setAiSuggestions(res.suggestions);
       } else {
@@ -165,14 +164,7 @@ export function WhatsAppInboxView() {
         automation: localAutomation,
       };
 
-      const res = await apiFetch<{
-        status: string;
-        wa_url?: string;
-        delivery_status: string;
-      }>(`/api/leads/${activeLead.id}/messages/send`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
+      const res = await messagesApi.send(activeLead.id, payload);
 
       if (!localAutomation && res.wa_url) {
         // Open wa.me URL directly in a new tab

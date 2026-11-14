@@ -1,3 +1,4 @@
+from app.utils.safety import normalize_phone
 """
 Phase 3 Specialized Sub-Agents & Outreach Bridge (`agents.py`)
 --------------------------------------------------------------
@@ -36,18 +37,9 @@ RECORDINGS_DIR = BATCH_RECORDER_DIR / "recordings"
 
 
 def find_lead_recording_path(lead: "Lead") -> Optional[str]:  # noqa: F821
-    """Returns the canonical Clinic-{slug}.mp4 recording path for a lead, or None.
-
-    Only searches for the slug-based filename (``Clinic-{lead.slug}.mp4``).  The
-    numeric ``Clinic-{lead.id}.mp4`` fallback is intentionally omitted so that
-    the wrong clinic's video is never sent when a slug is present.
-    """
-    if not getattr(lead, "slug", None):
-        return None
-    slug_mp4 = RECORDINGS_DIR / f"Clinic-{lead.slug}.mp4"
-    if slug_mp4.exists():
-        return str(slug_mp4)
-    return None
+    """Returns the canonical Clinic-{slug}.mp4 recording path for a lead via centralized naming adapter."""
+    from app.autopilot.recording.naming import find_lead_recording_path as find_canonical_path
+    return find_canonical_path(lead, recordings_dir=RECORDINGS_DIR)
 
 
 def call_gemini_flash_free(prompt: str) -> Optional[str]:
@@ -332,29 +324,10 @@ def run_auditor_agent(
         lead = pkg.lead
         if not lead:
             continue
-        candidates = [
-            RECORDINGS_DIR / f"Clinic-{lead.id}-{lead.slug}.mp4",
-            RECORDINGS_DIR / f"Clinic-{lead.id}.mp4",
-            RECORDINGS_DIR / f"Clinic-{lead.id:02d}.mp4",
-            RECORDINGS_DIR / f"Clinic-{lead.id:03d}.mp4",
-        ]
-        found_mp4: Optional[Path] = None
-        for cand in candidates:
-            if cand.exists():
-                found_mp4 = cand
-                break
-
-        # If no dedicated Clinic-{id}.mp4 yet, link the canonical Clinic-{id}.mp4 symlink from existing sample if available
-        if not found_mp4:
-            sample_mp4s = sorted(RECORDINGS_DIR.glob("Clinic-*.mp4"))
-            if sample_mp4s:
-                target_symlink = RECORDINGS_DIR / f"Clinic-{lead.id}.mp4"
-                try:
-                    if not target_symlink.exists():
-                        shutil.copy2(sample_mp4s[0], target_symlink)
-                    found_mp4 = target_symlink
-                except Exception:
-                    found_mp4 = sample_mp4s[0]
+        # Strictly lookup canonical Clinic-{slug}.mp4 only (never numeric id or cross-clinic samples)
+        from app.autopilot.recording.naming import find_lead_recording_path as find_canonical_path
+        canonical_p = find_canonical_path(lead, recordings_dir=RECORDINGS_DIR)
+        found_mp4: Optional[Path] = Path(canonical_p) if canonical_p else None
 
         if found_mp4 and found_mp4.exists():
             size_mb = round(found_mp4.stat().st_size / (1024 * 1024), 2)
@@ -698,9 +671,9 @@ def build_cockpit_batch_payload(db: Session, hustle_id: int = 1, batch_id: Optio
                 "doctor": l.doctor_name or "Doctor",
                 "locality": l.locality,
                 "city": l.city,
-                "primary_phone": l.primary_phone or "",
-                "phone": l.primary_phone or "",
-                "phones": l.phones or ([l.primary_phone] if l.primary_phone else []),
+                "primary_phone": normalize_phone(l.primary_phone) or "",
+                "phone": normalize_phone(l.primary_phone) or "",
+                "phones": [normalize_phone(p) for p in (l.phones or ([l.primary_phone] if l.primary_phone else [])) if normalize_phone(p)],
                 "ig_handle": l.instagram_handle or "",
                 "ig_verified": True,
                 "email": l.email or "",

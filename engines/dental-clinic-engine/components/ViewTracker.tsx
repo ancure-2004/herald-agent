@@ -1,17 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { isRecorderUrl, sendTrackingBeacon } from "@/lib/tracking";
 
 interface ViewTrackerProps {
   slug: string;
   design: "modern" | "premium" | "warm" | "switcher";
 }
 
-/** Returns true when the current page URL contains ?recorder=1 (walkthrough recorder mode). */
-function isRecorderSession(): boolean {
-  if (typeof window === "undefined") return false;
-  return new URLSearchParams(window.location.search).get("recorder") === "1";
-}
+export { isRecorderUrl };
 
 export async function sendDemoEvent(
   slug: string,
@@ -20,27 +17,13 @@ export async function sendDemoEvent(
   designChosen: string = "",
   durationSeconds: number = 0
 ) {
-  // Never record analytics when the walkthrough recorder is driving the browser.
-  // This prevents fake views / inflated intent scores from automated recordings.
-  if (isRecorderSession()) return;
-
-  try {
-    await fetch("/api/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        slug,
-        event_type: eventType,
-        section,
-        design_chosen: designChosen,
-        duration_seconds: durationSeconds,
-        is_recorder: false,
-      }),
-      keepalive: true,
-    });
-  } catch {
-    // non-blocking telemetry
-  }
+  return sendTrackingBeacon({
+    slug,
+    eventType,
+    section,
+    designChosen,
+    durationSeconds,
+  });
 }
 
 export default function ViewTracker({ slug, design }: ViewTrackerProps) {

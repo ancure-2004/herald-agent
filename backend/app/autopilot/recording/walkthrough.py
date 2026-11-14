@@ -129,39 +129,29 @@ def record_walkthrough_batch(
                     exp_p.write_bytes(b"MOCK_MP4_VIDEO_CONTENT_" + b"0" * 1024)
         elif recorder_script.exists():
             cmd = ["node", str(recorder_script), str(temp_batch_file)]
+            from app.autopilot.adapters.recorder import managed_recorder_process, default_recorder
             try:
-                proc = subprocess.Popen(
-                    cmd,
-                    cwd=str(DENTAL_RECORDER_DIR),
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    text=True,
-                )
+                with managed_recorder_process(cmd, cwd=DENTAL_RECORDER_DIR, timeout_seconds=timeout_per_clinic * len(to_record)) as proc:
+                    def _reader():
+                        if proc.stdout:
+                            for line in iter(proc.stdout.readline, ""):
+                                clean_l = line.strip()
+                                if clean_l:
+                                    _emit(f"{TAG_VIDEO} {clean_l}")
 
-                def _reader():
-                    if proc.stdout:
-                        for line in iter(proc.stdout.readline, ""):
-                            clean_l = line.strip()
-                            if clean_l:
-                                _emit(f"{TAG_VIDEO} {clean_l}")
+                    t = threading.Thread(target=_reader, daemon=True)
+                    t.start()
 
-                t = threading.Thread(target=_reader, daemon=True)
-                t.start()
-
-                deadline = time.time() + (timeout_per_clinic * len(to_record))
-                while proc.poll() is None:
-                    if time.time() > deadline:
-                        _emit(f"{TAG_ERROR} Recorder subprocess timed out! Terminating...")
-                        proc.terminate()
-                        try:
-                            proc.wait(timeout=5)
-                        except subprocess.TimeoutExpired:
-                            proc.kill()
-                        break
-                    time.sleep(0.5)
-
+                    deadline = time.time() + (timeout_per_clinic * len(to_record))
+                    while proc.poll() is None:
+                        if time.time() > deadline:
+                            _emit(f"{TAG_ERROR} Recorder subprocess timed out! Terminating...")
+                            break
+                        time.sleep(0.5)
             except Exception as e:
                 _emit(f"{TAG_ERROR} Recorder process error: {e}")
+            finally:
+                default_recorder.cleanup_corrupted_recordings()
         else:
             _emit(f"{TAG_VIDEO} record-batch.mjs not found; creating mock recording marker.")
             for item in to_record:

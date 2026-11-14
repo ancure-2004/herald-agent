@@ -33,22 +33,38 @@ export interface NeonClinicPackageRow {
   expires_at: string | null;
 }
 
+/**
+ * Fetches the raw clinic package from the local FastAPI backend with timeout and error handling.
+ */
 export async function fetchClinicPackageFromNeon(
-  slug: string
+  slug: string,
+  timeoutMs: number = 4000
 ): Promise<NeonClinicPackageRow | null> {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
     const res = await fetch(
       `${BACKEND_API_URL}/api/v1/public/clinic/${encodeURIComponent(slug)}`,
-      { cache: "no-store" }
+      {
+        cache: "no-store",
+        signal: controller.signal,
+      }
     );
+    clearTimeout(timeout);
+
     if (!res.ok) return null;
     const row = (await res.json()) as NeonClinicPackageRow;
     if (typeof row.clinic_payload === "string") {
-      row.clinic_payload = JSON.parse(row.clinic_payload);
+      try {
+        row.clinic_payload = JSON.parse(row.clinic_payload);
+      } catch {
+        return null;
+      }
     }
     return row;
   } catch (err) {
-    console.error("Failed to fetch clinic package from backend:", err);
+    // Timeout or connection refused (backend offline) gracefully handled so caller falls back
     return null;
   }
 }
