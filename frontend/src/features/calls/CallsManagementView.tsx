@@ -20,10 +20,21 @@ import {
   Search,
   User,
   X,
+  PanelRightOpen,
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { apiFetch } from "@/lib/api/client";
 import { Lead } from "@/types";
+import { LeadDetailContent } from "@/features/modals/LeadDetailModal";
+
+const formatDoctorName = (name?: string | null): string => {
+  if (!name || !name.trim()) return "Doctor";
+  const trimmed = name.trim();
+  if (/^dr\.?\s+/i.test(trimmed)) {
+    return trimmed;
+  }
+  return `Dr. ${trimmed}`;
+};
 
 interface StructuredCall {
   id: number;
@@ -52,6 +63,8 @@ export function CallsManagementView() {
   const {
     leads,
     selectedLeadId,
+    sidebarCollapsed,
+    setSidebarCollapsed,
     // Note: setSelectedLeadId intentionally NOT called when switching clinics
     // inside CallsManagementView to avoid opening the global LeadDetailModal.
     openLogCallModal,
@@ -60,7 +73,40 @@ export function CallsManagementView() {
   } = useCRM();
 
   // ---------------------------------------------------------------------------
-  // Local clinic selection — does NOT touch the global selectedLeadId so the
+  // Side-by-side docked Lead Card & sidebar auto-collapse tracking
+  // ---------------------------------------------------------------------------
+  const [isLeadCardDocked, setIsLeadCardDocked] = useState<boolean>(false);
+  const prevSidebarCollapsedRef = useRef<boolean | null>(null);
+
+  const handleToggleDockedLeadCard = () => {
+    if (!isLeadCardDocked) {
+      prevSidebarCollapsedRef.current = sidebarCollapsed;
+      setSidebarCollapsed(true);
+      setIsLeadCardDocked(true);
+    } else {
+      handleCloseDockedLeadCard();
+    }
+  };
+
+  const handleCloseDockedLeadCard = () => {
+    setIsLeadCardDocked(false);
+    if (prevSidebarCollapsedRef.current !== null) {
+      setSidebarCollapsed(prevSidebarCollapsedRef.current);
+      prevSidebarCollapsedRef.current = null;
+    }
+  };
+
+  // Restore sidebar state if unmounted while docked Lead Card is open
+  useEffect(() => {
+    return () => {
+      if (prevSidebarCollapsedRef.current !== null) {
+        setSidebarCollapsed(prevSidebarCollapsedRef.current);
+      }
+    };
+  }, [setSidebarCollapsed]);
+
+  // ---------------------------------------------------------------------------
+  // Local clinic selection - does NOT touch the global selectedLeadId so the
   // LeadDetailModal stays closed while the user works inside this view.
   // ---------------------------------------------------------------------------
   const [activeCallLeadId, setActiveCallLeadId] = useState<number | null>(() => {
@@ -146,7 +192,7 @@ export function CallsManagementView() {
         lead_id: leadId,
         clinic_name: lead?.name || "Dental Clinic",
         doctor_name: lead?.doctor_name || "Doctor",
-        prep_brief: `Context for Dr. ${lead?.doctor_name || "Doctor"}:
+        prep_brief: `Context for ${formatDoctorName(lead?.doctor_name)}:
 1. Focus on mobile patient discovery in ${lead?.locality || "Delhi NCR"}.
 2. Address objection regarding Practo integration by showing WhatsApp direct-to-OPD booking button.
 3. Offer the 14-day risk-free preview link: https://preview.dentalos.in/${lead?.slug || "demo"}.
@@ -158,7 +204,7 @@ export function CallsManagementView() {
   }, [leads]);
 
   // ---------------------------------------------------------------------------
-  // Past calls — loaded whenever active clinic changes
+  // Past calls - loaded whenever active clinic changes
   // ---------------------------------------------------------------------------
   const [callsList, setCallsList] = useState<StructuredCall[]>([]);
   const [expandedCallId, setExpandedCallId] = useState<number | null>(null);
@@ -247,151 +293,151 @@ export function CallsManagementView() {
   // Render
   // ---------------------------------------------------------------------------
   return (
-    <div className="h-full flex flex-col gap-6 overflow-y-auto text-slate-900 dark:text-slate-100 p-1">
-      {/* Top Banner & Unified Clinic Combobox */}
-      <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
-            <PhoneCall className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold tracking-tight">Calls & Structured Briefs</h1>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300">
-                AI Copilot Active
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Transform raw call conversations into 5 structured sections & pre-call intelligence briefs.
-            </p>
-          </div>
-        </div>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Unified Searchable Combobox                                      */}
-        {/* ---------------------------------------------------------------- */}
-        <div ref={comboRef} className="w-full md:w-96 relative">
-          {/* Trigger button — shows currently selected clinic */}
-          <button
-            type="button"
-            onClick={() => {
-              setComboOpen((v) => !v);
-              if (!comboOpen) {
-                setTimeout(() => comboInputRef.current?.focus(), 50);
-              }
-            }}
-            className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all cursor-pointer text-left"
-          >
-            {activeLead ? (
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-xs text-indigo-600 dark:text-indigo-400 shrink-0">
-                  {activeLead.name.slice(0, 2).toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-slate-900 dark:text-white truncate">{activeLead.name}</div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                    Dr. {activeLead.doctor_name || "Doctor"} · {activeLead.locality || "Delhi NCR"}
-                    {activeLead.primary_phone ? ` · ${activeLead.primary_phone}` : ""}
+    <div className="h-full flex overflow-hidden gap-3 sm:gap-4 text-slate-900 dark:text-slate-100">
+      {/* Calls & Briefs Main Workspace */}
+      <div className="flex-1 min-w-0 h-full flex flex-col gap-4 overflow-y-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* Floating Top Controls: Clinic Selector & Lead Card Action (No outer bar wrapper) */}
+        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 shrink-0">
+          {/* Unified Searchable Combobox */}
+          <div ref={comboRef} className="w-full sm:w-80 md:w-96 relative">
+            {/* Trigger button - shows currently selected clinic */}
+            <button
+              type="button"
+              onClick={() => {
+                setComboOpen((v) => !v);
+                if (!comboOpen) {
+                  setTimeout(() => comboInputRef.current?.focus(), 50);
+                }
+              }}
+              className="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs hover:border-indigo-400 dark:hover:border-indigo-500 transition-all cursor-pointer text-left"
+            >
+              {activeLead ? (
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-[11px] text-indigo-600 dark:text-indigo-400 shrink-0">
+                    {activeLead.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white truncate">{activeLead.name}</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                      {formatDoctorName(activeLead.doctor_name)} · {activeLead.locality || "Delhi NCR"}
+                      {activeLead.primary_phone ? ` · ${activeLead.primary_phone}` : ""}
+                    </div>
                   </div>
                 </div>
+              ) : (
+                <span className="text-xs text-slate-400">Select a clinic...</span>
+              )}
+              <div className="flex items-center gap-1 shrink-0">
+                <Search className="w-3.5 h-3.5 text-slate-400" />
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${comboOpen ? "rotate-180" : ""}`} />
               </div>
-            ) : (
-              <span className="text-xs text-slate-400">Select a clinic…</span>
-            )}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Search className="w-3.5 h-3.5 text-slate-400" />
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${comboOpen ? "rotate-180" : ""}`} />
-            </div>
-          </button>
+            </button>
 
-          {/* Dropdown */}
-          {comboOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
-              {/* Search inside dropdown */}
-              <div className="p-2 border-b border-slate-100 dark:border-slate-800">
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  <input
-                    ref={comboInputRef}
-                    type="text"
-                    value={comboSearch}
-                    onChange={(e) => setComboSearch(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && filteredLeads.length > 0) {
-                        handleSelectClinic(filteredLeads[0].id);
-                      }
-                      if (e.key === "Escape") {
-                        setComboOpen(false);
-                        setComboSearch("");
-                      }
-                    }}
-                    placeholder="Search clinic, doctor, locality, phone…"
-                    className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                  />
-                </div>
-              </div>
-
-              {/* Results list */}
-              <div className="max-h-72 overflow-y-auto">
-                {filteredLeads.length === 0 ? (
-                  <div className="py-6 text-center text-xs text-slate-400">
-                    No clinics match "{comboSearch}"
+            {/* Dropdown */}
+            {comboOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+                {/* Search inside dropdown */}
+                <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <input
+                      ref={comboInputRef}
+                      type="text"
+                      value={comboSearch}
+                      onChange={(e) => setComboSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && filteredLeads.length > 0) {
+                          handleSelectClinic(filteredLeads[0].id);
+                        }
+                        if (e.key === "Escape") {
+                          setComboOpen(false);
+                          setComboSearch("");
+                        }
+                      }}
+                      placeholder="Search clinic, doctor, locality, phone..."
+                      className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    />
                   </div>
-                ) : (
-                  filteredLeads.map((l) => {
-                    const isActive = l.id === activeCallLeadId;
-                    return (
-                      <button
-                        key={l.id}
-                        type="button"
-                        onClick={() => handleSelectClinic(l.id)}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors cursor-pointer ${
-                          isActive
-                            ? "bg-indigo-50 dark:bg-indigo-950/60"
-                            : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
-                        }`}
-                      >
-                        <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-[10px] text-indigo-600 dark:text-indigo-400 shrink-0">
-                          {l.name.slice(0, 2).toUpperCase()}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-xs font-semibold text-slate-900 dark:text-white truncate">{l.name}</div>
-                          <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                            Dr. {l.doctor_name || "Doctor"} · {l.locality || "Delhi NCR"}
-                            {l.primary_phone ? ` · ${l.primary_phone}` : ""}
+                </div>
+
+                {/* Results list */}
+                <div className="max-h-72 overflow-y-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {filteredLeads.length === 0 ? (
+                    <div className="py-6 text-center text-xs text-slate-400">
+                      No clinics match "{comboSearch}"
+                    </div>
+                  ) : (
+                    filteredLeads.map((l) => {
+                      const isActive = l.id === activeCallLeadId;
+                      return (
+                        <button
+                          key={l.id}
+                          type="button"
+                          onClick={() => handleSelectClinic(l.id)}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors cursor-pointer ${
+                            isActive
+                              ? "bg-indigo-50 dark:bg-indigo-950/60"
+                              : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                          }`}
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-[10px] text-indigo-600 dark:text-indigo-400 shrink-0">
+                            {l.name.slice(0, 2).toUpperCase()}
                           </div>
-                        </div>
-                        {isActive && <Check className="w-3.5 h-3.5 text-indigo-500 shrink-0" />}
-                      </button>
-                    );
-                  })
-                )}
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-semibold text-slate-900 dark:text-white truncate">{l.name}</div>
+                            <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                              {formatDoctorName(l.doctor_name)} · {l.locality || "Delhi NCR"}
+                              {l.primary_phone ? ` · ${l.primary_phone}` : ""}
+                            </div>
+                          </div>
+                          {isActive && <Check className="w-3.5 h-3.5 text-indigo-500 shrink-0" />}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
               </div>
-            </div>
+            )}
+          </div>
+
+          {/* Lead Card Toggle Button */}
+          {activeLead && (
+            <button
+              type="button"
+              onClick={handleToggleDockedLeadCard}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ml-auto shadow-xs ${
+                isLeadCardDocked
+                  ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300"
+                  : "bg-white dark:bg-[#141721] border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              }`}
+              title="Toggle side-by-side Lead Card"
+            >
+              <PanelRightOpen className="w-3.5 h-3.5" />
+              <span>Lead Card</span>
+            </button>
           )}
         </div>
-      </div>
 
-      {activeLead && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* LEFT 7 COLS: Pre-Call Prep Brief Card + Log Call Form */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* 1. PRE-CALL PREP BRIEF CARD */}
-            <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-500/5 via-white to-purple-500/5 dark:from-indigo-950/40 dark:via-slate-900 dark:to-purple-950/30 border border-indigo-200/80 dark:border-indigo-800/60 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/30">
-                    <Sparkles className="w-4 h-4" />
+        {activeLead && (
+          <div className={`grid grid-cols-1 ${isLeadCardDocked ? "xl:grid-cols-12" : "lg:grid-cols-12"} gap-6`}>
+            {/* LEFT COLS: Pre-Call Prep Brief Card + Log Call Form */}
+            <div className={`${isLeadCardDocked ? "xl:col-span-7" : "lg:col-span-7"} space-y-6`}>
+              {/* 1. PRE-CALL PREP BRIEF CARD */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-500/5 via-white to-purple-500/5 dark:from-indigo-950/40 dark:via-slate-900 dark:to-purple-950/30 border border-indigo-200/80 dark:border-indigo-800/60 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/30">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                        Pre-Call Prep Brief: "What to Talk About"
+                      </h2>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Doctor: {formatDoctorName(activeLead.doctor_name)} • Phone: {activeLead.primary_phone || "Not set"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                      Pre-Call Prep Brief: "What to Talk About"
-                    </h2>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Doctor: Dr. {activeLead.doctor_name || "Doctor"} • Phone: {activeLead.primary_phone || "Not set"}
-                    </p>
-                  </div>
-                </div>
 
                 <div className="flex items-center gap-1.5">
                   <button
@@ -547,13 +593,13 @@ Next step: send the comparison PDF on WhatsApp."
             </div>
           </div>
 
-          {/* RIGHT 5 COLS: 5-Section AI Structured Notes Display */}
-          <div className="lg:col-span-5 space-y-4">
+          {/* RIGHT COLS: Previous Call Logs */}
+          <div className={`${isLeadCardDocked ? "xl:col-span-5" : "lg:col-span-5"} space-y-4`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-indigo-500" />
                 <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  5-Section Structured Notes
+                  Previous Call Logs
                 </h2>
               </div>
               <span className="text-[11px] text-slate-400">
@@ -724,6 +770,14 @@ Next step: send the comparison PDF on WhatsApp."
               })
             )}
           </div>
+        </div>
+      )}
+      </div>
+
+      {/* RIGHTMOST DOCKED PANEL: Side-by-Side Lead Card */}
+      {isLeadCardDocked && activeLead && (
+        <div className="w-full sm:w-[420px] md:w-[450px] lg:w-[460px] shrink-0 h-full flex flex-col rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in slide-in-from-right duration-200">
+          <LeadDetailContent lead={activeLead} onClose={handleCloseDockedLeadCard} isDocked={true} />
         </div>
       )}
     </div>
