@@ -493,18 +493,18 @@ export function DashboardView() {
 
       {/* 3. Row 2: Outreach Activity Combo Chart (8 Cols) + Clinics by Stage Donut (4 Cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-        {/* Left Combo Chart (8 Cols) - 100% Full Width Responsive without SVG letterboxing */}
-        <div className="lg:col-span-8 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs space-y-2 flex flex-col justify-between">
+        {/* Left Combo Chart (8 Cols) - Full Matte Charcoal #1C1D1F matching Cockpit styling */}
+        <div className="lg:col-span-8 p-3 sm:p-3.5 rounded-2xl bg-[#1C1D1F] text-white border border-[#2A2B2E] shadow-sm space-y-2 flex flex-col justify-between">
           {/* Header */}
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-1.5">
-                <BarChart3 className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
-                <h2 className="text-xs font-bold text-[#111827] dark:text-white">
+                <BarChart3 className="w-3.5 h-3.5 text-white/80" />
+                <h2 className="text-xs font-bold text-white tracking-tight">
                   Outreach & Demo Activity
                 </h2>
               </div>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500">
+              <p className="text-[10px] text-white/60">
                 WhatsApp outreach sent and live doctor demo views over time.
               </p>
             </div>
@@ -512,18 +512,18 @@ export function DashboardView() {
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#111827] dark:bg-white" />
-                  <span className="text-slate-600 dark:text-slate-300 font-medium text-[9px]">Demo Views</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                  <span className="text-white/80 font-medium text-[9px]">Demo Views</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
-                  <span className="text-slate-600 dark:text-slate-300 font-medium text-[9px]">Messages Sent</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3B63FB]" />
+                  <span className="text-white/80 font-medium text-[9px]">Messages Sent</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[9px] font-semibold text-slate-700 dark:text-slate-300">
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 text-[9px] font-semibold text-white/90 border border-white/10">
                 <span>Last 30 days</span>
-                <ChevronDown className="w-2.5 h-2.5 text-slate-400" />
+                <ChevronDown className="w-2.5 h-2.5 text-white/60" />
               </div>
             </div>
           </div>
@@ -533,7 +533,7 @@ export function DashboardView() {
             {/* Main Plot Area (Y-axis labels on left + full-width plot area) */}
             <div className="flex items-stretch gap-2 flex-1 relative min-h-0">
               {/* Left Y-axis labels */}
-              <div className="flex flex-col justify-between text-[8px] text-slate-400 font-mono text-right w-4 shrink-0 pb-1">
+              <div className="flex flex-col justify-between text-[8px] text-white/40 font-mono text-right w-4 shrink-0 pb-1">
                 <span>30</span>
                 <span>20</span>
                 <span>10</span>
@@ -544,10 +544,10 @@ export function DashboardView() {
               <div className="flex-1 relative min-w-0">
                 {/* Horizontal Dashed Grid Guidelines */}
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-1">
-                  <div className="w-full border-b border-dashed border-slate-100 dark:border-white/[0.05]" />
-                  <div className="w-full border-b border-dashed border-slate-100 dark:border-white/[0.05]" />
-                  <div className="w-full border-b border-dashed border-slate-100 dark:border-white/[0.05]" />
-                  <div className="w-full border-b border-dashed border-slate-100 dark:border-white/[0.05]" />
+                  <div className="w-full border-b border-dashed border-white/10" />
+                  <div className="w-full border-b border-dashed border-white/10" />
+                  <div className="w-full border-b border-dashed border-white/10" />
+                  <div className="w-full border-b border-dashed border-white/10" />
                 </div>
 
                 {/* 28 Vertical Bars (Full Width Flex Container) */}
@@ -564,8 +564,8 @@ export function DashboardView() {
                         <div
                           className={`w-full max-w-[13px] rounded-t-[3px] transition-colors ${
                             isHovered
-                              ? "bg-[#18181B] dark:bg-white"
-                              : "bg-[#EAEAE6] dark:bg-[#27272A] group-hover:bg-slate-300 dark:group-hover:bg-slate-700"
+                              ? "bg-white"
+                              : "bg-white/20 group-hover:bg-white/35"
                           }`}
                           style={{ height: `${barHeightPct}%` }}
                         />
@@ -583,10 +583,10 @@ export function DashboardView() {
                   <path
                     d={linePathPct}
                     fill="none"
-                    stroke="currentColor"
+                    stroke="#60A5FA"
                     strokeWidth={2}
                     vectorEffect="non-scaling-stroke"
-                    className="text-slate-400 dark:text-slate-500"
+                    className="opacity-90"
                   />
                 </svg>
 
@@ -608,8 +608,8 @@ export function DashboardView() {
                         <div
                           className={`rounded-full transition-all ${
                             isHovered
-                              ? "w-2.5 h-2.5 bg-[#18181B] dark:bg-white ring-2 ring-white dark:ring-[#141721]"
-                              : "w-1.5 h-1.5 bg-slate-400 dark:fill-slate-500 ring-1 ring-white dark:ring-[#141721]"
+                              ? "w-2.5 h-2.5 bg-[#3B63FB] ring-2 ring-white"
+                              : "w-1.5 h-1.5 bg-white ring-1 ring-[#1C1D1F]"
                           }`}
                         />
                       </div>
@@ -626,24 +626,24 @@ export function DashboardView() {
                       top: `${Math.max(0, 100 - (activePoint.views / 30) * 100 - 12)}%`,
                     }}
                   >
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm rounded-lg px-2 py-1.5 min-w-[76px]">
-                      <div className="text-[8px] font-bold text-slate-900 dark:text-white leading-tight">
+                    <div className="bg-[#242528] border border-white/15 text-white shadow-xl rounded-lg px-2 py-1.5 min-w-[76px]">
+                      <div className="text-[8px] font-bold text-white leading-tight">
                         {activePoint.day}, {currentYear}
                       </div>
-                      <div className="flex items-center gap-1.5 text-[8px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#111827] dark:bg-white" />
+                      <div className="flex items-center gap-1.5 text-[8px] text-white/70 mt-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
                         <span>
                           Views:{" "}
-                          <strong className="text-slate-900 dark:text-white font-mono">
+                          <strong className="text-white font-mono">
                             {activePoint.views}
                           </strong>
                         </span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-[8px] text-slate-500 dark:text-slate-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-600" />
+                      <div className="flex items-center gap-1.5 text-[8px] text-white/70">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#3B63FB]" />
                         <span>
                           Sent:{" "}
-                          <strong className="text-slate-900 dark:text-white font-mono">
+                          <strong className="text-white font-mono">
                             {activePoint.sent}
                           </strong>
                         </span>
@@ -655,7 +655,7 @@ export function DashboardView() {
             </div>
 
             {/* Bottom X-axis Date Labels */}
-            <div className="flex justify-between pl-6 pr-1 pt-1 text-[8px] text-slate-400 font-mono">
+            <div className="flex justify-between pl-6 pr-1 pt-1 text-[8px] text-white/40 font-mono">
               {chartPoints
                 .filter((_, i) => i % 5 === 0 || i === chartPoints.length - 1)
                 .map((pt, i) => (
