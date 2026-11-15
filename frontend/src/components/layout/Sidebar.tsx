@@ -1,29 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Archive,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  ChevronUp,
   Clock,
   Compass,
-  Crown,
   Flame,
   Gauge,
   Home,
   Layers,
-  LayoutDashboard,
   LayoutGrid,
   MessageSquare,
-  MoreVertical,
+  Moon,
   PanelLeft,
   PanelLeftClose,
   PhoneCall,
   Send,
   Settings,
+  ShieldCheck,
+  Sliders,
+  Sun,
   Table as TableIcon,
-  Zap,
 } from "lucide-react";
 import { useCRM, CRMTab } from "@/context/CRMContext";
 
@@ -41,14 +42,44 @@ export function Sidebar() {
     setPipelineBoardExpanded,
     activeSmartView,
     setActiveSmartView,
-    bufferHealthPct,
     globalAutomationEnabled,
     toggleGlobalAutomation,
+    hustles,
+    activeHustleId,
+    notify,
+    isDarkMode,
+    toggleDarkMode,
   } = useCRM();
 
-  const isCockpit = surface === "cockpit" || activeTab === "autopilot";
+  const [profileMenuOpen, setProfileMenuOpen] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  // Strict Surface Separation: Exactly one home per feature matching Tasker visual spec
+  const isCockpit = surface === "cockpit" || activeTab === "autopilot";
+  const currentHustle = hustles.find((h) => h.id === activeHustleId);
+
+  // Close profile dropdown on click outside or Esc key
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setProfileMenuOpen(false);
+      }
+    };
+    if (profileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [profileMenuOpen]);
+
+  // Strict Surface Separation: Exactly one home per feature
   const managementNav = [
     { id: "dashboard", label: "Overview", icon: Home },
     { id: "inbox", label: "Inbox / WhatsApp", icon: MessageSquare },
@@ -64,24 +95,153 @@ export function Sidebar() {
     { id: "outreach", label: "Outreach Automation", icon: Send },
   ];
 
+  // Shared Compact Popover Content (w-56 with tight padding)
+  const renderProfilePopover = (positionClasses: string) => (
+    <div
+      className={`${positionClasses} w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xl p-1.5 z-50 duration-150 space-y-1.5`}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-2 p-1.5 pb-2 border-b border-slate-100 dark:border-slate-800">
+        <div className="w-7 h-7 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center font-bold text-white dark:text-zinc-900 text-[11px] shadow-xs shrink-0">
+          AT
+        </div>
+        <div className="min-w-0">
+          <div className="text-xs font-bold text-slate-900 dark:text-white truncate">Captain Ankur</div>
+          <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Lead Operator
+          </div>
+        </div>
+      </div>
+
+      {/* Active Hustle Details */}
+      <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 space-y-0.5">
+        <div className="text-[9px] font-mono font-bold uppercase tracking-wider text-slate-400">
+          Active Hustle
+        </div>
+        <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+          {currentHustle?.name || "Dental Clinic Websites"}
+        </div>
+        <div className="text-[10px] font-mono font-bold text-zinc-900 dark:text-white pt-0.5">
+          ₹{(currentHustle?.deal_value_inr || 25000).toLocaleString()} INR
+        </div>
+      </div>
+
+      {/* Action Menu Items */}
+      <div className="space-y-0.5 pt-0.5">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("settings");
+            setProfileMenuOpen(false);
+          }}
+          className="w-full flex items-center justify-between py-1.5 px-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer group"
+        >
+          <div className="flex items-center gap-2">
+            <Settings className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300 group-hover:rotate-45 transition-transform" />
+            <span>Settings</span>
+          </div>
+          <ChevronRight className="w-3 h-3 text-slate-400" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("settings");
+            setProfileMenuOpen(false);
+          }}
+          className="w-full flex items-center justify-between py-1.5 px-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <Sliders className="w-3.5 h-3.5 text-indigo-500" />
+            <span>Hustle Settings</span>
+          </div>
+          <ChevronRight className="w-3 h-3 text-slate-400" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("sprint");
+            setProfileMenuOpen(false);
+          }}
+          className="w-full flex items-center justify-between py-1.5 px-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 text-amber-500" />
+            <span>Day Schedule</span>
+          </div>
+          <ChevronRight className="w-3 h-3 text-slate-400" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            notify("Telemetry diagnostic report saved to system log.");
+            setProfileMenuOpen(false);
+          }}
+          className="w-full flex items-center justify-between py-1.5 px-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Diagnostics</span>
+          </div>
+          <span className="text-[10px] font-mono font-bold text-emerald-500">OK</span>
+        </button>
+
+        {/* Light / Dark Mode Toggle Row */}
+        <button
+          type="button"
+          onClick={() => {
+            toggleDarkMode();
+          }}
+          className="w-full flex items-center justify-between py-1.5 px-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            {isDarkMode ? (
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+            ) : (
+              <Moon className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" />
+            )}
+            <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
+          </div>
+          <span className="text-[10px] font-mono text-slate-400 uppercase">
+            {isDarkMode ? "Dark" : "Light"}
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+
+  // -------------------------------------------------------------
+  // CLOSED / COLLAPSED SIDEBAR DOCK
+  // -------------------------------------------------------------
   if (sidebarCollapsed) {
     const collapsedItems = isCockpit ? cockpitNav : managementNav;
 
     return (
-      <aside className="w-18 shrink-0 self-start m-3 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-xl p-2.5 flex flex-col items-center gap-2.5 transition-all duration-200 z-20">
-        {/* Expand Toggle */}
-        <button
-          onClick={() => setSidebarCollapsed(false)}
-          className="w-10 h-10 rounded-2xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-          title="Expand Sidebar"
-          aria-label="Expand Sidebar"
-        >
-          <PanelLeft className="w-5 h-5 text-indigo-500" />
-        </button>
+      <aside className="w-18 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-2.5 flex flex-col justify-start items-center transition-all duration-200 z-20 relative">
+        {/* Top: Logo + Expand Toggle */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs">
+            FM
+          </div>
 
-        <div className="w-8 h-px bg-slate-200 dark:bg-slate-800" />
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed(false)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            title="Expand Sidebar"
+            aria-label="Expand Sidebar"
+          >
+            <PanelLeft className="w-4 h-4" />
+          </button>
+        </div>
 
-        {/* Big Icons Navigation */}
+        {/* Compact Divider */}
+        <div className="w-8 my-3 border-t border-slate-100 dark:border-slate-800" />
+
+        {/* Navigation Icons Grouped Right Below Divider (No middle gap!) */}
         <nav className="flex flex-col items-center gap-2">
           {collapsedItems.map((item) => {
             const Icon = item.icon;
@@ -92,6 +252,7 @@ export function Sidebar() {
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => {
                   if (isCockpit) {
                     setCockpitTab(item.id as any);
@@ -100,228 +261,333 @@ export function Sidebar() {
                     if (item.id === "board") setPipelineBoardExpanded(true);
                   }
                 }}
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer relative group ${
+                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer relative group ${
                   active
-                    ? isCockpit
-                      ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30 scale-105"
-                      : "bg-indigo-600 text-white shadow-md shadow-indigo-600/30 scale-105"
+                    ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900 scale-105"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
                 title={item.label}
                 aria-label={item.label}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4" />
                 {active && (
-                  <span
-                    className={`absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-5 rounded-full ${
-                      isCockpit ? "bg-emerald-500" : "bg-indigo-500"
-                    }`}
-                  />
+                  <span className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-4 rounded-full bg-zinc-900 dark:bg-white" />
                 )}
               </button>
             );
           })}
         </nav>
 
-        <div className="w-8 h-px bg-slate-200 dark:bg-slate-800" />
-
-        {/* Mini Mode Switcher */}
-        {!isCockpit && (
+        {/* Bottom Footer Block: Pushed to bottom via mt-auto */}
+        <div
+          ref={dropdownRef}
+          className="mt-auto flex flex-col items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 w-full relative"
+        >
+          {/* Autopilot Indicator Button with crisp emerald dot */}
           <button
-            onClick={() => {
-              setSurface("cockpit");
-              setActiveTab("autopilot");
-            }}
-            className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform"
-            title={`Cockpit Engine: ONLINE (${bufferHealthPct}% buffer health)`}
-            aria-label={`Cockpit Engine: ONLINE (${bufferHealthPct}% buffer health)`}
+            type="button"
+            onClick={toggleGlobalAutomation}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all cursor-pointer relative ${
+              globalAutomationEnabled
+                ? "bg-zinc-900 text-white border-zinc-700 dark:bg-white dark:text-zinc-900"
+                : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800"
+            }`}
+            title={
+              globalAutomationEnabled
+                ? "Autopilot Active (Click to pause)"
+                : "Autopilot Paused (Click to activate)"
+            }
+            aria-label="Toggle Autopilot"
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                globalAutomationEnabled
+                  ? "bg-emerald-500 ring-4 ring-emerald-500/15"
+                  : "bg-amber-500 ring-4 ring-amber-500/15"
+              }`}
+            />
           </button>
-        )}
+
+          {/* User Profile Avatar (Click to open compact Popover) */}
+          <button
+            type="button"
+            onClick={() => setProfileMenuOpen((prev) => !prev)}
+            className="w-9 h-9 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs hover:ring-2 hover:ring-zinc-400 transition-all cursor-pointer"
+            title="Captain Profile & Settings"
+            aria-label="User Profile"
+            aria-expanded={profileMenuOpen}
+          >
+            AT
+          </button>
+
+          {/* Compact Popover anchored to the right of the collapsed dock */}
+          {profileMenuOpen &&
+            renderProfilePopover(
+              "absolute bottom-0 left-full ml-3 animate-in fade-in slide-in-from-left-2"
+            )}
+        </div>
       </aside>
     );
   }
 
+  // -------------------------------------------------------------
+  // OPEN SIDEBAR
+  // -------------------------------------------------------------
   return (
-    <aside className="w-64 shrink-0 h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto transition-all duration-200 z-20">
-      <div className="space-y-6">
-        {/* Main Navigation Menu */}
-        <div>
-          <div className="px-2 pb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            <span>{isCockpit ? "Cockpit Flight Deck (4 Tabs)" : "CRM Management"}</span>
-            <button
-              onClick={() => setSidebarCollapsed(true)}
-              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
-              title="Collapse Sidebar"
-              aria-label="Collapse Sidebar"
-            >
-              <PanelLeftClose className="w-3.5 h-3.5" />
-            </button>
+    <aside className="w-64 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-3.5 flex flex-col justify-start transition-all duration-200 z-20 relative">
+      {/* Top Header: Brand Logo + Workspace Name + Collapse Toggle */}
+      <div className="flex items-center justify-between pb-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs">
+            FM
           </div>
+          <div>
+            <div className="text-xs font-bold text-zinc-900 dark:text-white leading-tight">
+              FirstMate
+            </div>
+            <div className="text-[10px] text-slate-400 font-medium leading-tight">
+              CRM Workspace
+            </div>
+          </div>
+        </div>
 
-          <nav className="space-y-1">
-            {isCockpit ? (
-              /* COCKPIT NAVIGATION: STRICTLY THE 4 COCKPIT TABS */
-              <div className="space-y-1">
-                {cockpitNav.map((item) => {
-                  const Icon = item.icon;
-                  const active = cockpitTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setCockpitTab(item.id as any)}
-                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                        active
-                          ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              /* MANAGEMENT NAVIGATION: DASHBOARD, INBOX, CALLS, BOARD, TABLE (NO DUPLICATES!) */
-              managementNav.map((item) => {
+        <button
+          type="button"
+          onClick={() => setSidebarCollapsed(true)}
+          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
+          title="Collapse Sidebar"
+          aria-label="Collapse Sidebar"
+        >
+          <PanelLeftClose className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Compact Divider */}
+      <div className="my-3 border-t border-slate-100 dark:border-slate-800" />
+
+      {/* Navigation Menu Grouped at Top */}
+      <div className="overflow-y-auto no-scrollbar pr-0.5">
+        <div className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          {isCockpit ? "Cockpit Flight Deck" : "CRM Management"}
+        </div>
+
+        <nav className="space-y-1">
+          {isCockpit ? (
+            /* COCKPIT NAVIGATION: 4 COCKPIT TABS */
+            <div className="space-y-1">
+              {cockpitNav.map((item) => {
                 const Icon = item.icon;
-                const active = activeTab === item.id;
-
-                if (item.id === "board") {
-                  return (
-                    <div key="board" className="space-y-1">
-                      <button
-                        onClick={() => {
-                          setActiveTab("board");
-                          setPipelineBoardExpanded((prev) => (activeTab === "board" ? !prev : true));
-                        }}
-                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                          active
-                            ? "bg-white dark:bg-white/[0.1] text-slate-900 dark:text-white shadow-xs border border-slate-200/90 dark:border-white/[0.08]"
-                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/40"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Icon className="w-4 h-4" />
-                          <span>{item.label}</span>
-                        </div>
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPipelineBoardExpanded(!pipelineBoardExpanded);
-                          }}
-                          className="p-1 rounded-md hover:bg-white/10 transition-colors"
-                        >
-                          {pipelineBoardExpanded ? (
-                            <ChevronDown className="w-3.5 h-3.5 opacity-70" />
-                          ) : (
-                            <ChevronRight className="w-3.5 h-3.5 opacity-70" />
-                          )}
-                        </div>
-                      </button>
-
-                      {/* Sub-menu of Smart Queues */}
-                      {pipelineBoardExpanded && (
-                        <div className="ml-5 pl-3 border-l-2 border-slate-200 dark:border-slate-800 space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
-                          {[
-                            { slug: "all_active", label: "All Active Pipeline", icon: LayoutGrid, color: "text-indigo-500" },
-                            { slug: "review_tray", label: "Review Tray (Ready)", icon: CheckCircle2, color: "text-emerald-500" },
-                            { slug: "due_today", label: "Due Today & Overdue", icon: Clock, color: "text-amber-500" },
-                            { slug: "hot_intent", label: "Hot Demo Viewers", icon: Flame, color: "text-rose-500" },
-                            { slug: "replied_warm", label: "Active Replies", icon: MessageSquare, color: "text-blue-500" },
-                            { slug: "archived", label: "Archived & DNC", icon: Archive, color: "text-slate-400" },
-                          ].map((v) => {
-                            const SubIcon = v.icon;
-                            const isSubActive = activeTab === "board" && activeSmartView === v.slug;
-                            return (
-                              <button
-                                key={v.slug}
-                                onClick={() => {
-                                  setActiveSmartView(v.slug);
-                                  setActiveTab("board");
-                                }}
-                                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer relative group ${
-                                  isSubActive
-                                    ? "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-500/30"
-                                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40"
-                                }`}
-                              >
-                                <div className="flex items-center gap-2 truncate">
-                                  <span
-                                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                      isSubActive ? "bg-indigo-500 scale-125" : "bg-slate-300 dark:bg-slate-600"
-                                    }`}
-                                  />
-                                  <SubIcon className={`w-3.5 h-3.5 ${v.color} shrink-0`} />
-                                  <span className="truncate">{v.label}</span>
-                                </div>
-                                {isSubActive && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-
+                const active = cockpitTab === item.id;
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setActiveTab(item.id as CRMTab)}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    type="button"
+                    onClick={() => setCockpitTab(item.id as any)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       active
-                        ? "bg-white dark:bg-white/[0.1] text-slate-900 dark:text-white shadow-xs border border-slate-200/90 dark:border-white/[0.08]"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/40"
+                        ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
                     }`}
                   >
                     <Icon className="w-4 h-4" />
                     <span>{item.label}</span>
                   </button>
                 );
-              })
-            )}
-          </nav>
-        </div>
+              })}
+            </div>
+          ) : (
+            /* MANAGEMENT NAVIGATION: DASHBOARD, INBOX, CALLS, BOARD, TABLE */
+            managementNav.map((item) => {
+              const Icon = item.icon;
+              const active = activeTab === item.id;
+
+              if (item.id === "board") {
+                return (
+                  <div key="board" className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab("board");
+                        setPipelineBoardExpanded((prev) =>
+                          activeTab === "board" ? !prev : true
+                        );
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                        active
+                          ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-4 h-4" />
+                        <span>{item.label}</span>
+                      </div>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPipelineBoardExpanded(!pipelineBoardExpanded);
+                        }}
+                        className="p-1 rounded-md hover:bg-white/20 transition-colors"
+                      >
+                        {pipelineBoardExpanded ? (
+                          <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5 opacity-70" />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Sub-menu of Smart Queues */}
+                    {pipelineBoardExpanded && (
+                      <div className="ml-4 pl-2.5 border-l-2 border-slate-200 dark:border-slate-800 space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                        {[
+                          { slug: "all_active", label: "All Active Pipeline", icon: LayoutGrid },
+                          { slug: "review_tray", label: "Review Tray (Ready)", icon: CheckCircle2 },
+                          { slug: "due_today", label: "Due Today & Overdue", icon: Clock },
+                          { slug: "hot_intent", label: "Hot Demo Viewers", icon: Flame },
+                          { slug: "replied_warm", label: "Active Replies", icon: MessageSquare },
+                          { slug: "archived", label: "Archived & DNC", icon: Archive },
+                        ].map((v) => {
+                          const SubIcon = v.icon;
+                          const isSubActive =
+                            activeTab === "board" && activeSmartView === v.slug;
+                          return (
+                            <button
+                              key={v.slug}
+                              type="button"
+                              onClick={() => {
+                                setActiveSmartView(v.slug);
+                                setActiveTab("board");
+                              }}
+                              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer relative group ${
+                                isSubActive
+                                  ? "bg-slate-100 text-slate-900 font-medium dark:bg-white/[0.1] dark:text-white"
+                                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 truncate">
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                    isSubActive
+                                      ? "bg-zinc-900 dark:bg-white"
+                                      : "bg-slate-300 dark:bg-slate-600"
+                                  }`}
+                                />
+                                <SubIcon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                <span className="truncate">{v.label}</span>
+                              </div>
+                              {isSubActive && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-white shrink-0" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveTab(item.id as CRMTab)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    active
+                      ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })
+          )}
+        </nav>
       </div>
 
-      {/* Bottom Area: Autopilot Engine Card */}
-      <div className="pt-3 border-t border-slate-100 dark:border-white/[0.06]">
-        {/* Autopilot Engine Box (Tasker "Upgrade plan" mapping) */}
-        <div className="p-3.5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs space-y-2.5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-[#111827] dark:bg-white text-white dark:text-[#111827] flex items-center justify-center shrink-0">
-              <Crown className="w-3.5 h-3.5" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
-                Autopilot Engine
+      {/* Bottom Footer Block: Pushed to bottom via mt-auto */}
+      <div
+        ref={dropdownRef}
+        className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 shrink-0 relative"
+      >
+        {/* Compact Autopilot Status Card with crisp emerald dot */}
+        <div className="bg-zinc-900 text-white dark:bg-zinc-800 rounded-xl p-2.5 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                globalAutomationEnabled
+                  ? "bg-emerald-500 ring-4 ring-emerald-500/15"
+                  : "bg-amber-500 ring-4 ring-amber-500/15"
+              }`}
+            />
+            <div className="truncate">
+              <div className="text-[11px] font-bold leading-tight truncate">
+                {globalAutomationEnabled ? "Autopilot Active" : "Autopilot Paused"}
               </div>
-              <div className="text-[10px] text-slate-400 truncate">
-                {globalAutomationEnabled ? "Active & Guarded" : "Safety Guardrails ON"}
+              <div className="text-[9px] text-zinc-400 leading-tight">
+                {globalAutomationEnabled ? "Outreach & guards live" : "Manual review mode"}
               </div>
             </div>
           </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-            Automated WhatsApp outreach & safety guardrails.
-          </p>
           <button
             type="button"
             onClick={toggleGlobalAutomation}
-            className={`w-full py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs ${
+            className={`px-2 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-colors shrink-0 ${
               globalAutomationEnabled
-                ? "bg-[#111827] hover:bg-[#1f2937] text-white dark:bg-white dark:text-[#111827] dark:hover:bg-slate-100"
+                ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-200"
                 : "bg-emerald-600 hover:bg-emerald-500 text-white"
             }`}
           >
-            <Zap className="w-3.5 h-3.5" />
-            <span>{globalAutomationEnabled ? "Automation Active" : "Activate Autopilot"}</span>
+            {globalAutomationEnabled ? "Pause" : "Enable"}
           </button>
         </div>
+
+        {/* User Profile Footer Row */}
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setProfileMenuOpen((prev) => !prev)}
+            className="flex items-center gap-2.5 min-w-0 cursor-pointer group text-left flex-1 py-1 px-1 rounded-xl hover:bg-slate-100/70 dark:hover:bg-slate-800/50 transition-colors"
+            title="Captain Profile & Settings"
+            aria-expanded={profileMenuOpen}
+          >
+            <div className="w-8 h-8 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs group-hover:ring-2 group-hover:ring-zinc-400 transition-all shrink-0">
+              AT
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
+                Ankur Tyagi
+              </div>
+              <div className="text-[10px] text-slate-400 font-medium truncate">
+                CRM Architect
+              </div>
+            </div>
+          </button>
+
+          {/* Chevron Arrow Button opening popover anchored cleanly above footer */}
+          <button
+            type="button"
+            onClick={() => setProfileMenuOpen((prev) => !prev)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            title="Toggle Profile Menu"
+            aria-label="Toggle Profile Menu"
+          >
+            <ChevronUp
+              className={`w-4 h-4 transition-transform duration-200 ${
+                profileMenuOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Compact Profile Popover (w-56) anchored above the footer */}
+        {profileMenuOpen &&
+          renderProfilePopover(
+            "absolute bottom-full left-0 mb-2 animate-in fade-in slide-in-from-bottom-2"
+          )}
       </div>
     </aside>
   );
