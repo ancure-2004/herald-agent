@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { DiscoveryLead } from "../types";
 import { VerificationBadge } from "./VerificationBadge";
 import { ConfidencePill } from "./ConfidencePill";
@@ -14,24 +14,63 @@ import {
   Copy,
   Check,
   Type,
+  Search,
+  RotateCcw,
+  X,
+  Loader2,
+  Database,
 } from "lucide-react";
+
+export type FilterView = "all" | "needs-verification" | "high-intent" | "ready-for-demo";
 
 interface LeadDataTableProps {
   leads: DiscoveryLead[];
+  totalCount?: number;
   selectedIds: Set<string>;
   onToggleSelect: (id: string, shiftKey: boolean) => void;
   onSelectAll: () => void;
   onRowClick?: (lead: DiscoveryLead) => void;
+  activeFilter?: FilterView;
+  onFilterChange?: (filter: FilterView) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  onRefresh?: () => void;
+  isLoading?: boolean;
 }
 
 export const LeadDataTable: React.FC<LeadDataTableProps> = ({
   leads,
+  totalCount,
   selectedIds,
   onToggleSelect,
   onSelectAll,
   onRowClick,
+  activeFilter = "all",
+  onFilterChange,
+  searchQuery = "",
+  onSearchChange,
+  onRefresh,
+  isLoading = false,
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Global keydown listener for "/" shortcut to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "/" && !["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) {
+        e.preventDefault();
+        setIsSearchExpanded(true);
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      } else if (e.key === "Escape" && isSearchExpanded && !searchQuery) {
+        setIsSearchExpanded(false);
+        searchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSearchExpanded, searchQuery]);
 
   const handleCopy = (text: string, id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -43,200 +82,344 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
   const isAllSelected = leads.length > 0 && selectedIds.size === leads.length;
   const isPartiallySelected = selectedIds.size > 0 && selectedIds.size < leads.length;
 
+  const countDisplay = totalCount !== undefined ? totalCount : leads.length;
+
   return (
-    <div className="w-full overflow-x-auto relative rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#141721] shadow-xs">
-      <table className="w-full text-left text-xs border-collapse font-sans">
-        <thead>
-          <tr className="border-b border-slate-200 dark:border-white/[0.08] bg-slate-50/90 dark:bg-[#191C28]/95 backdrop-blur-xs text-slate-600 dark:text-slate-400 font-semibold text-[11px] tracking-wider uppercase select-none">
-            {/* Sticky Checkbox Column */}
-            <th className="sticky left-0 z-20 w-12 py-2.5 px-3 bg-slate-50 dark:bg-[#191C28] border-r border-slate-200 dark:border-white/[0.08]">
+    <div className="w-full rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] shadow-xs overflow-hidden">
+      {/* 1. Integrated Table Header Bar: Filter Tabs on Left + Expandable Search Pill & Refresh on Right */}
+      <div className="px-4 sm:px-5 py-3 border-b border-slate-100 dark:border-white/[0.06] flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#141721]">
+        {/* Left Side: Segmented Filter Tabs */}
+        {onFilterChange && (
+          <div className="bg-slate-100/80 dark:bg-zinc-800/80 p-1 rounded-xl flex flex-wrap items-center gap-1 select-none">
+            <button
+              type="button"
+              onClick={() => onFilterChange("all")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeFilter === "all"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
+              }`}
+            >
+              All Leads ({countDisplay})
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onFilterChange("needs-verification")}
+              className={`px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
+                activeFilter === "needs-verification"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs font-semibold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white font-medium"
+              }`}
+            >
+              Needs Verification
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onFilterChange("high-intent")}
+              className={`px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
+                activeFilter === "high-intent"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs font-semibold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white font-medium"
+              }`}
+            >
+              High Intent
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onFilterChange("ready-for-demo")}
+              className={`px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
+                activeFilter === "ready-for-demo"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs font-semibold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white font-medium"
+              }`}
+            >
+              Ready for Demo
+            </button>
+          </div>
+        )}
+
+        {/* Right Side: Expandable Search Pill + Refresh Button */}
+        <div className="flex items-center gap-2 ml-auto">
+          {onSearchChange && (
+            <div
+              className={`relative flex items-center transition-all duration-200 ease-in-out ${
+                isSearchExpanded || searchQuery ? "w-48 sm:w-64" : "w-9"
+              }`}
+            >
               <input
-                type="checkbox"
-                checked={isAllSelected}
-                ref={(el) => {
-                  if (el) el.indeterminate = isPartiallySelected;
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                onFocus={() => setIsSearchExpanded(true)}
+                onBlur={() => {
+                  if (!searchQuery) setIsSearchExpanded(false);
                 }}
-                onChange={onSelectAll}
-                className="rounded border-slate-300 dark:border-white/20 bg-white dark:bg-white/5 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
-              />
-            </th>
-
-            {/* Sticky Clinic & Domain Column */}
-            <th className="sticky left-12 z-20 min-w-[240px] py-2.5 px-3 bg-slate-50 dark:bg-[#191C28] border-r border-slate-200 dark:border-white/[0.08] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">
-              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                <Type className="w-3.5 h-3.5 text-slate-400" />
-                <span>Clinic &amp; Website</span>
-              </div>
-            </th>
-
-            {/* Doctor & Phone Column */}
-            <th className="min-w-[200px] py-2.5 px-3 border-r border-slate-200/80 dark:border-white/[0.06]">
-              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                <Mail className="w-3.5 h-3.5 text-slate-400" />
-                <span>Doctor &amp; Phone</span>
-              </div>
-            </th>
-
-            {/* Verification / Deliverability Column */}
-            <th className="min-w-[160px] py-2.5 px-3 border-r border-slate-200/80 dark:border-white/[0.06]">
-              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Website Verification</span>
-              </div>
-            </th>
-
-            {/* Fit / Confidence Column */}
-            <th className="min-w-[140px] py-2.5 px-3 border-r border-slate-200/80 dark:border-white/[0.06]">
-              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                <Gauge className="w-3.5 h-3.5 text-sky-500" />
-                <span>Fit Score</span>
-              </div>
-            </th>
-
-            {/* Locality Column */}
-            <th className="min-w-[180px] py-2.5 px-3 border-r border-slate-200/80 dark:border-white/[0.06]">
-              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                <Globe className="w-3.5 h-3.5 text-slate-400" />
-                <span>Locality</span>
-              </div>
-            </th>
-
-            {/* Tags / Channel Column */}
-            <th className="min-w-[180px] py-2.5 px-3">
-              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                <Tags className="w-3.5 h-3.5 text-slate-400" />
-                <span>Channel &amp; Status</span>
-              </div>
-            </th>
-          </tr>
-        </thead>
-
-        <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-          {leads.map((lead) => {
-            const isSelected = selectedIds.has(lead.id);
-
-            return (
-              <tr
-                key={lead.id}
-                onClick={() => onRowClick?.(lead)}
-                className={`transition-colors cursor-pointer group ${
-                  isSelected
-                    ? "bg-indigo-50/70 dark:bg-indigo-950/25 hover:bg-indigo-100/70 dark:hover:bg-indigo-950/35"
-                    : "hover:bg-slate-50/80 dark:hover:bg-white/[0.03]"
+                placeholder="Search leads... (/)"
+                className={`w-full h-9 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-zinc-500 transition-all ${
+                  isSearchExpanded || searchQuery ? "pl-8 pr-7" : "pl-9 cursor-pointer"
                 }`}
+                title="Search leads, doctors, domains (press '/')"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSearchExpanded(true);
+                  searchInputRef.current?.focus();
+                }}
+                className="absolute left-2.5 text-slate-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                title="Search (press '/')"
               >
-                {/* Sticky Checkbox */}
-                <td
-                  className="sticky left-0 z-10 w-12 py-2.5 px-3 bg-white dark:bg-[#141721] group-hover:bg-slate-50/80 dark:group-hover:bg-[#191C28] border-r border-slate-200/80 dark:border-white/[0.06]"
-                  onClick={(e) => e.stopPropagation()}
+                <Search className="w-3.5 h-3.5" />
+              </button>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSearchChange("");
+                    searchInputRef.current?.focus();
+                  }}
+                  className="absolute right-2 text-slate-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors p-0.5"
+                  title="Clear search"
                 >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Circular Refresh Button */}
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer shrink-0"
+              title="Refresh Leads from Database"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 2. Scrollable Table Body */}
+      {leads.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+          <Database className="w-6 h-6 text-slate-300 dark:text-zinc-600" />
+          <div className="text-sm font-semibold text-slate-700 dark:text-zinc-300">
+            {searchQuery ? "No leads match this search" : "No leads in this view"}
+          </div>
+          <div className="text-xs text-slate-400 dark:text-zinc-500">
+            {searchQuery ? "Try searching for a different clinic name or locality." : "Run Lead Discovery to fill the buffer."}
+          </div>
+        </div>
+      ) : (
+        <div className="w-full overflow-x-auto relative">
+          <table className="w-full text-left text-xs border-collapse font-sans">
+            {/* Table Header: Clean horizontal border, no vertical divider lines, subtle monochrome icons */}
+            <thead>
+              <tr className="border-b border-slate-200/70 dark:border-white/[0.08] bg-slate-50/70 dark:bg-[#191C28]/95 text-slate-400 dark:text-slate-500 font-semibold text-[11px] tracking-wider uppercase select-none">
+                {/* Sticky Checkbox */}
+                <th className="sticky left-0 z-20 w-9 py-2.5 px-3 bg-slate-50/70 dark:bg-[#191C28]">
                   <input
                     type="checkbox"
-                    checked={isSelected}
-                    onChange={(e) => {
-                      const nativeEvent = e.nativeEvent as MouseEvent;
-                      onToggleSelect(lead.id, nativeEvent.shiftKey);
+                    checked={isAllSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = isPartiallySelected;
                     }}
-                    className="rounded border-slate-300 dark:border-white/20 bg-white dark:bg-white/5 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    onChange={onSelectAll}
+                    className="rounded border-slate-300 dark:border-white/20 bg-white dark:bg-white/5 text-zinc-900 focus:ring-0 focus:ring-offset-0 cursor-pointer"
                   />
-                </td>
+                </th>
 
-                {/* Sticky Clinic Name & Domain */}
-                <td className="sticky left-12 z-10 py-2.5 px-3 min-w-[240px] bg-white dark:bg-[#141721] group-hover:bg-slate-50/80 dark:group-hover:bg-[#191C28] border-r border-slate-200/80 dark:border-white/[0.06] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.04)] dark:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.4)]">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="truncate">
-                      <div className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate max-w-[200px] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                        {lead.companyName}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs font-mono text-slate-400 dark:text-slate-500 mt-0.5 truncate">
-                        <span>{lead.companyDomain || "No active website"}</span>
-                      </div>
-                    </div>
-
-                    {lead.companyWebsite && lead.companyWebsite !== "#" && (
-                      <a
-                        href={lead.companyWebsite}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all"
-                        title="Open website"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    )}
+                {/* Sticky Clinic & Domain */}
+                <th className="sticky left-9 z-20 min-w-[170px] max-w-[200px] py-2.5 px-3 bg-slate-50/70 dark:bg-[#191C28]">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                    <Type className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Clinic &amp; Website</span>
                   </div>
-                </td>
+                </th>
 
                 {/* Doctor & Phone */}
-                <td className="py-2.5 px-3 min-w-[200px] border-r border-slate-200/80 dark:border-white/[0.06]">
-                  <div className="truncate">
-                    <div className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                      {lead.contactName.startsWith("Dr.") ? lead.contactName : `Dr. ${lead.contactName}`}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5">
-                      <span className="truncate">{lead.phone || lead.contactEmail}</span>
-                      {lead.phone && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleCopy(lead.phone!, lead.id, e)}
-                          className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
-                          title="Copy Phone"
-                        >
-                          {copiedId === lead.id ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-                      )}
-                    </div>
+                <th className="min-w-[145px] max-w-[170px] py-2.5 px-3">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Doctor &amp; Phone</span>
                   </div>
-                </td>
+                </th>
 
-                {/* Verification Status */}
-                <td className="py-2.5 px-3 min-w-[160px] border-r border-slate-200/80 dark:border-white/[0.06]">
-                  <VerificationBadge
-                    status={lead.verification.status}
-                    details={lead.verification}
-                  />
-                </td>
+                {/* Website Verification */}
+                <th className="min-w-[125px] py-2.5 px-3">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                    <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Website Verification</span>
+                  </div>
+                </th>
 
-                {/* Confidence / Fit Score */}
-                <td className="py-2.5 px-3 min-w-[140px] border-r border-slate-200/80 dark:border-white/[0.06]">
-                  <ConfidencePill score={lead.verification.confidenceScore} />
-                </td>
+                {/* Fit Score */}
+                <th className="min-w-[110px] py-2.5 px-3">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                    <Gauge className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Fit Score</span>
+                  </div>
+                </th>
 
                 {/* Locality */}
-                <td className="py-2.5 px-3 min-w-[180px] border-r border-slate-200/80 dark:border-white/[0.06] text-xs text-slate-700 dark:text-slate-300">
-                  <span className="truncate block max-w-[170px]" title={lead.location}>
-                    {lead.location}
-                  </span>
-                </td>
-
-                {/* Tags / Channel & Status */}
-                <td className="py-2.5 px-3 min-w-[180px]">
-                  <div className="flex flex-wrap items-center gap-1.5 overflow-hidden">
-                    {lead.tags.map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-[10px] text-indigo-700 dark:text-indigo-400 font-semibold truncate"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    {lead.demoReady && (
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold truncate">
-                        Demo Ready
-                      </span>
-                    )}
+                <th className="min-w-[120px] max-w-[140px] py-2.5 px-3">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                    <Globe className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Locality</span>
                   </div>
-                </td>
+                </th>
+
+                {/* Channel & Status */}
+                <th className="min-w-[135px] py-2.5 px-3 pr-4">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                    <Tags className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Channel &amp; Status</span>
+                  </div>
+                </th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            </thead>
+
+            {/* Table Body: Horizontal hairline dividers, no vertical grid lines */}
+            <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
+              {leads.map((lead) => {
+                const isSelected = selectedIds.has(lead.id);
+
+                // Extract primary status badge (e.g. STAGED, REPLIED, etc.) excluding high/standard fit
+                const stageStatus =
+                  lead.tags.find((t) =>
+                    ["STAGED", "REPLIED", "INTERESTED", "CONTACTED", "LOST", "IN_PIPELINE"].includes(
+                      t.toUpperCase()
+                    )
+                  ) || "STAGED";
+
+                return (
+                  <tr
+                    key={lead.id}
+                    onClick={() => onRowClick?.(lead)}
+                    className={`transition-colors cursor-pointer group ${
+                      isSelected
+                        ? "bg-slate-100/70 dark:bg-zinc-800/40"
+                        : "hover:bg-slate-50/80 dark:hover:bg-white/[0.03]"
+                    }`}
+                  >
+                    {/* Sticky Checkbox */}
+                    <td
+                      className="sticky left-0 z-10 w-9 py-2.5 px-3 bg-white dark:bg-[#141721] group-hover:bg-slate-50/80 dark:group-hover:bg-[#191C28]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          const nativeEvent = e.nativeEvent as MouseEvent;
+                          onToggleSelect(lead.id, nativeEvent.shiftKey);
+                        }}
+                        className="rounded border-slate-300 dark:border-white/20 bg-white dark:bg-white/5 text-zinc-900 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                      />
+                    </td>
+
+                    {/* Sticky Clinic Name & Domain */}
+                    <td className="sticky left-9 z-10 py-2.5 px-3 min-w-[170px] max-w-[200px] bg-white dark:bg-[#141721] group-hover:bg-slate-50/80 dark:group-hover:bg-[#191C28]">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <div className="truncate">
+                          <div className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white transition-colors truncate max-w-[160px]">
+                            {lead.companyName}
+                          </div>
+                          <div className="text-[11px] font-mono text-slate-400 dark:text-slate-500 truncate max-w-[160px] mt-0.5">
+                            {lead.companyDomain || "No active website"}
+                          </div>
+                        </div>
+
+                        {lead.companyWebsite && lead.companyWebsite !== "#" && (
+                          <a
+                            href={lead.companyWebsite}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all"
+                            title="Open website"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Doctor & Phone */}
+                    <td className="py-2.5 px-3 min-w-[145px] max-w-[170px]">
+                      <div className="truncate">
+                        <div className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate max-w-[140px]">
+                          {lead.contactName.startsWith("Dr.") ? lead.contactName : `Dr. ${lead.contactName}`}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5">
+                          <span className="truncate max-w-[120px]">{lead.phone || lead.contactEmail}</span>
+                          {lead.phone && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleCopy(lead.phone!, lead.id, e)}
+                              className="text-slate-300 hover:text-zinc-900 dark:text-slate-600 dark:hover:text-white transition-colors cursor-pointer"
+                              title="Copy Phone"
+                            >
+                              {copiedId === lead.id ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Website Verification */}
+                    <td className="py-2.5 px-3 min-w-[125px]">
+                      <VerificationBadge
+                        status={lead.verification.status}
+                        details={lead.verification}
+                      />
+                    </td>
+
+                    {/* Fit Score */}
+                    <td className="py-2.5 px-3 min-w-[110px]">
+                      <ConfidencePill score={lead.verification.confidenceScore} />
+                    </td>
+
+                    {/* Locality */}
+                    <td className="py-2.5 px-3 min-w-[120px] max-w-[140px] text-xs text-slate-600 dark:text-slate-400 font-medium">
+                      <span className="truncate block max-w-[125px]" title={lead.location}>
+                        {lead.location}
+                      </span>
+                    </td>
+
+                    {/* Channel & Status: Non-clipping single-line or compact 2-pill layout with pr-4 */}
+                    <td className="py-2.5 px-3 pr-4 min-w-[135px]">
+                      <div className="flex items-center gap-1.5 flex-nowrap shrink-0">
+                        {/* Primary Stage Status Pill */}
+                        <span className="bg-slate-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700/60 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider shrink-0 whitespace-nowrap">
+                          {stageStatus}
+                        </span>
+
+                        {/* Demo Status Pill */}
+                        {lead.demoReady && (
+                          <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/50 rounded px-1.5 py-0.5 text-[10px] font-medium shrink-0 whitespace-nowrap">
+                            Demo Ready
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
