@@ -4,6 +4,7 @@ import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   Check,
   ChevronDown,
+  ChevronRight,
   Filter,
   MapPin,
   Search,
@@ -100,6 +101,25 @@ export function LeadsTableView() {
 
   // --- Search ---
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut '/' to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === "/" &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA"
+      ) {
+        e.preventDefault();
+        setSearchExpanded(true);
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // --- Filter state ---
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -256,6 +276,7 @@ export function LeadsTableView() {
     setBatchFilter("");
     setFoundDateFilter("");
     setSearchQuery("");
+    setSearchExpanded(false);
   };
 
   return (
@@ -265,297 +286,335 @@ export function LeadsTableView() {
       {/* ------------------------------------------------------------------ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         {/* KPI 1: Total Leads Sent */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-between transition-colors">
-          <div className="space-y-1 min-w-0">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
               Total Leads Sent
-            </div>
-            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white tabular-nums">
-              {totalSent}
-            </div>
-            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono truncate">
-              {totalInTable > 0 ? `${Math.round((totalSent / totalInTable) * 100)}% outreach rate` : "0% outreach rate"}
-            </div>
+            </span>
+            <Send className="w-4 h-4 text-slate-400" />
           </div>
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
-            <Send className="w-5 h-5" />
+          <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
+            {totalSent}
+          </div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span>
+              {totalInTable > 0
+                ? `${Math.round((totalSent / totalInTable) * 100)}% outreach rate`
+                : "0% outreach rate"}
+            </span>
           </div>
         </div>
 
         {/* KPI 2: Total Leads in Table */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-between transition-colors">
-          <div className="space-y-1 min-w-0">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
               Total Leads in Table
-            </div>
-            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white tabular-nums">
-              {totalInTable}
-            </div>
-            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono truncate">
-              {monthFilter ? `Month: ${formatMonth(monthFilter + "-01")}` : `${leads.length} in database`}
-            </div>
+            </span>
+            <Users className="w-4 h-4 text-slate-400" />
           </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-            <Users className="w-5 h-5" />
+          <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
+            {totalInTable}
+          </div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+            <span>
+              {monthFilter
+                ? `Month: ${formatMonth(monthFilter + "-01")}`
+                : `${leads.length} in database`}
+            </span>
           </div>
         </div>
 
         {/* KPI 3: Total Lost Leads */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-between transition-colors">
-          <div className="space-y-1 min-w-0">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
               Total Lost Leads
-            </div>
-            <div className="text-2xl font-black font-mono text-rose-600 dark:text-rose-400 tabular-nums">
-              {totalLost}
-            </div>
-            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono truncate">
-              Lost, DNC or archived
-            </div>
+            </span>
+            <XCircle className="w-4 h-4 text-slate-400" />
           </div>
-          <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-800/60 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
-            <XCircle className="w-5 h-5" />
+          <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
+            {totalLost}
+          </div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+            <span>Lost, DNC or archived</span>
           </div>
         </div>
 
         {/* KPI 4: Total Won Leads */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-between transition-colors">
-          <div className="space-y-1 min-w-0">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
               Total Won Leads
-            </div>
-            <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
-              {totalWon}
-            </div>
-            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono truncate">
-              Closed-won clients
-            </div>
+            </span>
+            <Trophy className="w-4 h-4 text-slate-400" />
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-            <Trophy className="w-5 h-5" />
+          <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
+            {totalWon}
+          </div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span>Closed-won clients</span>
           </div>
         </div>
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* 2. Floating Search Bar + Filter Button (No outer card container)   */}
+      {/* 2. Unified Leads Table Container with Attached Header Bar          */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {/* Floating Search Input */}
-        <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search clinic, doctor, phone, locality, batch ID..."
-            className="w-full pl-9 pr-8 py-2.5 rounded-xl text-xs bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-slate-100 placeholder-slate-400 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
+      <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] shadow-xs overflow-hidden">
+        {/* Unified Table Header Bar */}
+        <div className="border-b border-slate-100 dark:border-white/[0.08] px-5 py-3 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#141721]">
+          {/* Left Side: Section title, count badge, expandable [🔍] search */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">All Leads</h3>
+              <span className="bg-slate-100 dark:bg-white/[0.08] text-slate-700 dark:text-slate-200 rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums">
+                {totalInTable}
+              </span>
+            </div>
 
-        {/* Right-Side Controls: Quick Month Filter + Filter Popover Button + Reset */}
-        <div className="flex items-center gap-2 relative">
-          {/* Quick Month Selector */}
-          <div className="relative">
-            <select
-              value={monthFilter}
-              onChange={(e) => setMonthFilter(e.target.value)}
-              className="pl-3 pr-7 py-2.5 rounded-xl text-xs font-semibold bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50 cursor-pointer appearance-none transition-all"
-            >
-              <option value="">All Months</option>
-              {availableMonths.map((m) => (
-                <option key={m} value={m}>
-                  {formatMonth(m + "-01")}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          {/* Filter Popover Toggle Button */}
-          <div className="relative">
-            <button
-              ref={filterButtonRef}
-              type="button"
-              onClick={() => setFiltersOpen((v) => !v)}
-              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border shadow-xs transition-all cursor-pointer ${
-                filtersOpen || activeFilterCount > 0
-                  ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/40"
-                  : "bg-white dark:bg-[#141721] text-slate-700 dark:text-slate-200 border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-300 hover:text-indigo-600"
-              }`}
-            >
-              <Filter className="w-3.5 h-3.5" />
-              <span>Filters</span>
-              {activeFilterCount > 0 && (
-                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-black">
-                  {activeFilterCount}
-                </span>
-              )}
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${filtersOpen ? "rotate-180" : ""}`} />
-            </button>
-
-            {/* Filter Popover Dropdown */}
-            {filtersOpen && (
-              <div
-                ref={filterPopoverRef}
-                className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95 text-xs text-slate-900 dark:text-slate-100"
-              >
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-1.5 font-bold text-xs">
-                    <Filter className="w-3.5 h-3.5 text-indigo-500" />
-                    <span>Filter Leads &amp; KPIs</span>
-                  </div>
-                  {activeFilterCount > 0 && (
+            {/* Expandable Search Pill */}
+            <div className="relative flex items-center">
+              {searchExpanded || searchQuery ? (
+                <div className="relative flex items-center w-64 sm:w-72 transition-all duration-200">
+                  <Search className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onBlur={() => {
+                      if (!searchQuery.trim()) setSearchExpanded(false);
+                    }}
+                    placeholder="Filter table... (Esc to clear)"
+                    className="w-full pl-8 pr-7 py-1.5 rounded-full text-xs bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  />
+                  {searchQuery ? (
                     <button
                       type="button"
-                      onClick={resetFilters}
-                      className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 cursor-pointer"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setSearchExpanded(false);
+                      }}
+                      className="absolute right-2 p-0.5 rounded-full hover:bg-slate-200/50 dark:hover:bg-white/[0.08] text-slate-400"
                     >
-                      Reset All
+                      <X className="w-3 h-3" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setSearchExpanded(false)}
+                      className="absolute right-2 text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      esc
                     </button>
                   )}
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Month Filter */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Month
-                    </label>
-                    <select
-                      value={monthFilter}
-                      onChange={(e) => setMonthFilter(e.target.value)}
-                      className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                    >
-                      <option value="">All Months</option>
-                      {availableMonths.map((m) => (
-                        <option key={m} value={m}>
-                          {formatMonth(m + "-01")}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Stage / Status Filter */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Stage / Status
-                    </label>
-                    <select
-                      value={stageFilter}
-                      onChange={(e) => setStageFilter(e.target.value)}
-                      className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                    >
-                      <option value="">All Stages</option>
-                      <option value="won">Won Leads</option>
-                      <option value="lost">Lost / Closed / DNC</option>
-                      <option value="sent">Outreach Sent</option>
-                      <option value="unsent">Outreach Unsent</option>
-                      {stages.map((st) => (
-                        <option key={st.slug} value={st.slug}>
-                          {st.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Outreach Status Filter */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Outreach
-                    </label>
-                    <select
-                      value={outreachFilter}
-                      onChange={(e) => setOutreachFilter(e.target.value as any)}
-                      className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                    >
-                      <option value="ALL">All</option>
-                      <option value="SENT">Sent</option>
-                      <option value="UNSENT">Unsent</option>
-                    </select>
-                  </div>
-
-                  {/* Batch Filter */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Batch
-                    </label>
-                    <select
-                      value={batchFilter}
-                      onChange={(e) => setBatchFilter(e.target.value)}
-                      className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                    >
-                      <option value="">All Batches</option>
-                      {batchIds.map((b) => (
-                        <option key={b} value={b}>
-                          {b}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Specific Date Picker */}
-                <div className="flex flex-col gap-1 pt-1">
-                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Specific Date
-                  </label>
-                  <input
-                    type="date"
-                    value={foundDateFilter}
-                    onChange={(e) => setFoundDateFilter(e.target.value)}
-                    className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                  />
-                </div>
-              </div>
-            )}
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchExpanded(true);
+                    setTimeout(() => searchInputRef.current?.focus(), 50);
+                  }}
+                  title="Filter table (/)"
+                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-full text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200/80 dark:border-white/[0.08] transition-colors cursor-pointer"
+                >
+                  <Search className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="hidden sm:inline text-[11px] text-slate-500 dark:text-slate-400">Filter table</span>
+                  <kbd className="hidden sm:inline text-[9px] text-slate-400 font-mono bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08] rounded px-1">
+                    /
+                  </kbd>
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Reset Button */}
-          {activeFilterCount > 0 && (
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="flex items-center gap-1 px-2.5 py-2.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20 shadow-xs cursor-pointer transition-all"
-            >
-              <X className="w-3.5 h-3.5" />
-              <span>Reset</span>
-            </button>
-          )}
+          {/* Right Side: Month Dropdown + Filters Popover Button + Reset */}
+          <div className="flex items-center gap-2">
+            {/* Month Filter Dropdown */}
+            <div className="relative">
+              <select
+                value={monthFilter}
+                onChange={(e) => setMonthFilter(e.target.value)}
+                className="appearance-none bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-white/[0.08] rounded-xl pl-3 pr-7 py-1.5 text-xs font-medium transition-colors cursor-pointer focus:outline-none"
+              >
+                <option value="">All Months</option>
+                {availableMonths.map((m) => (
+                  <option key={m} value={m}>
+                    {formatMonth(m + "-01")}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
 
-          {/* Scoped Count Pill */}
-          <span className="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap font-mono px-2">
-            {filteredLeads.length} / {leads.length}
-          </span>
+            {/* Filters Popover Button */}
+            <div className="relative">
+              <button
+                ref={filterButtonRef}
+                type="button"
+                onClick={() => setFiltersOpen((prev) => !prev)}
+                className={`flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-white/[0.08] rounded-xl px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                  filtersOpen ? "ring-2 ring-indigo-500/30" : ""
+                }`}
+              >
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <span>Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Filters Popover Drawer */}
+              {filtersOpen && (
+                <div
+                  ref={filterPopoverRef}
+                  className="absolute right-0 top-full mt-2 w-72 p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xl z-50 space-y-3.5 animate-in fade-in zoom-in-95 text-xs text-slate-900 dark:text-slate-100"
+                >
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                      Filter Leads
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setFiltersOpen(false)}
+                      className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Filter Grid */}
+                  <div className="space-y-3">
+                    {/* Month Filter inside Popover */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Month
+                      </label>
+                      <select
+                        value={monthFilter}
+                        onChange={(e) => setMonthFilter(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      >
+                        <option value="">All Months</option>
+                        {availableMonths.map((m) => (
+                          <option key={m} value={m}>
+                            {formatMonth(m + "-01")}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Stage / Status Filter */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Stage / Status
+                      </label>
+                      <select
+                        value={stageFilter}
+                        onChange={(e) => setStageFilter(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      >
+                        <option value="">All Stages</option>
+                        <option value="won">Won Leads</option>
+                        <option value="lost">Lost / Closed / DNC</option>
+                        <option value="sent">Outreach Sent</option>
+                        <option value="unsent">Outreach Unsent</option>
+                        {stages.map((st) => (
+                          <option key={st.slug} value={st.slug}>
+                            {st.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Outreach Status Filter */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Outreach
+                      </label>
+                      <select
+                        value={outreachFilter}
+                        onChange={(e) => setOutreachFilter(e.target.value as any)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      >
+                        <option value="ALL">All</option>
+                        <option value="SENT">Sent</option>
+                        <option value="UNSENT">Unsent</option>
+                      </select>
+                    </div>
+
+                    {/* Batch Filter */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Batch
+                      </label>
+                      <select
+                        value={batchFilter}
+                        onChange={(e) => setBatchFilter(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      >
+                        <option value="">All Batches</option>
+                        {batchIds.map((b) => (
+                          <option key={b} value={b}>
+                            {b}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Specific Date Picker */}
+                    <div className="flex flex-col gap-1 pt-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Specific Date
+                      </label>
+                      <input
+                        type="date"
+                        value={foundDateFilter}
+                        onChange={(e) => setFoundDateFilter(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Reset Button */}
+            {activeFilterCount > 0 && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20 cursor-pointer transition-all"
+              >
+                <X className="w-3 h-3" />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* 3. Leads Table Container                                           */}
-      {/* ------------------------------------------------------------------ */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] shadow-xs overflow-hidden">
+        {/* Table Content */}
         <div className="overflow-x-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <table className="w-full text-left border-collapse text-xs min-w-[860px]">
+          <table className="w-full text-left border-collapse text-xs min-w-[880px]">
             <thead>
-              <tr className="border-b border-slate-200/80 dark:border-white/[0.06] bg-slate-50 dark:bg-white/[0.03] text-slate-500 dark:text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
-                <th className="py-3.5 px-4">Clinic &amp; Doctor</th>
-                <th className="py-3.5 px-3">Locality &amp; City</th>
-                <th className="py-3.5 px-3">Contacts</th>
-                <th className="py-3.5 px-3">Batch</th>
-                <th className="py-3.5 px-3">Outreach</th>
-                <th className="py-3.5 px-3">Found</th>
-                <th className="py-3.5 px-3">Fit &amp; Intent</th>
-                <th className="py-3.5 px-3">Next Step</th>
-                <th className="py-3.5 px-3 text-right">Action</th>
+              <tr className="border-b border-slate-200/70 dark:border-white/[0.06] bg-slate-50/70 dark:bg-white/[0.02] text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
+                <th className="py-2.5 px-4">Clinic &amp; Doctor</th>
+                <th className="py-2.5 px-3">Locality &amp; City</th>
+                <th className="py-2.5 px-3">Contacts</th>
+                <th className="py-2.5 px-3">Batch</th>
+                <th className="py-2.5 px-3">Outreach</th>
+                <th className="py-2.5 px-3">Found</th>
+                <th className="py-2.5 px-3">Fit &amp; Intent</th>
+                <th className="py-2.5 px-3">Next Step</th>
+                <th className="py-2.5 px-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
@@ -570,50 +629,65 @@ export function LeadsTableView() {
                   const batchId: string | undefined = lead.custom_fields?.batch_id;
                   const sentAt = deriveOutreachSentAt(lead);
                   const isSent = isLeadSent(lead);
+                  const intentDot =
+                    (lead.intent_score ?? 0) >= 8
+                      ? "bg-emerald-500"
+                      : (lead.intent_score ?? 0) >= 5
+                      ? "bg-amber-500"
+                      : "bg-slate-400";
 
                   return (
                     <tr
                       key={lead.id}
                       onClick={() => setSelectedLeadId(lead.id)}
-                      className="hover:bg-slate-50/80 dark:hover:bg-white/[0.04] cursor-pointer transition-colors"
+                      className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] cursor-pointer transition-colors group"
                     >
                       {/* Clinic & Doctor */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-xs text-indigo-600 dark:text-indigo-400 shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/[0.06] text-zinc-700 dark:text-zinc-200 border border-slate-200/80 dark:border-white/[0.08] flex items-center justify-center font-semibold text-xs shrink-0">
                             {lead.name.slice(0, 2).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-bold text-slate-900 dark:text-white truncate">{lead.name}</div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                            <div className="text-sm font-semibold text-zinc-900 dark:text-white truncate">
+                              {lead.name}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
                               {formatDoctorName(lead.doctor_name)}
                             </div>
                           </div>
                         </div>
                       </td>
 
-                      {/* Locality */}
-                      <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300">
+                      {/* Locality & City */}
+                      <td className="py-3 px-3 text-slate-600 dark:text-slate-300">
                         <div className="flex items-center gap-1.5">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate">{lead.locality || lead.city}</span>
+                          <span className="truncate">{lead.locality || lead.city || "-"}</span>
                         </div>
                       </td>
 
                       {/* Contacts */}
-                      <td className="py-3.5 px-3 space-y-0.5 text-[11px]">
+                      <td className="py-3 px-3 space-y-0.5 text-[11px]">
                         {lead.primary_phone && (
-                          <div className="text-slate-700 dark:text-slate-300 font-mono">{lead.primary_phone}</div>
+                          <div className="text-xs font-medium text-zinc-800 dark:text-zinc-200 font-mono">
+                            {lead.primary_phone}
+                          </div>
                         )}
                         {lead.instagram_handle && (
-                          <div className="text-pink-600 dark:text-pink-400">@{lead.instagram_handle}</div>
+                          <div className="text-[11px] text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                            @{lead.instagram_handle}
+                          </div>
+                        )}
+                        {!lead.primary_phone && !lead.instagram_handle && (
+                          <span className="text-slate-400 italic">-</span>
                         )}
                       </td>
 
                       {/* Batch Badge */}
-                      <td className="py-3.5 px-3">
+                      <td className="py-3 px-3">
                         {batchId ? (
-                          <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-500/20 font-mono font-bold text-[10px] whitespace-nowrap">
+                          <span className="bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.08] rounded-md px-2 py-0.5 text-[11px] font-mono font-medium whitespace-nowrap">
                             {batchId}
                           </span>
                         ) : (
@@ -622,57 +696,68 @@ export function LeadsTableView() {
                       </td>
 
                       {/* Outreach Status Pill */}
-                      <td className="py-3.5 px-3">
+                      <td className="py-3 px-3">
                         {isSent ? (
                           <div className="flex flex-col gap-0.5">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-500/20 font-semibold text-[10px] whitespace-nowrap">
-                              <Check className="w-2.5 h-2.5" />
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-900/40 text-[11px] font-medium whitespace-nowrap">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                               Sent
                             </span>
                             {sentAt && (
-                              <span className="text-[10px] text-slate-400 font-mono">{sentAt.slice(0, 10)}</span>
+                              <span className="text-[10px] text-slate-400 font-mono pl-1">
+                                {sentAt.slice(0, 10)}
+                              </span>
                             )}
                           </div>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-500/20 font-semibold text-[10px] whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-400 border border-slate-200/70 dark:border-white/[0.08] text-[11px] font-medium whitespace-nowrap">
                             Unsent
                           </span>
                         )}
                       </td>
 
                       {/* Found Date */}
-                      <td className="py-3.5 px-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
+                      <td className="py-3 px-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
                         {lead.created_at ? formatDate(lead.created_at) : "-"}
                       </td>
 
                       {/* Fit & Intent */}
-                      <td className="py-3.5 px-3">
+                      <td className="py-3 px-3">
                         <div className="flex items-center gap-1.5 flex-nowrap">
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-500/20 font-semibold font-mono text-[10px] whitespace-nowrap">
+                          <span className="bg-slate-100 dark:bg-white/[0.06] text-zinc-800 dark:text-zinc-200 font-mono font-medium px-2 py-0.5 rounded text-[11px] border border-slate-200/60 dark:border-white/[0.06] whitespace-nowrap">
                             Fit {lead.fit_score}%
                           </span>
-                          <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-500/20 font-semibold font-mono text-[10px] whitespace-nowrap">
-                            Intent {lead.intent_score}
+                          <span className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1 whitespace-nowrap">
+                            <span className={`w-1.5 h-1.5 rounded-full ${intentDot} shrink-0`} />
+                            <span>Intent {lead.intent_score}</span>
                           </span>
                         </div>
                       </td>
 
                       {/* Next Step */}
-                      <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-[160px] truncate">
-                        {lead.next_action || "None scheduled"}
+                      <td className="py-3 px-3 min-w-[200px] max-w-[260px]">
+                        <div
+                          className="text-slate-600 dark:text-slate-300 truncate text-xs"
+                          title={lead.next_action || "None scheduled"}
+                        >
+                          {lead.next_action || "None scheduled"}
+                        </div>
                       </td>
 
                       {/* Action */}
-                      <td className="py-3.5 px-3 text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedLeadId(lead.id);
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-200 text-xs font-semibold cursor-pointer transition-colors"
-                        >
-                          Inspect
-                        </button>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedLeadId(lead.id);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-200 text-xs font-medium transition-all cursor-pointer"
+                          >
+                            Inspect
+                          </button>
+                          <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-zinc-900 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                        </div>
                       </td>
                     </tr>
                   );
