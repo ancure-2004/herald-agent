@@ -45,21 +45,23 @@ export function DashboardView() {
     liveFeed,
     setNewLeadModalOpen,
     setActiveTab,
+    operatorProfile,
   } = useCRM();
 
   // 1. Current Date & Time Calculations
   const now = useMemo(() => new Date(), []);
-  const [greeting, setGreeting] = useState<string>("Good morning, Ankur 👋");
+  const [greeting, setGreeting] = useState<string>("Good morning");
   useEffect(() => {
     const hour = new Date().getHours();
+    const signoff = operatorProfile?.signoff || "Ankur";
     if (hour >= 5 && hour < 12) {
-      setGreeting("Good morning, Ankur 👋");
+      setGreeting(`Good morning, ${signoff} 👋`);
     } else if (hour >= 12 && hour < 17) {
-      setGreeting("Good afternoon, Ankur 👋");
+      setGreeting(`Good afternoon, ${signoff} 👋`);
     } else {
-      setGreeting("Good evening, Ankur 👋");
+      setGreeting(`Good evening, ${signoff} 👋`);
     }
-  }, []);
+  }, [operatorProfile?.signoff]);
   const currentMonthName = useMemo(() => now.toLocaleString("en-US", { month: "short" }), [now]);
   const currentYear = useMemo(() => now.getFullYear(), [now]);
   const daysInMonth = useMemo(
