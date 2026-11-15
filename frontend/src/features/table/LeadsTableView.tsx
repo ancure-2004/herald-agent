@@ -1,7 +1,18 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Check, ChevronDown, Filter, MapPin, Search, X } from "lucide-react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import {
+  Check,
+  ChevronDown,
+  Filter,
+  MapPin,
+  Search,
+  X,
+  Send,
+  Users,
+  XCircle,
+  Trophy,
+} from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 
 // ---------------------------------------------------------------------------
@@ -21,9 +32,43 @@ function deriveOutreachSentAt(lead: any): string | null {
   const outbound = (lead.messages ?? []).find((m: any) => m.direction === "outbound");
   if (outbound?.created_at) return outbound.created_at as string;
   // 3. Stage-based fallback: if in a sent stage, use lead.updated_at
-  const stage = lead.stage_rel?.slug ?? lead.stage ?? "";
+  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
   if (SENT_STAGES.has(stage) && lead.updated_at) return lead.updated_at as string;
   return null;
+}
+
+function isLeadSent(lead: any): boolean {
+  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (SENT_STAGES.has(stage)) return true;
+  if (deriveOutreachSentAt(lead) !== null) return true;
+  if (lead.packages && Array.isArray(lead.packages) && lead.packages.some((p: any) => p.sent_at)) return true;
+  if (lead.messages && Array.isArray(lead.messages) && lead.messages.some((m: any) => m.direction === "outbound")) return true;
+  return false;
+}
+
+function isLeadLost(lead: any): boolean {
+  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (stage === "lost" || stage === "archived" || stage === "dnc") return true;
+  if (lead.stage_rel?.is_lost) return true;
+  if (Boolean(lead.do_not_contact)) return true;
+  if (Boolean(lead.is_archived)) return true;
+  return false;
+}
+
+function isLeadWon(lead: any): boolean {
+  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (stage === "won" || stage === "closed_won" || stage === "client") return true;
+  if (lead.stage_rel?.is_won) return true;
+  return false;
+}
+
+function formatDoctorName(name?: string | null): string {
+  if (!name || !name.trim()) return "Doctor";
+  const trimmed = name.trim();
+  if (/^dr\.?\s+/i.test(trimmed)) {
+    return trimmed;
+  }
+  return `Dr. ${trimmed}`;
 }
 
 /** Format a YYYY-MM-DD (or ISO) date string as "Nov 2026" */
@@ -58,30 +103,53 @@ export function LeadsTableView() {
 
   // --- Filter state ---
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const filterPopoverRef = useRef<HTMLDivElement>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [monthFilter, setMonthFilter] = useState("");
+  const [stageFilter, setStageFilter] = useState("");
   const [outreachFilter, setOutreachFilter] = useState<"ALL" | "SENT" | "UNSENT">("ALL");
-  const [foundMonthFilter, setFoundMonthFilter] = useState("");
-  const [foundDateFilter, setFoundDateFilter] = useState("");
-  const [sentMonthFilter, setSentMonthFilter] = useState("");
-  const [sentDateFilter, setSentDateFilter] = useState("");
   const [batchFilter, setBatchFilter] = useState("");
+  const [foundDateFilter, setFoundDateFilter] = useState("");
+
+  // Close filter popover on outside click or Escape key
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        filterPopoverRef.current &&
+        !filterPopoverRef.current.contains(e.target as Node) &&
+        filterButtonRef.current &&
+        !filterButtonRef.current.contains(e.target as Node)
+      ) {
+        setFiltersOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFiltersOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [filtersOpen]);
 
   // --- Derived option lists ---
-  const foundMonths = useMemo(() => {
+  const availableMonths = useMemo(() => {
     const seen = new Set<string>();
     leads.forEach((l: any) => {
       if (l.created_at) seen.add(l.created_at.slice(0, 7));
+      const sentTs = deriveOutreachSentAt(l);
+      if (sentTs) seen.add(sentTs.slice(0, 7));
     });
-    return Array.from(seen).sort().reverse();
+    return Array.from(seen).filter((m) => /^\d{4}-\d{2}$/.test(m)).sort().reverse();
   }, [leads]);
 
-  const sentMonths = useMemo(() => {
-    const seen = new Set<string>();
-    leads.forEach((l: any) => {
-      const ts = deriveOutreachSentAt(l);
-      if (ts) seen.add(ts.slice(0, 7));
-    });
-    return Array.from(seen).sort().reverse();
-  }, [leads]);
+  const stages = useMemo(() => {
+    return activeHustle?.stages || [];
+  }, [activeHustle]);
 
   const batchIds = useMemo(() => {
     const seen = new Set<string>();
@@ -92,11 +160,11 @@ export function LeadsTableView() {
     return Array.from(seen).sort();
   }, [leads]);
 
-  // --- Filtered leads ---
+  // --- Filtered leads (Scopes both KPI cards & table) ---
   const filteredLeads = useMemo(() => {
     let result = leads as any[];
 
-    // 1. Search
+    // 1. Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((l) => {
@@ -116,241 +184,376 @@ export function LeadsTableView() {
       });
     }
 
-    // 2. Outreach status filter
+    // 2. Month filter (Derived from lead creation or outreach send date)
+    if (monthFilter) {
+      result = result.filter((l) => {
+        const createdMonth = l.created_at ? l.created_at.slice(0, 7) : "";
+        const sentTs = deriveOutreachSentAt(l);
+        const sentMonth = sentTs ? sentTs.slice(0, 7) : "";
+        return createdMonth === monthFilter || sentMonth === monthFilter;
+      });
+    }
+
+    // 3. Stage / Status filter
+    if (stageFilter) {
+      if (stageFilter === "won") {
+        result = result.filter(isLeadWon);
+      } else if (stageFilter === "lost") {
+        result = result.filter(isLeadLost);
+      } else if (stageFilter === "sent") {
+        result = result.filter(isLeadSent);
+      } else if (stageFilter === "unsent") {
+        result = result.filter((l) => !isLeadSent(l));
+      } else {
+        result = result.filter((l) => {
+          const stageSlug = (l.stage_rel?.slug ?? l.stage ?? "").toLowerCase();
+          return stageSlug === stageFilter.toLowerCase();
+        });
+      }
+    }
+
+    // 4. Outreach status filter
     if (outreachFilter === "SENT") {
-      result = result.filter((l) => {
-        const stage = l.stage_rel?.slug ?? l.stage ?? "";
-        if (SENT_STAGES.has(stage)) return true;
-        return !!deriveOutreachSentAt(l);
-      });
+      result = result.filter(isLeadSent);
     } else if (outreachFilter === "UNSENT") {
-      result = result.filter((l) => {
-        const stage = l.stage_rel?.slug ?? l.stage ?? "";
-        if (SENT_STAGES.has(stage)) return false;
-        return !deriveOutreachSentAt(l);
-      });
+      result = result.filter((l) => !isLeadSent(l));
     }
 
-    // 3. Found month
-    if (foundMonthFilter) {
-      result = result.filter((l) => (l.created_at ?? "").startsWith(foundMonthFilter));
-    }
-
-    // 4. Found date
-    if (foundDateFilter) {
-      result = result.filter((l) => (l.created_at ?? "").slice(0, 10) === foundDateFilter);
-    }
-
-    // 5. Sent month
-    if (sentMonthFilter) {
-      result = result.filter((l) => {
-        const ts = deriveOutreachSentAt(l);
-        return ts ? ts.startsWith(sentMonthFilter) : false;
-      });
-    }
-
-    // 6. Sent date
-    if (sentDateFilter) {
-      result = result.filter((l) => {
-        const ts = deriveOutreachSentAt(l);
-        return ts ? ts.slice(0, 10) === sentDateFilter : false;
-      });
-    }
-
-    // 7. Batch
+    // 5. Batch filter
     if (batchFilter) {
       result = result.filter((l) => l.custom_fields?.batch_id === batchFilter);
     }
 
+    // 6. Specific date filter
+    if (foundDateFilter) {
+      result = result.filter((l) => (l.created_at ?? "").slice(0, 10) === foundDateFilter);
+    }
+
     return result;
-  }, [leads, searchQuery, outreachFilter, foundMonthFilter, foundDateFilter, sentMonthFilter, sentDateFilter, batchFilter]);
+  }, [leads, searchQuery, monthFilter, stageFilter, outreachFilter, batchFilter, foundDateFilter]);
+
+  // ---------------------------------------------------------------------------
+  // KPI Metrics (Calculated from filteredLeads to stay strictly in scope)
+  // ---------------------------------------------------------------------------
+  const totalInTable = filteredLeads.length;
+  const totalSent = useMemo(() => filteredLeads.filter(isLeadSent).length, [filteredLeads]);
+  const totalLost = useMemo(() => filteredLeads.filter(isLeadLost).length, [filteredLeads]);
+  const totalWon = useMemo(() => filteredLeads.filter(isLeadWon).length, [filteredLeads]);
 
   // Active filter count (for badge)
   const activeFilterCount = [
+    !!monthFilter,
+    !!stageFilter,
     outreachFilter !== "ALL",
-    !!foundMonthFilter,
-    !!foundDateFilter,
-    !!sentMonthFilter,
-    !!sentDateFilter,
     !!batchFilter,
+    !!foundDateFilter,
   ].filter(Boolean).length;
 
   const resetFilters = () => {
+    setMonthFilter("");
+    setStageFilter("");
     setOutreachFilter("ALL");
-    setFoundMonthFilter("");
-    setFoundDateFilter("");
-    setSentMonthFilter("");
-    setSentDateFilter("");
     setBatchFilter("");
+    setFoundDateFilter("");
+    setSearchQuery("");
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 text-slate-900 dark:text-slate-100">
       {/* ------------------------------------------------------------------ */}
-      {/* Top Filter & Search Bar                                             */}
+      {/* 1. Four KPI Summary Cards Strip (Scoped to Active Filters)         */}
       {/* ------------------------------------------------------------------ */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] shadow-xs overflow-visible">
-        {/* Main search row */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-white/[0.05]">
-          {/* Search input */}
-          <div className="relative flex-1">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search clinic, doctor, phone, locality, email, batch ID…"
-              className="w-full pl-9 pr-8 py-2 rounded-xl text-xs bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {/* KPI 1: Total Leads Sent */}
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-between transition-colors">
+          <div className="space-y-1 min-w-0">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+              Total Leads Sent
+            </div>
+            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white tabular-nums">
+              {totalSent}
+            </div>
+            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono truncate">
+              {totalInTable > 0 ? `${Math.round((totalSent / totalInTable) * 100)}% outreach rate` : "0% outreach rate"}
+            </div>
           </div>
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <Send className="w-5 h-5" />
+          </div>
+        </div>
 
-          {/* Filter toggle button */}
-          <button
-            type="button"
-            onClick={() => setFiltersOpen((v) => !v)}
-            className={`relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-              filtersOpen || activeFilterCount > 0
-                ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/40"
-                : "bg-slate-50 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/[0.08] hover:border-indigo-300 hover:text-indigo-600"
-            }`}
-          >
-            <Filter className="w-3.5 h-3.5" />
-            <span>Filters</span>
-            {activeFilterCount > 0 && (
-              <span className="ml-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-black">
-                {activeFilterCount}
-              </span>
-            )}
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${filtersOpen ? "rotate-180" : ""}`} />
-          </button>
+        {/* KPI 2: Total Leads in Table */}
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-between transition-colors">
+          <div className="space-y-1 min-w-0">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+              Total Leads in Table
+            </div>
+            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white tabular-nums">
+              {totalInTable}
+            </div>
+            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono truncate">
+              {monthFilter ? `Month: ${formatMonth(monthFilter + "-01")}` : `${leads.length} in database`}
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+            <Users className="w-5 h-5" />
+          </div>
+        </div>
 
-          {/* Count */}
-          <span className="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap font-mono">
-            {filteredLeads.length} / {leads.length}
-          </span>
+        {/* KPI 3: Total Lost Leads */}
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-between transition-colors">
+          <div className="space-y-1 min-w-0">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+              Total Lost Leads
+            </div>
+            <div className="text-2xl font-black font-mono text-rose-600 dark:text-rose-400 tabular-nums">
+              {totalLost}
+            </div>
+            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono truncate">
+              Lost, DNC or archived
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-800/60 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+            <XCircle className="w-5 h-5" />
+          </div>
+        </div>
 
-          {/* Reset */}
-          {activeFilterCount > 0 && (
+        {/* KPI 4: Total Won Leads */}
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-between transition-colors">
+          <div className="space-y-1 min-w-0">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+              Total Won Leads
+            </div>
+            <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
+              {totalWon}
+            </div>
+            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono truncate">
+              Closed-won clients
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <Trophy className="w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. Floating Search Bar + Filter Button (No outer card container)   */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* Floating Search Input */}
+        <div className="relative flex-1 min-w-[240px] max-w-md">
+          <Search className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search clinic, doctor, phone, locality, batch ID..."
+            className="w-full pl-9 pr-8 py-2.5 rounded-xl text-xs bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-slate-100 placeholder-slate-400 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+          />
+          {searchQuery && (
             <button
               type="button"
-              onClick={resetFilters}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 hover:bg-rose-100 cursor-pointer transition-all"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
             >
-              <X className="w-3 h-3" />
-              Reset
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        {/* Expandable filter strip */}
-        {filtersOpen && (
-          <div className="px-4 py-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 border-b border-slate-100 dark:border-white/[0.05] bg-slate-50/60 dark:bg-white/[0.015]">
-            {/* Outreach Status */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Outreach</label>
-              <select
-                value={outreachFilter}
-                onChange={(e) => setOutreachFilter(e.target.value as any)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="ALL">All</option>
-                <option value="SENT">Sent</option>
-                <option value="UNSENT">Unsent</option>
-              </select>
-            </div>
-
-            {/* Found Month */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Found Month</label>
-              <select
-                value={foundMonthFilter}
-                onChange={(e) => setFoundMonthFilter(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="">All Months</option>
-                {foundMonths.map((m) => (
-                  <option key={m} value={m}>{formatMonth(m + "-01")}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Found Date */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Found Date</label>
-              <input
-                type="date"
-                value={foundDateFilter}
-                onChange={(e) => setFoundDateFilter(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              />
-            </div>
-
-            {/* Sent Month */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sent Month</label>
-              <select
-                value={sentMonthFilter}
-                onChange={(e) => setSentMonthFilter(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="">All Months</option>
-                {sentMonths.map((m) => (
-                  <option key={m} value={m}>{formatMonth(m + "-01")}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Sent Date */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sent Date</label>
-              <input
-                type="date"
-                value={sentDateFilter}
-                onChange={(e) => setSentDateFilter(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              />
-            </div>
-
-            {/* Batch */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Batch</label>
-              <select
-                value={batchFilter}
-                onChange={(e) => setBatchFilter(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="">All Batches</option>
-                {batchIds.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
-            </div>
+        {/* Right-Side Controls: Quick Month Filter + Filter Popover Button + Reset */}
+        <div className="flex items-center gap-2 relative">
+          {/* Quick Month Selector */}
+          <div className="relative">
+            <select
+              value={monthFilter}
+              onChange={(e) => setMonthFilter(e.target.value)}
+              className="pl-3 pr-7 py-2.5 rounded-xl text-xs font-semibold bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50 cursor-pointer appearance-none transition-all"
+            >
+              <option value="">All Months</option>
+              {availableMonths.map((m) => (
+                <option key={m} value={m}>
+                  {formatMonth(m + "-01")}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
-        )}
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Table                                                             */}
-        {/* ---------------------------------------------------------------- */}
-        <div className="overflow-x-auto">
+          {/* Filter Popover Toggle Button */}
+          <div className="relative">
+            <button
+              ref={filterButtonRef}
+              type="button"
+              onClick={() => setFiltersOpen((v) => !v)}
+              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border shadow-xs transition-all cursor-pointer ${
+                filtersOpen || activeFilterCount > 0
+                  ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/40"
+                  : "bg-white dark:bg-[#141721] text-slate-700 dark:text-slate-200 border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-300 hover:text-indigo-600"
+              }`}
+            >
+              <Filter className="w-3.5 h-3.5" />
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-black">
+                  {activeFilterCount}
+                </span>
+              )}
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${filtersOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {/* Filter Popover Dropdown */}
+            {filtersOpen && (
+              <div
+                ref={filterPopoverRef}
+                className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95 text-xs text-slate-900 dark:text-slate-100"
+              >
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-1.5 font-bold text-xs">
+                    <Filter className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>Filter Leads &amp; KPIs</span>
+                  </div>
+                  {activeFilterCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 cursor-pointer"
+                    >
+                      Reset All
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Month Filter */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Month
+                    </label>
+                    <select
+                      value={monthFilter}
+                      onChange={(e) => setMonthFilter(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    >
+                      <option value="">All Months</option>
+                      {availableMonths.map((m) => (
+                        <option key={m} value={m}>
+                          {formatMonth(m + "-01")}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Stage / Status Filter */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Stage / Status
+                    </label>
+                    <select
+                      value={stageFilter}
+                      onChange={(e) => setStageFilter(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    >
+                      <option value="">All Stages</option>
+                      <option value="won">Won Leads</option>
+                      <option value="lost">Lost / Closed / DNC</option>
+                      <option value="sent">Outreach Sent</option>
+                      <option value="unsent">Outreach Unsent</option>
+                      {stages.map((st) => (
+                        <option key={st.slug} value={st.slug}>
+                          {st.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Outreach Status Filter */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Outreach
+                    </label>
+                    <select
+                      value={outreachFilter}
+                      onChange={(e) => setOutreachFilter(e.target.value as any)}
+                      className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    >
+                      <option value="ALL">All</option>
+                      <option value="SENT">Sent</option>
+                      <option value="UNSENT">Unsent</option>
+                    </select>
+                  </div>
+
+                  {/* Batch Filter */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Batch
+                    </label>
+                    <select
+                      value={batchFilter}
+                      onChange={(e) => setBatchFilter(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    >
+                      <option value="">All Batches</option>
+                      {batchIds.map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Specific Date Picker */}
+                <div className="flex flex-col gap-1 pt-1">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Specific Date
+                  </label>
+                  <input
+                    type="date"
+                    value={foundDateFilter}
+                    onChange={(e) => setFoundDateFilter(e.target.value)}
+                    className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Reset Button */}
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="flex items-center gap-1 px-2.5 py-2.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20 shadow-xs cursor-pointer transition-all"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Reset</span>
+            </button>
+          )}
+
+          {/* Scoped Count Pill */}
+          <span className="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap font-mono px-2">
+            {filteredLeads.length} / {leads.length}
+          </span>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. Leads Table Container                                           */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] shadow-xs overflow-hidden">
+        <div className="overflow-x-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <table className="w-full text-left border-collapse text-xs min-w-[860px]">
             <thead>
               <tr className="border-b border-slate-200/80 dark:border-white/[0.06] bg-slate-50 dark:bg-white/[0.03] text-slate-500 dark:text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
-                <th className="py-3.5 px-4">Clinic & Doctor</th>
-                <th className="py-3.5 px-3">Locality & City</th>
+                <th className="py-3.5 px-4">Clinic &amp; Doctor</th>
+                <th className="py-3.5 px-3">Locality &amp; City</th>
                 <th className="py-3.5 px-3">Contacts</th>
                 <th className="py-3.5 px-3">Batch</th>
                 <th className="py-3.5 px-3">Outreach</th>
                 <th className="py-3.5 px-3">Found</th>
-                <th className="py-3.5 px-3">Fit & Intent</th>
+                <th className="py-3.5 px-3">Fit &amp; Intent</th>
                 <th className="py-3.5 px-3">Next Step</th>
                 <th className="py-3.5 px-3 text-right">Action</th>
               </tr>
@@ -366,8 +569,7 @@ export function LeadsTableView() {
                 filteredLeads.map((lead: any) => {
                   const batchId: string | undefined = lead.custom_fields?.batch_id;
                   const sentAt = deriveOutreachSentAt(lead);
-                  const stageSlug: string = lead.stage_rel?.slug ?? lead.stage ?? "";
-                  const isSent = SENT_STAGES.has(stageSlug) || !!sentAt;
+                  const isSent = isLeadSent(lead);
 
                   return (
                     <tr
@@ -383,7 +585,9 @@ export function LeadsTableView() {
                           </div>
                           <div className="min-w-0">
                             <div className="font-bold text-slate-900 dark:text-white truncate">{lead.name}</div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{lead.doctor_name || "Doctor"}</div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                              {formatDoctorName(lead.doctor_name)}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -413,7 +617,7 @@ export function LeadsTableView() {
                             {batchId}
                           </span>
                         ) : (
-                          <span className="text-slate-400 text-[10px] italic">—</span>
+                          <span className="text-slate-400 text-[10px] italic">-</span>
                         )}
                       </td>
 
@@ -438,7 +642,7 @@ export function LeadsTableView() {
 
                       {/* Found Date */}
                       <td className="py-3.5 px-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
-                        {lead.created_at ? formatDate(lead.created_at) : "—"}
+                        {lead.created_at ? formatDate(lead.created_at) : "-"}
                       </td>
 
                       {/* Fit & Intent */}
