@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   ArrowRight,
   BarChart3,
@@ -49,6 +49,17 @@ export function DashboardView() {
 
   // 1. Current Date & Time Calculations
   const now = useMemo(() => new Date(), []);
+  const [greeting, setGreeting] = useState<string>("Good morning, Ankur 👋");
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      setGreeting("Good morning, Ankur 👋");
+    } else if (hour >= 12 && hour < 17) {
+      setGreeting("Good afternoon, Ankur 👋");
+    } else {
+      setGreeting("Good evening, Ankur 👋");
+    }
+  }, []);
   const currentMonthName = useMemo(() => now.toLocaleString("en-US", { month: "short" }), [now]);
   const currentYear = useMemo(() => now.getFullYear(), [now]);
   const daysInMonth = useMemo(
@@ -381,11 +392,7 @@ export function DashboardView() {
       <div className="flex items-center justify-between gap-3 shrink-0 h-7">
         <div className="flex items-center gap-2">
           <span className="text-xs sm:text-sm font-bold text-[#111827] dark:text-white">
-            Good morning, Ankur 👋
-          </span>
-          <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
-          <span className="text-[11px] text-slate-400 hidden sm:inline">
-            Clinic Pipeline & Outreach
+            {greeting}
           </span>
         </div>
 
