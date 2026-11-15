@@ -13,14 +13,19 @@ export const AutopilotCockpitView: React.FC = () => {
   const { cockpitTab, setCockpitTab } = useCRM();
   const activeTab: CockpitTab = (cockpitTab as CockpitTab) || "attention";
 
-  // Keyboard navigation shortcuts: '1', '2', '3', '4'
+  // Keyboard navigation shortcuts: '1', '2', '3', '4' for top-level tabs (except in outreach where keys 1-4 are workflow shortcuts)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
-        e.target instanceof HTMLSelectElement
+        e.target instanceof HTMLSelectElement ||
+        (e.target as HTMLElement)?.isContentEditable
       ) {
+        return;
+      }
+
+      if (activeTab === "outreach") {
         return;
       }
 
@@ -37,7 +42,7 @@ export const AutopilotCockpitView: React.FC = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setCockpitTab]);
+  }, [activeTab, setCockpitTab]);
 
   return (
     <div className="h-full w-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-y-auto selection:bg-indigo-500 selection:text-white transition-colors duration-200">
