@@ -105,7 +105,7 @@ interface BatchGroupProps {
   batchLeads: Lead[];
   expanded: boolean;
   onToggle: () => void;
-  renderLead: (lead: Lead) => React.ReactNode;
+  renderLead: (lead: Lead, isNested?: boolean) => React.ReactNode;
 }
 
 function BatchGroup({ batchId, batchLeads, expanded, onToggle, renderLead }: BatchGroupProps) {
@@ -201,8 +201,8 @@ function BatchGroup({ batchId, batchLeads, expanded, onToggle, renderLead }: Bat
 
       {/* Expanded: individual draggable LeadCards */}
       {expanded && (
-        <div className="mx-2.5 mb-2.5 pl-3 pr-1 py-1 border-l-2 border-indigo-300/70 dark:border-indigo-700/60 space-y-3">
-          {batchLeads.map((lead) => renderLead(lead))}
+        <div className="p-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 rounded-b-2xl space-y-2.5">
+          {batchLeads.map((lead) => renderLead(lead, true))}
         </div>
       )}
     </div>
@@ -278,7 +278,7 @@ export function KanbanColumn({
     );
   }
 
-  const renderLead = (lead: Lead) => (
+  const renderLead = (lead: Lead, isNested = false) => (
     <div
       key={lead.id}
       draggable
@@ -294,6 +294,7 @@ export function KanbanColumn({
         allStages={allStages}
         isSelected={selectedLeadId === lead.id}
         isDragging={draggingLeadId === lead.id}
+        isNestedInBatch={isNested}
         onSelect={() => onLeadSelect(lead.id)}
         onAdvanceStage={(nextStageId) => onAdvanceLeadStage(lead, nextStageId)}
         onApproveAndSend={onApproveAndSend}

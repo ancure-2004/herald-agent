@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { KanbanColumn } from "./KanbanColumn";
+import { formatDoctorName } from "./LeadCard";
 import { autopilotApi } from "@/api/autopilotApi";
 
 export function KanbanBoardView() {
@@ -211,8 +212,8 @@ export function KanbanBoardView() {
 
   return (
     <div className="space-y-4">
-      {/* Top Bar with Search, Filter, Sort, and Total in view */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 backdrop-blur-xl shadow-xs relative">
+      {/* Floating Top Controls with Search, Filter, Sort, and Total in view (No outer bar wrapper) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 relative">
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Compact Search Bar */}
           <div className="relative">
@@ -222,7 +223,7 @@ export function KanbanBoardView() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search pipeline..."
-              className="pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-indigo-500 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 w-36 sm:w-48 transition-all"
+              className="pl-8 pr-7 py-2 rounded-xl text-xs bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 w-40 sm:w-52 transition-all"
             />
             {searchQuery && (
               <button
@@ -241,10 +242,10 @@ export function KanbanBoardView() {
                 setFilterPopoverOpen(!filterPopoverOpen);
                 setSortPopoverOpen(false);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold shadow-xs transition-all cursor-pointer ${
                 filterPopoverOpen || filterMinFit > 0 || filterVerifiedOnly
-                  ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
-                  : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                  ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/40"
+                  : "bg-white dark:bg-[#141721] hover:border-indigo-300 dark:hover:border-indigo-500/50 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200"
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -302,10 +303,10 @@ export function KanbanBoardView() {
                 setSortPopoverOpen(!sortPopoverOpen);
                 setFilterPopoverOpen(false);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold shadow-xs transition-all cursor-pointer ${
                 sortPopoverOpen
-                  ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
-                  : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                  ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/40"
+                  : "bg-white dark:bg-[#141721] hover:border-indigo-300 dark:hover:border-indigo-500/50 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200"
               }`}
             >
               <ArrowUpDown className="w-3.5 h-3.5" />
@@ -359,10 +360,10 @@ export function KanbanBoardView() {
             <>
               <button
                 onClick={() => setBatchGroupingEnabled(!batchGroupingEnabled)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold shadow-xs transition-all cursor-pointer ${
                   batchGroupingEnabled
                     ? "bg-indigo-600 text-white border-indigo-500 shadow-xs"
-                    : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                    : "bg-white dark:bg-[#141721] hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200"
                 }`}
                 title="Toggle batch grouping for early volume stages"
               >
@@ -373,7 +374,7 @@ export function KanbanBoardView() {
               <button
                 onClick={handleSyncBatches}
                 disabled={syncingBatches}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 disabled:opacity-50 disabled:cursor-wait"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold shadow-xs transition-all cursor-pointer bg-white hover:bg-emerald-50 dark:bg-[#141721] dark:hover:bg-emerald-950/40 border-slate-200/80 dark:border-white/[0.08] text-emerald-700 dark:text-emerald-300 disabled:opacity-50 disabled:cursor-wait"
                 title="Assign unbatched leads into batches"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${syncingBatches ? "animate-spin" : ""}`} />
@@ -385,10 +386,10 @@ export function KanbanBoardView() {
           {isAllActive && (
             <button
               onClick={() => setHideEmptyStages(!hideEmptyStages)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold shadow-xs transition-all cursor-pointer ${
                 hideEmptyStages
                   ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-xs"
-                  : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                  : "bg-white dark:bg-[#141721] hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200"
               }`}
               title={hideEmptyStages ? "Empty stages collapsed. Click to show all." : "Showing all stages. Click to hide empty."}
             >
@@ -397,7 +398,7 @@ export function KanbanBoardView() {
             </button>
           )}
 
-          <div className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium">
+          <div className="px-3 py-2 rounded-xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs text-slate-600 dark:text-slate-300 font-medium">
             Total in view: <strong className="text-slate-900 dark:text-slate-100 font-mono font-bold">{totalCount}</strong>
           </div>
         </div>
@@ -490,36 +491,7 @@ export function KanbanBoardView() {
         </div>
       ) : (
         /* ==================== 2. FOCUSED LIST VIEW FOR SMART FILTERS ==================== */
-        <div className="space-y-4 pb-6">
-          {/* Header Banner / Chip */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-white/90 dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs backdrop-blur-md">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-800 flex items-center justify-center">
-                <CurrentViewIcon className={`w-5 h-5 ${currentViewInfo.color}`} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    {currentViewInfo.label}
-                  </h3>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20">
-                    {focusedLeads.length} in queue
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {currentViewInfo.description}
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setActiveSmartView("all_active")}
-              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <span>← Back to All Active Kanban</span>
-            </button>
-          </div>
-
+        <div className="space-y-3 pb-6">
           {/* Focused List Rows / Empty State */}
           {focusedLeads.length === 0 ? (
             <div className="p-12 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3">
@@ -561,7 +533,7 @@ export function KanbanBoardView() {
                         <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
                           {lead.doctor_name && (
                             <span className="font-medium text-slate-700 dark:text-slate-300">
-                              {lead.doctor_name} &bull;
+                              {formatDoctorName(lead.doctor_name)} &bull;
                             </span>
                           )}
                           <MapPin className="w-3 h-3 text-slate-400 shrink-0" />

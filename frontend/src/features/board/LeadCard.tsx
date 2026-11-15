@@ -27,9 +27,18 @@ interface LeadCardProps {
   allStages: Stage[];
   isSelected: boolean;
   isDragging: boolean;
+  isNestedInBatch?: boolean;
   onSelect: () => void;
   onAdvanceStage: (nextStageId: number) => void;
   onApproveAndSend?: (lead: Lead) => void;
+}
+
+export function formatDoctorName(name?: string | null): string {
+  if (!name || !name.trim()) return "Doctor";
+  const trimmed = name.trim();
+  const stripped = trimmed.replace(/^(dr\.?\s*)+/i, "");
+  if (!stripped) return "Doctor";
+  return `Dr. ${stripped}`;
 }
 
 export function LeadCard({
@@ -39,6 +48,7 @@ export function LeadCard({
   allStages,
   isSelected,
   isDragging,
+  isNestedInBatch = false,
   onSelect,
   onAdvanceStage,
   onApproveAndSend,
@@ -53,6 +63,10 @@ export function LeadCard({
     lead.next_action_due_at &&
     new Date(lead.next_action_due_at).getTime() < Date.now();
 
+  const nextActionText = lead.next_action
+    ? lead.next_action.replace(/Dr\.\s+Dr\./gi, "Dr.")
+    : null;
+
   const currentStageIndex = allStages.findIndex((s) => s.id === lead.stage_id);
   const nextStage =
     currentStageIndex >= 0 && currentStageIndex < allStages.length - 1
@@ -62,24 +76,28 @@ export function LeadCard({
   return (
     <div
       onClick={onSelect}
-      className={`p-4 rounded-2xl bg-white dark:bg-slate-900 border transition-all duration-150 select-none space-y-3 relative group ${
+      className={`rounded-2xl transition-all duration-150 select-none relative group ${
+        isNestedInBatch
+          ? "p-3 sm:p-3.5 space-y-2.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs hover:border-indigo-300 dark:hover:border-slate-700 hover:shadow-sm"
+          : "p-4 space-y-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-indigo-300 dark:hover:border-slate-700"
+      } ${
         isDragging ? "opacity-30 scale-95" : "opacity-100"
       } ${
         isSelected
           ? "border-indigo-500 shadow-md ring-2 ring-indigo-500/20"
-          : "border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700 shadow-xs hover:shadow-md"
+          : ""
       }`}
     >
       {/* Top Card Line: Deal Value + Fit Badge */}
-      <div className="flex items-center justify-between text-xs">
-        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/60 text-[11px]">
+      <div className="flex flex-wrap items-center justify-between gap-1.5 text-xs">
+        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/60 text-[11px] whitespace-nowrap shrink-0">
           ₹{(lead.deal_value_inr || 25000).toLocaleString()}
         </span>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5 shrink-0">
           {batchId && (
             <span
-              className="font-mono text-[9px] font-bold tracking-tight text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700"
+              className="font-mono text-[9px] font-bold tracking-tight text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0"
               title={`Batch ${String(batchId)}`}
             >
               {String(batchId)}
@@ -87,14 +105,14 @@ export function LeadCard({
           )}
 
           {lead.intent_score >= 50 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded-md border border-rose-200 dark:border-rose-800/60">
+            <span className="flex items-center gap-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded-md border border-rose-200 dark:border-rose-800/60 whitespace-nowrap shrink-0">
               <Flame className="w-2.5 h-2.5 fill-rose-500" />
               <span>Hot ({lead.intent_score})</span>
             </span>
           )}
 
           <span
-            className={`flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md border ${
+            className={`flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md border whitespace-nowrap shrink-0 ${
               lead.fit_score >= 80
                 ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
@@ -107,17 +125,21 @@ export function LeadCard({
       </div>
 
       {/* Main Clinic & Doctor Info */}
-      <div>
+      <div className="min-w-0">
         <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-1 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
           {lead.name}
         </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
-          <span>Dr. {lead.doctor_name || "Doctor"}</span>
-          <span>•</span>
-          <span className="font-mono text-[11px]">{lead.primary_phone || "No Phone"}</span>
+        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 min-w-0">
+          <span className="truncate font-medium text-slate-700 dark:text-slate-300">
+            {formatDoctorName(lead.doctor_name)}
+          </span>
+          <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
+          <span className="font-mono text-[11px] shrink-0 text-slate-500 dark:text-slate-400">
+            {lead.primary_phone || "No Phone"}
+          </span>
         </p>
         {lead.locality && (
-          <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+          <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 min-w-0">
             <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
             <span className="truncate">{lead.locality}</span>
           </p>
@@ -125,7 +147,7 @@ export function LeadCard({
       </div>
 
       {/* Next Step / Action Box */}
-      {lead.next_action && (
+      {nextActionText && (
         <div
           className={`p-2 rounded-xl text-xs flex items-start gap-2 border ${
             isOverdue
@@ -138,7 +160,7 @@ export function LeadCard({
             <div className="text-[10px] font-bold uppercase tracking-wider opacity-75">
               {isOverdue ? "Overdue Action" : "Next Step"}
             </div>
-            <div className="text-xs truncate font-medium">{lead.next_action}</div>
+            <div className="text-xs truncate font-medium">{nextActionText}</div>
           </div>
         </div>
       )}
