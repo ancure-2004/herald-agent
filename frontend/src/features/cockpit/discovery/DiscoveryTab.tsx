@@ -452,178 +452,181 @@ export const DiscoveryTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Prominent Lead Discovery Trigger Bar with Runner Controls */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-        {/* Compact Locality Selector & Preset Dropdown */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Custom Typing Input with Datalist */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5">
-            <Compass className="w-4 h-4 text-indigo-500 shrink-0" />
-            <input
-              type="text"
-              list="delhi-ncr-presets"
-              value={discoveryLocality}
-              onChange={(e) => setDiscoveryLocality(e.target.value)}
-              placeholder="Type custom locality..."
-              className="w-36 sm:w-44 bg-transparent text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none font-sans"
-            />
+      {/* Discovery Engine Floating Controls & Filter/Search Toolbar */}
+      <div className="space-y-2.5">
+        {/* Row 1: Floating Discovery Runner Controls (Zero Outer Box/Wrapper) */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          {/* Locality Selector & Preset Dropdown */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Custom Typing Input with Datalist */}
+            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1.5 shadow-xs">
+              <Compass className="w-4 h-4 text-indigo-500 shrink-0" />
+              <input
+                type="text"
+                list="delhi-ncr-presets"
+                value={discoveryLocality}
+                onChange={(e) => setDiscoveryLocality(e.target.value)}
+                placeholder="Type custom locality..."
+                className="w-36 sm:w-44 bg-transparent text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none font-sans"
+              />
+            </div>
+
+            {/* Quick Presets Dropdown */}
+            <select
+              value={DELHI_NCR_PRESETS.includes(discoveryLocality) ? discoveryLocality : "custom"}
+              onChange={(e) => {
+                if (e.target.value !== "custom") {
+                  setDiscoveryLocality(e.target.value.split(" (")[0]);
+                }
+              }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer font-sans shadow-xs"
+              title="Pick a Delhi NCR micro-locality preset"
+            >
+              <option value="custom" disabled hidden>Presets Dropdown...</option>
+              {DELHI_NCR_PRESETS.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+
+            {/* Datalist for native autocomplete typing */}
+            <datalist id="delhi-ncr-presets">
+              {DELHI_NCR_PRESETS.map((p) => (
+                <option key={p} value={p.split(" (")[0]} />
+              ))}
+            </datalist>
           </div>
 
-          {/* Quick Presets Dropdown */}
-          <select
-            value={DELHI_NCR_PRESETS.includes(discoveryLocality) ? discoveryLocality : "custom"}
-            onChange={(e) => {
-              if (e.target.value !== "custom") {
-                setDiscoveryLocality(e.target.value.split(" (")[0]);
-              }
-            }}
-            className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer font-sans"
-            title="Pick a Delhi NCR micro-locality preset"
-          >
-            <option value="custom" disabled hidden>Presets Dropdown...</option>
-            {DELHI_NCR_PRESETS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-
-          {/* Datalist for native autocomplete typing */}
-          <datalist id="delhi-ncr-presets">
-            {DELHI_NCR_PRESETS.map((p) => (
-              <option key={p} value={p.split(" (")[0]} />
-            ))}
-          </datalist>
-        </div>
-
-        {/* Right Runner Controls: Testing Mode + Start/Stop Toggle Button */}
-        <div className="flex items-center gap-2.5 justify-end">
-          {/* Testing Mode Toggle Pill */}
-          <button
-            type="button"
-            onClick={() => setIsTestingMode((prev) => !prev)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium flex items-center gap-1.5 transition-all cursor-pointer border ${
-              isTestingMode
-                ? "bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 shadow-xs font-bold"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:text-slate-900 dark:hover:text-white"
-            }`}
-            title="Toggle Testing Mode (isolates leads as is_test=true)"
-          >
-            <FlaskConical className={`w-3.5 h-3.5 ${isTestingMode ? "text-amber-500" : "text-slate-400"}`} />
-            <span>Test Mode:</span>
-            <span className="font-bold">{isTestingMode ? "ON" : "OFF"}</span>
-          </button>
-
-          {/* Start / Stop Discovery Toggle Button */}
-          {isDiscovering ? (
+          {/* Right Runner Controls: Testing Mode + Start/Stop Toggle Button */}
+          <div className="flex items-center gap-2 justify-end">
+            {/* Testing Mode Toggle Pill */}
             <button
               type="button"
-              onClick={handleStopDiscovery}
-              disabled={isStopping}
-              className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 transition-all cursor-pointer shrink-0"
-              title="Stop discovery run immediately without losing staged leads"
+              onClick={() => setIsTestingMode((prev) => !prev)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium flex items-center gap-1.5 transition-all cursor-pointer border shadow-xs ${
+                isTestingMode
+                  ? "bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold"
+                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-white"
+              }`}
+              title="Toggle Testing Mode (isolates leads as is_test=true)"
             >
-              {isStopping ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Halting Discovery...</span>
-                </>
-              ) : (
-                <>
-                  <Square className="w-3.5 h-3.5 fill-current" />
-                  <span>Stop Discovery</span>
-                </>
-              )}
+              <FlaskConical className={`w-3.5 h-3.5 ${isTestingMode ? "text-amber-500" : "text-slate-400"}`} />
+              <span>Test Mode:</span>
+              <span className="font-bold">{isTestingMode ? "ON" : "OFF"}</span>
             </button>
-          ) : (
+
+            {/* Start / Stop Discovery Toggle Button */}
+            {isDiscovering ? (
+              <button
+                type="button"
+                onClick={handleStopDiscovery}
+                disabled={isStopping}
+                className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-rose-600/25 transition-all cursor-pointer shrink-0"
+                title="Stop discovery run immediately without losing staged leads"
+              >
+                {isStopping ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Halting Discovery...</span>
+                  </>
+                ) : (
+                  <>
+                    <Square className="w-3.5 h-3.5 fill-current" />
+                    <span>Stop Discovery</span>
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleStartDiscovery}
+                className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-indigo-600/25 transition-all cursor-pointer shrink-0"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Start Lead Discovery</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Row 2: Filter Pills + Search & Refresh */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          {/* View Filter Pills */}
+          <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs">
             <button
-              type="button"
-              onClick={handleStartDiscovery}
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all cursor-pointer shrink-0"
+              onClick={() => setActiveFilter("all")}
+              className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
+                activeFilter === "all"
+                  ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Start Lead Discovery</span>
+              All Leads ({leads.length})
             </button>
-          )}
-        </div>
-      </div>
 
-      {/* Discovery Header Toolbar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        {/* View Filter Pills */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs">
-          <button
-            onClick={() => setActiveFilter("all")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              activeFilter === "all"
-                ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
-          >
-            All Leads ({leads.length})
-          </button>
+            <button
+              onClick={() => setActiveFilter("needs-verification")}
+              className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
+                activeFilter === "needs-verification"
+                  ? "bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-300 shadow-xs font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              <AlertTriangle className="w-3 h-3 text-amber-500" />
+              <span>Needs Verification</span>
+            </button>
 
-          <button
-            onClick={() => setActiveFilter("needs-verification")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-              activeFilter === "needs-verification"
-                ? "bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-300 shadow-xs font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
-          >
-            <AlertTriangle className="w-3 h-3 text-amber-500" />
-            <span>Needs Verification</span>
-          </button>
+            <button
+              onClick={() => setActiveFilter("high-intent")}
+              className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
+                activeFilter === "high-intent"
+                  ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-xs font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              <Sparkles className="w-3 h-3 text-indigo-500" />
+              <span>High Intent</span>
+            </button>
 
-          <button
-            onClick={() => setActiveFilter("high-intent")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-              activeFilter === "high-intent"
-                ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-xs font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
-          >
-            <Sparkles className="w-3 h-3 text-indigo-500" />
-            <span>High Intent</span>
-          </button>
-
-          <button
-            onClick={() => setActiveFilter("ready-for-demo")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-              activeFilter === "ready-for-demo"
-                ? "bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 shadow-xs font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
-          >
-            <ShieldCheck className="w-3 h-3 text-emerald-500" />
-            <span>Ready for Demo</span>
-          </button>
-        </div>
-
-        {/* Search & Actions */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search leads, domains, doctors..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
-            />
+            <button
+              onClick={() => setActiveFilter("ready-for-demo")}
+              className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
+                activeFilter === "ready-for-demo"
+                  ? "bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 shadow-xs font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              <ShieldCheck className="w-3 h-3 text-emerald-500" />
+              <span>Ready for Demo</span>
+            </button>
           </div>
 
-          <button
-            onClick={() => {
-              syncLeadsFromDb();
-              fetchCockpitTelemetry();
-              showNotification("Synced leads & telemetry from database");
-            }}
-            className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-            title="Refresh Leads from Database"
-          >
-            <RotateCcw className={`w-3.5 h-3.5 ${isLoadingLeads ? "animate-spin" : ""}`} />
-          </button>
+          {/* Search & Actions */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search leads, domains, doctors..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors shadow-xs"
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                syncLeadsFromDb();
+                fetchCockpitTelemetry();
+                showNotification("Synced leads & telemetry from database");
+              }}
+              className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer shadow-xs"
+              title="Refresh Leads from Database"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 ${isLoadingLeads ? "animate-spin" : ""}`} />
+            </button>
+          </div>
         </div>
       </div>
 
