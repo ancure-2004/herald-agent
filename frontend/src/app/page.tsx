@@ -57,6 +57,8 @@ function CRMContent() {
           className={`flex-1 h-full min-w-0 ${
             isCockpit
               ? "p-0 overflow-hidden bg-slate-50 dark:bg-slate-950"
+              : activeTab === "inbox" || activeTab === "calls"
+              ? "p-3 sm:p-4 overflow-hidden h-full bg-slate-50 dark:bg-slate-950"
               : "overflow-y-auto p-4 sm:p-6 space-y-6"
           }`}
         >
