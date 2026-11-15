@@ -28,7 +28,7 @@ import {
 import { useCRM } from "@/context/CRMContext";
 import { apiFetch } from "@/lib/api/client";
 import { autopilotApi } from "@/api/autopilotApi";
-import { LiveLogTerminal } from "@/components/ui/LiveLogTerminal";
+import { OutreachConsole } from "./outreach/OutreachConsole";
 
 interface BatchInfo {
   batch_id: string;
@@ -104,6 +104,7 @@ export function OutreachHubSubpage() {
     notify,
     handleRunCloser,
     activeHustleId,
+    activeHustle,
     setSelectedLeadId,
     isOutreachRunning,
     activeOutreachChannel,
@@ -150,8 +151,6 @@ export function OutreachHubSubpage() {
 
       const oldestId = getOldestBatchId(meta.batches);
 
-      // Requirement 3: If explicit batch selected and still valid, keep it.
-      // Otherwise, auto-select the oldest available batch in the arsenal as default fallback.
       setSelectedBatchId((prev) => {
         if (prev && meta.batches.some((b) => b.batch_id === prev)) return prev;
         return meta.active_batch_id || oldestId;
@@ -209,10 +208,6 @@ export function OutreachHubSubpage() {
 
   const activeBatchInfo = batchMeta?.batches.find((b) => b.batch_id === selectedBatchId) ?? null;
   const effectiveBatchId = selectedBatchId ?? batchMeta?.active_batch_id ?? undefined;
-
-  const isWaRunning = activeOutreachChannel === "whatsapp";
-  const isEmailRunning = activeOutreachChannel === "email";
-  const isIgRunning = activeOutreachChannel === "instagram";
 
   // Dynamic next clinic targets
   const nextWaClinic = useMemo<BatchClinic | null>(() => {
@@ -492,7 +487,7 @@ export function OutreachHubSubpage() {
     }
   }, [selectedClinic, filteredClinics, fetchBatchClinics, fetchBatchMeta, notify]);
 
-  // Keyboard shortcut listener (Requirement 5)
+  // Keyboard shortcut listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -537,97 +532,98 @@ export function OutreachHubSubpage() {
     }
   };
 
-  const stopButton = (label: string) => (
-    <button
-      type="button"
-      onClick={() => handleStopAutomation()}
-      className="w-full py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/25 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-    >
-      <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-      </span>
-      <Square className="w-3.5 h-3.5" />
-      <span>{label}</span>
-    </button>
-  );
-
   return (
-    <div className="space-y-5">
-      {/* 1. Floating Top Controls (Clean floating controls without card wrapper noise) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-        {/* Left Side: Dry-Run / Safe Mode toggle & live running indicator */}
-        <div className="flex items-center gap-2">
+    <div className="space-y-4">
+      {/* 1. Floating Launcher Controls: Standalone Islands on #F1F3F6 Canvas */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        {/* Left Side: Mode badge & Telemetry Floating Islands */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Mode Toggle Button Island */}
           <button
             type="button"
             onClick={() => setDryRunMode((prev) => !prev)}
-            className={`px-3.5 py-2 rounded-xl text-xs font-mono font-bold border shadow-sm transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer shadow-xs ${
               dryRunMode
-                ? "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-500/40"
-                : "bg-rose-50 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-500/50 font-black"
+                ? "bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-300 border-slate-200/90 dark:border-slate-800"
+                : "bg-white dark:bg-slate-900 text-rose-700 dark:text-rose-300 border-slate-200/90 dark:border-slate-800 font-bold"
             }`}
+            title="Click to toggle between DRY-RUN and LIVE SEND"
           >
-            {dryRunMode ? "Mode: DRY-RUN (Safe)" : "Mode: LIVE SEND (Active)"}
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                dryRunMode ? "bg-amber-500" : "bg-rose-500 animate-pulse"
+              }`}
+            />
+            <span>{dryRunMode ? "Mode: DRY-RUN (Safe)" : "Mode: LIVE SEND"}</span>
           </button>
 
+          {/* Batch Progress Telemetry Island */}
+          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
+            <span className="text-slate-400 dark:text-slate-500">Batch:</span>
+            <span className="font-bold text-zinc-900 dark:text-white">{effectiveBatchId ?? "BATCH-01"}</span>
+            <span className="text-slate-300 dark:text-slate-600">·</span>
+            <span className="text-slate-400 dark:text-slate-500">Sent:</span>
+            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+              {activeBatchInfo?.sent ?? 0} / {activeBatchInfo?.total ?? batchClinics.length}
+            </span>
+          </div>
+
           {isOutreachRunning && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-mono px-2 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-bold animate-pulse shadow-sm">
+            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 px-2.5 py-1 rounded-xl border border-emerald-300/80 dark:border-emerald-500/30 shadow-xs">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold animate-pulse">
                 Automation Running
               </span>
               <button
                 type="button"
                 onClick={() => handleStopAutomation()}
-                className="px-2.5 py-1 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-sm cursor-pointer flex items-center gap-1"
+                className="px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white cursor-pointer flex items-center gap-1"
               >
-                <Square className="w-3 h-3" />
+                <Square className="w-2.5 h-2.5" />
                 <span>Stop</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Right Side: Batch Selector dropdown, Reload button, Re-batch / Stock button */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Batch Selector Dropdown */}
+        {/* Right Side: Batch Selector Dropdown, Reload Button, Re-batch Stock Floating Islands */}
+        <div className="flex items-center gap-2">
+          {/* Batch Selector Dropdown Island */}
           <div className="relative">
             <select
               value={selectedBatchId ?? ""}
               onChange={(e) => setSelectedBatchId(e.target.value || null)}
               disabled={batchLoading || !batchMeta?.batches.length}
-              className="appearance-none pl-3.5 pr-8 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono font-bold text-slate-900 dark:text-white shadow-sm focus:outline-none focus:border-indigo-500 cursor-pointer disabled:opacity-50 transition-all min-w-[200px]"
+              className="appearance-none pl-3 pr-7 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 text-xs font-mono font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-zinc-500 cursor-pointer disabled:opacity-50 transition-all min-w-[170px] shadow-xs"
             >
               {batchMeta?.batches.map((b) => (
-                <option key={b.batch_id} value={b.batch_id} className="bg-white dark:bg-slate-900">
-                  {b.batch_id} ({b.ready_unsent} unsent / {b.total} total)
+                <option key={b.batch_id} value={b.batch_id}>
+                  {b.batch_id} ({b.ready_unsent} unsent / {b.total})
                 </option>
               ))}
               {!batchMeta?.batches.length && (
-                <option value="" className="bg-white dark:bg-slate-900">
-                  {batchLoading ? "Loading..." : "No batches available"}
-                </option>
+                <option value="">{batchLoading ? "Loading..." : "No batches"}</option>
               )}
             </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
           </div>
 
-          {/* Reload / Refresh Button */}
+          {/* Reload / Refresh Button Island */}
           <button
             type="button"
             onClick={fetchBatchMeta}
             disabled={batchLoading}
             title="Reload Batch Data"
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-slate-600 dark:text-slate-300 hover:text-indigo-500 hover:border-indigo-300 transition-all cursor-pointer disabled:opacity-50"
+            className="p-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer disabled:opacity-50 shadow-xs"
           >
             <RotateCw className={`w-3.5 h-3.5 ${batchLoading ? "animate-spin" : ""}`} />
           </button>
 
-          {/* Re-Batch Stock Button */}
+          {/* Re-Batch Stock Button Island */}
           <button
             type="button"
             onClick={handleRebalance}
             disabled={rebalancing}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-slate-200 dark:border-slate-800 shadow-sm text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${rebalancing ? "animate-spin" : ""}`} />
             <span>{rebalancing ? "Re-batching..." : "Re-Batch Stock"}</span>
@@ -635,256 +631,58 @@ export function OutreachHubSubpage() {
         </div>
       </div>
 
-      {/* 2. Unified Outreach & Terminal Component */}
-      <div className="p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        {/* Component Header with Batch Progress Display */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100 dark:border-white/[0.06]">
-          <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-            Dispatch & Automation Hub
-          </span>
-
-          {/* Batch Progress Display */}
-          <div className="flex items-center gap-2 px-2.5 py-0.5 rounded-lg bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-[11px] font-mono">
-            <span className="text-slate-400">Batch:</span>
-            <span className="font-bold text-indigo-600 dark:text-indigo-400">{effectiveBatchId ?? "BATCH-01"}</span>
-            <span className="text-slate-300 dark:text-slate-600">·</span>
-            <span className="text-slate-400">Sent:</span>
-            <span className="font-bold text-emerald-600 dark:text-emerald-400">
-              {activeBatchInfo?.sent ?? 0} / {activeBatchInfo?.total ?? batchClinics.length}
-            </span>
-            <span className="text-[10px] text-slate-400">
-              ({activeBatchInfo?.ready_unsent ?? 0} left)
-            </span>
-          </div>
-        </div>
-
-        {/* Split View: Rebalanced ~63% Terminal + ~37% Channel Panels */}
-        <div className="flex flex-col lg:flex-row gap-3.5 items-stretch">
-          {/* Left Column (63% width): Compact Live Terminal (Height adjusted to h-72) */}
-          <div className="w-full lg:w-[63%] flex flex-col">
-            <LiveLogTerminal
-              title="AUTOMATION TERMINAL"
-              service="outreach"
-              lockService={false}
-              compact={true}
-              showWindowDots={false}
-              className="h-72 rounded-2xl border border-slate-800 shadow-inner flex flex-col"
-              collapsible={false}
-            />
-          </div>
-
-          {/* Right Column (37% width): Outreach Channel Panel with clean tab bar */}
-          <div className="w-full lg:w-[37%] p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.06] flex flex-col justify-between space-y-3 h-72 overflow-hidden">
-            {/* Top Channel Tab Bar */}
-            <div className="space-y-2.5">
-              <div className="grid grid-cols-3 gap-1 p-0.5 rounded-lg bg-slate-200/70 dark:bg-white/[0.05]">
-                <button
-                  type="button"
-                  onClick={() => setChannelTab("whatsapp")}
-                  className={`py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                    channelTab === "whatsapp"
-                      ? "bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                  }`}
-                >
-                  <Send className="w-3 h-3" />
-                  <span>WhatsApp</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setChannelTab("email")}
-                  className={`py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                    channelTab === "email"
-                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                  }`}
-                >
-                  <Mail className="w-3 h-3" />
-                  <span>Email</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setChannelTab("instagram")}
-                  className={`py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                    channelTab === "instagram"
-                      ? "bg-white dark:bg-slate-800 text-pink-600 dark:text-pink-400 shadow-sm"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                  }`}
-                >
-                  <MessageCircle className="w-3 h-3" />
-                  <span>Instagram</span>
-                </button>
-              </div>
-
-              {/* Tab 1: WhatsApp Panel */}
-              {channelTab === "whatsapp" && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">
-                      #1 PRIORITY
-                    </span>
-                    <span className="font-mono text-slate-700 dark:text-slate-300">
-                      {waSent} / {waLimit} Quota ({waPct}%)
-                    </span>
-                  </div>
-
-                  <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
-                    <div className="bg-emerald-500 h-1 rounded-full transition-all duration-300" style={{ width: `${waPct}%` }} />
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/[0.06] text-[10px] space-y-1.5">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Delay:</span>
-                      <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">4-7m (jittered)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Target:</span>
-                      <span className="font-semibold text-indigo-600 dark:text-indigo-400 truncate max-w-[150px]" title={waTargetLabel}>
-                        {waTargetLabel}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 2: Cold Email Panel */}
-              {channelTab === "email" && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold">
-                      #2 PRIORITY
-                    </span>
-                    <span className="font-mono text-slate-700 dark:text-slate-300">
-                      {emailSent} / {emailLimit} Quota ({emailPct}%)
-                    </span>
-                  </div>
-
-                  <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
-                    <div className="bg-blue-500 h-1 rounded-full transition-all duration-300" style={{ width: `${emailPct}%` }} />
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/[0.06] text-[10px] space-y-1.5">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Delay:</span>
-                      <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">2m spacing</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Target:</span>
-                      <span className="font-semibold text-indigo-600 dark:text-indigo-400 truncate max-w-[150px]" title={emailTargetLabel}>
-                        {emailTargetLabel}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 3: Instagram DM Panel */}
-              {channelTab === "instagram" && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-pink-500/15 text-pink-600 dark:text-pink-400 font-bold">
-                      FALLBACK ONLY
-                    </span>
-                    <span className="font-mono text-slate-700 dark:text-slate-300">
-                      {igSent} / {igLimit} Quota ({igPct}%)
-                    </span>
-                  </div>
-
-                  <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
-                    <div className="bg-pink-500 h-1 rounded-full transition-all duration-300" style={{ width: `${igPct}%` }} />
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/[0.06] text-[10px] space-y-1.5">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Rule:</span>
-                      <span className="font-bold text-pink-600 dark:text-pink-400">Only on WA Fail</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Target:</span>
-                      <span className="font-semibold text-indigo-600 dark:text-indigo-400 truncate max-w-[150px]" title={igTargetLabel}>
-                        {igTargetLabel}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Channel Action Trigger */}
-            <div className="pt-1">
-              {channelTab === "whatsapp" && (
-                isWaRunning ? (
-                  stopButton("Stop WhatsApp Automation")
-                ) : (
-                  <button
-                    onClick={() => handleSimulateSend("WA")}
-                    className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Send WA {dryRunMode ? "(Dry-Run)" : "Live"}</span>
-                  </button>
-                )
-              )}
-
-              {channelTab === "email" && (
-                isEmailRunning ? (
-                  stopButton("Stop Email Automation")
-                ) : (
-                  <button
-                    onClick={() => handleSimulateSend("EMAIL")}
-                    className="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-600/25 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <Mail className="w-3.5 h-3.5" />
-                    <span>Send Mail {dryRunMode ? "(Dry-Run)" : "Live"}</span>
-                  </button>
-                )
-              )}
-
-              {channelTab === "instagram" && (
-                isIgRunning ? (
-                  stopButton("Stop IG Automation")
-                ) : (
-                  <button
-                    onClick={() => handleSimulateSend("FALLBACK")}
-                    className="w-full py-2 px-3 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold shadow-md shadow-pink-600/25 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Test Fallback Trigger</span>
-                  </button>
-                )
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* 2. Unified Kestrel-Style 2-Pane Outreach Automation Console */}
+      <OutreachConsole
+        activeBatchId={effectiveBatchId ?? "BATCH-01"}
+        channelTab={channelTab}
+        onChannelTabChange={setChannelTab}
+        allowedChannels={activeHustle?.allowed_channels}
+        dryRunMode={dryRunMode}
+        isOutreachRunning={isOutreachRunning}
+        activeOutreachChannel={activeOutreachChannel}
+        handleSimulateSend={handleSimulateSend}
+        handleStopAutomation={handleStopAutomation}
+        waSent={waSent}
+        waLimit={waLimit}
+        waPct={waPct}
+        waTargetLabel={waTargetLabel}
+        emailSent={emailSent}
+        emailLimit={emailLimit}
+        emailPct={emailPct}
+        emailTargetLabel={emailTargetLabel}
+        igSent={igSent}
+        igLimit={igLimit}
+        igPct={igPct}
+        igTargetLabel={igTargetLabel}
+      />
 
       {/* 3. Main Workspace: Left-Side Clinic Message Card + Right-Side Compact Queue */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Side (9/12 width): Selected Clinic Message & Video Workspace */}
-        <div className="lg:col-span-9 p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        <div className="lg:col-span-9 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
           {!selectedClinic ? (
             <div className="text-xs text-slate-400 text-center py-16">
               {batchLoading ? "Loading batch..." : "Select a clinic from the queue to view its outreach workspace."}
             </div>
           ) : (
             <>
-              {/* Card Header: 2 Structured Rows (Title + Operational Controls / Doctor + Demo Links) */}
-              <div className="space-y-2.5 pb-3 border-b border-slate-100 dark:border-white/[0.06]">
-                {/* Row 1: Title & Batch Badge (Left) + Phone Edit, Lead Card, Sent Status (Right) */}
-                <div className="flex flex-wrap items-center justify-between gap-2.5">
+              {/* Card Header: 2 Clean Aligned Rows (pb-4 mb-4 border-b border-slate-100) */}
+              <div className="space-y-3 pb-4 mb-1 border-b border-slate-100 dark:border-white/[0.06]">
+                {/* Row 1: Left Clinic Name & Batch Badge | Right Phone Editor, Lead Card, Sent Status */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
+                    <span className="text-base font-bold text-zinc-900 dark:text-white truncate">
                       {selectedClinic.name}
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 font-bold shrink-0">
+                    <span className="bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-white/[0.08] rounded-md px-2 py-0.5 text-[11px] font-mono shrink-0">
                       {selectedClinic.batch_id}
                     </span>
                   </div>
 
-                  {/* Right Header Controls: Phone Edit + Lead Card Link + Sent Button */}
+                  {/* Right Header Controls */}
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* Inline WhatsApp Phone Number Edit */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08]">
+                    {/* Unified Inline Phone Editor */}
+                    <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] rounded-xl px-2.5 py-1 flex items-center gap-1.5 shadow-2xs">
                       <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <input
                         value={editPhone}
@@ -896,31 +694,31 @@ export function OutreachHubSubpage() {
                         type="button"
                         onClick={saveContact}
                         disabled={savingDeck}
-                        className="px-2 py-0.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold cursor-pointer disabled:opacity-50"
+                        className="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all cursor-pointer disabled:opacity-50"
                       >
                         Save
                       </button>
                     </div>
 
-                    {/* Open Lead Card */}
+                    {/* Open Lead Card Button */}
                     <button
                       type="button"
                       onClick={() => setSelectedLeadId(selectedClinic.id)}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-slate-200 dark:border-white/[0.1] text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                      className="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 border border-slate-200/80 dark:border-white/[0.1] text-zinc-800 dark:text-zinc-200 rounded-xl px-3 py-1.5 text-xs font-medium cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs"
                     >
-                      <Link2 className="w-3.5 h-3.5" />
+                      <Link2 className="w-3.5 h-3.5 text-slate-400" />
                       <span>Lead Card</span>
                     </button>
 
-                    {/* Sent / Undo Status Toggle */}
+                    {/* Sent / Undo Status Pill */}
                     <button
                       type="button"
                       onClick={toggleSent}
                       disabled={togglingSent}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer disabled:opacity-50 ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer disabled:opacity-50 ${
                         selectedClinic.is_sent
-                          ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40"
-                          : "bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/[0.1]"
+                          ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200/70 dark:border-emerald-500/30"
+                          : "bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-white/[0.1]"
                       }`}
                     >
                       {selectedClinic.is_sent ? "Sent ✓ · Undo" : "Mark as Sent"}
@@ -928,16 +726,16 @@ export function OutreachHubSubpage() {
                   </div>
                 </div>
 
-                {/* Row 2: Doctor/Locality (Left) + Demo Link Pills (Right) */}
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                {/* Row 2: Doctor/Locality on Left | Grouped 4-Template Segmented Pill Bar on Right */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs text-slate-500 dark:text-slate-400">
                   <div className="truncate min-w-0">
                     {selectedClinic.doctor}
                     {selectedClinic.locality ? ` · ${selectedClinic.locality}` : ""}
                     {selectedClinic.city ? `, ${selectedClinic.city}` : ""}
                   </div>
 
-                  {/* Demo link pills */}
-                  <div className="flex flex-wrap items-center gap-1.5">
+                  {/* Grouped Template Preview Links in Segmented Pill Bar */}
+                  <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200/70 dark:border-white/[0.08] p-0.5 rounded-xl inline-flex items-center gap-0.5">
                     {(
                       [
                         { label: "Switcher", url: selectedClinic.demo_url },
@@ -953,29 +751,29 @@ export function OutreachHubSubpage() {
                           href={d.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-indigo-600 dark:text-indigo-300 hover:border-indigo-400"
+                          className="hover:bg-white dark:hover:bg-slate-800 hover:shadow-2xs text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all flex items-center gap-1"
                         >
-                          <ExternalLink className="w-3 h-3" />
-                          {d.label}
+                          <ExternalLink className="w-3 h-3 text-slate-400" />
+                          <span>{d.label}</span>
                         </a>
                       ))}
                   </div>
                 </div>
               </div>
 
-              {/* Card Body (Split View): Video Player (Left Column) + Messages (Right Column) */}
+              {/* Card Body: 9:16 Video Player Column (Left) + Message Composer (Right) */}
               <div className="flex flex-col md:flex-row gap-5 items-start pt-1">
-                {/* Left Column (Fixed Width Video Player): ~280-300px */}
-                <div className="w-full md:w-[280px] lg:w-[300px] shrink-0 space-y-2">
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                    <span className="font-semibold flex items-center gap-1.5">
-                      <Video className="w-3.5 h-3.5 text-violet-500" />
+                {/* Left Column (9:16 Vertical Video Player Column) */}
+                <div className="w-full md:w-[280px] lg:w-[300px] shrink-0 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <span className="font-semibold flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200">
+                      <Video className="w-3.5 h-3.5 text-zinc-500" />
                       Walkthrough Video
                     </span>
                     <span
                       className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
                         selectedClinic.has_video
-                          ? "bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300"
+                          ? "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
                           : "bg-slate-100 dark:bg-white/[0.06] text-slate-400"
                       }`}
                     >
@@ -983,7 +781,8 @@ export function OutreachHubSubpage() {
                     </span>
                   </div>
 
-                  <div className="relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-inner aspect-[9/16] flex items-center justify-center">
+                  {/* Dark 9:16 Vertical Video Container */}
+                  <div className="relative rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 shadow-inner aspect-[9/16] flex items-center justify-center">
                     {selectedClinic.has_video ? (
                       <video
                         key={selectedClinic.id}
@@ -995,34 +794,37 @@ export function OutreachHubSubpage() {
                       />
                     ) : (
                       <div className="p-4 text-center space-y-2">
-                        <Video className="w-8 h-8 text-slate-600 mx-auto" />
-                        <div className="text-xs text-slate-400 font-medium">No Walkthrough Video</div>
-                        <div className="text-[10px] text-slate-600 font-mono">
+                        <Video className="w-8 h-8 text-zinc-600 mx-auto" />
+                        <div className="text-xs text-zinc-400 font-medium">No Walkthrough Video</div>
+                        <div className="text-[10px] text-zinc-600 font-mono">
                           Clinic-{selectedClinic.slug}.mp4
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Copy Video Recording Shortcut Button */}
+                  {/* Crisp Tactile Copy Video File Button */}
                   <button
                     type="button"
                     onClick={handleCopyVideo}
                     disabled={!selectedClinic.has_video}
-                    className="w-full py-2 px-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold shadow-md shadow-violet-600/20 transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="w-full bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-slate-200/90 dark:border-zinc-700 rounded-xl py-2 px-3 text-xs font-semibold shadow-2xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                     title="Press '2' to copy video to clipboard"
                   >
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Video File (2)</span>
+                    <Copy className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Copy Video File</span>
+                    <span className="bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 rounded px-1.5 py-0.5 font-mono text-[10px]">
+                      2
+                    </span>
                   </button>
                 </div>
 
-                {/* Right Column (Flexible Width): Both WhatsApp Messages Stacked Cleanly */}
+                {/* Right Column: Message 1 & Message 2 Editors + Unified Action Dock */}
                 <div className="w-full flex-1 min-w-0 space-y-3.5">
                   {/* Message 1: Text Hook */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                      <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                      <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                         Message 1: Text Hook
                       </span>
                       <div className="flex items-center gap-2">
@@ -1030,9 +832,9 @@ export function OutreachHubSubpage() {
                         <button
                           type="button"
                           onClick={() => copyText(editWaMsg1, "Message 1")}
-                          className="flex items-center gap-1 text-[11px] font-semibold hover:text-indigo-600 cursor-pointer text-slate-600 dark:text-slate-400"
+                          className="bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg px-2 py-1 text-[11px] font-medium cursor-pointer flex items-center gap-1 transition-all"
                         >
-                          <Copy className="w-3 h-3" /> Copy
+                          <Copy className="w-3 h-3 text-slate-400" /> Copy
                         </button>
                       </div>
                     </div>
@@ -1041,14 +843,14 @@ export function OutreachHubSubpage() {
                       onChange={(e) => setEditWaMsg1(e.target.value)}
                       rows={6}
                       placeholder="WhatsApp Message 1 (Text hook)..."
-                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 min-h-[125px] resize-y font-normal leading-relaxed"
+                      className="w-full bg-slate-50/60 dark:bg-white/[0.03] focus:bg-white dark:focus:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 focus:border-zinc-900 dark:focus:border-zinc-400 rounded-xl p-3 text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed transition-all resize-y font-normal"
                     />
                   </div>
 
                   {/* Message 2: Video Caption & 3 Design Links */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                      <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                      <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                         Message 2: Video Caption &amp; 3 Design Links
                       </span>
                       <div className="flex items-center gap-2">
@@ -1056,10 +858,10 @@ export function OutreachHubSubpage() {
                         <button
                           type="button"
                           onClick={handleCopyMessage2}
-                          className="flex items-center gap-1 text-[11px] font-semibold hover:text-indigo-600 cursor-pointer text-slate-600 dark:text-slate-400"
+                          className="bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg px-2 py-1 text-[11px] font-medium cursor-pointer flex items-center gap-1 transition-all"
                           title="Press '3' to copy Message 2"
                         >
-                          <Copy className="w-3 h-3" /> Copy (3)
+                          <Copy className="w-3 h-3 text-slate-400" /> Copy (3)
                         </button>
                       </div>
                     </div>
@@ -1068,73 +870,83 @@ export function OutreachHubSubpage() {
                       onChange={(e) => setEditWaMsg2(e.target.value)}
                       rows={12}
                       placeholder="WhatsApp Message 2 (Video caption & links)..."
-                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 min-h-[250px] resize-y font-normal leading-relaxed"
+                      className="w-full bg-slate-50/60 dark:bg-white/[0.03] focus:bg-white dark:focus:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 focus:border-zinc-900 dark:focus:border-zinc-400 rounded-xl p-3 text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed transition-all resize-y font-normal"
                     />
                   </div>
 
-                  {/* Message Actions & Workflow Triggers */}
+                  {/* Unified Bottom Action Dock */}
                   <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-white/[0.06]">
-                    <div className="flex items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={saveMessages}
-                        disabled={savingDeck}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer disabled:opacity-50"
-                      >
-                        <Save className="w-3.5 h-3.5" />
-                        <span>Save Messages</span>
-                      </button>
-
-                      {selectedClinic.has_custom_edits && (
+                    {/* Row 1: Manual Fast-Dispatch Bar */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                      {/* Left: Save Messages & Reset */}
+                      <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={resetMessages}
+                          onClick={saveMessages}
                           disabled={savingDeck}
-                          className="flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 cursor-pointer disabled:opacity-50"
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer disabled:opacity-50"
                         >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>Reset to Default</span>
+                          <Save className="w-3.5 h-3.5" />
+                          <span>Save Messages</span>
                         </button>
-                      )}
+
+                        {selectedClinic.has_custom_edits && (
+                          <button
+                            type="button"
+                            onClick={resetMessages}
+                            disabled={savingDeck}
+                            className="flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-zinc-800 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>Reset to Default</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Right: 2-Button Action Group (Open WhatsApp + Mark Sent & Next) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 sm:max-w-md">
+                        {/* Open WhatsApp (1) */}
+                        <button
+                          type="button"
+                          onClick={handleOpenWhatsApp}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-slate-200/90 dark:border-zinc-700 text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                          title="Press '1' to open WhatsApp with Message 1"
+                        >
+                          <MessageCircle className="w-4 h-4 text-emerald-500" />
+                          <span>Open WhatsApp</span>
+                          <span className="bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 rounded px-1.5 py-0.5 font-mono text-[10px]">
+                            1
+                          </span>
+                        </button>
+
+                        {/* Mark Sent & Next (4 / Space) */}
+                        <button
+                          type="button"
+                          onClick={handleMarkSentAndAdvance}
+                          disabled={togglingSent}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                          title="Press '4' or Spacebar to mark as Sent and advance"
+                        >
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
+                          <span>Mark Sent & Next</span>
+                          <span className="bg-zinc-800 text-zinc-300 dark:bg-zinc-200 dark:text-zinc-700 border border-zinc-700 dark:border-zinc-300 rounded px-1.5 py-0.5 font-mono text-[10px]">
+                            Space
+                          </span>
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {/* Open WhatsApp (1) */}
-                      <button
-                        type="button"
-                        onClick={handleOpenWhatsApp}
-                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
-                        title="Press '1' to open WhatsApp with Message 1"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>Open WhatsApp (1)</span>
-                      </button>
-
-                      {/* Mark as Sent and Advance (4 / Space) */}
-                      <button
-                        type="button"
-                        onClick={handleMarkSentAndAdvance}
-                        disabled={togglingSent}
-                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition-all cursor-pointer disabled:opacity-50"
-                        title="Press '4' or Spacebar to mark as Sent and advance"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Mark Sent & Next (4/Space)</span>
-                      </button>
-                    </div>
-
-                    {/* Single Clinic Dispatch Action */}
+                    {/* Row 2: Send to This Clinic Only Command Bar */}
                     <button
                       type="button"
                       onClick={() => handleRunCloser("whatsapp", dryRunMode, selectedClinic.id, effectiveBatchId)}
-                      className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-white text-xs font-bold shadow-md transition-all cursor-pointer ${
-                        dryRunMode
-                          ? "bg-amber-600 hover:bg-amber-500 shadow-amber-600/25"
-                          : "bg-rose-600 hover:bg-rose-500 shadow-rose-600/25"
-                      }`}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-slate-200/90 dark:border-zinc-700 text-xs font-semibold transition-all cursor-pointer group"
                     >
-                      <Send className="w-3.5 h-3.5" />
-                      <span>Send to This Clinic Only ({dryRunMode ? "Dry-Run" : "LIVE"})</span>
+                      <Send className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+                      <span>Send to This Clinic Only</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 group-hover:bg-amber-400/30 group-hover:text-amber-200 transition-colors">
+                        {dryRunMode ? "DRY-RUN" : "LIVE"}
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -1143,17 +955,17 @@ export function OutreachHubSubpage() {
           )}
         </div>
 
-        {/* Right Side (3/12 width): Compact Batch Clinic Queue (Narrow Column) */}
-        <div className="lg:col-span-3 p-4 sm:p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
+        {/* Right Side (3/12 width): Unified BATCH 1 QUEUE Panel */}
+        <div className="lg:col-span-3 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3.5">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-              <Layers className="w-4 h-4 text-indigo-500 shrink-0" />
-              <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider truncate">
+              <Layers className="w-4 h-4 text-zinc-500 shrink-0" />
+              <span className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider truncate">
                 {queueTitle}
               </span>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 font-bold shrink-0">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold shrink-0">
               {filteredClinics.length} / {batchClinics.length}
             </span>
           </div>
@@ -1165,11 +977,11 @@ export function OutreachHubSubpage() {
               value={queueSearch}
               onChange={(e) => setQueueSearch(e.target.value)}
               placeholder="Search clinic, doctor, phone..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-zinc-500"
             />
           </div>
 
-          {/* Simplified Filter Pills: ONLY All, Sent, Unsent */}
+          {/* Filter Tabs: Monochromatic active tab */}
           <div className="flex gap-1.5">
             {QUEUE_FILTERS.map((f) => (
               <button
@@ -1178,8 +990,8 @@ export function OutreachHubSubpage() {
                 onClick={() => setQueueFilter(f.key)}
                 className={`flex-1 py-1 rounded-lg text-[10px] font-mono font-bold border transition-all cursor-pointer ${
                   queueFilter === f.key
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-slate-50 dark:bg-white/[0.03] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-white/[0.06] hover:border-indigo-300"
+                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white shadow-2xs"
+                    : "bg-slate-50 dark:bg-white/[0.03] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-white/[0.06] hover:text-zinc-900 dark:hover:text-white"
                 }`}
               >
                 {f.label}
@@ -1188,7 +1000,7 @@ export function OutreachHubSubpage() {
           </div>
 
           {/* Scrollable Clinic List */}
-          <div className="max-h-[600px] overflow-y-auto space-y-2 pr-1">
+          <div className="max-h-[600px] overflow-y-auto space-y-2 pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {filteredClinics.length === 0 && (
               <div className="text-xs text-slate-400 text-center py-10">No clinics match this filter.</div>
             )}
@@ -1199,10 +1011,10 @@ export function OutreachHubSubpage() {
                   key={c.id}
                   type="button"
                   onClick={() => setSelectedClinicId(c.id)}
-                  className={`w-full text-left p-3 rounded-2xl border transition-all cursor-pointer ${
+                  className={`w-full text-left p-3 rounded-xl border transition-all cursor-pointer ${
                     isActive
-                      ? "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-400 dark:border-indigo-500/50 shadow-sm"
-                      : "bg-slate-50 dark:bg-white/[0.03] border-slate-200 dark:border-white/[0.06] hover:border-indigo-300"
+                      ? "bg-slate-50/90 dark:bg-zinc-800/80 border-2 border-zinc-900 dark:border-white shadow-2xs"
+                      : "bg-white dark:bg-zinc-900 hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 border border-slate-200/80 dark:border-zinc-800"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -1226,7 +1038,7 @@ export function OutreachHubSubpage() {
 
                   <div className="flex flex-wrap items-center gap-1.5 mt-2">
                     {c.has_video && (
-                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-violet-50 dark:bg-violet-500/15 text-violet-600 dark:text-violet-300 border border-violet-200 dark:border-violet-500/30">
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-500/30">
                         MP4 ✓
                       </span>
                     )}
@@ -1238,8 +1050,8 @@ export function OutreachHubSubpage() {
                     <span
                       className={`ml-auto text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
                         c.is_sent
-                          ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                          : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-slate-400"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30 font-semibold"
+                          : "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400 font-medium"
                       }`}
                     >
                       {c.is_sent ? "SENT ✓" : "QUEUED"}
