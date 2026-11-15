@@ -3,19 +3,14 @@
 import React, { useState } from "react";
 import {
   Calendar,
-  Clock,
+  CheckCircle2,
+  ChevronRight,
   Eye,
   Flame,
-  MapPin,
   MessageSquare,
-  Phone,
-  Send,
-  ShieldCheck,
-  Star,
-  ChevronRight,
-  ExternalLink,
   PhoneCall,
-  CheckCircle2,
+  Send,
+  User,
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { Lead, Stage } from "@/types";
@@ -53,11 +48,13 @@ export function LeadCard({
   onAdvanceStage,
   onApproveAndSend,
 }: LeadCardProps) {
-  const { openLogCallModal, openInboxForLead, notify } = useCRM();
+  const { openLogCallModal, openInboxForLead } = useCRM();
   const [advanceDropdownOpen, setAdvanceDropdownOpen] = useState<boolean>(false);
 
-  // Batch the lead was assigned to (lead.custom_fields.batch_id), e.g. "BATCH-01"
+  // Batch ID & Locality for eyebrow
   const batchId = (lead as Lead & { custom_fields?: Record<string, unknown> | null }).custom_fields?.batch_id;
+  const locality = lead.locality || lead.city || "NCR";
+  const eyebrowLabel = batchId ? `${locality} · ${String(batchId)}` : locality;
 
   const isOverdue =
     lead.next_action_due_at &&
@@ -67,195 +64,169 @@ export function LeadCard({
     ? lead.next_action.replace(/Dr\.\s+Dr\./gi, "Dr.")
     : null;
 
-  const currentStageIndex = allStages.findIndex((s) => s.id === lead.stage_id);
-  const nextStage =
-    currentStageIndex >= 0 && currentStageIndex < allStages.length - 1
-      ? allStages[currentStageIndex + 1]
-      : null;
+  const isWon =
+    stageSlug === "won" || stageName.toLowerCase().includes("won");
+  const isLost =
+    stageSlug === "lost" ||
+    stageName.toLowerCase().includes("lost") ||
+    stageName.toLowerCase().includes("closed");
+
+  const formattedDate = lead.next_action_due_at
+    ? new Date(lead.next_action_due_at).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      })
+    : null;
 
   return (
     <div
       onClick={onSelect}
-      className={`rounded-2xl transition-all duration-150 select-none relative group ${
-        isNestedInBatch
-          ? "p-3 sm:p-3.5 space-y-2.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs hover:border-indigo-300 dark:hover:border-slate-700 hover:shadow-sm"
-          : "p-4 space-y-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-indigo-300 dark:hover:border-slate-700"
+      className={`rounded-xl border transition-all duration-150 select-none relative group bg-white dark:bg-[#141721] ${
+        isNestedInBatch ? "p-3 space-y-2.5" : "p-3.5 space-y-2.5"
       } ${
         isDragging ? "opacity-30 scale-95" : "opacity-100"
       } ${
         isSelected
-          ? "border-indigo-500 shadow-md ring-2 ring-indigo-500/20"
-          : ""
+          ? "border-zinc-900 dark:border-white shadow-md ring-1 ring-zinc-900/20 dark:ring-white/20"
+          : "border-slate-200/80 dark:border-white/[0.08] shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700"
       }`}
     >
-      {/* Top Card Line: Deal Value + Fit Badge */}
-      <div className="flex flex-wrap items-center justify-between gap-1.5 text-xs">
-        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/60 text-[11px] whitespace-nowrap shrink-0">
+      {/* 1. Top Eyebrow Row: Locality & Batch + Clean Deal Value */}
+      <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800/80">
+        <span className="text-[11px] text-slate-400 font-medium truncate">
+          {eyebrowLabel}
+        </span>
+        <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 font-mono shrink-0">
           ₹{(lead.deal_value_inr || 25000).toLocaleString()}
         </span>
-
-        <div className="flex flex-wrap items-center gap-1.5 shrink-0">
-          {batchId && (
-            <span
-              className="font-mono text-[9px] font-bold tracking-tight text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0"
-              title={`Batch ${String(batchId)}`}
-            >
-              {String(batchId)}
-            </span>
-          )}
-
-          {lead.intent_score >= 50 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded-md border border-rose-200 dark:border-rose-800/60 whitespace-nowrap shrink-0">
-              <Flame className="w-2.5 h-2.5 fill-rose-500" />
-              <span>Hot ({lead.intent_score})</span>
-            </span>
-          )}
-
-          <span
-            className={`flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md border whitespace-nowrap shrink-0 ${
-              lead.fit_score >= 80
-                ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
-            }`}
-          >
-            <Star className="w-2.5 h-2.5 fill-current" />
-            <span>{lead.fit_score}% Fit</span>
-          </span>
-        </div>
       </div>
 
-      {/* Main Clinic & Doctor Info */}
-      <div className="min-w-0">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-1 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+      {/* 2. Middle Content Zone */}
+      <div className="space-y-1.5 min-w-0">
+        {/* Clinic Name */}
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-white leading-snug truncate group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
           {lead.name}
         </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 min-w-0">
-          <span className="truncate font-medium text-slate-700 dark:text-slate-300">
-            {formatDoctorName(lead.doctor_name)}
+
+        {/* Doctor & Pastel Badges Row */}
+        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+          <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300 font-medium truncate">
+            <User className="w-3 h-3 text-slate-400 shrink-0" />
+            <span className="truncate">{formatDoctorName(lead.doctor_name)}</span>
+          </div>
+
+          {lead.intent_score >= 50 && (
+            <span className="flex items-center gap-0.5 text-[10px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 px-1.5 py-0.5 rounded shrink-0">
+              <Flame className="w-2.5 h-2.5 fill-current" />
+              <span>Hot {lead.intent_score}</span>
+            </span>
+          )}
+
+          <span className="text-[10px] font-medium bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 px-1.5 py-0.5 rounded font-mono shrink-0">
+            {lead.fit_score}% Fit
           </span>
-          <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
-          <span className="font-mono text-[11px] shrink-0 text-slate-500 dark:text-slate-400">
-            {lead.primary_phone || "No Phone"}
-          </span>
-        </p>
-        {lead.locality && (
-          <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 min-w-0">
-            <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-            <span className="truncate">{lead.locality}</span>
-          </p>
-        )}
+        </div>
+
+        {/* Sleek Single-Line Next Action (Taskk Style) */}
+        {isWon ? (
+          <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-lg px-2.5 py-1.5 font-medium border border-emerald-200/60 dark:border-emerald-900/40">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            <span>✓ Client Onboarded</span>
+          </div>
+        ) : isLost ? null : nextActionText ? (
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50/90 dark:bg-white/[0.03] rounded-lg px-2.5 py-1.5 truncate border border-slate-200/50 dark:border-white/[0.04]">
+            <span
+              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                isOverdue ? "bg-rose-500" : "bg-slate-400"
+              }`}
+            />
+            <span className="truncate">{nextActionText}</span>
+          </div>
+        ) : null}
       </div>
 
-      {/* Next Step / Action Box */}
-      {nextActionText && (
-        <div
-          className={`p-2 rounded-xl text-xs flex items-start gap-2 border ${
-            isOverdue
-              ? "bg-rose-50/70 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/40 text-rose-800 dark:text-rose-300"
-              : "bg-slate-50 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-300"
-          }`}
-        >
-          <Clock className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${isOverdue ? "text-rose-500" : "text-slate-400"}`} />
-          <div className="min-w-0 flex-1">
-            <div className="text-[10px] font-bold uppercase tracking-wider opacity-75">
-              {isOverdue ? "Overdue Action" : "Next Step"}
-            </div>
-            <div className="text-xs truncate font-medium">{nextActionText}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Card Footer: Metadata Counters */}
-      <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400 dark:text-slate-500">
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
+      {/* 3. Bottom Footer Row: Telemetry + Clean Monochrome Action Controls */}
+      <div
+        className="pt-2 mt-1 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Left: Compact Muted Telemetry & Date */}
+        <div className="flex items-center gap-2.5 text-[11px] text-slate-400 shrink-0">
+          <span className="flex items-center gap-1" title={`${lead.messages?.length || 0} messages`}>
             <MessageSquare className="w-3 h-3" />
             <span>{lead.messages?.length || 0}</span>
           </span>
-          <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
+          <span className="flex items-center gap-1" title="Demo views">
             <Eye className="w-3 h-3" />
             <span>{(lead as any).demo_views_count ?? lead.events?.length ?? 0}</span>
           </span>
-          <span className="flex items-center gap-1 hover:text-slate-600 dark:hover:text-slate-300">
-            <ShieldCheck className="w-3 h-3" />
-            <span>{lead.facts?.length || 0}</span>
-          </span>
-        </div>
-        {lead.next_action_due_at && (
-          <span className="flex items-center gap-1 font-mono text-[10px]">
-            <Calendar className="w-3 h-3 text-slate-400" />
-            <span>
-              {new Date(lead.next_action_due_at).toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-              })}
+          {formattedDate && (
+            <span className="flex items-center gap-1 font-mono text-[10px]">
+              <Calendar className="w-3 h-3 text-slate-400" />
+              <span>{formattedDate}</span>
             </span>
-          </span>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* QUICK ACTION BUTTONS ON CARD (R4 REQUIREMENT) */}
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-        {/* 1. WhatsApp Button: opens Inbox for lead or wa.me */}
-        <button
-          type="button"
-          onClick={() => openInboxForLead(lead.id)}
-          className="flex-1 py-1.5 px-2 rounded-xl text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 transition-colors flex items-center justify-center gap-1 cursor-pointer"
-          title="Open WhatsApp Inbox for lead"
-        >
-          <MessageSquare className="w-3 h-3" />
-          <span>Chat</span>
-        </button>
-
-        {/* 2. Log Call Button */}
-        <button
-          type="button"
-          onClick={() => openLogCallModal(lead.id)}
-          className="flex-1 py-1.5 px-2 rounded-xl text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 transition-colors flex items-center justify-center gap-1 cursor-pointer"
-          title="Log raw call & generate AI notes"
-        >
-          <PhoneCall className="w-3 h-3" />
-          <span>Call</span>
-        </button>
-
-        {/* 3. Stage Advance Button / Dropdown */}
-        <div className="relative">
+        {/* Right: Monochrome Actions */}
+        <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
-            onClick={() => setAdvanceDropdownOpen(!advanceDropdownOpen)}
-            className="py-1.5 px-2 rounded-xl text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 transition-colors flex items-center gap-0.5 cursor-pointer"
-            title="Advance stage"
+            onClick={() => openInboxForLead(lead.id)}
+            className="bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 hover:text-zinc-900 dark:text-slate-300 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08] rounded-lg px-2 py-1 text-[11px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            title="Chat on WhatsApp"
           >
-            <span>Advance</span>
-            <ChevronRight className="w-3 h-3" />
+            Chat
           </button>
 
-          {advanceDropdownOpen && (
-            <div className="absolute right-0 bottom-full mb-1.5 w-44 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-1.5 z-40 space-y-0.5 text-xs animate-in fade-in zoom-in-95">
-              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-700 mb-1">
-                Move to Stage:
+          <button
+            type="button"
+            onClick={() => openLogCallModal(lead.id)}
+            className="bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 hover:text-zinc-900 dark:text-slate-300 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08] rounded-lg px-2 py-1 text-[11px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            title="Log Call"
+          >
+            Call
+          </button>
+
+          {/* Advance Stage Dropdown Trigger */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setAdvanceDropdownOpen(!advanceDropdownOpen)}
+              className="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 dark:hover:bg-slate-100 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors flex items-center gap-0.5 cursor-pointer shadow-xs whitespace-nowrap shrink-0"
+              title="Advance Stage"
+            >
+              <span>Advance</span>
+              <ChevronRight className="w-3 h-3" />
+            </button>
+
+            {advanceDropdownOpen && (
+              <div className="absolute right-0 bottom-full mb-1.5 w-44 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-1.5 z-40 space-y-0.5 text-xs animate-in fade-in zoom-in-95">
+                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-700 mb-1">
+                  Move to Stage:
+                </div>
+                {allStages.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      onAdvanceStage(s.id);
+                      setAdvanceDropdownOpen(false);
+                    }}
+                    disabled={s.id === lead.stage_id}
+                    className={`w-full text-left px-2 py-1.5 rounded-lg text-[11px] transition-colors flex items-center justify-between ${
+                      s.id === lead.stage_id
+                        ? "opacity-40 font-bold bg-slate-100 dark:bg-slate-700/50 cursor-default"
+                        : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
+                    }`}
+                  >
+                    <span className="truncate">{s.name}</span>
+                    {s.id === lead.stage_id && <CheckCircle2 className="w-3 h-3 text-zinc-900 dark:text-white" />}
+                  </button>
+                ))}
               </div>
-              {allStages.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => {
-                    onAdvanceStage(s.id);
-                    setAdvanceDropdownOpen(false);
-                  }}
-                  disabled={s.id === lead.stage_id}
-                  className={`w-full text-left px-2 py-1.5 rounded-lg text-[11px] transition-colors flex items-center justify-between ${
-                    s.id === lead.stage_id
-                      ? "opacity-40 font-bold bg-slate-100 dark:bg-slate-700/50 cursor-default"
-                      : "hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-300 cursor-pointer"
-                  }`}
-                >
-                  <span className="truncate">{s.name}</span>
-                  {s.id === lead.stage_id && <CheckCircle2 className="w-3 h-3 text-indigo-500" />}
-                </button>
-              ))}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -266,10 +237,10 @@ export function LeadCard({
             e.stopPropagation();
             onApproveAndSend(lead);
           }}
-          className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all cursor-pointer"
+          className="w-full mt-1.5 py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
         >
           <Send className="w-3.5 h-3.5" />
-          <span>Approve & Send Pitch</span>
+          <span>Approve &amp; Send Pitch</span>
         </button>
       )}
     </div>

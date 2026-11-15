@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Plus, LayoutGrid, ChevronDown, ChevronRight, Layers } from "lucide-react";
+import { Plus, ChevronDown, ChevronRight, Layers } from "lucide-react";
 import { LeadCard } from "./LeadCard";
 import { Lead, Stage } from "@/types";
 
-// Fields that may exist at runtime beyond the base Lead/Stage types.
 type BatchableLead = Lead & {
   custom_fields?: Record<string, unknown> | null;
   packages?: unknown[] | null;
@@ -38,7 +37,6 @@ interface KanbanColumnProps {
 
 const UNBATCHED = "UNBATCHED";
 
-// Warm / high-intent stages must stay as individual cards.
 const HIGH_INTENT_KEYWORDS = [
   "viewed",
   "replied",
@@ -54,7 +52,6 @@ const HIGH_INTENT_KEYWORDS = [
   "closed",
 ];
 
-// Early, high-volume stages that are grouped into batch cards.
 const BATCH_STAGE_SLUGS = [
   "discovered",
   "staged",
@@ -67,7 +64,6 @@ const BATCH_STAGE_SLUGS = [
   "pitched",
 ];
 
-/** True for early/volume stages that should render as collapsible batch cards. */
 export function isBatchStage(stage: Stage): boolean {
   const s = stage as BatchableStage;
   if (s.is_won || s.is_lost) return false;
@@ -85,7 +81,6 @@ function getBatchId(lead: Lead): string {
   return raw ? String(raw) : UNBATCHED;
 }
 
-/** Natural sort for BATCH-01, BATCH-02, ... with UNBATCHED always last. */
 function compareBatchIds(a: string, b: string): number {
   if (a === UNBATCHED) return 1;
   if (b === UNBATCHED) return -1;
@@ -125,83 +120,63 @@ function BatchGroup({ batchId, batchLeads, expanded, onToggle, renderLead }: Bat
   const localities = [...localityCounts.entries()].sort((a, b) => b[1] - a[1]).map(([name]) => name);
   const localitySummary =
     localities.length === 0
-      ? "No locality"
+      ? "NCR Region"
       : localities.slice(0, 2).join(", ") + (localities.length > 2 ? ` +${localities.length - 2}` : "");
 
   return (
-    <div
-      className={`rounded-2xl border bg-white dark:bg-slate-900 transition-all ${
-        expanded
-          ? "border-indigo-300 dark:border-indigo-500/40 shadow-md"
-          : "border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md"
-      }`}
-    >
-      {/* Batch Card Header + Metrics */}
-      <div onClick={onToggle} className="p-3.5 space-y-3 cursor-pointer select-none">
+    <div className="space-y-2.5">
+      {/* Redesigned Clean Batch Card Surface */}
+      <div
+        onClick={onToggle}
+        className="rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] p-3.5 shadow-xs hover:shadow-md transition-all cursor-pointer select-none space-y-2.5"
+      >
+        {/* Top Row: Batch Pill + Full Locality + Count Badge */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center shrink-0">
-              <Layers className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900 truncate">
-              {isUnbatched ? "Unbatched Stock" : batchId}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shrink-0">
+              {isUnbatched ? "UNBATCHED" : batchId}
+            </span>
+            <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">
+              {localitySummary}
             </span>
           </div>
-          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0">
             {count} Clinics
           </span>
         </div>
 
-        {/* Metrics Row */}
-        <div className="grid grid-cols-3 gap-2 text-[10px]">
-          <div className="px-2 py-1.5 rounded-lg bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50">
-            <div className="font-mono font-bold text-indigo-700 dark:text-indigo-300">Avg Fit: {avgFit}%</div>
+        {/* Middle Row: Clean Inline Summary */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-medium">
+            <span>{avgFit}% Avg Fit</span>
+            <span>{demosReady}/{count} Demos Ready</span>
           </div>
-          <div className="px-2 py-1.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50">
-            <div className="font-mono font-bold text-emerald-700 dark:text-emerald-300">{demosReady} Demos Ready</div>
-          </div>
-          <div className="px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 min-w-0">
-            <div className="text-slate-600 dark:text-slate-300 font-medium truncate" title={localities.join(", ")}>
-              {localitySummary}
-            </div>
-          </div>
-        </div>
 
-        {/* Progress Bar: share of leads with packages / verified facts */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 font-mono">
-            <span>Ready</span>
-            <span>
-              {readyCount}/{count}
-            </span>
-          </div>
-          <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+          {/* Sleek 4px Progress Bar */}
+          <div className="h-1 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500"
+              className="h-full rounded-full bg-emerald-500 transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
           </div>
         </div>
 
-        {/* Inspect toggle */}
-        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggle();
-            }}
-            className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-          >
-            <span>Inspect {count} Leads</span>
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} />
-          </button>
+        {/* Bottom Toggle Trigger */}
+        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80">
+          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-1">
+            <span>{expanded ? "Collapse Batch" : `Inspect ${count} Leads`}</span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                expanded ? "rotate-180" : ""
+              }`}
+            />
+          </span>
         </div>
       </div>
 
-      {/* Expanded: individual draggable LeadCards */}
+      {/* Expanded: Individual Cleanly Stacked Child Cards without cramped nested borders */}
       {expanded && (
-        <div className="p-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 rounded-b-2xl space-y-2.5">
+        <div className="space-y-2.5 pl-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
           {batchLeads.map((lead) => renderLead(lead, true))}
         </div>
       )}
@@ -246,7 +221,7 @@ export function KanbanColumn({
     return [...groups.entries()].sort(([a], [b]) => compareBatchIds(a, b));
   }, [leads, useBatchView]);
 
-  // If collapsed empty column: render slim interactive vertical bar with count
+  // Collapsed Empty Stage Column
   if (isCollapsed) {
     return (
       <div
@@ -254,26 +229,26 @@ export function KanbanColumn({
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onClick={() => setManuallyExpanded(true)}
-        className={`w-12 shrink-0 flex flex-col items-center py-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-dashed transition-all cursor-pointer group hover:bg-slate-100 dark:hover:bg-slate-850 ${
+        className={`w-12 shrink-0 flex flex-col items-center py-4 rounded-2xl bg-[#EAEEF3]/60 dark:bg-slate-900/60 border border-dashed transition-all cursor-pointer group hover:bg-[#EAEEF3] dark:hover:bg-slate-800 ${
           isDragOver
-            ? "border-indigo-500 ring-2 ring-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-950/20"
-            : "border-slate-200 dark:border-slate-800"
+            ? "border-zinc-900 ring-2 ring-zinc-900/20 bg-zinc-100/50"
+            : "border-slate-200/80 dark:border-slate-800"
         }`}
         title={`Click to expand empty stage: ${stage.name}`}
       >
-        <span className={`w-2 h-2 rounded-full ${stageColorClass} mb-2`} />
+        <span className={`w-1 h-4 rounded-full ${stageColorClass} mb-2`} />
         <span className="text-[10px] font-mono font-bold text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">
           0
         </span>
         <div className="flex-1 flex items-center justify-center my-3">
           <span
-            className="text-[11px] font-bold text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 uppercase tracking-widest whitespace-nowrap"
+            className="text-[11px] font-semibold text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 uppercase tracking-widest whitespace-nowrap"
             style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
           >
             {stage.name}
           </span>
         </div>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+        <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-zinc-900 transition-colors" />
       </div>
     );
   }
@@ -307,34 +282,34 @@ export function KanbanColumn({
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      className={`flex-1 min-w-[280px] sm:min-w-[310px] max-w-[360px] flex flex-col rounded-2xl bg-slate-50/90 dark:bg-slate-900/70 border transition-all duration-200 snap-start ${
+      className={`w-[350px] min-w-[350px] shrink-0 flex flex-col rounded-2xl bg-[#EAEEF3]/75 dark:bg-slate-900/60 border transition-all duration-200 snap-start p-3 ${
         isDragOver
-          ? "border-indigo-500 ring-2 ring-indigo-500/30 bg-indigo-500/[0.04]"
-          : "border-slate-200 dark:border-slate-800"
+          ? "border-zinc-900 dark:border-white ring-2 ring-zinc-900/10"
+          : "border-slate-200/60 dark:border-slate-800"
       }`}
     >
-      {/* Column Header */}
-      <div className="p-4 flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800">
-        <div className="flex items-center gap-2.5">
-          <span className={`w-2.5 h-2.5 rounded-full ${stageColorClass}`} />
-          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+      {/* Taskk-Style Single-Line Column Header with Vertical Accent Pill */}
+      <div className="h-8 flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={`w-1 h-4 rounded-full ${stageColorClass} shrink-0`} />
+          <span className="font-semibold text-xs uppercase tracking-wider text-zinc-800 dark:text-zinc-200 truncate">
             {stage.name}
           </span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shadow-2xs">
+          <span className="bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md px-1.5 py-0.5 text-[11px] font-medium shrink-0">
             {leads.length}
           </span>
           {useBatchView && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20">
+            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-white/70 dark:bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-slate-700 shrink-0">
               {batchGroups.length} {batchGroups.length === 1 ? "batch" : "batches"}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           {hideEmpty && isEmpty && (
             <button
               onClick={() => setManuallyExpanded(false)}
-              className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              className="p-1 rounded-lg hover:bg-white/60 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
               title="Collapse empty stage"
             >
               <ChevronDown className="w-3.5 h-3.5" />
@@ -343,7 +318,7 @@ export function KanbanColumn({
 
           <button
             onClick={onAddLead}
-            className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-800 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
+            className="p-1 rounded-lg hover:bg-white/60 dark:hover:bg-slate-800 text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
             title="Add lead to stage"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -352,12 +327,11 @@ export function KanbanColumn({
       </div>
 
       {/* Cards Container */}
-      <div className="p-3 flex-1 overflow-y-auto space-y-3 min-h-[450px]">
+      <div className="flex-1 overflow-y-auto space-y-2.5 min-h-[450px] pr-0.5">
         {leads.length === 0 ? (
-          <div className="h-44 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center text-slate-400 p-4 text-center">
-            <LayoutGrid className="w-6 h-6 opacity-40 mb-1" />
-            <span className="text-xs font-medium">No leads in stage</span>
-            <span className="text-[10px] opacity-70">Drag leads here to advance</span>
+          <div className="h-36 border border-dashed border-slate-300/60 dark:border-slate-800 rounded-xl flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+            <span className="text-xs font-medium">Empty stage</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">Drag cards here</span>
           </div>
         ) : useBatchView ? (
           batchGroups.map(([batchId, batchLeads]) => (
@@ -366,7 +340,12 @@ export function KanbanColumn({
               batchId={batchId}
               batchLeads={batchLeads}
               expanded={!!expandedBatches[batchId]}
-              onToggle={() => setExpandedBatches((prev) => ({ ...prev, [batchId]: !prev[batchId] }))}
+              onToggle={() =>
+                setExpandedBatches((prev) => ({
+                  ...prev,
+                  [batchId]: !prev[batchId],
+                }))
+              }
               renderLead={renderLead}
             />
           ))
