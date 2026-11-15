@@ -8,16 +8,20 @@ import {
   ChevronRight,
   Clock,
   Compass,
+  Crown,
   Flame,
   Gauge,
+  Home,
   Layers,
   LayoutDashboard,
   LayoutGrid,
   MessageSquare,
+  MoreVertical,
   PanelLeft,
   PanelLeftClose,
   PhoneCall,
   Send,
+  Settings,
   Table as TableIcon,
   Zap,
 } from "lucide-react";
@@ -38,17 +42,19 @@ export function Sidebar() {
     activeSmartView,
     setActiveSmartView,
     bufferHealthPct,
+    globalAutomationEnabled,
+    toggleGlobalAutomation,
   } = useCRM();
 
   const isCockpit = surface === "cockpit" || activeTab === "autopilot";
 
-  // Strict Surface Separation: Exactly one home per feature
+  // Strict Surface Separation: Exactly one home per feature matching Tasker visual spec
   const managementNav = [
-    { id: "dashboard", label: "Dashboard Overview", icon: LayoutDashboard },
-    { id: "inbox", label: "WhatsApp Inbox", icon: MessageSquare },
-    { id: "calls", label: "Calls & Briefs", icon: PhoneCall },
+    { id: "dashboard", label: "Overview", icon: Home },
+    { id: "inbox", label: "Inbox / WhatsApp", icon: MessageSquare },
     { id: "board", label: "Kanban Board", icon: LayoutGrid },
     { id: "table", label: "Leads Table", icon: TableIcon },
+    { id: "calls", label: "Call Briefs", icon: PhoneCall },
   ];
 
   const cockpitNav = [
@@ -191,10 +197,10 @@ export function Sidebar() {
                           setActiveTab("board");
                           setPipelineBoardExpanded((prev) => (activeTab === "board" ? !prev : true));
                         }}
-                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                           active
-                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                            ? "bg-white dark:bg-white/[0.1] text-slate-900 dark:text-white shadow-xs border border-slate-200/90 dark:border-white/[0.08]"
+                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/40"
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -267,10 +273,10 @@ export function Sidebar() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id as CRMTab)}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       active
-                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                        ? "bg-white dark:bg-white/[0.1] text-slate-900 dark:text-white shadow-xs border border-slate-200/90 dark:border-white/[0.08]"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/40"
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -283,41 +289,40 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Status Card in Sidebar */}
-      {isCockpit ? (
-        <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Cockpit Flight Deck</span>
-            </span>
-            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">4 TABS</span>
+      {/* Bottom Area: Autopilot Engine Card */}
+      <div className="pt-3 border-t border-slate-100 dark:border-white/[0.06]">
+        {/* Autopilot Engine Box (Tasker "Upgrade plan" mapping) */}
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs space-y-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-[#111827] dark:bg-white text-white dark:text-[#111827] flex items-center justify-center shrink-0">
+              <Crown className="w-3.5 h-3.5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
+                Autopilot Engine
+              </div>
+              <div className="text-[10px] text-slate-400 truncate">
+                {globalAutomationEnabled ? "Active & Guarded" : "Safety Guardrails ON"}
+              </div>
+            </div>
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-            Autonomous Lead Discovery, Demo Factory, Outreach Dispatch & Attention Velocity.
+            Automated WhatsApp outreach & safety guardrails.
           </p>
+          <button
+            type="button"
+            onClick={toggleGlobalAutomation}
+            className={`w-full py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs ${
+              globalAutomationEnabled
+                ? "bg-[#111827] hover:bg-[#1f2937] text-white dark:bg-white dark:text-[#111827] dark:hover:bg-slate-100"
+                : "bg-emerald-600 hover:bg-emerald-500 text-white"
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>{globalAutomationEnabled ? "Automation Active" : "Activate Autopilot"}</span>
+          </button>
         </div>
-      ) : (
-        <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>CRM Engine</span>
-            </span>
-            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">ONLINE</span>
-          </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-            Daily CRM Operations: WhatsApp Inbox, Calls & Briefs, Kanban, Leads Table.
-          </p>
-          <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: `${bufferHealthPct}%` }}></div>
-          </div>
-          <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
-            <span>Buffer Staging</span>
-            <span className="font-mono">{bufferHealthPct}% full</span>
-          </div>
-        </div>
-      )}
+      </div>
     </aside>
   );
 }
