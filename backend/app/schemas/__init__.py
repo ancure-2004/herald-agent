@@ -21,6 +21,10 @@ from .lead import (
     LeadUpdate,
 )
 from .message import (
+    AISettingsSchema,
+    AISettingsUpdate,
+    AITestRequest,
+    AITestResponse,
     AutomationSettingsSchema,
     AutomationSettingsUpdate,
     CommitmentOut,

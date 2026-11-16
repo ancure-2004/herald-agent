@@ -241,22 +241,18 @@ export function CallsManagementView() {
     try {
       const res = await apiFetch<CallBrief>(`/api/leads/${leadId}/call-brief`);
       setCallBrief(res);
-    } catch {
-      const lead = leads.find((l) => l.id === leadId);
-      setCallBrief({
-        lead_id: leadId,
-        clinic_name: lead?.name || "Dental Clinic",
-        doctor_name: lead?.doctor_name || "Doctor",
-        prep_brief: `Context for ${formatDoctorName(lead?.doctor_name)}:
-1. Focus on mobile patient discovery in ${lead?.locality || "Delhi NCR"}.
-2. Address objection regarding Practo integration by showing WhatsApp direct-to-OPD booking button.
-3. Offer the 14-day risk-free preview link: https://preview.dentalos.in/${lead?.slug || "demo"}.
-4. Goal for this call: Confirm partner decision meeting date.`,
-      });
+    } catch (err: any) {
+      const isNotConfigured = err?.status === 503 || String(err?.message || "").includes("ai_not_configured");
+      if (isNotConfigured) {
+        notify("AI provider not configured. Please configure an AI provider in Settings.", "err");
+      } else {
+        notify(err instanceof Error ? err.message : "Failed to generate call brief", "err");
+      }
+      setCallBrief(null);
     } finally {
       setLoadingBrief(false);
     }
-  }, [leads]);
+  }, [notify]);
 
   const toggleBriefItem = (index: number) => {
     setCheckedBriefItems((prev) => ({
@@ -306,9 +302,9 @@ export function CallsManagementView() {
 
   useEffect(() => {
     if (!activeLead) return;
-    fetchCallBrief(activeLead.id);
+    setCallBrief(null);
     loadCallsForLead(activeLead);
-  }, [activeLead?.id, fetchCallBrief, loadCallsForLead]);
+  }, [activeLead?.id, loadCallsForLead]);
 
   const latestCall = callsList[0] || null;
   const hasUnresolvedFromLastCall = Boolean(
@@ -733,8 +729,16 @@ export function CallsManagementView() {
                       <span>Synthesizing past objections, commitments & doctor context...</span>
                     </div>
                   ) : parsedBriefLines.length === 0 ? (
-                    <div className="text-xs text-slate-400 italic py-2">
-                      No prep brief available for this lead yet.
+                    <div className="py-4 text-center text-xs text-slate-400 space-y-2">
+                      <p>No call brief generated yet.</p>
+                      <button
+                        type="button"
+                        onClick={() => fetchCallBrief(activeLead.id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Generate Call Brief</span>
+                      </button>
                     </div>
                   ) : (
                     parsedBriefLines.map((line, idx) => {

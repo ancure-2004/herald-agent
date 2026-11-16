@@ -6,6 +6,10 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.controllers.message_controller import MessageController
 from app.schemas.message import (
+    AISettingsSchema,
+    AISettingsUpdate,
+    AITestRequest,
+    AITestResponse,
     AutomationSettingsSchema,
     AutomationSettingsUpdate,
     ManualReplyRequest,
@@ -67,6 +71,24 @@ def get_automation_settings(db: Session = Depends(get_db)):
 def update_automation_settings(payload: AutomationSettingsUpdate, db: Session = Depends(get_db)):
     """Updates global outreach automation settings and persists to DB so restarts respect the toggle."""
     return MessageController.update_automation_settings(payload.model_dump(exclude_unset=True), db)
+
+
+@router.get("/settings/ai", response_model=AISettingsSchema)
+def get_ai_settings(db: Session = Depends(get_db)):
+    """Returns AI provider settings with masked API keys."""
+    return MessageController.get_ai_settings(db)
+
+
+@router.patch("/settings/ai", response_model=AISettingsSchema)
+def update_ai_settings(payload: AISettingsUpdate, db: Session = Depends(get_db)):
+    """Updates AI provider selection and BYOK keys."""
+    return MessageController.update_ai_settings(payload.model_dump(exclude_unset=True), db)
+
+
+@router.post("/ai/test", response_model=AITestResponse)
+def test_ai_connection(payload: AITestRequest, db: Session = Depends(get_db)):
+    """Tests connection to the requested or active AI provider."""
+    return MessageController.test_ai_connection(db, payload.model_dump())
 
 
 @router.put("/messages/{message_id}")

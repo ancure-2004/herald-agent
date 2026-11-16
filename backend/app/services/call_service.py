@@ -19,7 +19,7 @@ class CallService:
             raise NotFoundError("Lead not found.")
 
         # AI structuring into 5 sections + prep brief (<10s)
-        structured = AIService.structure_raw_call_notes(lead, payload.raw_text)
+        structured = AIService.structure_raw_call_notes(lead, payload.raw_text, db=db)
 
         call = Call(
             lead_id=lead.id,
@@ -78,7 +78,7 @@ class CallService:
         if not lead:
             raise NotFoundError("Lead not found.")
 
-        brief_data = AIService.generate_call_prep_brief(lead, lead.calls, lead.messages)
+        brief_data = AIService.generate_call_prep_brief(lead, lead.calls, lead.messages, db=db)
         return {
             "lead_id": lead.id,
             "clinic_name": lead.name,

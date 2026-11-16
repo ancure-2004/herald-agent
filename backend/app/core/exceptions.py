@@ -103,6 +103,26 @@ class RateLimitExceededError(AppException):
         )
 
 
+class AINotConfiguredError(AppException):
+    def __init__(self, message: str = "AI provider is not configured. Please configure an AI provider in Settings.", details: Optional[Dict[str, Any]] = None):
+        super().__init__(
+            message=message,
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            error_code="ai_not_configured",
+            details=details,
+        )
+
+
+class AIProviderError(AppException):
+    def __init__(self, message: str = "AI provider call failed.", details: Optional[Dict[str, Any]] = None):
+        super().__init__(
+            message=message,
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            error_code="ai_provider_error",
+            details=details,
+        )
+
+
 async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
     req_id = getattr(request.state, "request_id", "-")
     logger.warning(f"[{req_id}] AppException: {exc.error_code} - {exc.message}")
