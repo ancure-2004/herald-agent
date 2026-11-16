@@ -1069,21 +1069,19 @@ export function HustleSettingsView() {
               {realMcpTools.map((tool) => (
                 <div
                   key={tool.name}
-                  className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap"
+                  className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 flex flex-col gap-2.5"
                 >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                        {tool.name}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      {tool.description}
-                    </div>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <span className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                      {tool.name}
+                    </span>
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-700/60 text-slate-700 dark:text-slate-300 break-all max-w-full">
+                      {tool.schema}
+                    </span>
                   </div>
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-700/60 text-slate-700 dark:text-slate-300 shrink-0">
-                    {tool.schema}
-                  </span>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                    {tool.description}
+                  </div>
                 </div>
               ))}
             </div>
