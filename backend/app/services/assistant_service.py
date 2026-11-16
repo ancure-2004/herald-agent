@@ -160,206 +160,161 @@ class AssistantService:
         mode = str(payload.get("mode") or "ask").lower().strip()
         prompt = str(payload.get("prompt") or "").strip()
         hustle_id = int(payload.get("hustle_id") or 1)
+        confirmed = bool(payload.get("confirmed", False))
         if not prompt:
             raise UnprocessableEntityError("prompt is required.")
 
-        hustle = HustleRepository.get_by_id(db, hustle_id)
-        leads = (
-            db.query(Lead)
-            .options(joinedload(Lead.stage_rel), joinedload(Lead.events), joinedload(Lead.commitments))
-            .filter(Lead.hustle_id == hustle_id, Lead.is_archived == False)  # noqa: E712
-            .all()
+        from app.services.agent_tools import AgentTools
+        from app.services.ai_service import AIService
+        from app.services.rag_service import HybridRetriever
+
+        # 1. Fetch AI Provider (raises AINotConfiguredError / AIProviderError if unavailable - zero fallbacks)
+        provider = AIService.get_provider(db)
+
+        # 2. Hybrid RAG retrieval for relevant CRM chunks
+        citations = []
+        retrieved_context = "No relevant context found in RAG index."
+        try:
+            retriever = HybridRetriever()
+            rag_docs = retriever.retrieve(prompt, top_k=4)
+            if rag_docs:
+                context_blocks = []
+                for idx, doc in enumerate(rag_docs, start=1):
+                    doc_type = doc.get("doc_type", "doc")
+                    lead_id = doc.get("lead_id")
+                    content_snip = doc.get("content", "").strip()[:300]
+                    context_blocks.append(f"[{idx}] ({doc_type.upper()} - Lead #{lead_id}): {content_snip}")
+                    citations.append({
+                        "id": doc.get("id"),
+                        "doc_type": doc_type,
+                        "lead_id": lead_id,
+                        "snippet": content_snip[:120],
+                        "rrf_score": round(float(doc.get("rrf_score", 0.0)), 4),
+                    })
+                retrieved_context = "\n\n".join(context_blocks)
+        except Exception as e:
+            emit_terminal_log("RAG-RETRIEVE", f"Retrieval warning: {e}", level="warn")
+
+        # 3. Agentic Prompt defining v1 Tools
+        agent_system = (
+            "You are Firstmate Ask & Do Agent for PersonalOS & CRM.\n"
+            "You have access to live CRM tools:\n"
+            "1. search_leads(query: str, stage: str, locality: str)\n"
+            "2. query_crm_stats()\n"
+            "3. move_lead_stage(lead_id: int, target_stage: str)\n"
+            "4. log_call(lead_id: int, raw_text: str, duration_seconds: int, outcome: str)\n"
+            "5. draft_or_send_message(lead_id: int, text: str, channel: str)\n\n"
+            f"Retrieved CRM Context:\n{retrieved_context}\n\n"
+            f"User Prompt ({mode.upper()} mode): '{prompt}'\n\n"
+            "Decide which tools to execute (if any) and formulate a clear answer.\n"
+            "Return JSON matching this schema:\n"
+            "{\n"
+            "  'answer': 'Your clear, grounded answer to the user',\n"
+            "  'tool_calls': [\n"
+            "    { 'name': 'tool_name', 'arguments': { ... } }\n"
+            "  ]\n"
+            "}\n"
+            "Tool calls can be empty [] if the retrieved context or query is fully answered."
         )
-        low = prompt.lower()
 
-        if mode == "do":
-            m_limit = re.search(r"(?:limit|cap).*?(\d+)", low)
-            if m_limit and hustle:
-                new_limit = int(m_limit.group(1))
-                ch = "instagram" if "insta" in low or "ig" in low else ("email" if "email" in low else "whatsapp")
-                old_limits = dict(hustle.channel_limits or {})
-                undo_id = len(ASSISTANT_UNDO_STACK) + 1
-                ASSISTANT_UNDO_STACK.append(
-                    {"undo_id": undo_id, "type": "hustle_limits", "hustle_id": hustle.id, "old_limits": old_limits}
-                )
-                updated_limits = dict(old_limits)
-                updated_limits[ch] = new_limit
-                hustle.channel_limits = updated_limits
-                db.commit()
-                emit_terminal_log("AI-DO", f"Updated {ch.upper()} daily limit -> {new_limit}/day (Undo #{undo_id})")
-                return {
-                    "mode": "do",
-                    "reply": f"Updated {ch.upper()} daily send limit to {new_limit}/day.",
-                    "undo_id": undo_id,
-                    "matched_leads": [],
-                }
+        schema = {
+            "type": "object",
+            "properties": {
+                "answer": {"type": "string"},
+                "tool_calls": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "arguments": {"type": "object"},
+                        },
+                        "required": ["name", "arguments"],
+                    },
+                },
+            },
+            "required": ["answer", "tool_calls"],
+        }
 
-            if (
-                ("autopilot" in low or "copilot" in low)
-                and hustle
-                and any(w in low for w in ["switch", "set", "mode", "turn"])
-            ):
-                new_mode = "autopilot" if "autopilot" in low else "copilot"
-                old_mode = hustle.autonomy_mode
-                undo_id = len(ASSISTANT_UNDO_STACK) + 1
-                ASSISTANT_UNDO_STACK.append(
-                    {"undo_id": undo_id, "type": "autonomy_mode", "hustle_id": hustle.id, "old_mode": old_mode}
-                )
-                hustle.autonomy_mode = new_mode
-                db.commit()
-                emit_terminal_log("AI-DO", f"Switched Hustle autonomy mode -> {new_mode.upper()} (Undo #{undo_id})")
-                return {
-                    "mode": "do",
-                    "reply": f"Switched '{hustle.name}' autonomy mode from {old_mode.upper()} to {new_mode.upper()}.",
-                    "undo_id": undo_id,
-                    "matched_leads": [],
-                }
+        ai_res = provider.generate_json(agent_system, json_schema=schema)
+        answer = ai_res.get("answer", "") if isinstance(ai_res, dict) else str(ai_res)
+        raw_tools = ai_res.get("tool_calls", []) if isinstance(ai_res, dict) else []
 
-            target_lead: Optional[Lead] = None
-            for l in leads:
-                short_n = re.split(r"[-|:]", l.name)[0].strip().lower()
-                if short_n and short_n in low:
-                    target_lead = l
-                    break
-                for word in short_n.split():
-                    if len(word) >= 4 and word not in ("dental", "clinic", "care", "doctor", "dr") and word in low:
-                        target_lead = l
-                        break
-                if target_lead:
-                    break
+        executed_actions = []
+        pending_actions = []
+        matched_leads = []
 
-            if not target_lead:
-                return {
-                    "mode": "do",
-                    "reply": "⚠️ I couldn't match a clinic name in your command. Please mention the clinic name more clearly (e.g. 'move Sharma Dental to replied').",
-                    "undo_id": None,
-                    "matched_leads": [],
-                }
+        # 4. Tool Execution Loop
+        for tc in raw_tools:
+            t_name = str(tc.get("name", "")).strip().lower()
+            args = tc.get("arguments", {}) or {}
 
-            if target_lead:
-                old_stage_id = target_lead.stage_id
-                old_next_action = target_lead.next_action
-                old_due = target_lead.next_action_due_at
+            try:
+                if t_name == "search_leads":
+                    q_leads = AgentTools.search_leads(
+                        db,
+                        query=args.get("query", ""),
+                        stage=args.get("stage"),
+                        locality=args.get("locality"),
+                        hustle_id=hustle_id,
+                    )
+                    matched_leads.extend(q_leads)
+                    executed_actions.append({"tool": "search_leads", "result": f"Found {len(q_leads)} lead(s)"})
 
-                stages = db.query(Stage).filter(Stage.hustle_id == hustle_id).all()
-                matched_stage: Optional[Stage] = None
-                for st in stages:
-                    if st.slug.replace("_", " ") in low or st.name.lower() in low or st.slug in low:
-                        matched_stage = st
-                        break
-                if not matched_stage:
-                    if "replied" in low or "warm" in low:
-                        matched_stage = next((s for s in stages if s.slug == "replied"), None)
-                    elif "viewed" in low or "hot" in low:
-                        matched_stage = next((s for s in stages if s.slug == "viewed_demo"), None)
-                    elif "contacted" in low or "sent" in low:
-                        matched_stage = next((s for s in stages if s.slug == "contacted"), None)
-                    elif re.search(r"\bwon\b", low):
-                        matched_stage = next((s for s in stages if s.is_won), None)
+                elif t_name == "query_crm_stats":
+                    stats = AgentTools.query_crm_stats(db, hustle_id=hustle_id)
+                    executed_actions.append({"tool": "query_crm_stats", "result": stats})
 
-                m_days = re.search(r"(\d+)\s*day", low)
-                snooze_days = int(m_days.group(1)) if m_days else (1 if "tomorrow" in low else 0)
+                elif t_name == "move_lead_stage":
+                    lead_id = int(args.get("lead_id", 0))
+                    tgt = str(args.get("target_stage", "")).strip()
+                    res = AgentTools.move_lead_stage(db, lead_id=lead_id, target_stage=tgt)
+                    executed_actions.append({"tool": "move_lead_stage", "badge": f"Moved to {res['new_stage']}", "result": res})
 
-                undo_id = len(ASSISTANT_UNDO_STACK) + 1
-                ASSISTANT_UNDO_STACK.append(
-                    {
-                        "undo_id": undo_id,
-                        "type": "lead_mutation",
-                        "lead_id": target_lead.id,
-                        "old_stage_id": old_stage_id,
-                        "old_next_action": old_next_action,
-                        "old_due": old_due,
-                    }
-                )
+                elif t_name == "log_call":
+                    lead_id = int(args.get("lead_id", 0))
+                    raw_t = str(args.get("raw_text", "")).strip()
+                    dur = int(args.get("duration_seconds", 120))
+                    outc = str(args.get("outcome", "connected"))
+                    res = AgentTools.log_call(db, lead_id=lead_id, raw_text=raw_t, duration_seconds=dur, outcome=outc)
+                    executed_actions.append({"tool": "log_call", "badge": "Call Logged", "result": res})
 
-                changes_desc: List[str] = []
-                if matched_stage:
-                    sync_lead_stage_and_status(db, target_lead, matched_stage)
-                    changes_desc.append(f"moved to stage '{matched_stage.name}'")
-                if snooze_days > 0:
-                    new_due = datetime.now(timezone.utc) + timedelta(days=snooze_days)
-                    target_lead.next_action_due_at = new_due
-                    target_lead.next_action = f"Follow up after {snooze_days}d snooze"
-                    changes_desc.append(f"snoozed for {snooze_days} days")
-                if not changes_desc:
-                    target_lead.next_action = prompt
-                    target_lead.next_action_due_at = datetime.now(timezone.utc) + timedelta(days=1)
-                    changes_desc.append(f"updated next step to '{prompt}'")
+                elif t_name == "draft_or_send_message":
+                    lead_id = int(args.get("lead_id", 0))
+                    msg_text = str(args.get("text", "")).strip()
+                    chan = str(args.get("channel", "whatsapp")).strip()
+                    res = AgentTools.draft_or_send_message(
+                        db,
+                        lead_id=lead_id,
+                        text=msg_text,
+                        channel=chan,
+                        confirmed=confirmed,
+                    )
+                    if res.get("requires_confirmation"):
+                        pending_actions.append(res)
+                    else:
+                        executed_actions.append({"tool": "send_message", "badge": f"Sent {chan.upper()}", "result": res})
+            except Exception as e:
+                logger.warning(f"Error executing agent tool {t_name}: {e}")
+                executed_actions.append({"tool": t_name, "error": str(e)})
 
-                target_lead.what_changed_summary = f"AI Do: {', '.join(changes_desc)}."
-                db.commit()
-                emit_terminal_log("AI-DO", f"Updated '{target_lead.name}': {', '.join(changes_desc)} (Undo #{undo_id})")
-                return {
-                    "mode": "do",
-                    "reply": f"Done! '{target_lead.name}' {', '.join(changes_desc)}.",
-                    "undo_id": undo_id,
-                    "matched_leads": [
-                        {
-                            "id": target_lead.id,
-                            "name": target_lead.name,
-                            "locality": target_lead.locality,
-                            "stage": matched_stage.name
-                            if matched_stage
-                            else (target_lead.stage_rel.name if target_lead.stage_rel else ""),
-                            "fit_score": target_lead.fit_score,
-                            "intent_score": target_lead.intent_score,
-                        }
-                    ],
-                }
-
-        matched: List[Lead] = []
-        if "warm" in low or "modern" in low or "premium" in low:
-            design_q = "warm" if "warm" in low else ("premium" if "premium" in low else "modern")
-            matched = [l for l in leads if any((e.design_chosen or "").lower() == design_q for e in (l.events or []))]
-            if not matched:
-                matched = [l for l in leads if l.intent_score > 0]
-        elif "hot" in low or "view" in low or "intent" in low:
-            matched = sorted(
-                [l for l in leads if l.intent_score > 0 or (l.events and len(l.events) > 0)],
-                key=lambda x: x.intent_score,
-                reverse=True,
-            )
-        elif "ready" in low or "review" in low or "stock" in low:
-            matched = [l for l in leads if l.stage_rel and l.stage_rel.slug == "package_ready"]
-        elif "replied" in low:
-            matched = [l for l in leads if l.stage_rel and l.stage_rel.slug == "replied"]
-        else:
-            keywords = [
-                w
-                for w in re.findall(r"[a-z0-9]+", low)
-                if len(w) >= 3
-                and w not in ("which", "show", "leads", "clinics", "the", "with", "what", "who", "are", "all", "for")
-            ]
-            if keywords:
-                matched = [
-                    l for l in leads if any(kw in f"{l.name} {l.locality} {l.doctor_name}".lower() for kw in keywords)
-                ]
-            if not matched:
-                matched = sorted(leads, key=lambda x: x.intent_score + x.fit_score, reverse=True)[:5]
-
-        plan = compute_stock_plan(db, hustle) if hustle else {}
-        reply_text = (
-            f"Found {len(matched)} matching clinic(s) out of {len(leads)} active leads in '{hustle.name if hustle else 'Pipeline'}'. "
-            f"Current Ready Buffer: {plan.get('current_ready_packages', 0)}/{plan.get('required_ready_packages', 0)} packages."
-        )
+        # De-duplicate matched leads
+        seen_lead_ids = set()
+        deduped_leads = []
+        for ml in matched_leads:
+            if ml["id"] not in seen_lead_ids:
+                seen_lead_ids.add(ml["id"])
+                deduped_leads.append(ml)
 
         return {
-            "mode": "ask",
-            "reply": reply_text,
+            "mode": mode,
+            "reply": answer,
+            "citations": citations,
+            "executed_actions": executed_actions,
+            "pending_confirmation": pending_actions,
+            "matched_leads": deduped_leads,
+            "undo_available": False,
             "undo_id": None,
-            "matched_leads": [
-                {
-                    "id": l.id,
-                    "name": l.name,
-                    "doctor_name": l.doctor_name,
-                    "locality": l.locality,
-                    "stage": l.stage_rel.name if l.stage_rel else "",
-                    "fit_score": l.fit_score,
-                    "intent_score": l.intent_score,
-                    "next_action": l.next_action,
-                }
-                for l in matched[:6]
-            ],
         }
 
     @staticmethod

@@ -28,6 +28,19 @@ interface AssistantHistoryItem {
   mode: string;
   prompt: string;
   reply: string;
+  citations?: Array<{ id: string; doc_type: string; lead_id?: number; snippet: string; rrf_score?: number }>;
+  executed_actions?: Array<{ tool: string; badge?: string; result?: any; error?: string }>;
+  pending_confirmation?: Array<{
+    requires_confirmation: boolean;
+    status: string;
+    lead_id: number;
+    lead_name: string;
+    doctor_name?: string;
+    channel: string;
+    recipient?: string;
+    draft_text: string;
+    message: string;
+  }>;
   matched_leads: Array<{
     id: number;
     name: string;
@@ -768,8 +781,10 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       try {
         const res = await apiFetch<{
           mode: string;
-          action_taken: string;
           reply: string;
+          citations?: Array<{ id: string; doc_type: string; lead_id?: number; snippet: string; rrf_score?: number }>;
+          executed_actions?: Array<{ tool: string; badge?: string; result?: any; error?: string }>;
+          pending_confirmation?: Array<any>;
           matched_leads: Array<{
             id: number;
             name: string;
@@ -796,6 +811,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
             mode: res.mode,
             prompt: currentPrompt,
             reply: res.reply,
+            citations: res.citations || [],
+            executed_actions: res.executed_actions || [],
+            pending_confirmation: res.pending_confirmation || [],
             matched_leads: res.matched_leads || [],
             undo_available: res.undo_available,
             undo_id: res.undo_id,
@@ -803,11 +821,16 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
           ...prev,
         ]);
         setAssistantPrompt("");
-        if (res.mode === "do") {
+        if (res.mode === "do" || (res.executed_actions && res.executed_actions.length > 0)) {
           loadAll();
         }
-      } catch (err) {
-        notify(err instanceof Error ? err.message : "Assistant request failed", "err");
+      } catch (err: any) {
+        const isNotConfigured = err?.status === 503 || String(err?.message || "").includes("ai_not_configured");
+        if (isNotConfigured) {
+          notify("AI provider not configured. Please configure an AI provider in Settings.", "err");
+        } else {
+          notify(err instanceof Error ? err.message : "Assistant request failed", "err");
+        }
       } finally {
         setAssistantLoading(false);
       }

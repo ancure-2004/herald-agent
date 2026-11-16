@@ -114,6 +114,88 @@ export function AssistantDrawer() {
                   <div className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
                     {entry.reply}
                   </div>
+
+                  {/* Executed Action Badges */}
+                  {entry.executed_actions && entry.executed_actions.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {entry.executed_actions.map((act, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-semibold"
+                        >
+                          ✓ {act.badge || act.tool}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Confirmation Gate for External Sends */}
+                  {entry.pending_confirmation && entry.pending_confirmation.length > 0 && (
+                    <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 space-y-2 mt-1">
+                      {entry.pending_confirmation.map((pc, idx) => (
+                        <div key={idx} className="space-y-1.5 text-xs">
+                          <div className="font-semibold text-amber-800 dark:text-amber-200 flex items-center justify-between">
+                            <span>Confirm External {pc.channel.toUpperCase()} Send</span>
+                            <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400">Target: {pc.lead_name}</span>
+                          </div>
+                          <div className="p-2 rounded bg-white dark:bg-zinc-900 border border-amber-200 dark:border-amber-900 text-slate-700 dark:text-slate-300 font-mono text-[11px] whitespace-pre-wrap">
+                            "{pc.draft_text}"
+                          </div>
+                          <div className="flex items-center gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                try {
+                                  await fetch("/api/assistant/ask-do", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                      mode: "do",
+                                      prompt: `Send message to lead #${pc.lead_id}: ${pc.draft_text}`,
+                                      confirmed: true,
+                                    }),
+                                  });
+                                  entry.pending_confirmation = [];
+                                } catch (e) {}
+                              }}
+                              className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-semibold cursor-pointer"
+                            >
+                              Confirm &amp; Send
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                entry.pending_confirmation = [];
+                              }}
+                              className="px-2.5 py-1 rounded bg-slate-200 hover:bg-slate-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-slate-300 text-[10px] font-semibold cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* RAG Source Citations */}
+                  {entry.citations && entry.citations.length > 0 && (
+                    <div className="pt-1.5 border-t border-slate-200/50 dark:border-white/[0.04] space-y-1">
+                      <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                        Sources &amp; Citations:
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {entry.citations.map((c, idx) => (
+                          <span
+                            key={idx}
+                            title={c.snippet}
+                            className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08] text-[9px] font-mono text-slate-500 dark:text-slate-400"
+                          >
+                            [{c.doc_type} #{c.lead_id}]
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {entry.matched_leads.length > 0 && (
                     <div className="flex flex-wrap gap-1 pt-1">
                       {entry.matched_leads.slice(0, 5).map((ml) => (
