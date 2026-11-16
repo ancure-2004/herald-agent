@@ -119,10 +119,10 @@ class DemoFactoryService:
             except Exception as batch_err:
                 emit(f"[DEMO-FACTORY] Note: batch ensure notice: {batch_err}")
 
-            # a) Query candidate staged leads for this hustle
+            # a) Query candidate leads for this hustle: STAGED leads or BUILD_FAILED / unrecorded leads requiring build retry
             q = db.query(Lead).filter(
                 Lead.hustle_id == hustle.id,
-                Lead.status == "STAGED",
+                Lead.status.in_(["STAGED", "BUILD_FAILED"]),
                 Lead.is_archived == False,
             )
             if not testing_mode and hasattr(Lead, "is_test"):
@@ -133,7 +133,7 @@ class DemoFactoryService:
             # Determine target batch_id
             target_batch_id: Optional[str] = batch_id
             if not target_batch_id:
-                # Pick the earliest BATCH-XX that has STAGED leads
+                # Pick the earliest BATCH-XX that has STAGED / BUILD_FAILED leads
                 for l in all_staged:
                     bid = (l.custom_fields or {}).get("batch_id")
                     if bid and bid.startswith("BATCH-"):
@@ -458,6 +458,10 @@ class DemoFactoryService:
                 if video_ok:
                     lead.status = "DEMO_READY"
                     lead.next_action = "Outreach via WhatsApp"
+                    c_fields = dict(lead.custom_fields or {})
+                    if "build_error" in c_fields:
+                        del c_fields["build_error"]
+                    lead.custom_fields = c_fields
                     if pkg:
                         pkg.status = "ready"
                     db.commit()

@@ -19,6 +19,7 @@ import {
   ChevronDown,
   Video,
   Globe,
+  MoreVertical,
 } from "lucide-react";
 
 interface BatchInfo {
@@ -238,6 +239,7 @@ export const DemoFactoryTab: React.FC = () => {
   const [isBuildRunning, setIsBuildRunning] = useState<boolean>(false);
   const [isRetryingRecordings, setIsRetryingRecordings] = useState<boolean>(false);
   const [isVerifyingLinks, setIsVerifyingLinks] = useState<boolean>(false);
+  const [isActionsMenuOpen, setIsActionsMenuOpen] = useState<boolean>(false);
   const [, setIsSyncing] = useState<boolean>(false);
 
   // Batch state
@@ -666,29 +668,62 @@ export const DemoFactoryTab: React.FC = () => {
             <span>{rebalancing ? "Re-batching..." : "Re-Batch"}</span>
           </button>
 
-          {/* Test All Links button */}
-          <button
-            type="button"
-            onClick={handleVerifyAllLinks}
-            disabled={isVerifyingLinks}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
-            title="Test HTTP 200 on all clinic demo links"
-          >
-            <Globe className={`w-3.5 h-3.5 text-indigo-500 ${isVerifyingLinks ? "animate-spin" : ""}`} />
-            <span>{isVerifyingLinks ? "Testing Links..." : "Test All Links"}</span>
-          </button>
+          {/* Compact Actions Dropdown Menu */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsActionsMenuOpen((prev) => !prev)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer shadow-xs"
+              title="Demo Factory actions"
+            >
+              <span>Actions</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </button>
 
-          {/* Retry Failed / Pending Videos button */}
-          <button
-            type="button"
-            onClick={handleRetryRecordings}
-            disabled={isRetryingRecordings || isBuildRunning}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
-            title="Re-run link sync & Playwright recording on failed/pending clinics"
-          >
-            <Video className={`w-3.5 h-3.5 text-amber-500 ${isRetryingRecordings ? "animate-pulse" : ""}`} />
-            <span>{isRetryingRecordings ? "Recording..." : "Retry Failed/Pending Videos"}</span>
-          </button>
+            {isActionsMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-20"
+                  onClick={() => setIsActionsMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-1 w-56 bg-white border border-slate-200/80 rounded-xl shadow-lg z-30 py-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsActionsMenuOpen(false);
+                      handleRetryRecordings();
+                    }}
+                    disabled={isRetryingRecordings || isBuildRunning}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-zinc-800 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    <Video className="w-4 h-4 text-amber-500 shrink-0" />
+                    <div>
+                      <div className="font-medium">Retry Failed/Pending Videos</div>
+                      <div className="text-[10px] text-slate-500">Re-record walkthroughs</div>
+                    </div>
+                  </button>
+
+                  <div className="h-px bg-slate-100 my-1" />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsActionsMenuOpen(false);
+                      handleVerifyAllLinks();
+                    }}
+                    disabled={isVerifyingLinks}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-zinc-800 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    <Globe className="w-4 h-4 text-indigo-500 shrink-0" />
+                    <div>
+                      <div className="font-medium">Test All Live Links</div>
+                      <div className="text-[10px] text-slate-500">Live HTTP 200 health check</div>
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Running indicator badge */}
           {(isBuildRunning || isLaunchingBatch) && (
