@@ -118,14 +118,25 @@ export function AssistantDrawer() {
                   {/* Executed Action Badges */}
                   {entry.executed_actions && entry.executed_actions.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 pt-1">
-                      {entry.executed_actions.map((act, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-semibold"
-                        >
-                          ✓ {act.badge || act.tool}
-                        </span>
-                      ))}
+                      {entry.executed_actions.map((act, idx) => {
+                        let detailText = act.badge || act.tool;
+                        if (!act.badge && act.result && typeof act.result === "object") {
+                          if (act.tool === "query_crm_stats" && "total_active_leads" in act.result) {
+                            detailText = `Total ${act.result.total_active_leads} leads`;
+                          } else if (act.tool === "search_leads" && Array.isArray(act.result)) {
+                            detailText = `Found ${act.result.length} leads`;
+                          }
+                        }
+                        return (
+                          <span
+                            key={idx}
+                            title={typeof act.result === "object" ? JSON.stringify(act.result) : String(act.result || "")}
+                            className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-semibold"
+                          >
+                            ✓ {detailText}
+                          </span>
+                        );
+                      })}
                     </div>
                   )}
 

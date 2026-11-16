@@ -6,13 +6,17 @@ from app.services.ai_service import AIService, LLMProvider
 
 
 class MockAskDoProvider(LLMProvider):
-    def __init__(self, answer="Grounded answer", tool_calls=None):
+    def __init__(self, answer="Grounded answer", tool_calls=None, synthesis_answer=None):
         self.answer = answer
         self.tool_calls = tool_calls or []
+        self.synthesis_answer = synthesis_answer
         self.prompts = []
 
     def generate_json(self, prompt: str, json_schema=None, timeout_seconds: float = 30.0):
         self.prompts.append(prompt)
+        # If this is Turn 2 synthesis call
+        if "The following tools were executed with real CRM data:" in prompt and self.synthesis_answer:
+            return {"answer": self.synthesis_answer}
         return {
             "answer": self.answer,
             "tool_calls": self.tool_calls,
@@ -104,11 +108,12 @@ def test_ask_do_endpoint_agentic_loop_and_citations(client, monkeypatch):
     lead_id = leads[0]["id"]
 
     mock_provider = MockAskDoProvider(
-        answer="I have moved the clinic to replied stage as requested.",
+        answer="I will retrieve the current count of leads and their distribution across stages from the CRM.",
         tool_calls=[
             {"name": "move_lead_stage", "arguments": {"lead_id": lead_id, "target_stage": "replied"}},
             {"name": "query_crm_stats", "arguments": {}},
         ],
+        synthesis_answer="You currently have 15 active leads across all stages, including 4 contacted and 2 replied.",
     )
     monkeypatch.setattr(AIService, "get_provider", lambda db=None: mock_provider)
 
@@ -119,7 +124,8 @@ def test_ask_do_endpoint_agentic_loop_and_citations(client, monkeypatch):
     assert res.status_code == 200
     data = res.json()
     assert data["mode"] == "do"
-    assert "moved the clinic" in data["reply"]
+    assert "15 active leads" in data["reply"]
+    assert "I will retrieve" not in data["reply"]
     assert "citations" in data
     assert len(data["executed_actions"]) >= 2
     assert any(act.get("tool") == "move_lead_stage" for act in data["executed_actions"])

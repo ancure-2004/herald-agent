@@ -195,7 +195,7 @@ class AssistantService:
         except Exception as e:
             emit_terminal_log("RAG-RETRIEVE", f"Retrieval warning: {e}", level="warn")
 
-        # 3. Agentic Prompt defining v1 Tools
+        # 3. Agentic Prompt defining v1 Tools - Turn 1
         agent_system = (
             "You are Firstmate Ask & Do Agent for PersonalOS & CRM.\n"
             "You have access to live CRM tools:\n"
@@ -206,7 +206,9 @@ class AssistantService:
             "5. draft_or_send_message(lead_id: int, text: str, channel: str)\n\n"
             f"Retrieved CRM Context:\n{retrieved_context}\n\n"
             f"User Prompt ({mode.upper()} mode): '{prompt}'\n\n"
-            "Decide which tools to execute (if any) and formulate a clear answer.\n"
+            "Decide which tools to execute (if any).\n"
+            "If tools are needed, list them in tool_calls. Do NOT output a placeholder message like 'I will retrieve...' if tools are needed.\n"
+            "If no tools are needed, provide your complete final answer in answer.\n"
             "Return JSON matching this schema:\n"
             "{\n"
             "  'answer': 'Your clear, grounded answer to the user',\n"
@@ -259,17 +261,29 @@ class AssistantService:
                         hustle_id=hustle_id,
                     )
                     matched_leads.extend(q_leads)
-                    executed_actions.append({"tool": "search_leads", "result": f"Found {len(q_leads)} lead(s)"})
+                    executed_actions.append({
+                        "tool": "search_leads",
+                        "badge": f"Found {len(q_leads)} lead(s)",
+                        "result": q_leads,
+                    })
 
                 elif t_name == "query_crm_stats":
                     stats = AgentTools.query_crm_stats(db, hustle_id=hustle_id)
-                    executed_actions.append({"tool": "query_crm_stats", "result": stats})
+                    executed_actions.append({
+                        "tool": "query_crm_stats",
+                        "badge": f"Total {stats.get('total_active_leads', 0)} leads",
+                        "result": stats,
+                    })
 
                 elif t_name == "move_lead_stage":
                     lead_id = int(args.get("lead_id", 0))
                     tgt = str(args.get("target_stage", "")).strip()
                     res = AgentTools.move_lead_stage(db, lead_id=lead_id, target_stage=tgt)
-                    executed_actions.append({"tool": "move_lead_stage", "badge": f"Moved to {res['new_stage']}", "result": res})
+                    executed_actions.append({
+                        "tool": "move_lead_stage",
+                        "badge": f"Moved to {res['new_stage']}",
+                        "result": res,
+                    })
 
                 elif t_name == "log_call":
                     lead_id = int(args.get("lead_id", 0))
@@ -277,7 +291,11 @@ class AssistantService:
                     dur = int(args.get("duration_seconds", 120))
                     outc = str(args.get("outcome", "connected"))
                     res = AgentTools.log_call(db, lead_id=lead_id, raw_text=raw_t, duration_seconds=dur, outcome=outc)
-                    executed_actions.append({"tool": "log_call", "badge": "Call Logged", "result": res})
+                    executed_actions.append({
+                        "tool": "log_call",
+                        "badge": "Call Logged",
+                        "result": res,
+                    })
 
                 elif t_name == "draft_or_send_message":
                     lead_id = int(args.get("lead_id", 0))
@@ -293,10 +311,53 @@ class AssistantService:
                     if res.get("requires_confirmation"):
                         pending_actions.append(res)
                     else:
-                        executed_actions.append({"tool": "send_message", "badge": f"Sent {chan.upper()}", "result": res})
+                        executed_actions.append({
+                            "tool": "send_message",
+                            "badge": f"Sent {chan.upper()}",
+                            "result": res,
+                        })
             except Exception as e:
                 logger.warning(f"Error executing agent tool {t_name}: {e}")
                 executed_actions.append({"tool": t_name, "error": str(e)})
+
+        # 5. Turn 2 Synthesis Call when tools executed
+        # Feeds the real tool execution outputs back to the LLM so 'reply' contains actual numbers and outcomes
+        if executed_actions:
+            tool_outputs_summary = []
+            for act in executed_actions:
+                t_n = act.get("tool")
+                if "result" in act:
+                    tool_outputs_summary.append(f"Tool '{t_n}' output:\n{json.dumps(act['result'], default=str)}")
+                elif "error" in act:
+                    tool_outputs_summary.append(f"Tool '{t_n}' error:\n{act['error']}")
+
+            synthesis_prompt = (
+                "You are Firstmate Ask & Do Agent for PersonalOS & CRM.\n"
+                f"User original query ({mode.upper()} mode): '{prompt}'\n\n"
+                f"Retrieved CRM Context:\n{retrieved_context}\n\n"
+                "The following tools were executed with real CRM data:\n"
+                + "\n\n".join(tool_outputs_summary) + "\n\n"
+                "Using the exact tool outputs above, write a clear, helpful, and concise final response directly answering the user's query.\n"
+                "State the actual numbers, counts, stages, or outcomes explicitly. Do NOT speak in future tense ('I will retrieve...').\n"
+                "Return JSON matching:\n"
+                "{\n"
+                "  'answer': 'Your synthesized final answer with actual data'\n"
+                "}"
+            )
+            synthesis_schema = {
+                "type": "object",
+                "properties": {
+                    "answer": {"type": "string"},
+                },
+                "required": ["answer"],
+            }
+            try:
+                syn_res = provider.generate_json(synthesis_prompt, json_schema=synthesis_schema)
+                if isinstance(syn_res, dict) and syn_res.get("answer"):
+                    answer = syn_res["answer"]
+            except Exception as e:
+                logger.warning(f"Failed to synthesize Turn 2 tool results with LLM: {e}")
+                pass
 
         # De-duplicate matched leads
         seen_lead_ids = set()
