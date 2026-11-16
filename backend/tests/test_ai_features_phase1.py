@@ -1,3 +1,5 @@
+import json
+import subprocess
 import pytest
 from app.core.exceptions import AINotConfiguredError, AIProviderError
 from app.services.ai_service import AIService, LocalCLIProvider, GeminiProvider, GroqProvider, LLMProvider
@@ -142,3 +144,58 @@ def test_call_brief_endpoint_no_fallback(client, monkeypatch):
     assert res.status_code == 503
     err_data = res.json()
     assert err_data["error"]["code"] == "ai_not_configured"
+
+
+def test_local_cli_provider_envelope_parsing(monkeypatch):
+    """Verifies LocalCLIProvider parses both standard agy envelope shapes and passes prompt directly."""
+    provider = LocalCLIProvider()
+    
+    dummy_schema = {
+        "type": "object",
+        "properties": {
+            "suggestions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "category": {"type": "string"},
+                        "text": {"type": "string"},
+                        "tone": {"type": "string"}
+                    }
+                }
+            }
+        }
+    }
+
+    captured_cmds = []
+
+    def mock_run(cmd, *args, **kwargs):
+        captured_cmds.append(cmd)
+        mock_output = {
+            "status": "SUCCESS",
+            "structured_output": {
+                "suggestions": [
+                    {"category": "objection_handling", "text": "Cost breakdown details", "tone": "consultative"},
+                    {"category": "value_proposition", "text": "Highlight ROI and timeline", "tone": "confident"},
+                    {"category": "follow_up", "text": "Quick check-in for next week", "tone": "friendly"}
+                ]
+            }
+        }
+        class Completed:
+            returncode = 0
+            stdout = json.dumps(mock_output).encode("utf-8")
+            stderr = b""
+        return Completed()
+
+    monkeypatch.setattr(subprocess, "run", mock_run)
+
+    result = provider.generate_json(prompt="Test prompt string", json_schema=dummy_schema)
+    assert isinstance(result, dict)
+    assert "suggestions" in result
+    assert len(result["suggestions"]) == 3
+    assert result["suggestions"][0]["category"] == "objection_handling"
+    
+    # Verify prompt was passed via --print flag and not as stdin redirect
+    assert len(captured_cmds) == 1
+    assert any(arg.startswith("--print=Test prompt string") for arg in captured_cmds[0])
+

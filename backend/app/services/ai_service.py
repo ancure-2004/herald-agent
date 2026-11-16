@@ -80,14 +80,13 @@ class LocalCLIProvider(LLMProvider):
         ]
         if json_schema:
             cmd.extend(["--json-schema", json.dumps(json_schema)])
-        cmd.append('--print=-')
+        cmd.append(f"--print={prompt}")
 
         env = self._get_isolated_env()
 
         try:
             res = subprocess.run(
                 cmd,
-                input=prompt.encode("utf-8"),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd="/tmp",
