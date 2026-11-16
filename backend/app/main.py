@@ -42,12 +42,17 @@ def _startup_recover_stuck_runs(db) -> int:
     """Item 10: Mark any RunLog rows still in 'running' status as 'interrupted'.
 
     These are runs that were alive in a previous server process which crashed or
-    was restarted.  The JobManager in-memory lock was reset when the process died,
+    was restarted. The JobManager in-memory lock was reset when the process died,
     so these rows are now orphaned — mark them before the new process can start
     new runs so the UI does not permanently show a phantom 'in progress' state.
+    Also clears any in-memory autopilot running flags.
     """
     from datetime import datetime, timezone
     from app.models.entities import RunLog
+    from app.services.event_bus import set_autopilot_running
+
+    set_autopilot_running(False, run_id=None)
+
     stuck = db.query(RunLog).filter(RunLog.status == "running").all()
     for run in stuck:
         run.status = "interrupted"

@@ -59,7 +59,17 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
       const videoPath = pkg.video_file_path || "";
 
       const isFailed = lead.status === "BUILD_FAILED" || pkg.status === "failed";
-      const isReady = (pkg.status === "ready" || pkg.status === "ready_for_review" || lead.status === "DEMO_READY") && !isFailed;
+      const isReady =
+        (pkg.status === "ready" ||
+          pkg.status === "ready_for_review" ||
+          pkg.status === "sent" ||
+          lead.status === "DEMO_READY" ||
+          lead.status === "CONTACTED" ||
+          lead.status === "REPLIED" ||
+          lead.status === "INTERESTED" ||
+          lead.status === "WON" ||
+          lead.status === "LOST") &&
+        !isFailed;
       const status: RunStatus = isReady ? "READY" : isFailed ? "FAILED" : "BUILDING";
 
       const selfCheckReport = pkg.self_check_report || {};
@@ -491,8 +501,21 @@ export const DemoFactoryTab: React.FC = () => {
     } finally {
       setIsBuildRunning(false);
       setIsLaunchingBatch(false);
+      setIsRetryingRecordings(false);
+      setIsVerifyingLinks(false);
     }
   };
+
+  const isActionActive = isBuildRunning || isLaunchingBatch || isRetryingRecordings || isVerifyingLinks;
+  const activeActionLabel = isLaunchingBatch
+    ? "Launching Batch..."
+    : isBuildRunning
+    ? "Compiling Batch..."
+    : isRetryingRecordings
+    ? "Retrying Videos..."
+    : isVerifyingLinks
+    ? "Verifying Links..."
+    : "Processing...";
 
   const readyRunsCount = runs.filter((r) => r.status === "READY").length;
   const buildingRunsCount = runs.filter((r) => r.status === "BUILDING" || r.status === "DEPLOYING").length;
@@ -726,28 +749,28 @@ export const DemoFactoryTab: React.FC = () => {
           </div>
 
           {/* Running indicator badge */}
-          {(isBuildRunning || isLaunchingBatch) && (
+          {isActionActive && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              <span>Compiling Batch...</span>
+              <span>{activeActionLabel}</span>
             </div>
           )}
 
           {/* Launch Demo Batch or Stop Automation button */}
-          {isBuildRunning || isLaunchingBatch ? (
+          {isActionActive ? (
             <button
               type="button"
               onClick={handleStopBatch}
               className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer active:scale-95"
             >
               <Square className="w-3.5 h-3.5 fill-white" />
-              <span>Stop Automation</span>
+              <span>Stop Action</span>
             </button>
           ) : (
             <button
               type="button"
               onClick={handleLaunchBatch}
-              disabled={isLaunchingBatch}
+              disabled={isActionActive}
               className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-xs font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />

@@ -408,12 +408,19 @@ class PipelineService:
     @staticmethod
     def verify_links(db: Session) -> Dict[str, Any]:
         from app.core.config import get_settings as _get_settings
+        from app.autopilot.runs.job_manager import JobManager
+        from app.services.event_bus import set_autopilot_running
+
         base_url = _get_settings().DEMO_ENGINE_BASE_URL
         emit_terminal_log("VERIFY-LINKS", f"Starting HTTP 200 verification on {base_url}...")
+
+        # Temporary lightweight lock or active cancel token check
+        cancel_token = JobManager.get_active_cancel_token()
         report = sync_verified_links_to_batch_json(
             db=db,
             base_url=base_url,
             log_cb=lambda msg: emit_terminal_log("VERIFY-LINKS", msg),
+            cancel_check=lambda: cancel_token.is_cancelled if cancel_token else False,
         )
         emit_terminal_log(
             "VERIFY-LINKS",

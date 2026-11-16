@@ -26,6 +26,7 @@ def record_walkthrough_batch(
     base_url: str,
     log_cb: Optional[Callable[[str], None]] = None,
     testing_mode: bool = False,
+    cancel_check: Optional[Callable[[], bool]] = None,
 ) -> Dict[str, Any]:
     """
     Executes or verifies mobile video walkthrough recordings for the batch leads.
@@ -131,7 +132,9 @@ def record_walkthrough_batch(
             cmd = ["node", str(recorder_script), str(temp_batch_file)]
             from app.autopilot.adapters.recorder import managed_recorder_process, default_recorder
             try:
+                from app.autopilot.runs.job_manager import JobManager
                 with managed_recorder_process(cmd, cwd=DENTAL_RECORDER_DIR, timeout_seconds=timeout_per_clinic * len(to_record)) as proc:
+                    JobManager.register_process("recorder", proc, task_type="demo_factory_recorder")
                     def _reader():
                         if proc.stdout:
                             for line in iter(proc.stdout.readline, ""):
@@ -144,6 +147,10 @@ def record_walkthrough_batch(
 
                     deadline = time.time() + (timeout_per_clinic * len(to_record))
                     while proc.poll() is None:
+                        if cancel_check and cancel_check():
+                            _emit(f"{TAG_VIDEO} Walkthrough recording stopped by cancellation signal.")
+                            proc.terminate()
+                            break
                         if time.time() > deadline:
                             _emit(f"{TAG_ERROR} Recorder subprocess timed out! Terminating...")
                             break
@@ -151,6 +158,7 @@ def record_walkthrough_batch(
             except Exception as e:
                 _emit(f"{TAG_ERROR} Recorder process error: {e}")
             finally:
+                JobManager.unregister_process("recorder")
                 default_recorder.cleanup_corrupted_recordings()
         else:
             _emit(f"{TAG_VIDEO} record-batch.mjs not found; creating mock recording marker.")
