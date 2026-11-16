@@ -17,6 +17,8 @@ import {
   Square,
   RefreshCw,
   ChevronDown,
+  Video,
+  Globe,
 } from "lucide-react";
 
 interface BatchInfo {
@@ -44,9 +46,98 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
         ? String(lead.custom_fields.batch_id)
         : "BATCH-01";
 
+    const customFields = lead.custom_fields || {};
+    const buildError = customFields.build_error || "";
+
     for (const pkg of lead.packages) {
       const links = pkg.asset_links || {};
       const modernUrl = links.modern || `http://localhost:3001/modern/${lead.slug || lead.id}`;
+      const choiceUrl = links.choice_page || `http://localhost:3001/demo/${lead.slug || lead.id}`;
+      const premiumUrl = links.premium || `http://localhost:3001/premium/${lead.slug || lead.id}`;
+      const warmUrl = links.warm || `http://localhost:3001/warm/${lead.slug || lead.id}`;
+      const videoPath = pkg.video_file_path || "";
+
+      const isFailed = lead.status === "BUILD_FAILED" || pkg.status === "failed";
+      const isReady = (pkg.status === "ready" || pkg.status === "ready_for_review" || lead.status === "DEMO_READY") && !isFailed;
+      const status: RunStatus = isReady ? "READY" : isFailed ? "FAILED" : "BUILDING";
+
+      const selfCheckReport = pkg.self_check_report || {};
+      const selfCheckPassed = Boolean(pkg.self_check_passed);
+
+      // Build realistic timestamped logs from actual package/lead state
+      const logs: any[] = [];
+      const createdTime = pkg.created_at ? new Date(pkg.created_at).toLocaleTimeString() : new Date().toLocaleTimeString();
+
+      logs.push({
+        id: `log-${pkg.id}-scaffold`,
+        timestamp: createdTime,
+        deltaMs: 120,
+        level: "INFO",
+        stream: "stdout",
+        message: `Scaffolded canonical clinic payload for ${lead.name} (doctor: ${lead.doctor_name || "Our Dental Team"})`,
+      });
+
+      if (selfCheckPassed) {
+        logs.push({
+          id: `log-${pkg.id}-gate`,
+          timestamp: createdTime,
+          deltaMs: 250,
+          level: "INFO",
+          stream: "system",
+          message: `Quality Self-Check gate PASSED (score: ${pkg.quality_score || 70}/100)`,
+        });
+      } else if (selfCheckReport && typeof selfCheckReport === "object" && Object.keys(selfCheckReport).length > 0) {
+        logs.push({
+          id: `log-${pkg.id}-gate`,
+          timestamp: createdTime,
+          deltaMs: 250,
+          level: "WARN",
+          stream: "stderr",
+          message: `Quality Self-Check gate report: ${JSON.stringify(selfCheckReport)}`,
+        });
+      }
+
+      if (links.modern) {
+        logs.push({
+          id: `log-${pkg.id}-links`,
+          timestamp: createdTime,
+          deltaMs: 500,
+          level: "INFO",
+          stream: "stdout",
+          message: `Generated 3 luxury theme URLs: Modern, Premium, Warm + Choice Landing (/demo/${lead.slug})`,
+        });
+      }
+
+      if (videoPath) {
+        logs.push({
+          id: `log-${pkg.id}-video`,
+          timestamp: createdTime,
+          deltaMs: 1200,
+          level: "INFO",
+          stream: "stdout",
+          message: `Playwright mobile walkthrough recorded successfully: ${videoPath.split("/").pop()} (${pkg.video_size_mb || 0} MB)`,
+        });
+      } else if (pkg.status === "video_pending") {
+        logs.push({
+          id: `log-${pkg.id}-video`,
+          timestamp: createdTime,
+          deltaMs: 1200,
+          level: "WARN",
+          stream: "stderr",
+          message: "Video walkthrough recording pending in background queue...",
+        });
+      }
+
+      if (buildError) {
+        logs.push({
+          id: `log-${pkg.id}-err`,
+          timestamp: createdTime,
+          deltaMs: 1500,
+          level: "ERROR",
+          stream: "stderr",
+          message: `Build / Gate Error: ${typeof buildError === "object" ? JSON.stringify(buildError) : String(buildError)}`,
+        });
+      }
 
       runs.push({
         id: `run_pkg_${pkg.id}`,
@@ -61,7 +152,7 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
           leadScore: lead.fit_score || 95,
         },
         templateId: "clinical-modern",
-        status: pkg.self_check_passed ? "READY" : "READY",
+        status,
         versionTag: `v1.${pkg.version || 1}.${pkg.id}`,
         triggeredBy: {
           type: "autopilot_trigger",
@@ -73,30 +164,19 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
         totalDurationMs: 8400,
         stages: [
           { id: "s1", name: "Scaffold Next.js Payload", key: "scaffold", status: "READY" },
-          { id: "s2", name: "Inject Doctor Credentials", key: "ingest", status: "READY" },
-          { id: "s3", name: "Compile 3 Luxury Themes", key: "compile", status: "READY" },
-          { id: "s4", name: "Verify HTTP 200 Live Status", key: "deploy", status: "READY" },
+          { id: "s2", name: "Inject Doctor Credentials", key: "ingest", status: lead.doctor_name ? "READY" : "BUILDING" },
+          { id: "s3", name: "Compile 3 Luxury Themes", key: "compile", status: links.modern ? "READY" : "BUILDING" },
+          { id: "s4", name: "Quality Self-Check Gate", key: "synthesize", status: selfCheckPassed ? "READY" : isFailed ? "FAILED" : "BUILDING" },
+          { id: "s5", name: "Playwright Mobile Video", key: "deploy", status: videoPath ? "READY" : isFailed ? "FAILED" : "BUILDING" },
         ],
-        logs: [
-          {
-            id: `log-${pkg.id}-1`,
-            timestamp: new Date(pkg.created_at || Date.now()).toISOString().substring(11, 19),
-            deltaMs: 120,
-            level: "INFO",
-            stream: "stdout",
-            message: `Scaffolded dental template for ${lead.name}`,
-          },
-          {
-            id: `log-${pkg.id}-2`,
-            timestamp: new Date(pkg.created_at || Date.now()).toISOString().substring(11, 19),
-            deltaMs: 450,
-            level: "INFO",
-            stream: "stdout",
-            message: `Verified HTTP 200 live on ${modernUrl}`,
-          },
-        ],
+        logs,
         preview: {
           ephemeralUrl: modernUrl,
+          choiceUrl,
+          modernUrl,
+          premiumUrl,
+          warmUrl,
+          videoFilePath: videoPath,
           expiresAt: pkg.expires_at || new Date(Date.now() + 86400000).toISOString(),
           isPermanent: false,
           sslVerified: true,
@@ -107,6 +187,14 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
             seo: 100,
           },
         },
+        ...(buildError
+          ? {
+              error: {
+                stage: "verification",
+                message: typeof buildError === "object" ? JSON.stringify(buildError) : String(buildError),
+              },
+            }
+          : {}),
       });
     }
   }
@@ -148,6 +236,8 @@ export const DemoFactoryTab: React.FC = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const [isLaunchingBatch, setIsLaunchingBatch] = useState<boolean>(false);
   const [isBuildRunning, setIsBuildRunning] = useState<boolean>(false);
+  const [isRetryingRecordings, setIsRetryingRecordings] = useState<boolean>(false);
+  const [isVerifyingLinks, setIsVerifyingLinks] = useState<boolean>(false);
   const [, setIsSyncing] = useState<boolean>(false);
 
   // Batch state
@@ -354,6 +444,42 @@ export const DemoFactoryTab: React.FC = () => {
     }
   };
 
+  const handleRetryRecordings = async () => {
+    setIsRetryingRecordings(true);
+    try {
+      showNotification("Starting Playwright retry for failed/pending videos...");
+      const res = await autopilotApi.retryRecordings({
+        hustle_id: 1,
+        batch_id: selectedBatchId !== "ALL" ? selectedBatchId : undefined,
+      });
+      showNotification(
+        `Retry complete: ${res.succeeded_count} succeeded, ${res.failed_count} failed (${res.retried_count} candidates).`
+      );
+      await syncRunsFromDb();
+      await fetchBatchMeta();
+    } catch (err: unknown) {
+      showNotification(err instanceof Error ? err.message : "Failed to retry recordings");
+    } finally {
+      setIsRetryingRecordings(false);
+    }
+  };
+
+  const handleVerifyAllLinks = async () => {
+    setIsVerifyingLinks(true);
+    try {
+      showNotification("Verifying HTTP 200 across all demo links...");
+      const res = await autopilotApi.verifyLinks();
+      showNotification(
+        `Link Verification: ${res.verified_count} passed HTTP 200, ${res.failed_count} failed.`
+      );
+      await syncRunsFromDb();
+    } catch (err: unknown) {
+      showNotification(err instanceof Error ? err.message : "Failed to verify links");
+    } finally {
+      setIsVerifyingLinks(false);
+    }
+  };
+
   const handleStopBatch = async () => {
     try {
       await apiFetch<{ status?: string }>("/api/autopilot/stop", { method: "POST" });
@@ -534,9 +660,34 @@ export const DemoFactoryTab: React.FC = () => {
             onClick={handleRebalance}
             disabled={rebalancing}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer disabled:opacity-50"
+            title="Re-batch staged leads cleanly"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${rebalancing ? "animate-spin" : ""}`} />
-            <span>{rebalancing ? "Re-batching..." : "Re-Batch Stock"}</span>
+            <span>{rebalancing ? "Re-batching..." : "Re-Batch"}</span>
+          </button>
+
+          {/* Test All Links button */}
+          <button
+            type="button"
+            onClick={handleVerifyAllLinks}
+            disabled={isVerifyingLinks}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+            title="Test HTTP 200 on all clinic demo links"
+          >
+            <Globe className={`w-3.5 h-3.5 text-indigo-500 ${isVerifyingLinks ? "animate-spin" : ""}`} />
+            <span>{isVerifyingLinks ? "Testing Links..." : "Test All Links"}</span>
+          </button>
+
+          {/* Retry Failed / Pending Videos button */}
+          <button
+            type="button"
+            onClick={handleRetryRecordings}
+            disabled={isRetryingRecordings || isBuildRunning}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+            title="Re-run link sync & Playwright recording on failed/pending clinics"
+          >
+            <Video className={`w-3.5 h-3.5 text-amber-500 ${isRetryingRecordings ? "animate-pulse" : ""}`} />
+            <span>{isRetryingRecordings ? "Recording..." : "Retry Failed/Pending Videos"}</span>
           </button>
 
           {/* Running indicator badge */}

@@ -84,6 +84,22 @@ class PipelineController:
         return PipelineService.verify_links(db)
 
     @staticmethod
+    def retry_recordings(
+        db: Session,
+        hustle_id: int = 1,
+        batch_id: Optional[str] = None,
+        testing_mode: bool = False,
+        async_mode: bool = False,
+    ) -> Dict[str, Any]:
+        return PipelineService.retry_recordings(
+            db,
+            hustle_id=hustle_id,
+            batch_id=batch_id,
+            testing_mode=testing_mode,
+            async_mode=async_mode,
+        )
+
+    @staticmethod
     def get_cockpit_batch(db: Session, hustle_id: int = 1, batch_id: Optional[str] = None) -> Dict[str, Any]:
         return PipelineService.get_cockpit_batch(db, hustle_id, batch_id=batch_id)
 

@@ -425,6 +425,47 @@ class PipelineService:
         )
         return report
 
+    @classmethod
+    def retry_recordings(
+        cls,
+        db: Session,
+        hustle_id: int = 1,
+        batch_id: Optional[str] = None,
+        testing_mode: bool = False,
+        async_mode: bool = False,
+    ) -> Dict[str, Any]:
+        from app.autopilot.build.factory_service import DemoFactoryService
+
+        if async_mode:
+            def _bg_worker():
+                with SessionLocal() as bg_db:
+                    try:
+                        DemoFactoryService.retry_recordings(
+                            db=bg_db,
+                            hustle_id=hustle_id,
+                            batch_id=batch_id,
+                            testing_mode=testing_mode,
+                            log_cb=lambda msg: emit_terminal_log("RETRY-RECORDER", msg),
+                        )
+                    except Exception as ex:
+                        logger.error("Async retry recordings failed: %s", ex)
+
+            t = threading.Thread(target=_bg_worker, daemon=True)
+            t.start()
+            return {
+                "status": "running",
+                "async": True,
+                "message": "Retry recordings started in background thread",
+            }
+
+        return DemoFactoryService.retry_recordings(
+            db=db,
+            hustle_id=hustle_id,
+            batch_id=batch_id,
+            testing_mode=testing_mode,
+            log_cb=lambda msg: emit_terminal_log("RETRY-RECORDER", msg),
+        )
+
     @staticmethod
     def get_cockpit_batch(db: Session, hustle_id: int = 1, batch_id: Optional[str] = None) -> Dict[str, Any]:
         return build_cockpit_batch_payload(db=db, hustle_id=hustle_id, batch_id=batch_id)

@@ -135,4 +135,28 @@ export const autopilotApi = {
       `/api/batch/rebalance?hustle_id=${hustleId}&force_rebatch=${force}`,
       { method: "POST" }
     ),
+
+  retryRecordings: (payload?: {
+    hustle_id?: number;
+    batch_id?: string;
+    testing_mode?: boolean;
+    async_mode?: boolean;
+  }): Promise<{ status: string; retried_count: number; succeeded_count: number; failed_count: number }> =>
+    apiFetch<{ status: string; retried_count: number; succeeded_count: number; failed_count: number }>(
+      "/api/autopilot/retry-recordings",
+      {
+        method: "POST",
+        body: JSON.stringify(payload || {}),
+        timeoutMs: 3600000,
+      }
+    ),
+
+  verifyLinks: (): Promise<{ verified_count: number; failed_count: number; total: number; verified_items: any[]; failed_items: any[] }> =>
+    apiFetch<{ verified_count: number; failed_count: number; total: number; verified_items: any[]; failed_items: any[] }>(
+      "/api/autopilot/verify-links",
+      {
+        method: "POST",
+        timeoutMs: 300000,
+      }
+    ),
 };
