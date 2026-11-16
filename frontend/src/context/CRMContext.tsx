@@ -193,6 +193,7 @@ interface CRMContextType {
   setAssistantPrompt: (p: string) => void;
   assistantLoading: boolean;
   assistantHistory: AssistantHistoryItem[];
+  setAssistantHistory: React.Dispatch<React.SetStateAction<AssistantHistoryItem[]>>;
   handleAskDoSubmit: (e: React.FormEvent) => Promise<void>;
   handleAssistantUndo: (undoId: string | null, entryId: string) => Promise<void>;
 
@@ -961,6 +962,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     setAssistantPrompt,
     assistantLoading,
     assistantHistory,
+    setAssistantHistory,
     handleAskDoSubmit,
     handleAssistantUndo,
     loadAll,
@@ -1044,6 +1046,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     assistantPrompt,
     assistantLoading,
     assistantHistory,
+    setAssistantHistory,
     handleAskDoSubmit,
     handleAssistantUndo,
     loadAll,

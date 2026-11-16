@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
@@ -20,6 +21,8 @@ from app.schemas.hustle import ProblemReportCreate, TelegramCommandRequest
 from app.services.event_bus import emit_terminal_log
 from app.services.lead_service import sync_lead_stage_and_status
 from app.utils.safety import compute_stock_plan
+
+logger = logging.getLogger("personal_os.assistant")
 
 ASSISTANT_UNDO_STACK: List[Dict[str, Any]] = []
 
@@ -355,9 +358,48 @@ class AssistantService:
                 syn_res = provider.generate_json(synthesis_prompt, json_schema=synthesis_schema)
                 if isinstance(syn_res, dict) and syn_res.get("answer"):
                     answer = syn_res["answer"]
+                elif isinstance(syn_res, str):
+                    answer = syn_res
             except Exception as e:
                 logger.warning(f"Failed to synthesize Turn 2 tool results with LLM: {e}")
                 pass
+
+        # Helper to extract plain text answer if LLM returned JSON string
+        def _extract_plain_text(val: Any) -> str:
+            if isinstance(val, dict):
+                if "answer" in val:
+                    return _extract_plain_text(val["answer"])
+                return json.dumps(val)
+            if isinstance(val, str):
+                s = val.strip()
+                if (s.startswith("{") and s.endswith("}")) or s.startswith("```"):
+                    clean_s = re.sub(r"^```(?:json)?\s*", "", s, flags=re.IGNORECASE)
+                    clean_s = re.sub(r"\s*```$", "", clean_s).strip()
+                    try:
+                        parsed = json.loads(clean_s)
+                        if isinstance(parsed, dict) and "answer" in parsed:
+                            return _extract_plain_text(parsed["answer"])
+                    except Exception:
+                        pass
+                return s
+            return str(val)
+
+        answer = _extract_plain_text(answer)
+
+        # Ensure tools producing state changes have a human-readable confirmation in reply if LLM answer was vague or empty
+        if executed_actions and (not answer or answer.startswith("I will retrieve") or answer.startswith("I will ")):
+            confirmations = []
+            for act in executed_actions:
+                t_name = act.get("tool")
+                res_obj = act.get("result", {})
+                if t_name == "move_lead_stage" and isinstance(res_obj, dict):
+                    confirmations.append(f"Moved {res_obj.get('lead_name', 'lead')} to stage '{res_obj.get('new_stage', '')}'.")
+                elif t_name == "log_call" and isinstance(res_obj, dict):
+                    confirmations.append(f"Logged call for lead #{res_obj.get('lead_id')}: {res_obj.get('summary', 'Call logged successfully.')}")
+                elif t_name == "send_message" and isinstance(res_obj, dict):
+                    confirmations.append(res_obj.get("message") or f"Sent {res_obj.get('channel', 'message')}.")
+            if confirmations:
+                answer = " ".join(confirmations)
 
         # De-duplicate matched leads
         seen_lead_ids = set()

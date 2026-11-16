@@ -114,17 +114,77 @@ class AgentTools:
         target_stage: str,
     ) -> Dict[str, Any]:
         """Moves a lead to a new pipeline stage and updates status."""
+        import re
+
         lead = LeadRepository.get_by_id(db, lead_id)
         if not lead:
             raise NotFoundError(f"Lead #{lead_id} not found.")
 
         stages = db.query(Stage).filter(Stage.hustle_id == lead.hustle_id).all()
         matched: Optional[Stage] = None
+
+        def clean(text: str) -> str:
+            cleaned = re.sub(r"^\d+[\.\s\-]+", "", text.lower().strip())
+            cleaned = re.sub(r"[\(\)\[\]_\-]", " ", cleaned)
+            return " ".join(cleaned.split())
+
+        c_target = clean(target_stage)
         low = target_stage.lower().strip()
+
+        # 1. Direct slug / name match
         for s in stages:
             if s.slug.lower() == low or s.name.lower() == low or low in s.name.lower():
                 matched = s
                 break
+
+        # 2. Normalized cleaned name/slug match
+        if not matched:
+            for s in stages:
+                if clean(s.slug) == c_target or clean(s.name) == c_target:
+                    matched = s
+                    break
+
+        # 3. Known common CRM/pipeline aliases
+        if not matched:
+            ALIASES = {
+                "won client": "won",
+                "won": "won",
+                "closed won": "won",
+                "lost": "lost",
+                "closed lost": "lost",
+                "demo sent": "contacted",
+                "pitch sent": "contacted",
+                "contacted": "contacted",
+                "viewed demo": "viewed_demo",
+                "demo viewed": "viewed_demo",
+                "replied": "replied",
+                "warm": "replied",
+                "replied warm": "replied",
+                "review tray": "package_ready",
+                "review tray ready": "package_ready",
+                "package ready": "package_ready",
+                "discovered": "discovered",
+                "researching": "discovered",
+                "outbox": "queued",
+                "approved outbox": "queued",
+                "queued": "queued",
+            }
+            if c_target in ALIASES:
+                alias_slug = ALIASES[c_target]
+                for s in stages:
+                    if s.slug.lower() == alias_slug.lower():
+                        matched = s
+                        break
+
+        # 4. Substring in clean name or slug
+        if not matched:
+            for s in stages:
+                c_slug = clean(s.slug)
+                c_name = clean(s.name)
+                if (c_target and c_target in c_slug) or (c_target and c_target in c_name) or (c_slug and c_slug in c_target) or (c_name and c_name in c_target):
+                    matched = s
+                    break
+
         if not matched:
             raise UnprocessableEntityError(f"Target stage '{target_stage}' not found for lead #{lead_id}.")
 
@@ -193,13 +253,15 @@ class AgentTools:
             }
 
         # Confirmed: execute real send via outbox / message creation
+        import time
         from app.schemas.message import OutboxApproveRequest
 
+        step_tag = f"ask_do_{int(time.time())}"
         req = OutboxApproveRequest(
             lead_id=lead.id,
             channel=clean_channel,
             text=text,
-            step_tag="ask_do_agent",
+            step_tag=step_tag,
             send_immediately=True,
         )
         res = MessageService.approve_and_send_pitch(db, req)

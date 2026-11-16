@@ -54,12 +54,18 @@ def test_agent_tools_move_lead_stage(client):
         stages = db.query(Stage).filter(Stage.hustle_id == lead.hustle_id).all()
         target_stage = stages[0].name if stages else "Contacted"
 
+        # Test normal name
         res = AgentTools.move_lead_stage(db, lead_id=lead_id, target_stage=target_stage)
         assert res["success"] is True
         assert res["lead_id"] == lead_id
 
+        # Test alias and normalization (e.g. '7. Won (Client)', 'WON_CLIENT')
+        res_won = AgentTools.move_lead_stage(db, lead_id=lead_id, target_stage="WON_CLIENT")
+        assert res_won["success"] is True
+        assert "Won" in res_won["new_stage"]
+
         db.refresh(lead)
-        assert lead.stage_rel.name == res["new_stage"]
+        assert "Won" in lead.stage_rel.name
     finally:
         db.close()
 
@@ -129,6 +135,36 @@ def test_ask_do_endpoint_agentic_loop_and_citations(client, monkeypatch):
     assert "citations" in data
     assert len(data["executed_actions"]) >= 2
     assert any(act.get("tool") == "move_lead_stage" for act in data["executed_actions"])
+
+
+def test_ask_do_plain_text_synthesis_and_tool_confirmation(client, monkeypatch):
+    """Verifies Turn 2 extracts plain text (never raw JSON string) and confirms actions."""
+    leads_res = client.get("/api/leads")
+    leads = leads_res.json()
+    if not leads:
+        pytest.skip("No leads in DB")
+    lead_id = leads[0]["id"]
+
+    # Test raw JSON string returned by LLM in Turn 2
+    mock_provider = MockAskDoProvider(
+        answer='{"answer": "Logged the call successfully."}',
+        tool_calls=[
+            {"name": "log_call", "arguments": {"lead_id": lead_id, "raw_text": "Doctor interested in pricing", "outcome": "interested"}},
+        ],
+        synthesis_answer='{"answer": "Successfully logged call for Dr. Sharma noting interest in pricing."}',
+    )
+    monkeypatch.setattr(AIService, "get_provider", lambda db=None: mock_provider)
+
+    res = client.post(
+        "/api/assistant/ask-do",
+        json={"prompt": f"Log call for lead #{lead_id}", "hustle_id": 1},
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert not data["reply"].startswith("{")
+    assert not data["reply"].endswith("}")
+    assert "Successfully logged call" in data["reply"]
+    assert any(act.get("tool") == "log_call" for act in data["executed_actions"])
 
 
 def test_ask_do_endpoint_zero_fallback_503(client, monkeypatch):
