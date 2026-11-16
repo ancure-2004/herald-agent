@@ -39,8 +39,10 @@
 All AI features share one backend provider interface supporting:
 - **`local_cli` (Personal Mode):**
   - Backend runs RAG + context assembly in Python, then pipes the compact prompt via `stdin` to:
-    `agy --print --model gemini-3.8-flash-low --disable-slash-commands --output-format json --json-schema <schema>`
-    with `cwd="/tmp"` so `agy` does not scan the workspace on every CRM call.
+    `agy --model gemini-3.8-flash-low --effort low --disable-slash-commands --dangerously-skip-permissions --output-format json --json-schema <schema> --print=-`
+    with `cwd="/tmp"` and isolated `HOME=~/.personalos-agy-sandbox` so `agy` does not load global skills, plugins, or MCP servers.
+  - Drops input tokens from ~65k to ~8-10k and latency from >35s to ~2.5s-4s without needing re-login.
+  - `test_connection()` executes a 0-token, <1s fast CLI verification via `agy --version` without invoking the LLM.
   - Short-lived subprocess exits immediately after returning JSON (zero persistent RAM overhead).
 - **`gemini` (Public BYOK Mode):** Direct REST call to `gemini-2.5-flash` using the user's configured key.
 - **`groq` (Public BYOK Mode):** Direct REST call to Groq (`llama-3.3-70b-versatile`) using the user's configured key.

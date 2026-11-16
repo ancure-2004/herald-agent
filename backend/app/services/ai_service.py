@@ -39,7 +39,7 @@ class LLMProvider(ABC):
 
 
 class LocalCLIProvider(LLMProvider):
-    """Personal mode provider executing the authenticated `agy` CLI bridge with cwd=/tmp."""
+    """Personal mode provider executing the authenticated `agy` CLI bridge with isolated HOME and cwd=/tmp."""
 
     def __init__(self, model: str = LOCAL_CLI_DEFAULT_MODEL):
         self.model = model
@@ -47,6 +47,13 @@ class LocalCLIProvider(LLMProvider):
     @classmethod
     def is_available(cls) -> bool:
         return shutil.which("agy") is not None
+
+    def _get_isolated_env(self) -> Dict[str, str]:
+        env = os.environ.copy()
+        sandbox_home = os.path.expanduser("~/.personalos-agy-sandbox")
+        os.makedirs(sandbox_home, exist_ok=True)
+        env["HOME"] = sandbox_home
+        return env
 
     def generate_json(
         self,
@@ -64,13 +71,18 @@ class LocalCLIProvider(LLMProvider):
             "agy",
             "--model",
             self.model,
+            "--effort",
+            "low",
             "--disable-slash-commands",
+            "--dangerously-skip-permissions",
             "--output-format",
             "json",
         ]
         if json_schema:
             cmd.extend(["--json-schema", json.dumps(json_schema)])
         cmd.append('--print=-')
+
+        env = self._get_isolated_env()
 
         try:
             res = subprocess.run(
@@ -79,6 +91,7 @@ class LocalCLIProvider(LLMProvider):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd="/tmp",
+                env=env,
                 timeout=timeout_seconds,
                 check=False,
             )
@@ -135,25 +148,39 @@ class LocalCLIProvider(LLMProvider):
             ) from e
 
     def test_connection(self) -> Dict[str, Any]:
+        """Fast 0-token connection test checking CLI availability and running `agy --version`."""
         if not self.is_available():
             raise AINotConfiguredError("Local CLI 'agy' not found in PATH.", details={"provider": "local_cli"})
 
-        test_schema = {
-            "type": "object",
-            "properties": {"status": {"type": "string"}},
-            "required": ["status"],
-        }
-        res = self.generate_json(
-            "Respond with JSON status ok",
-            json_schema=test_schema,
-            timeout_seconds=20.0,
-        )
+        env = self._get_isolated_env()
+        try:
+            res = subprocess.run(
+                ["agy", "--version"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd="/tmp",
+                env=env,
+                timeout=5.0,
+                check=False,
+            )
+            version_str = res.stdout.decode("utf-8", errors="replace").strip()
+            if res.returncode != 0:
+                err_msg = res.stderr.decode("utf-8", errors="replace").strip()
+                raise AIProviderError(
+                    f"agy check failed with exit code {res.returncode}: {err_msg}",
+                    details={"provider": "local_cli", "stderr": err_msg},
+                )
+        except subprocess.TimeoutExpired as e:
+            raise AIProviderError("agy --version check timed out.", details={"provider": "local_cli"}) from e
+        except Exception as e:
+            raise AIProviderError(f"Failed to run agy --version: {e}", details={"provider": "local_cli"}) from e
+
         return {
             "ok": True,
             "provider": "local_cli",
             "model": self.model,
-            "message": "Connected to local agy CLI bridge.",
-            "sample_response": res,
+            "message": f"Connected to local agy CLI bridge (v{version_str}).",
+            "sample_response": {"version": version_str, "status": "ok"},
         }
 
 
