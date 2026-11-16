@@ -211,8 +211,9 @@ class AssistantService:
             f"Retrieved CRM Context:\n{retrieved_context}\n\n"
             f"User Prompt: '{prompt}'\n\n"
             "Decide which tools to execute (if any).\n"
-            "All tools are fully enabled. If the user asks to send a message, draft outreach, change stage, or log a call, call the appropriate tool.\n"
-            "If you need to find the lead first before taking an action (like sending a message or moving stage), call search_leads.\n"
+            "CRITICAL LATENCY RULE: If the Retrieved CRM Context above already identifies the relevant lead (showing its Lead #id, clinic name, or phone), do NOT call search_leads!\n"
+            "Instead, immediately call draft_or_send_message, move_lead_stage, or log_call directly with that lead_id.\n"
+            "Only call search_leads if the lead is not in the Retrieved CRM Context.\n"
             "If tools are needed, list them in tool_calls. Do NOT output a placeholder message like 'I will retrieve...' if tools are needed.\n"
             "If no tools are needed, provide your complete final answer in answer.\n"
             "Return JSON matching this schema:\n"
@@ -366,8 +367,12 @@ class AssistantService:
                 logger.warning(f"Error in tool chaining step: {e}")
 
         # 5. Turn 2 Synthesis Call when tools executed
-        # Feeds the real tool execution outputs back to the LLM so 'reply' contains actual numbers and outcomes
-        if executed_actions:
+        # Latency optimization: If draft_or_send_message returned pending_confirmation, skip redundant extra LLM synthesis turn!
+        # The confirmation prompt already clearly communicates the message and asks for user action.
+        if pending_actions:
+            first_pending = pending_actions[0]
+            answer = first_pending.get("message") or f"Please confirm sending {first_pending.get('channel', 'message').upper()} to {first_pending.get('lead_name')}."
+        elif executed_actions:
             tool_outputs_summary = []
             for act in executed_actions:
                 t_n = act.get("tool")

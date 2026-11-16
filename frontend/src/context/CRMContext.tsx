@@ -805,6 +805,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
             hustle_id: activeHustleId,
             mode: "do",
           }),
+          timeoutMs: 90000,
         });
         setAssistantHistory((prev) => [
           {

@@ -240,7 +240,7 @@ export function CallsManagementView() {
     setLoadingBrief(true);
     try {
       const url = forceRegenerate ? `/api/leads/${leadId}/call-brief?force_regenerate=true` : `/api/leads/${leadId}/call-brief`;
-      const res = await apiFetch<CallBrief>(url);
+      const res = await apiFetch<CallBrief>(url, { timeoutMs: 60000 });
       setCallBrief(res);
     } catch (err: any) {
       const isNotConfigured = err?.status === 503 || String(err?.message || "").includes("ai_not_configured");

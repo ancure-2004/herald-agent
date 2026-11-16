@@ -49,5 +49,5 @@ export const messagesApi = {
     }),
 
   getReplySuggestions: (leadId: number): Promise<{ lead_id: number; suggestions: Array<{ category: string; text: string; tone: string }> }> =>
-    apiFetch(`/api/leads/${leadId}/reply-suggestions`),
+    apiFetch(`/api/leads/${leadId}/reply-suggestions`, { timeoutMs: 60000 }),
 };
