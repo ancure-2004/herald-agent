@@ -162,6 +162,12 @@ class LeadController:
         }
 
     @staticmethod
+    def list_calls(db: Session, lead_id: int) -> List[Any]:
+        from app.services.call_service import CallService
+
+        return CallService.list_calls(db, lead_id)
+
+    @staticmethod
     def log_call(db: Session, lead_id: int, payload: Any) -> Dict[str, Any]:
         from app.services.call_service import CallService
 

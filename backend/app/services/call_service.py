@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session
 
@@ -12,6 +12,13 @@ from app.services.event_bus import emit_terminal_log
 
 
 class CallService:
+    @staticmethod
+    def list_calls(db: Session, lead_id: int) -> List[Call]:
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+        return db.query(Call).filter(Call.lead_id == lead.id).order_by(Call.created_at.desc()).all()
+
     @staticmethod
     def log_call(db: Session, lead_id: int, payload: CallCreate) -> Dict[str, Any]:
         lead = LeadRepository.get_by_id(db, lead_id)

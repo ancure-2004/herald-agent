@@ -168,3 +168,60 @@ def test_call_brief_caching_and_invalidation(client, monkeypatch):
     assert res3.status_code == 200
     assert mock_p.last_prompt != ""  # Prompt was fired again!
 
+
+def test_get_lead_calls_endpoint(client, monkeypatch):
+    """Verifies GET /api/leads/{lead_id}/calls returns list of calls in expected order, and 404 for unknown lead."""
+    leads_res = client.get("/api/leads")
+    assert leads_res.status_code == 200
+    leads = leads_res.json()
+    if not leads:
+        pytest.skip("No leads in test DB")
+    lead_id = leads[0]["id"]
+
+    # 1. 404 for non-existent lead
+    res_404 = client.get("/api/leads/999999/calls")
+    assert res_404.status_code == 404
+
+    # 2. Mock AI call structuring for posting calls
+    monkeypatch.setattr(
+        AIService,
+        "structure_raw_call_notes",
+        lambda l, raw, db=None, provider=None: {
+            "summary": "Call summary for testing",
+            "interests": [],
+            "objections": [],
+            "commitments": [],
+            "next_steps": [],
+            "prep_brief": "Prep brief",
+        },
+    )
+
+    # 3. Log two calls
+    client.post(
+        f"/api/leads/{lead_id}/calls",
+        json={"raw_text": "First test call", "duration_seconds": 60, "outcome": "completed"},
+    )
+    client.post(
+        f"/api/leads/{lead_id}/calls",
+        json={"raw_text": "Second test call", "duration_seconds": 90, "outcome": "completed"},
+    )
+
+    # 4. GET /api/leads/{lead_id}/calls
+    res = client.get(f"/api/leads/{lead_id}/calls")
+    assert res.status_code == 200
+    calls_data = res.json()
+    assert isinstance(calls_data, list)
+    assert len(calls_data) >= 2
+    # Verify shape
+    first_call = calls_data[0]
+    assert "id" in first_call
+    assert "call_id" in first_call
+    assert "raw_text" in first_call
+    assert "summary" in first_call
+    assert "duration_seconds" in first_call
+    assert "outcome" in first_call
+    assert "created_at" in first_call
+    # Most recent call first (Second test call)
+    assert calls_data[0]["raw_text"] == "Second test call"
+
+
