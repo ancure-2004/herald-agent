@@ -11,6 +11,7 @@ router = APIRouter(tags=["Events & Telemetry"])
 
 
 @router.get("/events")
+@router.get("/events/stream")
 def stream_events():
     """Server-Sent Events endpoint streaming pipeline progress and agent logs."""
     return StreamingResponse(

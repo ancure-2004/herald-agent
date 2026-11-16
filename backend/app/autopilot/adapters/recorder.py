@@ -42,6 +42,7 @@ def managed_recorder_process(
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        bufsize=1,
         preexec_fn=os.setsid if hasattr(os, "setsid") else None,
     )
     try:

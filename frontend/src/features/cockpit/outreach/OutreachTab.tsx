@@ -16,6 +16,7 @@ import { SafetyControlsCard } from "./SafetyControlsCard";
 import { DispatchQueueTable } from "./DispatchQueueTable";
 import { QueueFilterBar } from "./QueueFilterBar";
 import { apiFetch } from "@/lib/api/client";
+import { env } from "@/config/env";
 import { autopilotApi } from "@/api/autopilotApi";
 import { useCRM } from "@/context/CRMContext";
 import {
@@ -141,7 +142,7 @@ export const OutreachTab: React.FC = () => {
 
   // SSE subscription to track live WA automation state
   useEffect(() => {
-    const evtSource = new EventSource("/api/events/stream");
+    const evtSource = new EventSource(`${env.NEXT_PUBLIC_API_BASE_URL}/api/events`);
 
     const handleStarted = (e: MessageEvent) => {
       try {

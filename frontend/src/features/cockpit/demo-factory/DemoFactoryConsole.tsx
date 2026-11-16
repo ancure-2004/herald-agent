@@ -162,7 +162,21 @@ export const DemoFactoryConsole: React.FC<DemoFactoryConsoleProps> = ({
         if (isCancelled) return;
         try {
           const entry: BuildLogEntry = JSON.parse(e.data);
-          if (entry.service && entry.service.toLowerCase() !== "building") {
+          const svc = (entry.service || "").toLowerCase();
+          const src = (entry.source || "").toLowerCase();
+          const isBuildService =
+            svc === "building" ||
+            svc.includes("record") ||
+            svc.includes("video") ||
+            svc.includes("walkthrough") ||
+            svc.includes("verify") ||
+            src.includes("record") ||
+            src.includes("video") ||
+            src.includes("walkthrough") ||
+            src.includes("build") ||
+            src.includes("factory") ||
+            src.includes("verify");
+          if (entry.service && !isBuildService) {
             return;
           }
           if (typeof entry.seq === "number" && seenSeqsRef.current.has(entry.seq)) {

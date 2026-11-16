@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Clock,
   Layers,
+  Video,
 } from "lucide-react";
 
 interface RunMatrixTableProps {
@@ -37,7 +38,7 @@ export const RunMatrixTable: React.FC<RunMatrixTableProps> = ({
       setElapsedSecs((prev) => {
         const next: Record<string, number> = { ...prev };
         runs.forEach((r) => {
-          if (r.status === "BUILDING" || r.status === "DEPLOYING") {
+          if (r.status === "BUILDING" || r.status === "RECORDING" || r.status === "DEPLOYING") {
             next[r.id] = (next[r.id] || Math.floor((r.totalDurationMs || 8400) / 1000)) + 1;
           }
         });
@@ -61,6 +62,13 @@ export const RunMatrixTable: React.FC<RunMatrixTableProps> = ({
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-emerald-50/80 text-emerald-700 border border-emerald-200/60">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
             <span>Live / Ready</span>
+          </span>
+        );
+      case "RECORDING":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-purple-50 text-purple-700 border border-purple-200/60 animate-pulse">
+            <Video className="w-3 h-3 text-purple-600 animate-pulse" />
+            <span>Recording...</span>
           </span>
         );
       case "BUILDING":
@@ -113,7 +121,7 @@ export const RunMatrixTable: React.FC<RunMatrixTableProps> = ({
 
         <tbody className="divide-y divide-slate-100">
           {runs.map((run) => {
-            const isLive = run.status === "BUILDING" || run.status === "DEPLOYING";
+            const isLive = run.status === "BUILDING" || run.status === "RECORDING" || run.status === "DEPLOYING";
             const seconds = isLive
               ? elapsedSecs[run.id] || Math.floor((run.totalDurationMs || 8400) / 1000)
               : Math.floor((run.totalDurationMs || 0) / 1000);

@@ -7,6 +7,7 @@ import { MultiDevicePreviewDrawer } from "./MultiDevicePreviewDrawer";
 import { BuildLogDrawer } from "./BuildLogDrawer";
 import { DemoFactoryConsole } from "./DemoFactoryConsole";
 import { apiFetch } from "@/lib/api/client";
+import { env } from "@/config/env";
 import { autopilotApi } from "@/api/autopilotApi";
 import {
   Sparkles,
@@ -40,8 +41,6 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
   const runs: DemoRun[] = [];
 
   for (const lead of leads) {
-    if (!lead.packages || lead.packages.length === 0) continue;
-
     const leadBatchId =
       lead.custom_fields && typeof lead.custom_fields === "object" && lead.custom_fields.batch_id
         ? String(lead.custom_fields.batch_id)
@@ -49,6 +48,74 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
 
     const customFields = lead.custom_fields || {};
     const buildError = customFields.build_error || "";
+
+    if (!lead.packages || lead.packages.length === 0) {
+      if (lead.status === "BUILDING" || lead.status === "RECORDING" || lead.status === "BUILD_FAILED") {
+        const fallbackStatus: RunStatus =
+          lead.status === "RECORDING"
+            ? "RECORDING"
+            : lead.status === "BUILD_FAILED"
+            ? "FAILED"
+            : "BUILDING";
+        runs.push({
+          id: `run-lead-${lead.id}`,
+          batchId: leadBatchId,
+          clinic: {
+            id: String(lead.id),
+            name: lead.name || "Unnamed Clinic",
+            city: lead.locality || lead.city || "Delhi NCR",
+            state: "Delhi",
+            phone: lead.primary_phone || "-",
+            website: lead.slug,
+            leadScore: Number(lead.fit_score) || 95,
+          },
+          templateId: "clinical-modern",
+          status: fallbackStatus,
+          versionTag: `v1.0.${lead.id}`,
+          triggeredBy: {
+            type: "autopilot_trigger",
+            authorName: "Demo Factory Autopilot",
+          },
+          createdAt: new Date().toISOString(),
+          startedAt: new Date().toISOString(),
+          totalDurationMs: 4200,
+          stages: [
+            { id: "s1", name: "Scaffold Next.js Payload", key: "scaffold", status: "BUILDING" },
+          ],
+          logs: [
+            {
+              id: `log-lead-${lead.id}-init`,
+              timestamp: new Date().toLocaleTimeString(),
+              deltaMs: 50,
+              level: fallbackStatus === "FAILED" ? "ERROR" : "INFO",
+              stream: fallbackStatus === "FAILED" ? "stderr" : "stdout",
+              message:
+                fallbackStatus === "FAILED"
+                  ? buildError || "Build failed during scaffolding"
+                  : `Scaffolding & compiling demo assets for ${lead.name}...`,
+            },
+          ],
+          preview: {
+            ephemeralUrl: `http://localhost:3001/modern/${lead.slug || lead.id}`,
+            choiceUrl: `http://localhost:3001/demo/${lead.slug || lead.id}`,
+            modernUrl: `http://localhost:3001/modern/${lead.slug || lead.id}`,
+            premiumUrl: `http://localhost:3001/premium/${lead.slug || lead.id}`,
+            warmUrl: `http://localhost:3001/warm/${lead.slug || lead.id}`,
+            videoFilePath: "",
+            expiresAt: new Date(Date.now() + 86400000).toISOString(),
+            isPermanent: false,
+            sslVerified: true,
+            lighthouseScore: {
+              performance: 98,
+              accessibility: 100,
+              bestPractices: 96,
+              seo: 100,
+            },
+          },
+        });
+      }
+      continue;
+    }
 
     for (const pkg of lead.packages) {
       const links = pkg.asset_links || {};
@@ -58,7 +125,17 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
       const warmUrl = links.warm || `http://localhost:3001/warm/${lead.slug || lead.id}`;
       const videoPath = pkg.video_file_path || "";
 
-      const isFailed = lead.status === "BUILD_FAILED" || pkg.status === "failed";
+      const isRecording =
+        lead.status === "RECORDING" ||
+        pkg.status === "recording" ||
+        pkg.status === "video_recording";
+
+      const isBuilding =
+        lead.status === "BUILDING" ||
+        pkg.status === "building" ||
+        pkg.status === "scaffolding";
+
+      const isFailed = (lead.status === "BUILD_FAILED" || pkg.status === "failed") && !isRecording && !isBuilding;
       const isReady =
         (pkg.status === "ready" ||
           pkg.status === "ready_for_review" ||
@@ -69,8 +146,19 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
           lead.status === "INTERESTED" ||
           lead.status === "WON" ||
           lead.status === "LOST") &&
-        !isFailed;
-      const status: RunStatus = isReady ? "READY" : isFailed ? "FAILED" : "BUILDING";
+        !isFailed &&
+        !isRecording &&
+        !isBuilding;
+
+      const status: RunStatus = isReady
+        ? "READY"
+        : isRecording
+        ? "RECORDING"
+        : isBuilding
+        ? "BUILDING"
+        : isFailed
+        ? "FAILED"
+        : "BUILDING";
 
       const selfCheckReport = pkg.self_check_report || {};
       const selfCheckPassed = Boolean(pkg.self_check_passed);
@@ -318,7 +406,9 @@ export const DemoFactoryTab: React.FC = () => {
         // Compute dynamic KPIs with clamped pass rate (Math.min(100, ...))
         const total = cockpitState?.metrics?.demosBuilt || mapped.length;
         const ready = mapped.filter((r) => r.status === "READY").length;
-        const building = mapped.filter((r) => r.status === "BUILDING" || r.status === "DEPLOYING").length;
+        const building = mapped.filter(
+          (r) => r.status === "BUILDING" || r.status === "RECORDING" || r.status === "DEPLOYING"
+        ).length;
         const queued = mapped.filter((r) => r.status === "QUEUED").length;
         const effectiveTotal = Math.max(total, ready);
         const passPctVal = effectiveTotal > 0 ? Math.min(100, Math.round((ready / effectiveTotal) * 100)) : 100;
@@ -339,15 +429,22 @@ export const DemoFactoryTab: React.FC = () => {
     }
   }, []);
 
-  // SSE subscription to track live running state
+  // SSE subscription to track live running state & per-lead updates
   useEffect(() => {
-    const evtSource = new EventSource("/api/events/stream");
+    const sseUrl = `${env.NEXT_PUBLIC_API_BASE_URL}/api/events`;
+    const evtSource = new EventSource(sseUrl);
 
     const handleStarted = () => setIsBuildRunning(true);
     const handleStopped = () => {
       setIsBuildRunning(false);
       setIsLaunchingBatch(false);
+      setIsRetryingRecordings(false);
+      setIsVerifyingLinks(false);
       fetchBatchMeta();
+      syncRunsFromDb();
+    };
+
+    const handleRefresh = () => {
       syncRunsFromDb();
     };
 
@@ -355,11 +452,24 @@ export const DemoFactoryTab: React.FC = () => {
     evtSource.addEventListener("autopilot_stopped", handleStopped);
     evtSource.addEventListener("run_completed", handleStopped);
     evtSource.addEventListener("auditor_complete", handleStopped);
+    evtSource.addEventListener("autopilot_build_completed", handleStopped);
+    evtSource.addEventListener("autopilot_retry_recordings_completed", handleStopped);
+    evtSource.addEventListener("lead_updated", handleRefresh);
+    evtSource.addEventListener("pipeline_step", handleRefresh);
 
     return () => {
       evtSource.close();
     };
   }, [fetchBatchMeta, syncRunsFromDb]);
+
+  // Fast periodic sync while any action is active so row badges flip in real time
+  useEffect(() => {
+    if (!isBuildRunning && !isLaunchingBatch && !isRetryingRecordings && !isVerifyingLinks) return;
+    const poll = setInterval(() => {
+      syncRunsFromDb();
+    }, 3000);
+    return () => clearInterval(poll);
+  }, [isBuildRunning, isLaunchingBatch, isRetryingRecordings, isVerifyingLinks, syncRunsFromDb]);
 
   useEffect(() => {
     syncRunsFromDb();
@@ -375,6 +485,9 @@ export const DemoFactoryTab: React.FC = () => {
     return runs.filter((r) => {
       if (selectedBatchId !== "ALL" && r.batchId !== selectedBatchId) {
         return false;
+      }
+      if (filter === "BUILDING") {
+        return r.status === "BUILDING" || r.status === "RECORDING" || r.status === "DEPLOYING";
       }
       if (filter !== "ALL" && r.status !== filter) {
         return false;
@@ -518,7 +631,9 @@ export const DemoFactoryTab: React.FC = () => {
     : "Processing...";
 
   const readyRunsCount = runs.filter((r) => r.status === "READY").length;
-  const buildingRunsCount = runs.filter((r) => r.status === "BUILDING" || r.status === "DEPLOYING").length;
+  const buildingRunsCount = runs.filter(
+    (r) => r.status === "BUILDING" || r.status === "RECORDING" || r.status === "DEPLOYING"
+  ).length;
   const failedRunsCount = runs.filter((r) => r.status === "FAILED").length;
   const passRateNum = parseInt(kpiMetrics.passRate.replace("%", ""), 10) || 100;
 
@@ -593,7 +708,7 @@ export const DemoFactoryTab: React.FC = () => {
 
       {/* 2. Middle Row: Spatial Branching Agent Node Graph + Minimal Headerless Live Log Box */}
       <DemoFactoryConsole
-        isBuildRunning={isBuildRunning || isLaunchingBatch}
+        isBuildRunning={isActionActive}
         runsCount={runs.length}
         readyRunsCount={readyRunsCount}
         buildingRunsCount={buildingRunsCount}

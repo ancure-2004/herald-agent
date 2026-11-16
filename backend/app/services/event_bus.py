@@ -61,7 +61,7 @@ def emit_terminal_log(
     src_lower = source.lower()
     if "discover" in src_lower or "scout" in src_lower:
         service = "discovery"
-    elif "build" in src_lower or "factory" in src_lower or "auditor" in src_lower:
+    elif "build" in src_lower or "factory" in src_lower or "auditor" in src_lower or "record" in src_lower or "video" in src_lower or "walkthrough" in src_lower or "verify" in src_lower:
         service = "building"
     elif "outreach" in src_lower or "closer" in src_lower or "call" in src_lower or "message" in src_lower:
         service = "outreach"
@@ -170,6 +170,12 @@ def emit_terminal_log(
             "timestamp": now.isoformat(),
         },
     )
+    # Also flush directly to backend uvicorn terminal / stdout
+    try:
+        import sys as _sys
+        print(formatted, file=_sys.stdout, flush=True)
+    except Exception:
+        pass
     return formatted
 
 

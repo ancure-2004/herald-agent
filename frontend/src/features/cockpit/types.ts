@@ -201,6 +201,7 @@ export type RunStatus =
   | "QUEUED"
   | "SCAFFOLDING"
   | "BUILDING"
+  | "RECORDING"
   | "DEPLOYING"
   | "READY"
   | "FAILED"
