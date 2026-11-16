@@ -61,6 +61,13 @@ class CallService:
         db.commit()
         db.refresh(call)
 
+        try:
+            from app.services.rag_service import RAGIndexingService
+            RAGIndexingService.index_call(call, lead=lead)
+        except Exception as e:
+            from app.core.logging import logger
+            logger.warning(f"Failed to incrementally index call: {e}")
+
         emit_terminal_log(
             "OUTREACH",
             f"Call logged for {lead.name} ({payload.duration_seconds}s, outcome: {payload.outcome})",

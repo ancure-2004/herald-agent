@@ -91,6 +91,19 @@ def test_ai_connection(payload: AITestRequest, db: Session = Depends(get_db)):
     return MessageController.test_ai_connection(db, payload.model_dump())
 
 
+@router.post("/ai/rag/reindex")
+def reindex_rag_store(db: Session = Depends(get_db)):
+    """Backfills and re-indexes all CRM records into the Hybrid RAG index and unloads the model immediately."""
+    from app.services.rag_service import RAGIndexingService
+
+    counts = RAGIndexingService.reindex_all(db)
+    return {
+        "status": "success",
+        "indexed": counts,
+        "message": f"Successfully reindexed {counts['leads']} leads, {counts['calls']} calls, and {counts['messages']} messages.",
+    }
+
+
 @router.put("/messages/{message_id}")
 @router.patch("/messages/{message_id}")
 @router.delete("/messages/{message_id}")

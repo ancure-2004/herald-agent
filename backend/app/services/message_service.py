@@ -145,6 +145,13 @@ class MessageService:
         db.commit()
         db.refresh(msg)
         broadcast_sse("message_appended", {"lead_id": lead.id, "direction": msg.direction, "ai_label": msg.ai_label})
+
+        try:
+            from app.services.rag_service import RAGIndexingService
+            RAGIndexingService.index_message(msg, lead=lead)
+        except Exception:
+            pass
+
         return msg
 
     @staticmethod
