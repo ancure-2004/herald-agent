@@ -110,9 +110,13 @@ def log_lead_call(lead_id: int, payload: CallCreate, db: Session = Depends(get_d
 
 
 @router.get("/leads/{lead_id}/call-brief", response_model=CallBriefOut)
-def get_lead_call_brief(lead_id: int, db: Session = Depends(get_db)):
+def get_lead_call_brief(
+    lead_id: int,
+    force_regenerate: bool = Query(default=False),
+    db: Session = Depends(get_db),
+):
     """Returns pre-call 'what to talk about' briefing card combining call notes and chat history."""
-    return LeadController.get_call_brief(db, lead_id)
+    return LeadController.get_call_brief(db, lead_id, force_regenerate=force_regenerate)
 
 
 @router.post("/admin/wipe-leads")

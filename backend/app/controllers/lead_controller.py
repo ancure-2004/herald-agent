@@ -168,10 +168,10 @@ class LeadController:
         return CallService.log_call(db, lead_id, payload)
 
     @staticmethod
-    def get_call_brief(db: Session, lead_id: int) -> Dict[str, Any]:
+    def get_call_brief(db: Session, lead_id: int, force_regenerate: bool = False) -> Dict[str, Any]:
         from app.services.call_service import CallService
 
-        return CallService.get_call_brief(db, lead_id)
+        return CallService.get_call_brief(db, lead_id, force_regenerate=force_regenerate)
 
 
     @staticmethod

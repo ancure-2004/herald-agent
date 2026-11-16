@@ -236,10 +236,11 @@ export function CallsManagementView() {
     setActiveRebuttalId(null);
   }, [activeLead?.id]);
 
-  const fetchCallBrief = useCallback(async (leadId: number) => {
+  const fetchCallBrief = useCallback(async (leadId: number, forceRegenerate = false) => {
     setLoadingBrief(true);
     try {
-      const res = await apiFetch<CallBrief>(`/api/leads/${leadId}/call-brief`);
+      const url = forceRegenerate ? `/api/leads/${leadId}/call-brief?force_regenerate=true` : `/api/leads/${leadId}/call-brief`;
+      const res = await apiFetch<CallBrief>(url);
       setCallBrief(res);
     } catch (err: any) {
       const isNotConfigured = err?.status === 503 || String(err?.message || "").includes("ai_not_configured");
@@ -302,7 +303,17 @@ export function CallsManagementView() {
 
   useEffect(() => {
     if (!activeLead) return;
-    setCallBrief(null);
+    const cached = (activeLead as any)?.custom_fields?.cached_call_brief;
+    if (cached && cached.prep_brief) {
+      setCallBrief({
+        lead_id: activeLead.id,
+        clinic_name: activeLead.name,
+        doctor_name: activeLead.doctor_name,
+        prep_brief: cached.prep_brief,
+      });
+    } else {
+      setCallBrief(null);
+    }
     loadCallsForLead(activeLead);
   }, [activeLead?.id, loadCallsForLead]);
 
@@ -658,12 +669,13 @@ export function CallsManagementView() {
                     </button>
 
                     <button
-                      onClick={() => fetchCallBrief(activeLead.id)}
+                      onClick={() => fetchCallBrief(activeLead.id, true)}
                       disabled={loadingBrief}
-                      className="p-2 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-                      title="Refresh brief"
+                      className="p-2 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
+                      title="Force regenerate brief"
                     >
                       <RefreshCw className={`w-3.5 h-3.5 ${loadingBrief ? "animate-spin" : ""}`} />
+                      <span className="hidden sm:inline">Regenerate</span>
                     </button>
                   </div>
                 </div>

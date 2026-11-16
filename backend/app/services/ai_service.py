@@ -533,8 +533,7 @@ class AIService:
         db: Optional[Any] = None,
         provider: Optional[LLMProvider] = None,
     ) -> List[Dict[str, str]]:
-        """Analyzes conversation thread history and the last inbound reply to generate
-
+        """Analyzes recent chronological message thread history and the last inbound reply to generate
         exactly 3 distinct reply options:
           1. Direct Answer
           2. Value Reframe
@@ -547,18 +546,32 @@ class AIService:
         clinic_name = getattr(lead, "name", "") or (lead.get("name") if isinstance(lead, dict) else "your clinic")
         locality = getattr(lead, "locality", "") or (lead.get("locality") if isinstance(lead, dict) else "Delhi NCR")
 
+        # Sort messages chronologically by created_at
+        def get_msg_time(m: Any) -> str:
+            val = getattr(m, "created_at", None) or (m.get("created_at") if isinstance(m, dict) else None)
+            return str(val or "")
+
+        sorted_messages = sorted(messages or [], key=get_msg_time)
+        recent_thread = sorted_messages[-20:]
+
+        thread_lines = []
         last_inbound_text = ""
-        for m in reversed(messages):
+        for m in recent_thread:
             direction = getattr(m, "direction", None) or (m.get("direction") if isinstance(m, dict) else "")
             text = getattr(m, "text", None) or (m.get("text") if isinstance(m, dict) else "")
+            role = "Lead/Doctor" if direction == "inbound" else "Firstmate/Outreach"
+            t_str = get_msg_time(m)
+            thread_lines.append(f"[{t_str}] {role}: {text}")
             if direction == "inbound":
                 last_inbound_text = text
-                break
+
+        thread_history_block = "\n".join(thread_lines) if thread_lines else "No previous messages."
 
         prompt = (
             f"You are Firstmate AI copilot for dental clinic outreach in Delhi NCR.\n"
-            f"Lead: {clinic_name} in {locality}. Doctor: Dr. {doctor_clean}.\n"
-            f"Last message from doctor: '{last_inbound_text}'\n\n"
+            f"Lead Profile: {clinic_name} in {locality}. Doctor: Dr. {doctor_clean}.\n"
+            f"Recent Conversation Thread (Chronological):\n{thread_history_block}\n\n"
+            f"Latest Inbound Reply From Doctor: '{last_inbound_text}'\n\n"
             "Generate JSON with an object having key 'suggestions' containing exactly 3 suggestions with keys 'category', 'text', 'tone':\n"
             "1. 'Direct Answer' (professional, answers their question directly)\n"
             "2. 'Value Reframe' (consultative, patient trust, direct WhatsApp booking vs Practo)\n"
@@ -697,9 +710,8 @@ class AIService:
         db: Optional[Any] = None,
         provider: Optional[LLMProvider] = None,
     ) -> Dict[str, Any]:
-        """Combines past call notes and thread history into a concise 'what to talk about' brief
-
-        for lead follow-up.
+        """Combines past call history and recent thread history into a concise 'what to talk about' brief
+        for lead follow-up. If no past calls exist, generates a tailored first-time discovery call script.
 
         Raises AINotConfiguredError or AIProviderError if AI is unavailable.
         """
@@ -709,17 +721,25 @@ class AIService:
         clinic_name = getattr(lead, "name", "") or (lead.get("name") if isinstance(lead, dict) else "clinic")
         locality = getattr(lead, "locality", "") or (lead.get("locality") if isinstance(lead, dict) else "Delhi NCR")
 
+        # Sort calls chronologically by created_at
+        def get_item_time(item: Any) -> str:
+            val = getattr(item, "created_at", None) or (item.get("created_at") if isinstance(item, dict) else None)
+            return str(val or "")
+
+        sorted_calls = sorted(calls or [], key=get_item_time)
+
         past_commitments = []
         key_objections = []
-        call_summaries = []
+        chronological_call_summaries = []
 
-        for c in calls:
+        for idx, c in enumerate(sorted_calls, start=1):
+            c_date = get_item_time(c)
             c_brief = getattr(c, "prep_brief", "") or (c.get("prep_brief") if isinstance(c, dict) else "")
             c_summary = getattr(c, "summary", "") or (c.get("summary") if isinstance(c, dict) else "")
-            if c_summary:
-                call_summaries.append(c_summary)
-            elif c_brief:
-                call_summaries.append(c_brief)
+            c_outcome = getattr(c, "outcome", "") or (c.get("outcome") if isinstance(c, dict) else "")
+            entry_text = f"Call #{idx} ({c_date}, outcome: {c_outcome}): {c_summary or c_brief}"
+            chronological_call_summaries.append(entry_text)
+
             c_comms = getattr(c, "commitments", []) or (c.get("commitments") if isinstance(c, dict) else [])
             if isinstance(c_comms, list):
                 past_commitments.extend(c_comms)
@@ -727,20 +747,31 @@ class AIService:
             if isinstance(c_objs, list):
                 key_objections.extend(c_objs)
 
-        # De-duplicate
+        # De-duplicate objections
         key_objections = list(dict.fromkeys(key_objections))
 
-        prompt = (
-            f"You are Firstmate AI generating a pre-call prep brief for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
-            f"Past Call Summaries: {json.dumps(call_summaries)}\n"
-            f"Known Objections: {json.dumps(key_objections)}\n"
-            f"Past Commitments: {json.dumps(past_commitments)}\n\n"
-            "Return JSON object with exactly these keys:\n"
-            "1. 'prep_brief': string (clear bullet points outlining context, key objections to address, and goal for this call)\n"
-            "2. 'past_commitments': array of commitments\n"
-            "3. 'key_objections': array of string objections\n"
-            "Output JSON object only."
-        )
+        if sorted_calls:
+            prompt = (
+                f"You are Firstmate AI generating an ongoing pre-call follow-up brief for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
+                f"Past Calls History (Chronological):\n{chr(10).join(chronological_call_summaries)}\n\n"
+                f"Known Doctor Objections Across Calls: {json.dumps(key_objections)}\n"
+                f"Past Commitments Across Calls: {json.dumps(past_commitments)}\n\n"
+                "Return JSON object with exactly these keys:\n"
+                "1. 'prep_brief': string (clear bullet points outlining prior call continuity, key objections to address, commitments owed, and concrete talking points for what to discuss next)\n"
+                "2. 'past_commitments': array of commitments\n"
+                "3. 'key_objections': array of string objections\n"
+                "Output JSON object only."
+            )
+        else:
+            prompt = (
+                f"You are Firstmate AI generating a tailored first-time discovery call script for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
+                "There are no prior phone calls logged with this clinic yet.\n\n"
+                "Return JSON object with exactly these keys:\n"
+                "1. 'prep_brief': string (structured first-time discovery call script: 1) Warm doctor-centric opener acknowledging OPD hours, 2) Hook on patient acquisition & direct WhatsApp OPD booking vs Practo cuts, 3) 2-minute demo offer of the 3 custom clinic sites already built, 4) Closing question to confirm mutual fit)\n"
+                "2. 'past_commitments': empty array []\n"
+                "3. 'key_objections': array of likely first-call objections to anticipate (e.g. ['Already on Practo', 'Busy in OPD', 'Has an existing website'])\n"
+                "Output JSON object only."
+            )
 
         schema = {
             "type": "object",
