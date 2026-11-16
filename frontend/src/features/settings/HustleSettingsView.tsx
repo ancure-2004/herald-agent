@@ -45,6 +45,7 @@ export function HustleSettingsView() {
   const [settingsEmailLimit, setSettingsEmailLimit] = useState<number>(30);
   const [settingsIgDiscovery, setSettingsIgDiscovery] = useState<boolean>(false);
   const [settingsBatchSize, setSettingsBatchSize] = useState<number>(25);
+  const [settingsDryRun, setSettingsDryRun] = useState<boolean>(true);
 
   // Appearance & UI Preferences State (persisted in localStorage)
   const [animationsEnabled, setAnimationsEnabled] = useState<boolean>(() => {
@@ -91,6 +92,7 @@ export function HustleSettingsView() {
       isDental ? false : (activeHustle.pipeline_steps || []).includes("find_instagram")
     );
     setSettingsBatchSize(activeHustle.channel_limits?.batch_size ?? 25);
+    setSettingsDryRun(Boolean(activeHustle.channel_limits?.dry_run ?? true));
   }, [activeHustle]);
 
   useEffect(() => {
@@ -141,6 +143,7 @@ export function HustleSettingsView() {
           instagram: Number(settingsIgLimit),
           email: Number(settingsEmailLimit),
           batch_size: Number(settingsBatchSize) || 25,
+          dry_run: Boolean(settingsDryRun),
         },
         pipeline_steps: baseSteps,
       } as any);
@@ -567,6 +570,43 @@ export function HustleSettingsView() {
       {/* 4. TAB 3: QUOTAS & SAFETY CAPS */}
       {settingsTab === "quotas" && (
         <div className="space-y-4">
+          {/* Pipeline Batch Size Card */}
+          <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                  Outreach Execution Safety Mode (Dry-Run vs Live)
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Controls whether Outreach runs in Dry-Run safe simulation mode or Live dispatch. Persisted permanently in database.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSettingsDryRun((prev) => !prev)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer shadow-xs ${
+                  settingsDryRun
+                    ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800"
+                    : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800 font-bold"
+                }`}
+                title="Click to toggle between DRY-RUN and LIVE SEND"
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    settingsDryRun ? "bg-amber-500" : "bg-rose-500 animate-pulse"
+                  }`}
+                />
+                <span>{settingsDryRun ? "Mode: DRY-RUN (Safe Simulation)" : "Mode: LIVE SEND (Real Dispatch)"}</span>
+              </button>
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              {settingsDryRun
+                ? "Safe Mode active: All closer agent runs will preview and validate outreach without sending real WhatsApp messages, DMs, or emails."
+                : "Live Mode active: Real external communications will be dispatched through connected accounts."}
+            </div>
+          </div>
+
           {/* Pipeline Batch Size Card */}
           <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">

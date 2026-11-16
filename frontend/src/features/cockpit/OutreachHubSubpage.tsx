@@ -111,7 +111,7 @@ export function OutreachHubSubpage() {
     handleStopAutomation,
   } = useCRM();
 
-  const [dryRunMode, setDryRunMode] = useState<boolean>(true);
+  const dryRunMode = activeHustle?.channel_limits?.dry_run !== false;
 
   // Batch state
   const [batchMeta, setBatchMeta] = useState<BatchMeta | null>(null);
@@ -538,16 +538,14 @@ export function OutreachHubSubpage() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         {/* Left Side: Mode badge & Telemetry Floating Islands */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Mode Toggle Button Island */}
-          <button
-            type="button"
-            onClick={() => setDryRunMode((prev) => !prev)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer shadow-xs ${
+          {/* Mode Indicator Island (Read from Hustle Settings) */}
+          <div
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border shadow-xs ${
               dryRunMode
                 ? "bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-300 border-slate-200/90 dark:border-slate-800"
                 : "bg-white dark:bg-slate-900 text-rose-700 dark:text-rose-300 border-slate-200/90 dark:border-slate-800 font-bold"
             }`}
-            title="Click to toggle between DRY-RUN and LIVE SEND"
+            title="Outreach Safety Mode is configured in Settings > Quotas & Safety Caps"
           >
             <span
               className={`w-1.5 h-1.5 rounded-full ${
@@ -555,7 +553,7 @@ export function OutreachHubSubpage() {
               }`}
             />
             <span>{dryRunMode ? "Mode: DRY-RUN (Safe)" : "Mode: LIVE SEND"}</span>
-          </button>
+          </div>
 
           {/* Batch Progress Telemetry Island */}
           <div className="flex items-center gap-1.5 text-xs font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs">

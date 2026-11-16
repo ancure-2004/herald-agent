@@ -79,6 +79,7 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
     leads,
     runs,
     activeHustleId,
+    activeHustle,
     globalAutomationEnabled,
     toggleGlobalAutomation,
     bufferHealthPct,
@@ -476,11 +477,12 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
     e.stopPropagation();
     try {
       setEngineActionLoading("outreach");
-      notify("Launching Outreach Closer agent...", "ok");
+      const isDryRun = activeHustle?.channel_limits?.dry_run !== false;
+      notify(`Launching Outreach Closer agent (${isDryRun ? "Dry-Run" : "Live"})...`, "ok");
       await autopilotApi.runCloserAgent({
         hustle_id: activeHustleId,
         channel: "whatsapp",
-        dry_run: false,
+        dry_run: isDryRun,
       });
       await fetchTelemetry();
     } catch (err: unknown) {

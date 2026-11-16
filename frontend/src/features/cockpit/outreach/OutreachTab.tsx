@@ -17,6 +17,7 @@ import { DispatchQueueTable } from "./DispatchQueueTable";
 import { QueueFilterBar } from "./QueueFilterBar";
 import { apiFetch } from "@/lib/api/client";
 import { autopilotApi } from "@/api/autopilotApi";
+import { useCRM } from "@/context/CRMContext";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -76,6 +77,7 @@ const EMPTY_CAPACITY_METRICS: DailyCapacityMetrics = {
 };
 
 export const OutreachTab: React.FC = () => {
+  const { activeHustle } = useCRM();
   const [queue, setQueue] = useState<QueueItem[]>(() => outreachTabCache?.queue ?? []);
   const [metrics, setMetrics] = useState<DailyCapacityMetrics>(() => outreachTabCache?.metrics ?? EMPTY_CAPACITY_METRICS);
   const [hasLoaded, setHasLoaded] = useState<boolean>(() => outreachTabCache !== null);
@@ -182,11 +184,16 @@ export const OutreachTab: React.FC = () => {
   const handleStartWaAutomation = async () => {
     setIsWaRunning(true);
     try {
+      const isDryRun = activeHustle?.channel_limits?.dry_run !== false;
       await apiFetch<{ status?: string }>("/api/agents/closer/run", {
         method: "POST",
-        body: JSON.stringify({ hustle_id: 1, channel: "whatsapp", dry_run: false }),
+        body: JSON.stringify({ hustle_id: 1, channel: "whatsapp", dry_run: isDryRun }),
       });
-      showNotification("WA Automation started — live dispatch running");
+      showNotification(
+        isDryRun
+          ? "WA Automation started — dry-run safe test"
+          : "WA Automation started — live dispatch running"
+      );
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : "Failed to start WA automation";
       showNotification(errMsg);
