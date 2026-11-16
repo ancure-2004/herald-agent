@@ -77,6 +77,21 @@ interface CRMContextType {
   setPipelineBoardExpanded: React.Dispatch<React.SetStateAction<boolean>>;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  themeMode: "light" | "dark" | "system";
+  setThemeMode: (mode: "light" | "dark" | "system") => void;
+
+  // Settings Center & Profile
+  settingsTab: string;
+  setSettingsTab: (tab: string) => void;
+  previousTab: CRMTab;
+  handleBackToWorkspace: () => void;
+  operatorProfile: {
+    name: string;
+    role: string;
+    initials: string;
+    signoff: string;
+  };
+  updateOperatorProfile: (profile: Partial<{ name: string; role: string; initials: string; signoff: string }>) => void;
 
   // Data
   hustles: Hustle[];
@@ -187,21 +202,69 @@ interface CRMContextType {
 const CRMContext = createContext<CRMContextType | null>(null);
 
 export function CRMProvider({ children }: { children: React.ReactNode }) {
-  const { isDarkMode, toggleDarkMode } = useTheme();
+  const { isDarkMode, toggleDarkMode, themeMode, setThemeMode } = useTheme();
 
   // Data state
   const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
 
   // Navigation & View state
   const [activeTab, setActiveTabRaw] = useState<CRMTab>("dashboard");
+  const [previousTab, setPreviousTab] = useState<CRMTab>("dashboard");
+  const [settingsTab, setSettingsTab] = useState<string>("blueprint");
   const [surface, setSurface] = useState<"management" | "cockpit">("management");
   const [cockpitTab, setCockpitTab] = useState<"attention" | "discovery" | "factory" | "outreach">("attention");
   const [activeInboxLeadId, setActiveInboxLeadId] = useState<number | null>(null);
 
+  const [operatorProfile, setOperatorProfile] = useState<{
+    name: string;
+    role: string;
+    initials: string;
+    signoff: string;
+  }>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("personal_os_operator_profile");
+        if (saved) return JSON.parse(saved);
+      } catch {
+        // fallback
+      }
+    }
+    return {
+      name: "Ankur Tyagi",
+      role: "CRM Architect",
+      initials: "AT",
+      signoff: "Ankur",
+    };
+  });
+
+  const updateOperatorProfile = useCallback(
+    (updates: Partial<{ name: string; role: string; initials: string; signoff: string }>) => {
+      setOperatorProfile((prev) => {
+        const next = { ...prev, ...updates };
+        try {
+          localStorage.setItem("personal_os_operator_profile", JSON.stringify(next));
+        } catch {
+          // ignore
+        }
+        return next;
+      });
+    },
+    []
+  );
+
   const setActiveTab = useCallback((tab: CRMTab) => {
-    setActiveTabRaw(tab);
+    setActiveTabRaw((current) => {
+      if (tab === "settings" && current !== "settings") {
+        setPreviousTab(current);
+      }
+      return tab;
+    });
     setSelectedLeadId(null);
   }, []);
+
+  const handleBackToWorkspace = useCallback(() => {
+    setActiveTabRaw(previousTab || (surface === "cockpit" ? "autopilot" : "dashboard"));
+  }, [previousTab, surface]);
   const [globalAutomationEnabled, setGlobalAutomationEnabledState] = useState<boolean>(true);
   const [activeSmartView, setActiveSmartView] = useState<string>("all_active");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -791,6 +854,14 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     setPipelineBoardExpanded,
     isDarkMode,
     toggleDarkMode,
+    themeMode,
+    setThemeMode,
+    settingsTab,
+    setSettingsTab,
+    previousTab,
+    handleBackToWorkspace,
+    operatorProfile,
+    updateOperatorProfile,
     hustles,
     activeHustleId,
     setActiveHustleId,
@@ -896,6 +967,14 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     pipelineBoardExpanded,
     isDarkMode,
     toggleDarkMode,
+    themeMode,
+    setThemeMode,
+    settingsTab,
+    setSettingsTab,
+    previousTab,
+    handleBackToWorkspace,
+    operatorProfile,
+    updateOperatorProfile,
     hustles,
     activeHustleId,
     activeHustle,

@@ -5,12 +5,11 @@ import { DemoRun, RunStatus } from "../types";
 import { RunMatrixTable } from "./RunMatrixTable";
 import { MultiDevicePreviewDrawer } from "./MultiDevicePreviewDrawer";
 import { BuildLogDrawer } from "./BuildLogDrawer";
-import { LiveLogTerminal } from "@/components/ui/LiveLogTerminal";
+import { DemoFactoryConsole } from "./DemoFactoryConsole";
 import { apiFetch } from "@/lib/api/client";
 import { autopilotApi } from "@/api/autopilotApi";
 import {
   Sparkles,
-  RotateCcw,
   CheckCircle2,
   AlertTriangle,
   Plus,
@@ -40,9 +39,10 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
   for (const lead of leads) {
     if (!lead.packages || lead.packages.length === 0) continue;
 
-    const leadBatchId = (lead.custom_fields && typeof lead.custom_fields === "object" && lead.custom_fields.batch_id)
-      ? String(lead.custom_fields.batch_id)
-      : "BATCH-01";
+    const leadBatchId =
+      lead.custom_fields && typeof lead.custom_fields === "object" && lead.custom_fields.batch_id
+        ? String(lead.custom_fields.batch_id)
+        : "BATCH-01";
 
     for (const pkg of lead.packages) {
       const links = pkg.asset_links || {};
@@ -114,8 +114,6 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
   return runs;
 }
 
-// Module-level cache: lives as long as the app session, so switching away from
-// this tab and back shows the last real data immediately while a quiet refresh runs.
 type DemoKpiMetrics = {
   totalGenerated: number;
   activeBuilds: number;
@@ -123,10 +121,12 @@ type DemoKpiMetrics = {
   liveReady: number;
   passRate: string;
 };
+
 type DemoFactoryTabCache = {
   runs: DemoRun[];
   kpiMetrics: DemoKpiMetrics;
 };
+
 let demoFactoryTabCache: DemoFactoryTabCache | null = null;
 
 const EMPTY_DEMO_KPIS: DemoKpiMetrics = {
@@ -148,7 +148,7 @@ export const DemoFactoryTab: React.FC = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const [isLaunchingBatch, setIsLaunchingBatch] = useState<boolean>(false);
   const [isBuildRunning, setIsBuildRunning] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [, setIsSyncing] = useState<boolean>(false);
 
   // Batch state
   const [batchMeta, setBatchMeta] = useState<BatchMeta | null>(null);
@@ -156,7 +156,9 @@ export const DemoFactoryTab: React.FC = () => {
   const [batchLoading, setBatchLoading] = useState<boolean>(false);
   const [rebalancing, setRebalancing] = useState<boolean>(false);
 
-  const [kpiMetrics, setKpiMetrics] = useState<DemoKpiMetrics>(() => demoFactoryTabCache?.kpiMetrics ?? EMPTY_DEMO_KPIS);
+  const [kpiMetrics, setKpiMetrics] = useState<DemoKpiMetrics>(
+    () => demoFactoryTabCache?.kpiMetrics ?? EMPTY_DEMO_KPIS
+  );
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -203,29 +205,28 @@ export const DemoFactoryTab: React.FC = () => {
         apiFetch<Record<string, any>>("/api/autopilot/cockpit-state?hustle_id=1").catch(() => null),
       ]);
 
-      // Sync live running state from server
       if (cockpitState?.is_running !== undefined) {
         setIsBuildRunning(Boolean(cockpitState.is_running));
       }
 
-      // A network failure (null) keeps what is already on screen; an empty array clears to the empty state
       if (Array.isArray(dbLeads)) {
         const mapped = mapPackagesToDemoRuns(dbLeads);
         setRuns(mapped);
 
-        // Compute dynamic KPIs from live data
+        // Compute dynamic KPIs with clamped pass rate (Math.min(100, ...))
         const total = cockpitState?.metrics?.demosBuilt || mapped.length;
         const ready = mapped.filter((r) => r.status === "READY").length;
         const building = mapped.filter((r) => r.status === "BUILDING" || r.status === "DEPLOYING").length;
         const queued = mapped.filter((r) => r.status === "QUEUED").length;
-        const passPct = total > 0 ? ((ready / total) * 100).toFixed(1) + "%" : "100%";
+        const effectiveTotal = Math.max(total, ready);
+        const passPctVal = effectiveTotal > 0 ? Math.min(100, Math.round((ready / effectiveTotal) * 100)) : 100;
 
         setKpiMetrics({
-          totalGenerated: total,
+          totalGenerated: effectiveTotal,
           activeBuilds: building,
           queuedRuns: queued,
           liveReady: ready,
-          passRate: passPct,
+          passRate: `${passPctVal}%`,
         });
       }
     } catch {
@@ -263,7 +264,6 @@ export const DemoFactoryTab: React.FC = () => {
     fetchBatchMeta();
   }, [syncRunsFromDb, fetchBatchMeta]);
 
-  // Persist real data to the module cache once the first load has completed
   useEffect(() => {
     if (!hasLoaded) return;
     demoFactoryTabCache = { runs, kpiMetrics };
@@ -336,7 +336,10 @@ export const DemoFactoryTab: React.FC = () => {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      showNotification(res?.message || `Launched Demo Factory build batch (${payload.batch_id || `All - ${payload.batch_size} leads`})!`);
+      showNotification(
+        res?.message ||
+          `Launched Demo Factory build batch (${payload.batch_id || `All - ${payload.batch_size} leads`})!`
+      );
       setTimeout(() => {
         syncRunsFromDb();
         fetchBatchMeta();
@@ -363,115 +366,145 @@ export const DemoFactoryTab: React.FC = () => {
     }
   };
 
+  const readyRunsCount = runs.filter((r) => r.status === "READY").length;
+  const buildingRunsCount = runs.filter((r) => r.status === "BUILDING" || r.status === "DEPLOYING").length;
+  const failedRunsCount = runs.filter((r) => r.status === "FAILED").length;
+  const passRateNum = parseInt(kpiMetrics.passRate.replace("%", ""), 10) || 100;
+
   return (
     <div className="space-y-4">
       {/* Toast Notification */}
       {notification && (
-        <div className="fixed top-4 right-4 z-50 px-4 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold shadow-xl flex items-center gap-2 animate-in fade-in duration-200">
-          <CheckCircle2 className="w-4 h-4" />
+        <div className="fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl bg-zinc-900 text-white text-xs font-semibold shadow-xl border border-zinc-800 flex items-center gap-2 animate-in fade-in duration-200">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{notification}</span>
         </div>
       )}
 
-      {/* KPI Summary Cards Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase tracking-wider">
+      {/* 1. Top Row: 4 Standalone Floating KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Card 1: TOTAL GENERATED */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-medium">
             Total Generated
           </div>
-          <div className="text-xl font-bold font-mono text-slate-900 dark:text-white tabular-nums mt-0.5">
+          <div className="text-2xl font-bold font-mono text-zinc-900 tabular-nums mt-1">
             {kpiMetrics.totalGenerated}
           </div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">Delhi NCR Clinics</div>
+          <div className="text-xs text-slate-500 font-mono mt-1">
+            Delhi NCR Clinics
+          </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-[10px] text-sky-600 dark:text-sky-400 font-mono uppercase tracking-wider">
-            Active Builds
+        {/* Card 2: LIVE & VERIFIED */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-700 font-medium flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+            Live &amp; Verified
           </div>
-          <div className="text-xl font-bold font-mono text-sky-600 dark:text-sky-400 tabular-nums mt-0.5 flex items-center gap-2">
-            <span>{kpiMetrics.activeBuilds}</span>
-            {kpiMetrics.activeBuilds > 0 && <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />}
-          </div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">In Isolate Worker</div>
-        </div>
-
-        <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-[10px] text-amber-600 dark:text-amber-400 font-mono uppercase tracking-wider">
-            Queued Runs
-          </div>
-          <div className="text-xl font-bold font-mono text-amber-600 dark:text-amber-400 tabular-nums mt-0.5">
-            {kpiMetrics.queuedRuns}
-          </div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">Slot Allocation Pending</div>
-        </div>
-
-        <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono uppercase tracking-wider">
-            Live / Ready
-          </div>
-          <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums mt-0.5">
+          <div className="text-2xl font-bold font-mono text-zinc-900 tabular-nums mt-1">
             {kpiMetrics.liveReady}
           </div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">Verified Demos Active</div>
+          <div className="text-xs text-slate-500 font-mono mt-1">
+            Zero Dead Links
+          </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs col-span-2 sm:col-span-1">
-          <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono uppercase tracking-wider">
+        {/* Card 3: ACTIVE / QUEUED */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-medium">
+            Active / Queued
+          </div>
+          <div className="text-2xl font-bold font-mono text-zinc-900 tabular-nums mt-1">
+            {kpiMetrics.activeBuilds + kpiMetrics.queuedRuns}
+          </div>
+          <div className="text-xs text-slate-500 font-mono mt-1">
+            {kpiMetrics.activeBuilds} building · {kpiMetrics.queuedRuns} queued
+          </div>
+        </div>
+
+        {/* Card 4: QUALITY PASS RATE (Clamped at 100%) */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-medium">
             Quality Pass Rate
           </div>
-          <div className="text-xl font-bold font-mono text-indigo-600 dark:text-indigo-400 tabular-nums mt-0.5">
+          <div className="text-2xl font-bold font-mono text-zinc-900 tabular-nums mt-1">
             {kpiMetrics.passRate}
           </div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1">Zero Dead Links</div>
+          <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+            <div
+              className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+              style={{ width: `${passRateNum}%` }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Toolbar & Filters */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
-        {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs">
+      {/* 2. Middle Row: Spatial Branching Agent Node Graph + Minimal Headerless Live Log Box */}
+      <DemoFactoryConsole
+        isBuildRunning={isBuildRunning || isLaunchingBatch}
+        runsCount={runs.length}
+        readyRunsCount={readyRunsCount}
+        buildingRunsCount={buildingRunsCount}
+      />
+
+      {/* 3. Bottom Row: Unified Action Toolbar & High-Density Demo Runs Table */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 mt-8 mb-6">
+        {/* Status Filter Tabs inside segmented track */}
+        <div className="flex items-center gap-1 bg-white border border-slate-200/80 p-1 rounded-xl text-xs shadow-xs">
           <button
+            type="button"
             onClick={() => setFilter("ALL")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              filter === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              filter === "ALL"
+                ? "bg-zinc-900 text-white font-semibold shadow-xs"
+                : "text-slate-600 hover:text-zinc-900"
             }`}
           >
             All Runs ({runs.length})
           </button>
 
           <button
+            type="button"
             onClick={() => setFilter("BUILDING")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-              filter === "BUILDING" ? "bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-xs font-bold" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              filter === "BUILDING"
+                ? "bg-zinc-900 text-white font-semibold shadow-xs"
+                : "text-slate-600 hover:text-zinc-900"
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
-            <span>Building ({runs.filter((r) => r.status === "BUILDING" || r.status === "DEPLOYING").length})</span>
+            <span>Building ({buildingRunsCount})</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setFilter("READY")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-              filter === "READY" ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs font-bold" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              filter === "READY"
+                ? "bg-zinc-900 text-white font-semibold shadow-xs"
+                : "text-slate-600 hover:text-zinc-900"
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Ready ({runs.filter((r) => r.status === "READY").length})</span>
+            <span>Ready ({readyRunsCount})</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setFilter("FAILED")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-              filter === "FAILED" ? "bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-xs font-bold" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              filter === "FAILED"
+                ? "bg-zinc-900 text-white font-semibold shadow-xs"
+                : "text-slate-600 hover:text-zinc-900"
             }`}
           >
             <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-            <span>Failed ({runs.filter((r) => r.status === "FAILED").length})</span>
+            <span>Failed ({failedRunsCount})</span>
           </button>
         </div>
 
-        {/* Action Controls: Batch Dropdown, Re-Batch Stock, Unified Refresh, and Launch/Stop */}
+        {/* Action Controls: Batch Dropdown, Re-Batch Stock, and Launch/Stop */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Batch Selector Dropdown */}
           <div className="relative">
@@ -479,16 +512,14 @@ export const DemoFactoryTab: React.FC = () => {
               value={selectedBatchId}
               onChange={(e) => setSelectedBatchId(e.target.value)}
               disabled={batchLoading}
-              className="appearance-none pl-3 pr-7 py-1.5 rounded-xl bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.1] text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer disabled:opacity-50 transition-all min-w-[190px]"
+              className="appearance-none pl-3 pr-7 py-1.5 rounded-xl bg-white border border-slate-200/80 text-xs font-mono font-medium text-zinc-800 hover:bg-slate-50 focus:outline-none focus:border-zinc-500 cursor-pointer disabled:opacity-50 transition-all min-w-[190px]"
             >
-              <option value="ALL" className="bg-white dark:bg-slate-900">
-                All Batches ({runs.length} runs)
-              </option>
+              <option value="ALL">All Batches ({runs.length} runs)</option>
               {batchMeta?.batches.map((b) => {
                 const stagedCount = b.stage_counts?.staged ?? 0;
                 const builtCount = runs.filter((r) => r.batchId === b.batch_id).length;
                 return (
-                  <option key={b.batch_id} value={b.batch_id} className="bg-white dark:bg-slate-900">
+                  <option key={b.batch_id} value={b.batch_id}>
                     {b.batch_id} ({stagedCount} staged · {builtCount} built)
                   </option>
                 );
@@ -502,34 +533,36 @@ export const DemoFactoryTab: React.FC = () => {
             type="button"
             onClick={handleRebalance}
             disabled={rebalancing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-slate-200 dark:border-white/[0.1] text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 hover:border-indigo-300 dark:hover:border-indigo-500/40 transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${rebalancing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${rebalancing ? "animate-spin" : ""}`} />
             <span>{rebalancing ? "Re-batching..." : "Re-Batch Stock"}</span>
           </button>
 
           {/* Running indicator badge */}
           {(isBuildRunning || isLaunchingBatch) && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-300 dark:border-sky-700/60 text-sky-700 dark:text-sky-300 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
-              <span>Automation Running...</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              <span>Compiling Batch...</span>
             </div>
           )}
 
           {/* Launch Demo Batch or Stop Automation button */}
           {isBuildRunning || isLaunchingBatch ? (
             <button
+              type="button"
               onClick={handleStopBatch}
-              className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer active:scale-95"
+              className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer active:scale-95"
             >
               <Square className="w-3.5 h-3.5 fill-white" />
               <span>Stop Automation</span>
             </button>
           ) : (
             <button
+              type="button"
               onClick={handleLaunchBatch}
               disabled={isLaunchingBatch}
-              className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
+              className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-xs font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>
@@ -544,36 +577,27 @@ export const DemoFactoryTab: React.FC = () => {
         </div>
       </div>
 
-      {/* High-Density Run Matrix Table: loader on first load, empty state if the DB has 0 runs */}
-      {!hasLoaded ? (
-        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400">
-          <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
-          <span>Loading demo runs from database...</span>
-        </div>
-      ) : runs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 text-center">
-          <Sparkles className="w-6 h-6 text-slate-400" />
-          <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">No demo runs yet</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">Launch a Demo Batch to start building websites.</div>
-        </div>
-      ) : (
-        <RunMatrixTable
-          runs={filteredRuns}
-          onOpenLogs={handleOpenLogs}
-          onOpenPreview={handleOpenPreview}
-          onRetryRun={handleRetry}
-        />
-      )}
-
-      {/* Embedded Live Log Execution Stream */}
-      <div className="pt-2">
-        <LiveLogTerminal
-          title="DEMO FACTORY WEBSITE BUILD CONSOLE"
-          service="building"
-          lockService={true}
-          className="h-72 rounded-2xl border border-slate-200 dark:border-slate-800"
-          collapsible={true}
-        />
+      {/* Demo Runs Table */}
+      <div className="mt-4">
+        {!hasLoaded ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white border border-slate-200/80 text-xs font-mono text-slate-500 shadow-xs">
+            <Loader2 className="w-5 h-5 animate-spin text-zinc-700" />
+            <span>Loading demo runs from database...</span>
+          </div>
+        ) : runs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white border border-dashed border-slate-300 text-center shadow-xs">
+            <Sparkles className="w-6 h-6 text-slate-400" />
+            <div className="text-sm font-semibold text-zinc-800">No demo runs yet</div>
+            <div className="text-xs text-slate-500">Launch a Demo Batch to start building websites.</div>
+          </div>
+        ) : (
+          <RunMatrixTable
+            runs={filteredRuns}
+            onOpenLogs={handleOpenLogs}
+            onOpenPreview={handleOpenPreview}
+            onRetryRun={handleRetry}
+          />
+        )}
       </div>
 
       {/* Multi-Device Workbench Drawer */}

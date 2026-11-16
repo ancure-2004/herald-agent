@@ -7,7 +7,6 @@ import {
   Send,
   Phone,
   Sparkles,
-  Lock,
   ExternalLink,
   Check,
   CheckCheck,
@@ -15,17 +14,16 @@ import {
   AlertCircle,
   RefreshCw,
   PlusCircle,
-  User,
   ShieldCheck,
-  Bot,
-  Zap,
   ArrowLeft,
   PanelRightOpen,
+  X,
+  Loader2,
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
-import { apiFetch } from "@/lib/api/client";
 import { messagesApi } from "@/api/messagesApi";
-import { Lead, Message } from "@/types";
+import { Lead } from "@/types";
+import { LeadDetailContent } from "@/features/modals/LeadDetailModal";
 
 interface ReplySuggestion {
   category: string;
@@ -33,12 +31,28 @@ interface ReplySuggestion {
   tone: string;
 }
 
+const getLeadLatestActivity = (lead: Lead): number => {
+  let latestTime = 0;
+  const messages = lead.messages || [];
+  for (const m of messages) {
+    const t = new Date(m.created_at).getTime();
+    if (!isNaN(t) && t > latestTime) {
+      latestTime = t;
+    }
+  }
+  const lastMsgAt = (lead as any).last_message_at ? new Date((lead as any).last_message_at).getTime() : 0;
+  const updatedAt = lead.updated_at ? new Date(lead.updated_at).getTime() : 0;
+  const createdAt = lead.created_at ? new Date(lead.created_at).getTime() : 0;
+  return Math.max(latestTime, !isNaN(lastMsgAt) ? lastMsgAt : 0, !isNaN(updatedAt) ? updatedAt : 0, !isNaN(createdAt) ? createdAt : 0);
+};
+
 export function WhatsAppInboxView() {
   const {
     leads,
     activeInboxLeadId,
     setActiveInboxLeadId,
-    setSelectedLeadId,
+    sidebarCollapsed,
+    setSidebarCollapsed,
     globalAutomationEnabled,
     openLogReplyModal,
     openLogCallModal,
@@ -54,6 +68,68 @@ export function WhatsAppInboxView() {
   const [loadingSuggestions, setLoadingSuggestions] = useState<boolean>(false);
   const [aiSuggestions, setAiSuggestions] = useState<ReplySuggestion[]>([]);
 
+  // On-demand AI Replies popover state & click-outside ref
+  const [showAiPopover, setShowAiPopover] = useState<boolean>(false);
+  const aiPopoverRef = useRef<HTMLDivElement>(null);
+
+  // Close AI Replies popover on outside click or Escape key
+  useEffect(() => {
+    if (!showAiPopover) return;
+
+    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+      if (aiPopoverRef.current && !aiPopoverRef.current.contains(e.target as Node)) {
+        setShowAiPopover(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowAiPopover(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showAiPopover]);
+
+  // Side-by-side docked Lead Card & sidebar auto-collapse tracking
+  const [isLeadCardDocked, setIsLeadCardDocked] = useState<boolean>(false);
+  const prevSidebarCollapsedRef = useRef<boolean | null>(null);
+
+  const handleToggleDockedLeadCard = () => {
+    if (!isLeadCardDocked) {
+      prevSidebarCollapsedRef.current = sidebarCollapsed;
+      setSidebarCollapsed(true);
+      setIsLeadCardDocked(true);
+    } else {
+      handleCloseDockedLeadCard();
+    }
+  };
+
+  const handleCloseDockedLeadCard = () => {
+    setIsLeadCardDocked(false);
+    if (prevSidebarCollapsedRef.current !== null) {
+      setSidebarCollapsed(prevSidebarCollapsedRef.current);
+      prevSidebarCollapsedRef.current = null;
+    }
+  };
+
+  // Restore sidebar state if unmounted while docked Lead Card is open
+  useEffect(() => {
+    return () => {
+      if (prevSidebarCollapsedRef.current !== null) {
+        setSidebarCollapsed(prevSidebarCollapsedRef.current);
+      }
+    };
+  }, [setSidebarCollapsed]);
+
   // Local thread state decoupled from global modal selectedLeadId
   const [activeThreadLeadId, setActiveThreadLeadId] = useState<number | null>(
     () => activeInboxLeadId || leads[0]?.id || null
@@ -68,21 +144,50 @@ export function WhatsAppInboxView() {
     }
   }, [activeInboxLeadId]);
 
-  // Fall back to first lead if none selected
-  useEffect(() => {
-    if (!activeThreadLeadId && leads.length > 0) {
-      setActiveThreadLeadId(leads[0].id);
-    }
-  }, [activeThreadLeadId, leads]);
-
   // Sync local automation default with global
   useEffect(() => {
     setLocalAutomation(globalAutomationEnabled);
   }, [globalAutomationEnabled]);
 
+  // Filter & sort leads for left list (WhatsApp latest-activity sorting)
+  const filteredLeads = useMemo(() => {
+    const list = leads.filter((lead) => {
+      if (searchFilter.trim()) {
+        const q = searchFilter.toLowerCase();
+        const matchesName = lead.name.toLowerCase().includes(q);
+        const matchesDoc = (lead.doctor_name || "").toLowerCase().includes(q);
+        const matchesLoc = (lead.locality || "").toLowerCase().includes(q);
+        const matchesPhone = (lead.primary_phone || "").includes(q);
+        if (!matchesName && !matchesDoc && !matchesLoc && !matchesPhone) return false;
+      }
+
+      if (statusFilter === "unreplied") {
+        const lastMsg = lead.messages && lead.messages[lead.messages.length - 1];
+        const isInboundLast = lastMsg?.direction === "inbound";
+        return isInboundLast || (lead as any).needs_followup;
+      }
+      if (statusFilter === "followup") {
+        return (lead as any).needs_followup || lead.stage_id === 3;
+      }
+      if (statusFilter === "replied") {
+        return lead.stage_id >= 4;
+      }
+
+      return true;
+    });
+
+    return list.sort((a, b) => getLeadLatestActivity(b) - getLeadLatestActivity(a));
+  }, [leads, searchFilter, statusFilter]);
+
   const activeLead = useMemo(() => {
-    return leads.find((l) => l.id === activeThreadLeadId) || leads[0] || null;
-  }, [leads, activeThreadLeadId]);
+    return leads.find((l) => l.id === activeThreadLeadId) || filteredLeads[0] || leads[0] || null;
+  }, [leads, activeThreadLeadId, filteredLeads]);
+
+  useEffect(() => {
+    if (!activeThreadLeadId && filteredLeads.length > 0) {
+      setActiveThreadLeadId(filteredLeads[0].id);
+    }
+  }, [activeThreadLeadId, filteredLeads]);
 
   // Auto scroll chat to bottom
   const chatScrollRef = useRef<HTMLDivElement>(null);
@@ -100,7 +205,6 @@ export function WhatsAppInboxView() {
       if (res.suggestions && res.suggestions.length > 0) {
         setAiSuggestions(res.suggestions);
       } else {
-        // Fallback realistic suggestions
         setAiSuggestions([
           {
             category: "Direct Answer",
@@ -120,7 +224,6 @@ export function WhatsAppInboxView() {
         ]);
       }
     } catch {
-      // Offline / fallback suggestions
       setAiSuggestions([
         {
           category: "Direct Answer",
@@ -144,12 +247,21 @@ export function WhatsAppInboxView() {
   };
 
   useEffect(() => {
-    if (activeLead?.id) {
-      fetchSuggestions(activeLead.id);
-    }
+    setShowAiPopover(false);
+    setAiSuggestions([]);
   }, [activeLead?.id]);
 
-  // Send message handler
+  const handleToggleAiPopover = () => {
+    if (!showAiPopover) {
+      setShowAiPopover(true);
+      if (activeLead?.id && aiSuggestions.length === 0 && !loadingSuggestions) {
+        fetchSuggestions(activeLead.id);
+      }
+    } else {
+      setShowAiPopover(false);
+    }
+  };
+
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!composerText.trim() || !activeLead) return;
@@ -167,7 +279,6 @@ export function WhatsAppInboxView() {
       const res = await messagesApi.send(activeLead.id, payload);
 
       if (!localAutomation && res.wa_url) {
-        // Open wa.me URL directly in a new tab
         window.open(res.wa_url, "_blank");
         notify("Opened WhatsApp with prefilled message & logged as sent manually", "ok");
       } else {
@@ -188,81 +299,50 @@ export function WhatsAppInboxView() {
     }
   };
 
-  // Filter leads for left list
-  const filteredLeads = useMemo(() => {
-    return leads.filter((lead) => {
-      // Search text
-      if (searchFilter.trim()) {
-        const q = searchFilter.toLowerCase();
-        const matchesName = lead.name.toLowerCase().includes(q);
-        const matchesDoc = (lead.doctor_name || "").toLowerCase().includes(q);
-        const matchesLoc = (lead.locality || "").toLowerCase().includes(q);
-        const matchesPhone = (lead.primary_phone || "").includes(q);
-        if (!matchesName && !matchesDoc && !matchesLoc && !matchesPhone) return false;
-      }
-
-      // Status chip
-      if (statusFilter === "unreplied") {
-        // Leads with inbound messages where lead hasn't replied or needs_followup
-        const lastMsg = lead.messages && lead.messages[lead.messages.length - 1];
-        const isInboundLast = lastMsg?.direction === "inbound";
-        return isInboundLast || (lead as any).needs_followup;
-      }
-      if (statusFilter === "followup") {
-        return (lead as any).needs_followup || lead.stage_id === 3;
-      }
-      if (statusFilter === "replied") {
-        return lead.stage_id >= 4;
-      }
-
-      return true;
-    });
-  }, [leads, searchFilter, statusFilter]);
-
   return (
     <div className="h-full flex flex-col sm:flex-row gap-4 overflow-hidden text-slate-900 dark:text-slate-100">
-      {/* LEFT PANEL: Conversation List */}
-      <div className={`w-full sm:w-80 md:w-96 shrink-0 flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden ${mobileViewingThread ? "hidden sm:flex" : "flex"}`}>
+      {/* 1. MONOCHROME THREAD LIST (LEFT PANE) */}
+      <div className={`w-full sm:w-64 md:w-72 shrink-0 flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden ${mobileViewingThread ? "hidden sm:flex" : "flex"}`}>
         {/* Search & Header */}
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 space-y-3">
+        <div className="p-3.5 border-b border-slate-100 dark:border-slate-800 space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <MessageSquare className="w-4 h-4" />
+              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center">
+                <MessageSquare className="w-3.5 h-3.5" />
               </div>
-              <h1 className="text-sm font-bold tracking-tight">WhatsApp Outreach Inbox</h1>
+              <h1 className="text-xs font-bold tracking-tight text-zinc-900 dark:text-white">WhatsApp Inbox</h1>
             </div>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 font-semibold">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 font-semibold">
               {filteredLeads.length} leads
             </span>
           </div>
 
           {/* Search Input */}
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search clinic, doctor, phone..."
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+              className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 focus:outline-none focus:ring-2 focus:ring-slate-400 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-sans"
             />
           </div>
 
-          {/* Filter Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+          {/* Filter Chips: Active is Dark Charcoal (bg-zinc-900 text-white) */}
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-0.5">
             {[
               { id: "all", label: "All" },
               { id: "unreplied", label: "Unreplied" },
-              { id: "followup", label: "Follow-up Due" },
+              { id: "followup", label: "Follow-up" },
               { id: "replied", label: "Replied" },
             ].map((chip) => (
               <button
                 key={chip.id}
                 onClick={() => setStatusFilter(chip.id as any)}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all ${
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-medium whitespace-nowrap transition-all cursor-pointer ${
                   statusFilter === chip.id
-                    ? "bg-emerald-600 text-white shadow-sm"
+                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs font-semibold"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
@@ -285,6 +365,13 @@ export function WhatsAppInboxView() {
               const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
               const hasInboundUnreplied = lastMessage?.direction === "inbound" || (lead as any).needs_followup;
 
+              // Opted Out / DNC check
+              const isDNC = Boolean(
+                lead.do_not_contact ||
+                (lastMessage?.text &&
+                  /mat bhejo|stop|unsubscribe|don'?t message|not interested|remove me/i.test(lastMessage.text))
+              );
+
               return (
                 <button
                   key={lead.id}
@@ -292,19 +379,25 @@ export function WhatsAppInboxView() {
                     setActiveThreadLeadId(lead.id);
                     setMobileViewingThread(true);
                   }}
-                  className={`w-full text-left p-3.5 transition-all flex items-start gap-3 cursor-pointer ${
+                  className={`w-full text-left p-3 transition-all flex items-start gap-2.5 cursor-pointer ${
                     isSelected
-                      ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-l-4 border-emerald-500 shadow-inner"
-                      : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                      ? "bg-slate-50/90 dark:bg-slate-800/50 border-l-3 border-l-zinc-900 dark:border-l-zinc-100"
+                      : "hover:bg-slate-50 dark:hover:bg-slate-800/40 border-l-3 border-l-transparent"
                   }`}
                 >
-                  {/* Lead Avatar */}
+                  {/* Lead Avatar Monogram (Neutral Charcoal/Slate) */}
                   <div className="relative shrink-0 mt-0.5">
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 dark:from-emerald-950/60 dark:to-teal-950/60 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                    <div
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
+                        isSelected
+                          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                          : "bg-slate-100 text-zinc-800 dark:bg-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700"
+                      }`}
+                    >
                       {lead.name.slice(0, 2).toUpperCase()}
                     </div>
-                    {hasInboundUnreplied && (
-                      <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-500 border-2 border-white dark:border-slate-900 animate-pulse" />
+                    {hasInboundUnreplied && !isDNC && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 border-2 border-white dark:border-slate-900 animate-pulse" />
                     )}
                   </div>
 
@@ -344,17 +437,20 @@ export function WhatsAppInboxView() {
                       )}
                     </p>
 
-                    {/* Badges */}
-                    <div className="flex items-center gap-1.5 mt-2">
-                      <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
-                        WhatsApp
-                      </span>
-                      {hasInboundUnreplied && (
-                        <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40">
-                          Needs Reply
-                        </span>
-                      )}
-                    </div>
+                    {/* Status Badges: Redundant WhatsApp pill removed */}
+                    {(isDNC || hasInboundUnreplied) && (
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        {isDNC ? (
+                          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200/70 dark:border-rose-800/40">
+                            Opted Out / DNC
+                          </span>
+                        ) : hasInboundUnreplied ? (
+                          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/70 dark:border-amber-800/40">
+                            Needs Reply
+                          </span>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                 </button>
               );
@@ -363,13 +459,13 @@ export function WhatsAppInboxView() {
         </div>
       </div>
 
-      {/* RIGHT PANEL: Active WhatsApp Conversation Thread */}
+      {/* 2. CENTER ACTIVE THREAD PANEL: WhatsApp Conversation */}
       <div className={`flex-1 flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-w-0 ${mobileViewingThread ? "flex" : "hidden sm:flex"}`}>
         {activeLead ? (
           <>
-            {/* Thread Header */}
-            <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-800/20">
-              <div className="flex items-center gap-3 min-w-0">
+            {/* 2A. CLEAN MONOCHROME CHAT HEADER */}
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-800/20 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <button
                   type="button"
                   onClick={() => setMobileViewingThread(false)}
@@ -379,21 +475,23 @@ export function WhatsAppInboxView() {
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-emerald-500/20 shrink-0">
+                {/* Neutral Charcoal Monogram */}
+                <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
                   {activeLead.name.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                    <button
+                      type="button"
+                      onClick={handleToggleDockedLeadCard}
+                      className="text-sm font-bold text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors truncate text-left cursor-pointer"
+                      title="Click to toggle Lead Card side-by-side"
+                    >
                       {activeLead.name}
-                    </h2>
-                    <span className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                      <Lock className="w-2.5 h-2.5" />
-                      <span>WhatsApp Only</span>
-                    </span>
+                    </button>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                    <span>{activeLead.doctor_name || "Doctor"}</span>
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{activeLead.doctor_name || "Doctor"}</span>
                     <span>•</span>
                     <span className="font-mono">{activeLead.primary_phone || "No phone"}</span>
                     <span>•</span>
@@ -402,47 +500,53 @@ export function WhatsAppInboxView() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2">
+              {/* Action Buttons: Unified Neutral Palette */}
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setSelectedLeadId(activeLead.id)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
-                  title="View full lead details drawer"
+                  onClick={handleToggleDockedLeadCard}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
+                    isLeadCardDocked
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-xs"
+                      : "bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-zinc-700 dark:text-zinc-200 border-slate-200/80 dark:border-slate-700"
+                  }`}
+                  title={isLeadCardDocked ? "Close docked Lead Card" : "Open Lead Card docked side-by-side"}
                 >
                   <PanelRightOpen className="w-3.5 h-3.5" />
-                  <span>View Details</span>
+                  <span className="hidden sm:inline">{isLeadCardDocked ? "Hide Lead Card" : "Lead Card"}</span>
+                  <span className="sm:hidden">Card</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => openLogReplyModal(activeLead.id)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 border border-slate-200/80 dark:border-slate-700 text-zinc-700 dark:text-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
-                  <span>Log Customer Reply</span>
+                  <span className="hidden md:inline">Log Customer Reply</span>
+                  <span className="md:hidden">Log Reply</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => openLogCallModal(activeLead.id)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 border border-slate-200/80 dark:border-slate-700 text-zinc-700 dark:text-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>Log Call</span>
+                  <span className="hidden sm:inline">Log Call</span>
                 </button>
               </div>
             </div>
 
-            {/* Conversation Messages Container */}
+            {/* 3. CONVERSATION CANVAS & BUBBLES */}
             <div
               ref={chatScrollRef}
-              className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/30 dark:bg-slate-950/20"
+              className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/20"
             >
               {/* Channel Invariant Notice */}
               <div className="max-w-md mx-auto text-center p-2.5 rounded-2xl bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80 text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5">
                 <div className="font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
                   <span>Channel Restricted: WhatsApp Only</span>
                 </div>
                 <p>Dental clinic outreach in Delhi NCR is strictly constrained to 1-on-1 WhatsApp messages.</p>
@@ -480,39 +584,40 @@ export function WhatsAppInboxView() {
                         </span>
                       </div>
 
+                      {/* Bubble Surface */}
                       <div
-                        className={`max-w-[85%] sm:max-w-md rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-sm space-y-1.5 ${
+                        className={`max-w-[85%] sm:max-w-md rounded-2xl px-4 py-3 text-xs leading-relaxed space-y-1.5 ${
                           isOutbound
-                            ? "bg-emerald-600 text-white rounded-br-xs"
-                            : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-xs"
+                            ? "bg-zinc-900 text-white rounded-tr-sm shadow-sm border border-zinc-800"
+                            : "bg-white dark:bg-slate-800 text-zinc-800 dark:text-zinc-100 border border-slate-200/80 dark:border-slate-700 rounded-tl-sm shadow-xs"
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{msg.text}</p>
 
-                        {/* Status Footer for Outbound */}
+                        {/* Status Footer for Outbound with Micro-Emerald delivery ticks */}
                         {isOutbound && (
-                          <div className="flex items-center justify-end gap-1.5 pt-1 text-[10px] text-emerald-100/90 font-mono">
+                          <div className="flex items-center justify-end gap-1.5 pt-1">
                             {deliveryStatus === "queued" && (
-                              <span className="flex items-center gap-1 bg-emerald-700/50 px-1.5 py-0.5 rounded">
-                                <Clock className="w-3 h-3 animate-spin" />
+                              <span className="flex items-center gap-1 bg-zinc-800/90 text-zinc-300 border border-zinc-700/80 rounded-full px-2 py-0.5 text-[10px] font-medium font-mono">
+                                <Clock className="w-3 h-3 animate-spin text-zinc-400" />
                                 <span>Queued</span>
                               </span>
                             )}
                             {deliveryStatus === "sent" && (
-                              <span className="flex items-center gap-1 bg-emerald-700/50 px-1.5 py-0.5 rounded">
-                                <CheckCheck className="w-3 h-3 text-emerald-200" />
+                              <span className="flex items-center gap-1 bg-zinc-800/90 text-zinc-300 border border-zinc-700/80 rounded-full px-2 py-0.5 text-[10px] font-medium font-mono">
+                                <CheckCheck className="w-3 h-3 text-emerald-400" />
                                 <span>Sent (Playwright)</span>
                               </span>
                             )}
                             {deliveryStatus === "sent_manually" && (
-                              <span className="flex items-center gap-1 bg-emerald-700/50 px-1.5 py-0.5 rounded">
-                                <Check className="w-3 h-3 text-emerald-200" />
+                              <span className="flex items-center gap-1 bg-zinc-800/90 text-zinc-300 border border-zinc-700/80 rounded-full px-2 py-0.5 text-[10px] font-medium font-mono">
+                                <Check className="w-3 h-3 text-emerald-400" />
                                 <span>Sent Manually</span>
                               </span>
                             )}
                             {deliveryStatus === "failed" && (
-                              <span className="flex items-center gap-1 bg-rose-600 text-white px-1.5 py-0.5 rounded">
-                                <AlertCircle className="w-3 h-3" />
+                              <span className="flex items-center gap-1 bg-rose-950/80 text-rose-300 border border-rose-800/80 rounded-full px-2 py-0.5 text-[10px] font-medium font-mono">
+                                <AlertCircle className="w-3 h-3 text-rose-400" />
                                 <span>Failed</span>
                               </span>
                             )}
@@ -525,121 +630,182 @@ export function WhatsAppInboxView() {
               )}
             </div>
 
-            {/* AI REPLY SUGGESTIONS BAR (3 Clickable Options) */}
-            <div className="p-3 bg-slate-50 dark:bg-slate-850 border-t border-slate-200/80 dark:border-slate-800 space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>3 AI Reply Suggestions (Click to Populate):</span>
-                </div>
+            {/* 4. COMPOSER, ON-DEMAND AI REPLIES & SEND CTA */}
+            <div className="relative border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+              {/* Dark Charcoal On-Demand AI Replies Button */}
+              <div className="absolute -top-3 left-4 z-20">
                 <button
-                  onClick={() => fetchSuggestions(activeLead.id)}
-                  disabled={loadingSuggestions}
-                  className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                  type="button"
+                  onClick={handleToggleAiPopover}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border shadow-xs transition-all cursor-pointer ${
+                    showAiPopover
+                      ? "bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100 scale-105"
+                      : "bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 border-zinc-800 dark:border-zinc-200"
+                  }`}
+                  title="Generate or view on-demand AI reply suggestions"
                 >
-                  <RefreshCw className={`w-3 h-3 ${loadingSuggestions ? "animate-spin" : ""}`} />
-                  <span>Refresh</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                {aiSuggestions.map((item, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setComposerText(item.text)}
-                    className="p-2.5 rounded-xl text-left bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 shadow-sm transition-all group cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                        {item.category}
-                      </span>
-                      <span className="text-[9px] text-slate-400 capitalize">{item.tone}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2 leading-snug group-hover:text-slate-900 dark:group-hover:text-white">
-                      {item.text}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* OUTGOING COMPOSER & AUTOMATION TOGGLE */}
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
-              {/* Automation Toggle */}
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Dispatch Mode:
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setLocalAutomation(!localAutomation)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      localAutomation ? "bg-emerald-600" : "bg-slate-300 dark:bg-slate-700"
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                        localAutomation ? "translate-x-4" : "translate-x-0"
-                      }`}
-                    />
-                  </button>
-                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                    {localAutomation ? (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                        Automation ON (Queue for Playwright)
-                      </span>
-                    ) : (
-                      <span className="text-slate-500">
-                        Automation OFF (Direct wa.me URL)
-                      </span>
-                    )}
-                  </span>
-                </div>
-
-                <span className="text-[10px] text-slate-400 hidden sm:inline">
-                  Enter to send, Shift+Enter for new line
-                </span>
-              </div>
-
-              {/* Message Box */}
-              <div className="flex items-end gap-2.5">
-                <textarea
-                  rows={2}
-                  value={composerText}
-                  onChange={(e) => setComposerText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  placeholder="Type a message or click an AI suggestion above..."
-                  className="flex-1 p-3 rounded-2xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none leading-relaxed"
-                />
-
-                <button
-                  type="submit"
-                  disabled={isSending || !composerText.trim()}
-                  className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold text-xs shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
-                >
-                  {isSending ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : localAutomation ? (
-                    <>
-                      <Send className="w-4 h-4" />
-                      <span>Queue</span>
-                    </>
-                  ) : (
-                    <>
-                      <ExternalLink className="w-4 h-4" />
-                      <span>Open WhatsApp</span>
-                    </>
+                  <Sparkles className={`w-3 h-3 ${loadingSuggestions ? "animate-spin" : ""}`} />
+                  <span>AI Replies</span>
+                  {aiSuggestions.length > 0 && !showAiPopover && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   )}
                 </button>
               </div>
-            </form>
+
+              {/* Floating AI Reply Suggestions Popover (Crisp White / Dark Charcoal Theme) */}
+              {showAiPopover && (
+                <div
+                  ref={aiPopoverRef}
+                  className="absolute bottom-full left-4 mb-2 z-30 w-[calc(100%-2rem)] sm:w-[480px] max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xl p-3.5 space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
+                >
+                  {/* Popover Header */}
+                  <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-900 dark:text-white">
+                      <Sparkles className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" />
+                      <span>3 AI Reply Suggestions (Click to Populate)</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => activeLead?.id && fetchSuggestions(activeLead.id)}
+                        disabled={loadingSuggestions}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white cursor-pointer disabled:opacity-50"
+                        title="Generate fresh suggestions"
+                      >
+                        <RefreshCw className={`w-3 h-3 ${loadingSuggestions ? "animate-spin" : ""}`} />
+                        <span>Refresh</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowAiPopover(false)}
+                        className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
+                        title="Close popover (Esc)"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Popover Body */}
+                  {loadingSuggestions ? (
+                    <div className="py-8 flex flex-col items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <Loader2 className="w-5 h-5 animate-spin text-zinc-600 dark:text-zinc-400" />
+                      <span>Crafting contextual suggestions for {activeLead.name}...</span>
+                    </div>
+                  ) : aiSuggestions.length === 0 ? (
+                    <div className="py-6 text-center text-xs text-slate-400">
+                      Click Refresh above to generate AI suggestions.
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-0.5">
+                      {aiSuggestions.map((item, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setComposerText(item.text);
+                            setShowAiPopover(false);
+                          }}
+                          className="w-full text-left p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-zinc-900/20 dark:hover:border-slate-500 transition-all cursor-pointer group"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                              {item.category}
+                            </span>
+                            <span className="text-[9px] text-slate-400 font-medium capitalize">
+                              {item.tone}
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed group-hover:text-zinc-900 dark:group-hover:text-white line-clamp-2">
+                            {item.text}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Composer Form */}
+              <form onSubmit={handleSendMessage} className="p-4 pt-4 space-y-2.5">
+                {/* Row 1: Dispatch Mode Toggle & Keyboard Hint */}
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Dispatch Mode:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setLocalAutomation(!localAutomation)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        localAutomation ? "bg-zinc-900 dark:bg-zinc-100" : "bg-slate-300 dark:bg-slate-700"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 shadow-lg ring-0 transition duration-200 ease-in-out ${
+                          localAutomation ? "translate-x-4" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                      {localAutomation ? (
+                        <span className="text-zinc-900 dark:text-white font-semibold">
+                          Automation ON (Queue for Playwright)
+                        </span>
+                      ) : (
+                        <span className="text-slate-500">
+                          Automation OFF (Direct wa.me URL)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+
+                  <span className="text-[10px] text-slate-400 hidden sm:inline">
+                    Enter to send, Shift+Enter for new line
+                  </span>
+                </div>
+
+                {/* Row 2: Message Box + Primary Dark Charcoal CTA Button */}
+                <div className={`flex items-end gap-2.5 ${!isLeadCardDocked ? "pr-36 sm:pr-40" : ""}`}>
+                  <textarea
+                    rows={2}
+                    value={composerText}
+                    onChange={(e) => setComposerText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    placeholder="Type a message or click AI Replies above..."
+                    className="flex-1 p-3 rounded-2xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none leading-relaxed font-sans"
+                  />
+
+                  {/* Primary Dark Charcoal CTA with Micro-Emerald Icon Accent */}
+                  <button
+                    type="submit"
+                    disabled={isSending || !composerText.trim()}
+                    className="bg-zinc-900 hover:bg-zinc-800 disabled:bg-slate-200 disabled:text-slate-400 dark:bg-zinc-100 dark:hover:bg-white dark:disabled:bg-slate-800 dark:disabled:text-slate-500 text-white dark:text-zinc-900 rounded-xl px-4 py-2.5 text-xs font-semibold shadow-sm transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                  >
+                    {isSending ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : localAutomation ? (
+                      <>
+                        <Send className="w-4 h-4 text-emerald-400" />
+                        <span>Queue</span>
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink className="w-4 h-4 text-emerald-400" />
+                        <span>Open WhatsApp</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </>
         ) : (
           <div className="h-full flex items-center justify-center p-8 text-center text-slate-400 text-sm">
@@ -647,6 +813,13 @@ export function WhatsAppInboxView() {
           </div>
         )}
       </div>
+
+      {/* RIGHTMOST DOCKED PANEL: Side-by-Side Lead Card */}
+      {isLeadCardDocked && activeLead && (
+        <div className="w-full sm:w-[420px] md:w-[450px] lg:w-[460px] shrink-0 h-full flex flex-col rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in slide-in-from-right duration-200">
+          <LeadDetailContent lead={activeLead} onClose={handleCloseDockedLeadCard} isDocked={true} />
+        </div>
+      )}
     </div>
   );
 }

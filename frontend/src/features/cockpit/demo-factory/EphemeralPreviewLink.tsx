@@ -103,12 +103,12 @@ export const EphemeralPreviewLink: React.FC<EphemeralPreviewLinkProps> = ({
       <button
         type="button"
         onClick={onOpenDrawer}
-        className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 font-mono text-[11px] transition-colors cursor-pointer"
+        className="bg-slate-50 hover:bg-zinc-900 hover:text-white text-zinc-700 border border-slate-200/80 rounded-lg px-2.5 py-1 text-xs font-mono transition-colors inline-flex items-center gap-1.5 cursor-pointer group"
       >
-        <span className="truncate max-w-[120px]">
-          {preview.ephemeralUrl.replace("https://", "")}
+        <span className="truncate max-w-[130px]">
+          {preview.ephemeralUrl.replace("https://", "").replace("http://", "")}
         </span>
-        <ExternalLink className="w-3 h-3 text-indigo-400" />
+        <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-white transition-colors" />
       </button>
 
       {/* Snapshot Card Popover Portaled to document.body to Escape Table Clipping */}
@@ -128,21 +128,21 @@ export const EphemeralPreviewLink: React.FC<EphemeralPreviewLinkProps> = ({
                   : "translate(-50%, 0)",
               zIndex: 9999,
             }}
-            className="w-72 rounded-lg bg-white dark:bg-[#17181D] border border-slate-200 dark:border-white/[0.12] shadow-2xl p-3 text-xs text-slate-900 dark:text-white pointer-events-auto animate-in fade-in zoom-in-95 duration-100"
+            className="w-72 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-2xl p-3.5 text-xs text-zinc-900 dark:text-zinc-100 pointer-events-auto animate-in fade-in zoom-in-95 duration-100"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-white/[0.08]">
-              <span className="font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[180px]">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-zinc-800">
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[180px]">
                 {clinicName}
               </span>
-              <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+              <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-500/20 font-medium">
                 <ShieldCheck className="w-3 h-3" /> SSL Active
               </span>
             </div>
 
             {/* 320x180 Aspect Mockup Image */}
-            <div className="w-full aspect-video rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] overflow-hidden relative mb-2">
+            <div className="w-full aspect-video rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/80 dark:border-zinc-700 overflow-hidden relative mb-2.5">
               {preview.thumbnailUrl ? (
                 <img
                   src={preview.thumbnailUrl}
@@ -154,7 +154,7 @@ export const EphemeralPreviewLink: React.FC<EphemeralPreviewLinkProps> = ({
                   Preview Rendered
                 </div>
               )}
-              <div className="absolute top-1.5 right-1.5 bg-black/80 backdrop-blur-xs px-1.5 py-0.5 rounded text-[10px] font-mono text-amber-400 flex items-center gap-1">
+              <div className="absolute top-1.5 right-1.5 bg-black/80 backdrop-blur-xs px-1.5 py-0.5 rounded-md text-[10px] font-mono text-amber-400 flex items-center gap-1">
                 <Zap className="w-3 h-3 fill-amber-400 text-amber-400" />
                 <span>99/100</span>
               </div>
@@ -162,7 +162,7 @@ export const EphemeralPreviewLink: React.FC<EphemeralPreviewLinkProps> = ({
 
             {/* Lighthouse Breakdown */}
             {preview.lighthouseScore && (
-              <div className="grid grid-cols-4 gap-1 text-center font-mono text-[9px] text-slate-500 dark:text-slate-400 pb-2 mb-2 border-b border-slate-100 dark:border-white/[0.06]">
+              <div className="grid grid-cols-4 gap-1 text-center font-mono text-[9px] text-slate-500 dark:text-zinc-400 pb-2 mb-2 border-b border-slate-100 dark:border-zinc-800">
                 <div>
                   <div className="text-emerald-600 dark:text-emerald-400 font-bold">
                     {preview.lighthouseScore.performance}
@@ -194,7 +194,7 @@ export const EphemeralPreviewLink: React.FC<EphemeralPreviewLinkProps> = ({
               <button
                 type="button"
                 onClick={onOpenDrawer}
-                className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium cursor-pointer"
+                className="text-[11px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold cursor-pointer"
               >
                 Open Workbench Drawer &rarr;
               </button>
@@ -202,7 +202,7 @@ export const EphemeralPreviewLink: React.FC<EphemeralPreviewLinkProps> = ({
                 href={preview.ephemeralUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[10px] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                className="text-[10px] text-slate-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-mono"
               >
                 Direct Link
               </a>

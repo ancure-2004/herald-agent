@@ -52,6 +52,10 @@ export interface LiveLogTerminalProps {
   defaultCollapsed?: boolean;
   /** External action buttons slot */
   headerActions?: React.ReactNode;
+  /** Whether to show the 3 window dots */
+  showWindowDots?: boolean;
+  /** Compact mode for tighter header and padding */
+  compact?: boolean;
 }
 
 export function LiveLogTerminal({
@@ -64,6 +68,8 @@ export function LiveLogTerminal({
   collapsible = false,
   defaultCollapsed = false,
   headerActions,
+  showWindowDots = false,
+  compact = false,
 }: LiveLogTerminalProps) {
   const [logs, setLogs] = useState<TerminalLogEntry[]>([]);
   const [selectedService, setSelectedService] = useState<string>(service);
@@ -260,27 +266,35 @@ export function LiveLogTerminal({
   return (
     <div
       className={`rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl overflow-hidden font-mono text-xs flex flex-col transition-all duration-300 ease-in-out ${
-        isCollapsed ? "h-11" : className
+        isCollapsed ? (compact ? "h-8" : "h-11") : className
       }`}
     >
       {/* Terminal Header */}
-      <div className="h-11 px-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0 select-none">
-        {/* Left: Window Dots & Title */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-          </div>
+      <div
+        className={`px-3 bg-slate-900/60 border-b border-slate-800/80 flex items-center justify-between gap-2 shrink-0 select-none ${
+          compact ? "h-8" : "h-10"
+        }`}
+      >
+        {/* Left: Window Dots (Optional) & Title */}
+        <div className="flex items-center gap-2 min-w-0">
+          {showWindowDots && (
+            <div className="flex items-center gap-1.5 pr-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+            </div>
+          )}
 
-          <div className="flex items-center gap-2 pl-1">
-            <Terminal className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="font-bold text-white text-[11px] tracking-wider uppercase">{title}</span>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Terminal className="w-3 h-3 text-indigo-400 shrink-0" />
+            <span className="font-bold text-white text-[10px] sm:text-[11px] tracking-wider uppercase truncate">
+              {title}
+            </span>
           </div>
 
           {/* Connection Status Indicator */}
           <span
-            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+            className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-semibold border shrink-0 ${
               connectionStatus === "streaming"
                 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                 : connectionStatus === "reconnecting"
@@ -289,7 +303,7 @@ export function LiveLogTerminal({
             }`}
           >
             <span
-              className={`w-1.5 h-1.5 rounded-full ${
+              className={`w-1 h-1 rounded-full ${
                 connectionStatus === "streaming"
                   ? "bg-emerald-400 animate-pulse"
                   : connectionStatus === "reconnecting"
@@ -302,8 +316,8 @@ export function LiveLogTerminal({
 
           {/* Autopilot Job Status */}
           {jobStatus === "running" && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/10 border border-sky-500/30 text-sky-400">
-              <Loader2 className="w-3 h-3 animate-spin" />
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-semibold bg-sky-500/10 border border-sky-500/30 text-sky-400 shrink-0">
+              <Loader2 className="w-2.5 h-2.5 animate-spin" />
               RUNNING
             </span>
           )}
@@ -316,17 +330,17 @@ export function LiveLogTerminal({
         </div>
 
         {/* Right: Actions, Filters & Collapse */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           {headerActions}
 
           {/* Level Filter Pills */}
-          <div className="hidden sm:flex items-center p-0.5 rounded-lg bg-black/40 border border-white/[0.08] text-[10px]">
+          <div className="hidden sm:flex items-center p-0.5 rounded-md bg-black/40 border border-white/[0.08] text-[9px]">
             {(["ALL", "INFO", "WARN", "ERROR"] as const).map((lvl) => (
               <button
                 key={lvl}
                 type="button"
                 onClick={() => setLevelFilter(lvl)}
-                className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                className={`px-1.5 py-0.2 rounded font-bold transition-all cursor-pointer ${
                   levelFilter === lvl
                     ? lvl === "ERROR"
                       ? "bg-rose-600 text-white"
@@ -347,7 +361,7 @@ export function LiveLogTerminal({
               <select
                 value={selectedService}
                 onChange={(e) => setSelectedService(e.target.value)}
-                className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-[11px] text-slate-300 focus:outline-none cursor-pointer"
+                className="bg-slate-800/80 border border-slate-700/80 rounded-md px-1.5 py-0.5 text-[10px] text-slate-300 focus:outline-none cursor-pointer"
               >
                 <option value="all">Service: All</option>
                 <option value="discovery">Discovery</option>
@@ -358,14 +372,14 @@ export function LiveLogTerminal({
           )}
 
           {/* Search Box */}
-          <div className="relative hidden md:block w-36">
-            <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-slate-500" />
+          <div className="relative hidden md:block w-28">
+            <Search className="w-2.5 h-2.5 absolute left-1.5 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter logs..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-6 pr-2 py-1 text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              placeholder="Filter..."
+              className="w-full bg-slate-800/80 border border-slate-700/80 rounded-md pl-5 pr-1.5 py-0.5 text-[10px] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
             />
           </div>
 
@@ -379,7 +393,7 @@ export function LiveLogTerminal({
                 setAutoScroll(false);
               }
             }}
-            className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
+            className={`p-1 rounded-md border text-[10px] font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
               autoScroll
                 ? "bg-slate-800/80 border-slate-700 text-emerald-400 hover:bg-slate-700/80"
                 : "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
@@ -387,29 +401,29 @@ export function LiveLogTerminal({
             title={autoScroll ? "Pause auto-scroll" : "Resume auto-scroll"}
             aria-label={autoScroll ? "Pause auto-scroll" : "Resume auto-scroll"}
           >
-            {autoScroll ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+            {autoScroll ? <Pause className="w-2.5 h-2.5" /> : <Play className="w-2.5 h-2.5" />}
           </button>
 
           {/* Copy Logs */}
           <button
             type="button"
             onClick={handleCopy}
-            className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 border border-white/[0.06] transition-colors cursor-pointer"
+            className="p-1 rounded-md bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 border border-white/[0.06] transition-colors cursor-pointer"
             title="Copy logs to clipboard"
             aria-label="Copy logs"
           >
-            {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+            {copied ? <Check className="w-2.5 h-2.5 text-emerald-400" /> : <Copy className="w-2.5 h-2.5" />}
           </button>
 
           {/* Clear Logs */}
           <button
             type="button"
             onClick={handleClear}
-            className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 border border-white/[0.06] transition-colors cursor-pointer"
+            className="p-1 rounded-md bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 border border-white/[0.06] transition-colors cursor-pointer"
             title="Clear visible logs"
             aria-label="Clear visible logs"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="w-2.5 h-2.5" />
           </button>
 
           {/* Collapse Toggle */}
@@ -417,10 +431,10 @@ export function LiveLogTerminal({
             <button
               type="button"
               onClick={() => setIsCollapsed((prev) => !prev)}
-              className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-700/80 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="p-1 rounded-md bg-slate-800/60 hover:bg-slate-700/80 text-slate-400 hover:text-white transition-colors cursor-pointer"
               title={isCollapsed ? "Expand Terminal" : "Collapse Terminal"}
             >
-              {isCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+              {isCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
             </button>
           )}
         </div>
@@ -432,7 +446,9 @@ export function LiveLogTerminal({
           <div
             ref={terminalRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto p-3 space-y-1 bg-slate-950 text-slate-200 select-text font-mono text-[11px] leading-relaxed"
+            className={`flex-1 overflow-y-auto ${
+              compact ? "p-2 space-y-0.5 text-[10px]" : "p-3 space-y-1 text-[11px]"
+            } bg-slate-950 text-slate-200 select-text font-mono leading-relaxed`}
           >
             {filteredLogs.length === 0 ? (
               <div className="text-slate-500 py-6 text-center italic">

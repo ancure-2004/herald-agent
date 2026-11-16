@@ -1,7 +1,19 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Check, ChevronDown, Filter, MapPin, Search, X } from "lucide-react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Filter,
+  MapPin,
+  Search,
+  X,
+  Send,
+  Users,
+  XCircle,
+  Trophy,
+} from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 
 // ---------------------------------------------------------------------------
@@ -21,9 +33,43 @@ function deriveOutreachSentAt(lead: any): string | null {
   const outbound = (lead.messages ?? []).find((m: any) => m.direction === "outbound");
   if (outbound?.created_at) return outbound.created_at as string;
   // 3. Stage-based fallback: if in a sent stage, use lead.updated_at
-  const stage = lead.stage_rel?.slug ?? lead.stage ?? "";
+  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
   if (SENT_STAGES.has(stage) && lead.updated_at) return lead.updated_at as string;
   return null;
+}
+
+function isLeadSent(lead: any): boolean {
+  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (SENT_STAGES.has(stage)) return true;
+  if (deriveOutreachSentAt(lead) !== null) return true;
+  if (lead.packages && Array.isArray(lead.packages) && lead.packages.some((p: any) => p.sent_at)) return true;
+  if (lead.messages && Array.isArray(lead.messages) && lead.messages.some((m: any) => m.direction === "outbound")) return true;
+  return false;
+}
+
+function isLeadLost(lead: any): boolean {
+  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (stage === "lost" || stage === "archived" || stage === "dnc") return true;
+  if (lead.stage_rel?.is_lost) return true;
+  if (Boolean(lead.do_not_contact)) return true;
+  if (Boolean(lead.is_archived)) return true;
+  return false;
+}
+
+function isLeadWon(lead: any): boolean {
+  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (stage === "won" || stage === "closed_won" || stage === "client") return true;
+  if (lead.stage_rel?.is_won) return true;
+  return false;
+}
+
+function formatDoctorName(name?: string | null): string {
+  if (!name || !name.trim()) return "Doctor";
+  const trimmed = name.trim();
+  if (/^dr\.?\s+/i.test(trimmed)) {
+    return trimmed;
+  }
+  return `Dr. ${trimmed}`;
 }
 
 /** Format a YYYY-MM-DD (or ISO) date string as "Nov 2026" */
@@ -55,33 +101,75 @@ export function LeadsTableView() {
 
   // --- Search ---
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut '/' to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === "/" &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA"
+      ) {
+        e.preventDefault();
+        setSearchExpanded(true);
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // --- Filter state ---
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const filterPopoverRef = useRef<HTMLDivElement>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [monthFilter, setMonthFilter] = useState("");
+  const [stageFilter, setStageFilter] = useState("");
   const [outreachFilter, setOutreachFilter] = useState<"ALL" | "SENT" | "UNSENT">("ALL");
-  const [foundMonthFilter, setFoundMonthFilter] = useState("");
-  const [foundDateFilter, setFoundDateFilter] = useState("");
-  const [sentMonthFilter, setSentMonthFilter] = useState("");
-  const [sentDateFilter, setSentDateFilter] = useState("");
   const [batchFilter, setBatchFilter] = useState("");
+  const [foundDateFilter, setFoundDateFilter] = useState("");
+
+  // Close filter popover on outside click or Escape key
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        filterPopoverRef.current &&
+        !filterPopoverRef.current.contains(e.target as Node) &&
+        filterButtonRef.current &&
+        !filterButtonRef.current.contains(e.target as Node)
+      ) {
+        setFiltersOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFiltersOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [filtersOpen]);
 
   // --- Derived option lists ---
-  const foundMonths = useMemo(() => {
+  const availableMonths = useMemo(() => {
     const seen = new Set<string>();
     leads.forEach((l: any) => {
       if (l.created_at) seen.add(l.created_at.slice(0, 7));
+      const sentTs = deriveOutreachSentAt(l);
+      if (sentTs) seen.add(sentTs.slice(0, 7));
     });
-    return Array.from(seen).sort().reverse();
+    return Array.from(seen).filter((m) => /^\d{4}-\d{2}$/.test(m)).sort().reverse();
   }, [leads]);
 
-  const sentMonths = useMemo(() => {
-    const seen = new Set<string>();
-    leads.forEach((l: any) => {
-      const ts = deriveOutreachSentAt(l);
-      if (ts) seen.add(ts.slice(0, 7));
-    });
-    return Array.from(seen).sort().reverse();
-  }, [leads]);
+  const stages = useMemo(() => {
+    return activeHustle?.stages || [];
+  }, [activeHustle]);
 
   const batchIds = useMemo(() => {
     const seen = new Set<string>();
@@ -92,11 +180,11 @@ export function LeadsTableView() {
     return Array.from(seen).sort();
   }, [leads]);
 
-  // --- Filtered leads ---
+  // --- Filtered leads (Scopes both KPI cards & table) ---
   const filteredLeads = useMemo(() => {
     let result = leads as any[];
 
-    // 1. Search
+    // 1. Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((l) => {
@@ -116,243 +204,417 @@ export function LeadsTableView() {
       });
     }
 
-    // 2. Outreach status filter
+    // 2. Month filter (Derived from lead creation or outreach send date)
+    if (monthFilter) {
+      result = result.filter((l) => {
+        const createdMonth = l.created_at ? l.created_at.slice(0, 7) : "";
+        const sentTs = deriveOutreachSentAt(l);
+        const sentMonth = sentTs ? sentTs.slice(0, 7) : "";
+        return createdMonth === monthFilter || sentMonth === monthFilter;
+      });
+    }
+
+    // 3. Stage / Status filter
+    if (stageFilter) {
+      if (stageFilter === "won") {
+        result = result.filter(isLeadWon);
+      } else if (stageFilter === "lost") {
+        result = result.filter(isLeadLost);
+      } else if (stageFilter === "sent") {
+        result = result.filter(isLeadSent);
+      } else if (stageFilter === "unsent") {
+        result = result.filter((l) => !isLeadSent(l));
+      } else {
+        result = result.filter((l) => {
+          const stageSlug = (l.stage_rel?.slug ?? l.stage ?? "").toLowerCase();
+          return stageSlug === stageFilter.toLowerCase();
+        });
+      }
+    }
+
+    // 4. Outreach status filter
     if (outreachFilter === "SENT") {
-      result = result.filter((l) => {
-        const stage = l.stage_rel?.slug ?? l.stage ?? "";
-        if (SENT_STAGES.has(stage)) return true;
-        return !!deriveOutreachSentAt(l);
-      });
+      result = result.filter(isLeadSent);
     } else if (outreachFilter === "UNSENT") {
-      result = result.filter((l) => {
-        const stage = l.stage_rel?.slug ?? l.stage ?? "";
-        if (SENT_STAGES.has(stage)) return false;
-        return !deriveOutreachSentAt(l);
-      });
+      result = result.filter((l) => !isLeadSent(l));
     }
 
-    // 3. Found month
-    if (foundMonthFilter) {
-      result = result.filter((l) => (l.created_at ?? "").startsWith(foundMonthFilter));
-    }
-
-    // 4. Found date
-    if (foundDateFilter) {
-      result = result.filter((l) => (l.created_at ?? "").slice(0, 10) === foundDateFilter);
-    }
-
-    // 5. Sent month
-    if (sentMonthFilter) {
-      result = result.filter((l) => {
-        const ts = deriveOutreachSentAt(l);
-        return ts ? ts.startsWith(sentMonthFilter) : false;
-      });
-    }
-
-    // 6. Sent date
-    if (sentDateFilter) {
-      result = result.filter((l) => {
-        const ts = deriveOutreachSentAt(l);
-        return ts ? ts.slice(0, 10) === sentDateFilter : false;
-      });
-    }
-
-    // 7. Batch
+    // 5. Batch filter
     if (batchFilter) {
       result = result.filter((l) => l.custom_fields?.batch_id === batchFilter);
     }
 
+    // 6. Specific date filter
+    if (foundDateFilter) {
+      result = result.filter((l) => (l.created_at ?? "").slice(0, 10) === foundDateFilter);
+    }
+
     return result;
-  }, [leads, searchQuery, outreachFilter, foundMonthFilter, foundDateFilter, sentMonthFilter, sentDateFilter, batchFilter]);
+  }, [leads, searchQuery, monthFilter, stageFilter, outreachFilter, batchFilter, foundDateFilter]);
+
+  // ---------------------------------------------------------------------------
+  // KPI Metrics (Calculated from filteredLeads to stay strictly in scope)
+  // ---------------------------------------------------------------------------
+  const totalInTable = filteredLeads.length;
+  const totalSent = useMemo(() => filteredLeads.filter(isLeadSent).length, [filteredLeads]);
+  const totalLost = useMemo(() => filteredLeads.filter(isLeadLost).length, [filteredLeads]);
+  const totalWon = useMemo(() => filteredLeads.filter(isLeadWon).length, [filteredLeads]);
 
   // Active filter count (for badge)
   const activeFilterCount = [
+    !!monthFilter,
+    !!stageFilter,
     outreachFilter !== "ALL",
-    !!foundMonthFilter,
-    !!foundDateFilter,
-    !!sentMonthFilter,
-    !!sentDateFilter,
     !!batchFilter,
+    !!foundDateFilter,
   ].filter(Boolean).length;
 
   const resetFilters = () => {
+    setMonthFilter("");
+    setStageFilter("");
     setOutreachFilter("ALL");
-    setFoundMonthFilter("");
-    setFoundDateFilter("");
-    setSentMonthFilter("");
-    setSentDateFilter("");
     setBatchFilter("");
+    setFoundDateFilter("");
+    setSearchQuery("");
+    setSearchExpanded(false);
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 text-slate-900 dark:text-slate-100">
       {/* ------------------------------------------------------------------ */}
-      {/* Top Filter & Search Bar                                             */}
+      {/* 1. Four KPI Summary Cards Strip (Scoped to Active Filters)         */}
       {/* ------------------------------------------------------------------ */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] shadow-xs overflow-visible">
-        {/* Main search row */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-white/[0.05]">
-          {/* Search input */}
-          <div className="relative flex-1">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search clinic, doctor, phone, locality, email, batch ID…"
-              className="w-full pl-9 pr-8 py-2 rounded-xl text-xs bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-            />
-            {searchQuery && (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {/* KPI 1: Total Leads Sent */}
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Total Leads Sent
+            </span>
+            <Send className="w-4 h-4 text-slate-400" />
+          </div>
+          <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
+            {totalSent}
+          </div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span>
+              {totalInTable > 0
+                ? `${Math.round((totalSent / totalInTable) * 100)}% outreach rate`
+                : "0% outreach rate"}
+            </span>
+          </div>
+        </div>
+
+        {/* KPI 2: Total Leads in Table */}
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Total Leads in Table
+            </span>
+            <Users className="w-4 h-4 text-slate-400" />
+          </div>
+          <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
+            {totalInTable}
+          </div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+            <span>
+              {monthFilter
+                ? `Month: ${formatMonth(monthFilter + "-01")}`
+                : `${leads.length} in database`}
+            </span>
+          </div>
+        </div>
+
+        {/* KPI 3: Total Lost Leads */}
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Total Lost Leads
+            </span>
+            <XCircle className="w-4 h-4 text-slate-400" />
+          </div>
+          <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
+            {totalLost}
+          </div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+            <span>Lost, DNC or archived</span>
+          </div>
+        </div>
+
+        {/* KPI 4: Total Won Leads */}
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Total Won Leads
+            </span>
+            <Trophy className="w-4 h-4 text-slate-400" />
+          </div>
+          <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
+            {totalWon}
+          </div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span>Closed-won clients</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. Unified Leads Table Container with Attached Header Bar          */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] shadow-xs overflow-hidden">
+        {/* Unified Table Header Bar */}
+        <div className="border-b border-slate-100 dark:border-white/[0.08] px-5 py-3 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#141721]">
+          {/* Left Side: Section title, count badge, expandable [🔍] search */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">All Leads</h3>
+              <span className="bg-slate-100 dark:bg-white/[0.08] text-slate-700 dark:text-slate-200 rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums">
+                {totalInTable}
+              </span>
+            </div>
+
+            {/* Expandable Search Pill */}
+            <div className="relative flex items-center">
+              {searchExpanded || searchQuery ? (
+                <div className="relative flex items-center w-64 sm:w-72 transition-all duration-200">
+                  <Search className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onBlur={() => {
+                      if (!searchQuery.trim()) setSearchExpanded(false);
+                    }}
+                    placeholder="Filter table... (Esc to clear)"
+                    className="w-full pl-8 pr-7 py-1.5 rounded-full text-xs bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  />
+                  {searchQuery ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setSearchExpanded(false);
+                      }}
+                      className="absolute right-2 p-0.5 rounded-full hover:bg-slate-200/50 dark:hover:bg-white/[0.08] text-slate-400"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setSearchExpanded(false)}
+                      className="absolute right-2 text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      esc
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchExpanded(true);
+                    setTimeout(() => searchInputRef.current?.focus(), 50);
+                  }}
+                  title="Filter table (/)"
+                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-full text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200/80 dark:border-white/[0.08] transition-colors cursor-pointer"
+                >
+                  <Search className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="hidden sm:inline text-[11px] text-slate-500 dark:text-slate-400">Filter table</span>
+                  <kbd className="hidden sm:inline text-[9px] text-slate-400 font-mono bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08] rounded px-1">
+                    /
+                  </kbd>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Right Side: Month Dropdown + Filters Popover Button + Reset */}
+          <div className="flex items-center gap-2">
+            {/* Month Filter Dropdown */}
+            <div className="relative">
+              <select
+                value={monthFilter}
+                onChange={(e) => setMonthFilter(e.target.value)}
+                className="appearance-none bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-white/[0.08] rounded-xl pl-3 pr-7 py-1.5 text-xs font-medium transition-colors cursor-pointer focus:outline-none"
+              >
+                <option value="">All Months</option>
+                {availableMonths.map((m) => (
+                  <option key={m} value={m}>
+                    {formatMonth(m + "-01")}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
+
+            {/* Filters Popover Button */}
+            <div className="relative">
+              <button
+                ref={filterButtonRef}
+                type="button"
+                onClick={() => setFiltersOpen((prev) => !prev)}
+                className={`flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-white/[0.08] rounded-xl px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                  filtersOpen ? "ring-2 ring-indigo-500/30" : ""
+                }`}
+              >
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <span>Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Filters Popover Drawer */}
+              {filtersOpen && (
+                <div
+                  ref={filterPopoverRef}
+                  className="absolute right-0 top-full mt-2 w-72 p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xl z-50 space-y-3.5 animate-in fade-in zoom-in-95 text-xs text-slate-900 dark:text-slate-100"
+                >
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                      Filter Leads
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setFiltersOpen(false)}
+                      className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Filter Grid */}
+                  <div className="space-y-3">
+                    {/* Month Filter inside Popover */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Month
+                      </label>
+                      <select
+                        value={monthFilter}
+                        onChange={(e) => setMonthFilter(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      >
+                        <option value="">All Months</option>
+                        {availableMonths.map((m) => (
+                          <option key={m} value={m}>
+                            {formatMonth(m + "-01")}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Stage / Status Filter */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Stage / Status
+                      </label>
+                      <select
+                        value={stageFilter}
+                        onChange={(e) => setStageFilter(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      >
+                        <option value="">All Stages</option>
+                        <option value="won">Won Leads</option>
+                        <option value="lost">Lost / Closed / DNC</option>
+                        <option value="sent">Outreach Sent</option>
+                        <option value="unsent">Outreach Unsent</option>
+                        {stages.map((st) => (
+                          <option key={st.slug} value={st.slug}>
+                            {st.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Outreach Status Filter */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Outreach
+                      </label>
+                      <select
+                        value={outreachFilter}
+                        onChange={(e) => setOutreachFilter(e.target.value as any)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      >
+                        <option value="ALL">All</option>
+                        <option value="SENT">Sent</option>
+                        <option value="UNSENT">Unsent</option>
+                      </select>
+                    </div>
+
+                    {/* Batch Filter */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Batch
+                      </label>
+                      <select
+                        value={batchFilter}
+                        onChange={(e) => setBatchFilter(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      >
+                        <option value="">All Batches</option>
+                        {batchIds.map((b) => (
+                          <option key={b} value={b}>
+                            {b}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Specific Date Picker */}
+                    <div className="flex flex-col gap-1 pt-1">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Specific Date
+                      </label>
+                      <input
+                        type="date"
+                        value={foundDateFilter}
+                        onChange={(e) => setFoundDateFilter(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Reset Button */}
+            {activeFilterCount > 0 && (
               <button
                 type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                onClick={resetFilters}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20 cursor-pointer transition-all"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
+                <span>Reset</span>
               </button>
             )}
           </div>
-
-          {/* Filter toggle button */}
-          <button
-            type="button"
-            onClick={() => setFiltersOpen((v) => !v)}
-            className={`relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-              filtersOpen || activeFilterCount > 0
-                ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/40"
-                : "bg-slate-50 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/[0.08] hover:border-indigo-300 hover:text-indigo-600"
-            }`}
-          >
-            <Filter className="w-3.5 h-3.5" />
-            <span>Filters</span>
-            {activeFilterCount > 0 && (
-              <span className="ml-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-black">
-                {activeFilterCount}
-              </span>
-            )}
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${filtersOpen ? "rotate-180" : ""}`} />
-          </button>
-
-          {/* Count */}
-          <span className="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap font-mono">
-            {filteredLeads.length} / {leads.length}
-          </span>
-
-          {/* Reset */}
-          {activeFilterCount > 0 && (
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 hover:bg-rose-100 cursor-pointer transition-all"
-            >
-              <X className="w-3 h-3" />
-              Reset
-            </button>
-          )}
         </div>
 
-        {/* Expandable filter strip */}
-        {filtersOpen && (
-          <div className="px-4 py-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 border-b border-slate-100 dark:border-white/[0.05] bg-slate-50/60 dark:bg-white/[0.015]">
-            {/* Outreach Status */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Outreach</label>
-              <select
-                value={outreachFilter}
-                onChange={(e) => setOutreachFilter(e.target.value as any)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="ALL">All</option>
-                <option value="SENT">Sent</option>
-                <option value="UNSENT">Unsent</option>
-              </select>
-            </div>
-
-            {/* Found Month */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Found Month</label>
-              <select
-                value={foundMonthFilter}
-                onChange={(e) => setFoundMonthFilter(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="">All Months</option>
-                {foundMonths.map((m) => (
-                  <option key={m} value={m}>{formatMonth(m + "-01")}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Found Date */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Found Date</label>
-              <input
-                type="date"
-                value={foundDateFilter}
-                onChange={(e) => setFoundDateFilter(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              />
-            </div>
-
-            {/* Sent Month */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sent Month</label>
-              <select
-                value={sentMonthFilter}
-                onChange={(e) => setSentMonthFilter(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="">All Months</option>
-                {sentMonths.map((m) => (
-                  <option key={m} value={m}>{formatMonth(m + "-01")}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Sent Date */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sent Date</label>
-              <input
-                type="date"
-                value={sentDateFilter}
-                onChange={(e) => setSentDateFilter(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              />
-            </div>
-
-            {/* Batch */}
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Batch</label>
-              <select
-                value={batchFilter}
-                onChange={(e) => setBatchFilter(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              >
-                <option value="">All Batches</option>
-                {batchIds.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Table                                                             */}
-        {/* ---------------------------------------------------------------- */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs min-w-[860px]">
+        {/* Table Content */}
+        <div className="overflow-x-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <table className="w-full text-left border-collapse text-xs min-w-[880px]">
             <thead>
-              <tr className="border-b border-slate-200/80 dark:border-white/[0.06] bg-slate-50 dark:bg-white/[0.03] text-slate-500 dark:text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
-                <th className="py-3.5 px-4">Clinic & Doctor</th>
-                <th className="py-3.5 px-3">Locality & City</th>
-                <th className="py-3.5 px-3">Contacts</th>
-                <th className="py-3.5 px-3">Batch</th>
-                <th className="py-3.5 px-3">Outreach</th>
-                <th className="py-3.5 px-3">Found</th>
-                <th className="py-3.5 px-3">Fit & Intent</th>
-                <th className="py-3.5 px-3">Next Step</th>
-                <th className="py-3.5 px-3 text-right">Action</th>
+              <tr className="border-b border-slate-200/70 dark:border-white/[0.06] bg-slate-50/70 dark:bg-white/[0.02] text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
+                <th className="py-2.5 px-4">Clinic &amp; Doctor</th>
+                <th className="py-2.5 px-3">Locality &amp; City</th>
+                <th className="py-2.5 px-3">Contacts</th>
+                <th className="py-2.5 px-3">Batch</th>
+                <th className="py-2.5 px-3">Outreach</th>
+                <th className="py-2.5 px-3">Found</th>
+                <th className="py-2.5 px-3">Fit &amp; Intent</th>
+                <th className="py-2.5 px-3">Next Step</th>
+                <th className="py-2.5 px-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
@@ -366,109 +628,136 @@ export function LeadsTableView() {
                 filteredLeads.map((lead: any) => {
                   const batchId: string | undefined = lead.custom_fields?.batch_id;
                   const sentAt = deriveOutreachSentAt(lead);
-                  const stageSlug: string = lead.stage_rel?.slug ?? lead.stage ?? "";
-                  const isSent = SENT_STAGES.has(stageSlug) || !!sentAt;
+                  const isSent = isLeadSent(lead);
+                  const intentDot =
+                    (lead.intent_score ?? 0) >= 8
+                      ? "bg-emerald-500"
+                      : (lead.intent_score ?? 0) >= 5
+                      ? "bg-amber-500"
+                      : "bg-slate-400";
 
                   return (
                     <tr
                       key={lead.id}
                       onClick={() => setSelectedLeadId(lead.id)}
-                      className="hover:bg-slate-50/80 dark:hover:bg-white/[0.04] cursor-pointer transition-colors"
+                      className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] cursor-pointer transition-colors group"
                     >
                       {/* Clinic & Doctor */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-xs text-indigo-600 dark:text-indigo-400 shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/[0.06] text-zinc-700 dark:text-zinc-200 border border-slate-200/80 dark:border-white/[0.08] flex items-center justify-center font-semibold text-xs shrink-0">
                             {lead.name.slice(0, 2).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-bold text-slate-900 dark:text-white truncate">{lead.name}</div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{lead.doctor_name || "Doctor"}</div>
+                            <div className="text-sm font-semibold text-zinc-900 dark:text-white truncate">
+                              {lead.name}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                              {formatDoctorName(lead.doctor_name)}
+                            </div>
                           </div>
                         </div>
                       </td>
 
-                      {/* Locality */}
-                      <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300">
+                      {/* Locality & City */}
+                      <td className="py-3 px-3 text-slate-600 dark:text-slate-300">
                         <div className="flex items-center gap-1.5">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate">{lead.locality || lead.city}</span>
+                          <span className="truncate">{lead.locality || lead.city || "-"}</span>
                         </div>
                       </td>
 
                       {/* Contacts */}
-                      <td className="py-3.5 px-3 space-y-0.5 text-[11px]">
+                      <td className="py-3 px-3 space-y-0.5 text-[11px]">
                         {lead.primary_phone && (
-                          <div className="text-slate-700 dark:text-slate-300 font-mono">{lead.primary_phone}</div>
+                          <div className="text-xs font-medium text-zinc-800 dark:text-zinc-200 font-mono">
+                            {lead.primary_phone}
+                          </div>
                         )}
                         {lead.instagram_handle && (
-                          <div className="text-pink-600 dark:text-pink-400">@{lead.instagram_handle}</div>
+                          <div className="text-[11px] text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                            @{lead.instagram_handle}
+                          </div>
+                        )}
+                        {!lead.primary_phone && !lead.instagram_handle && (
+                          <span className="text-slate-400 italic">-</span>
                         )}
                       </td>
 
                       {/* Batch Badge */}
-                      <td className="py-3.5 px-3">
+                      <td className="py-3 px-3">
                         {batchId ? (
-                          <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-500/20 font-mono font-bold text-[10px] whitespace-nowrap">
+                          <span className="bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.08] rounded-md px-2 py-0.5 text-[11px] font-mono font-medium whitespace-nowrap">
                             {batchId}
                           </span>
                         ) : (
-                          <span className="text-slate-400 text-[10px] italic">—</span>
+                          <span className="text-slate-400 text-[10px] italic">-</span>
                         )}
                       </td>
 
                       {/* Outreach Status Pill */}
-                      <td className="py-3.5 px-3">
+                      <td className="py-3 px-3">
                         {isSent ? (
                           <div className="flex flex-col gap-0.5">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-500/20 font-semibold text-[10px] whitespace-nowrap">
-                              <Check className="w-2.5 h-2.5" />
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-900/40 text-[11px] font-medium whitespace-nowrap">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                               Sent
                             </span>
                             {sentAt && (
-                              <span className="text-[10px] text-slate-400 font-mono">{sentAt.slice(0, 10)}</span>
+                              <span className="text-[10px] text-slate-400 font-mono pl-1">
+                                {sentAt.slice(0, 10)}
+                              </span>
                             )}
                           </div>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-500/20 font-semibold text-[10px] whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-400 border border-slate-200/70 dark:border-white/[0.08] text-[11px] font-medium whitespace-nowrap">
                             Unsent
                           </span>
                         )}
                       </td>
 
                       {/* Found Date */}
-                      <td className="py-3.5 px-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
-                        {lead.created_at ? formatDate(lead.created_at) : "—"}
+                      <td className="py-3 px-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
+                        {lead.created_at ? formatDate(lead.created_at) : "-"}
                       </td>
 
                       {/* Fit & Intent */}
-                      <td className="py-3.5 px-3">
+                      <td className="py-3 px-3">
                         <div className="flex items-center gap-1.5 flex-nowrap">
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-500/20 font-semibold font-mono text-[10px] whitespace-nowrap">
+                          <span className="bg-slate-100 dark:bg-white/[0.06] text-zinc-800 dark:text-zinc-200 font-mono font-medium px-2 py-0.5 rounded text-[11px] border border-slate-200/60 dark:border-white/[0.06] whitespace-nowrap">
                             Fit {lead.fit_score}%
                           </span>
-                          <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-500/20 font-semibold font-mono text-[10px] whitespace-nowrap">
-                            Intent {lead.intent_score}
+                          <span className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1 whitespace-nowrap">
+                            <span className={`w-1.5 h-1.5 rounded-full ${intentDot} shrink-0`} />
+                            <span>Intent {lead.intent_score}</span>
                           </span>
                         </div>
                       </td>
 
                       {/* Next Step */}
-                      <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300 max-w-[160px] truncate">
-                        {lead.next_action || "None scheduled"}
+                      <td className="py-3 px-3 min-w-[200px] max-w-[260px]">
+                        <div
+                          className="text-slate-600 dark:text-slate-300 truncate text-xs"
+                          title={lead.next_action || "None scheduled"}
+                        >
+                          {lead.next_action || "None scheduled"}
+                        </div>
                       </td>
 
                       {/* Action */}
-                      <td className="py-3.5 px-3 text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedLeadId(lead.id);
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-200 text-xs font-semibold cursor-pointer transition-colors"
-                        >
-                          Inspect
-                        </button>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedLeadId(lead.id);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-200 text-xs font-medium transition-all cursor-pointer"
+                          >
+                            Inspect
+                          </button>
+                          <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-zinc-900 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                        </div>
                       </td>
                     </tr>
                   );

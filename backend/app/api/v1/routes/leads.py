@@ -97,6 +97,12 @@ def get_lead_recording(lead_id: int, db: Session = Depends(get_db)):
     return LeadController.get_recording_response(db, lead_id)
 
 
+@router.post("/leads/{lead_id}/copy-video")
+def copy_lead_video(lead_id: int, db: Session = Depends(get_db)):
+    """Copies the lead's walkthrough video file to system clipboard and returns file paths."""
+    return LeadController.copy_lead_video(db, lead_id)
+
+
 @router.post("/leads/{lead_id}/calls", response_model=CallOut, status_code=201)
 def log_lead_call(lead_id: int, payload: CallCreate, db: Session = Depends(get_db)):
     """Logs raw call text, structures into 5 sections + prep brief in <10s, and updates lead."""

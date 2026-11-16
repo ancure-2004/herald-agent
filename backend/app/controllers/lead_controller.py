@@ -115,6 +115,53 @@ class LeadController:
         )
 
     @staticmethod
+    def copy_lead_video(db: Session, lead_id: int) -> Dict[str, Any]:
+        import os
+        import shutil
+        import subprocess
+
+        from app.core.exceptions import NotFoundError
+        from app.core.logging import logger
+
+        path_str = LeadService.find_lead_recording_path(db, lead_id)
+        if not path_str or not os.path.exists(path_str):
+            raise NotFoundError("No walkthrough recording found for this lead.")
+
+        abs_path = os.path.abspath(path_str)
+        filename = os.path.basename(abs_path)
+        copied_system = False
+
+        try:
+            if shutil.which("wl-copy"):
+                subprocess.Popen(
+                    ["wl-copy", "--type", "text/uri-list", f"file://{abs_path}\r\n"],
+                    env=os.environ,
+                    start_new_session=True,
+                )
+                copied_system = True
+            elif shutil.which("xclip"):
+                subprocess.Popen(
+                    ["xclip", "-selection", "clipboard", "-t", "text/uri-list", "-i"],
+                    stdin=subprocess.PIPE,
+                    env=os.environ,
+                    start_new_session=True,
+                ).communicate(input=f"file://{abs_path}\r\n".encode("utf-8"))
+                copied_system = True
+        except Exception as exc:
+            logger.warning(f"Clipboard helper failed: {exc}")
+
+        return {
+            "ok": True,
+            "lead_id": lead_id,
+            "path": abs_path,
+            "filename": filename,
+            "file_url": f"file://{abs_path}",
+            "stream_url": f"/api/leads/{lead_id}/recording",
+            "copied_system": copied_system,
+            "message": f"Walkthrough video ready: {filename}",
+        }
+
+    @staticmethod
     def log_call(db: Session, lead_id: int, payload: Any) -> Dict[str, Any]:
         from app.services.call_service import CallService
 
