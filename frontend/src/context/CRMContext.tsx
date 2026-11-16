@@ -803,7 +803,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
           body: JSON.stringify({
             prompt: currentPrompt,
             hustle_id: activeHustleId,
-            mode: assistantMode,
+            mode: "do",
           }),
         });
         setAssistantHistory((prev) => [

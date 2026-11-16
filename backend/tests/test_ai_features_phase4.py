@@ -167,6 +167,64 @@ def test_ask_do_plain_text_synthesis_and_tool_confirmation(client, monkeypatch):
     assert any(act.get("tool") == "log_call" for act in data["executed_actions"])
 
 
+def test_ask_do_unified_mode_chains_search_to_draft_message(client, monkeypatch):
+    """Verifies unified mode can search lead and chain to draft_or_send_message."""
+    db = client.get_db_session()
+    try:
+        lead = db.query(Lead).filter(Lead.do_not_contact == False, Lead.is_archived == False).first()
+        if not lead:
+            pytest.skip("No contactable leads in DB")
+        lead_id = lead.id
+        lead_name = lead.name
+
+        class ChainedProvider(LLMProvider):
+            def __init__(self):
+                self.calls = 0
+
+            def generate_json(self, prompt: str, json_schema=None, timeout_seconds: float = 30.0):
+                self.calls += 1
+                if "The user requested an action for this lead." in prompt:
+                    # Tool chain Turn 2
+                    return {
+                        "answer": "Drafted confirmation for sending WhatsApp message.",
+                        "tool_calls": [
+                            {
+                                "name": "draft_or_send_message",
+                                "arguments": {
+                                    "lead_id": lead_id,
+                                    "text": "Hello Doctor, following up on your demo.",
+                                    "channel": "whatsapp",
+                                },
+                            }
+                        ],
+                    }
+                # Turn 1: Search leads
+                return {
+                    "answer": f"Searching for {lead_name}",
+                    "tool_calls": [
+                        {"name": "search_leads", "arguments": {"query": lead_name}},
+                    ],
+                }
+
+            def test_connection(self):
+                return {"status": "ok"}
+
+        monkeypatch.setattr(AIService, "get_provider", lambda d=None: ChainedProvider())
+
+        res = client.post(
+            "/api/assistant/ask-do",
+            json={"prompt": f"Send a WhatsApp message to {lead_name}", "hustle_id": 1},
+        )
+        assert res.status_code == 200
+        data = res.json()
+        assert len(data["pending_confirmation"]) == 1
+        assert data["pending_confirmation"][0]["lead_id"] == lead_id
+        assert data["pending_confirmation"][0]["status"] == "pending_confirmation"
+        assert "Confirm" in data["reply"] or "Please confirm" in data["reply"] or "Drafted" in data["reply"]
+    finally:
+        db.close()
+
+
 def test_ask_do_endpoint_zero_fallback_503(client, monkeypatch):
     """Verifies /api/assistant/ask-do returns 503 ai_not_configured when unconfigured."""
     def mock_raise(*args, **kwargs):

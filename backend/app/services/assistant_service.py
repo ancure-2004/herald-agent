@@ -201,6 +201,7 @@ class AssistantService:
         # 3. Agentic Prompt defining v1 Tools - Turn 1
         agent_system = (
             "You are Firstmate Ask & Do Agent for PersonalOS & CRM.\n"
+            "You operate in unified Ask & Do mode: you can both answer questions and execute CRM actions.\n"
             "You have access to live CRM tools:\n"
             "1. search_leads(query: str, stage: str, locality: str)\n"
             "2. query_crm_stats()\n"
@@ -208,8 +209,10 @@ class AssistantService:
             "4. log_call(lead_id: int, raw_text: str, duration_seconds: int, outcome: str)\n"
             "5. draft_or_send_message(lead_id: int, text: str, channel: str)\n\n"
             f"Retrieved CRM Context:\n{retrieved_context}\n\n"
-            f"User Prompt ({mode.upper()} mode): '{prompt}'\n\n"
+            f"User Prompt: '{prompt}'\n\n"
             "Decide which tools to execute (if any).\n"
+            "All tools are fully enabled. If the user asks to send a message, draft outreach, change stage, or log a call, call the appropriate tool.\n"
+            "If you need to find the lead first before taking an action (like sending a message or moving stage), call search_leads.\n"
             "If tools are needed, list them in tool_calls. Do NOT output a placeholder message like 'I will retrieve...' if tools are needed.\n"
             "If no tools are needed, provide your complete final answer in answer.\n"
             "Return JSON matching this schema:\n"
@@ -249,11 +252,7 @@ class AssistantService:
         pending_actions = []
         matched_leads = []
 
-        # 4. Tool Execution Loop
-        for tc in raw_tools:
-            t_name = str(tc.get("name", "")).strip().lower()
-            args = tc.get("arguments", {}) or {}
-
+        def _execute_tool(t_name: str, args: dict):
             try:
                 if t_name == "search_leads":
                     q_leads = AgentTools.search_leads(
@@ -323,6 +322,49 @@ class AssistantService:
                 logger.warning(f"Error executing agent tool {t_name}: {e}")
                 executed_actions.append({"tool": t_name, "error": str(e)})
 
+        # 4. Turn 1 Tool Execution Loop
+        for tc in raw_tools:
+            t_name = str(tc.get("name", "")).strip().lower()
+            args = tc.get("arguments", {}) or {}
+            _execute_tool(t_name, args)
+
+        # Tool Chaining: If Turn 1 only searched leads but user requested an action (send message, move stage, log call)
+        # allow Turn 2 to call action tools with the discovered lead_id!
+        action_intent_words = ["send", "message", "whatsapp", "move", "stage", "call", "log", "draft", "pitch"]
+        has_action_intent = any(w in prompt.lower() for w in action_intent_words)
+        has_executed_action = any(a.get("tool") in ["draft_or_send_message", "send_message", "move_lead_stage", "log_call"] for a in executed_actions)
+
+        if has_action_intent and not has_executed_action and not pending_actions and matched_leads:
+            top_lead = matched_leads[0]
+            chain_prompt = (
+                "You are Firstmate Ask & Do Agent for PersonalOS & CRM in unified mode.\n"
+                f"User original query: '{prompt}'\n\n"
+                f"Lead found from search:\nID: {top_lead['id']}, Name: {top_lead['name']}, Doctor: {top_lead.get('doctor_name', '')}, Stage: {top_lead.get('status', '')}\n\n"
+                "The user requested an action for this lead. Execute the appropriate tool call now:\n"
+                "- draft_or_send_message(lead_id, text, channel)\n"
+                "- move_lead_stage(lead_id, target_stage)\n"
+                "- log_call(lead_id, raw_text, duration_seconds, outcome)\n\n"
+                "Return JSON matching:\n"
+                "{\n"
+                "  'answer': 'Description of the action taken',\n"
+                "  'tool_calls': [\n"
+                "    { 'name': 'tool_name', 'arguments': { ... } }\n"
+                "  ]\n"
+                "}"
+            )
+            try:
+                chain_res = provider.generate_json(chain_prompt, json_schema=schema)
+                if isinstance(chain_res, dict):
+                    chain_tools = chain_res.get("tool_calls", []) or []
+                    for ctc in chain_tools:
+                        c_name = str(ctc.get("name", "")).strip().lower()
+                        c_args = ctc.get("arguments", {}) or {}
+                        _execute_tool(c_name, c_args)
+                    if chain_res.get("answer"):
+                        answer = chain_res["answer"]
+            except Exception as e:
+                logger.warning(f"Error in tool chaining step: {e}")
+
         # 5. Turn 2 Synthesis Call when tools executed
         # Feeds the real tool execution outputs back to the LLM so 'reply' contains actual numbers and outcomes
         if executed_actions:
@@ -335,8 +377,8 @@ class AssistantService:
                     tool_outputs_summary.append(f"Tool '{t_n}' error:\n{act['error']}")
 
             synthesis_prompt = (
-                "You are Firstmate Ask & Do Agent for PersonalOS & CRM.\n"
-                f"User original query ({mode.upper()} mode): '{prompt}'\n\n"
+                "You are Firstmate Ask & Do Agent for PersonalOS & CRM in unified mode.\n"
+                f"User original query: '{prompt}'\n\n"
                 f"Retrieved CRM Context:\n{retrieved_context}\n\n"
                 "The following tools were executed with real CRM data:\n"
                 + "\n\n".join(tool_outputs_summary) + "\n\n"
@@ -386,9 +428,19 @@ class AssistantService:
 
         answer = _extract_plain_text(answer)
 
-        # Ensure tools producing state changes have a human-readable confirmation in reply if LLM answer was vague or empty
-        if executed_actions and (not answer or answer.startswith("I will retrieve") or answer.startswith("I will ")):
+        # Ensure tools producing state changes or confirmations have a human-readable confirmation in reply if LLM answer was vague, empty, simulated, or still in searching state
+        if (executed_actions or pending_actions) and (
+            not answer
+            or answer.startswith("I will retrieve")
+            or answer.startswith("I will ")
+            or answer.lower().startswith("searching")
+            or "simulated" in answer.lower()
+            or "require execution in" in answer.lower()
+        ):
             confirmations = []
+            if pending_actions:
+                for pa in pending_actions:
+                    confirmations.append(pa.get("message") or f"Please confirm sending {pa.get('channel', 'message').upper()} to {pa.get('lead_name')}.")
             for act in executed_actions:
                 t_name = act.get("tool")
                 res_obj = act.get("result", {})

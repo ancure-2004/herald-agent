@@ -79,8 +79,8 @@ export function AssistantDrawer() {
                   className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.06] space-y-2"
                 >
                   <div className="flex items-center justify-between text-[10px] text-slate-400">
-                    <span className="font-mono uppercase text-zinc-900 dark:text-white font-semibold">
-                      {entry.mode}: {entry.prompt}
+                    <span className="font-mono text-zinc-900 dark:text-white font-semibold">
+                      YOU: {entry.prompt}
                     </span>
                     {entry.undo_available && !entry.undone && (
                       <button
