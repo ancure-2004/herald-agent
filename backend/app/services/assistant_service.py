@@ -179,14 +179,38 @@ class AssistantService:
         retrieved_context = "No relevant context found in RAG index."
         try:
             retriever = HybridRetriever()
-            rag_docs = retriever.retrieve(prompt, top_k=4)
+            rag_docs = retriever.retrieve(prompt, top_k=6)
             if rag_docs:
+                # Prioritize/boost exact name, doctor, or distinctive query matches to the top
+                p_low = prompt.lower()
+                def _doc_priority(doc: dict) -> float:
+                    score = float(doc.get("rrf_score", 0.0))
+                    content_lower = doc.get("content", "").lower()
+                    # Check for direct word matches in content
+                    tokens = [t for t in re.split(r"[\s\-_,\.]+", p_low) if len(t) > 2]
+                    for tok in tokens:
+                        if tok in ["dental", "clinic", "send", "message", "whatsapp", "move", "stage", "lead", "care"]:
+                            continue
+                        if tok in content_lower:
+                            score += 10.0
+                    return score
+
+                sorted_docs = sorted(rag_docs, key=_doc_priority, reverse=True)[:4]
+
                 context_blocks = []
-                for idx, doc in enumerate(rag_docs, start=1):
+                for idx, doc in enumerate(sorted_docs, start=1):
                     doc_type = doc.get("doc_type", "doc")
                     lead_id = doc.get("lead_id")
                     content_snip = doc.get("content", "").strip()[:300]
-                    context_blocks.append(f"[{idx}] ({doc_type.upper()} - Lead #{lead_id}): {content_snip}")
+
+                    # Enrich lead header with doctor & phone if lead_id exists
+                    lead_extra = ""
+                    if lead_id:
+                        l_obj = db.query(Lead).filter(Lead.id == lead_id).first()
+                        if l_obj:
+                            lead_extra = f" | {l_obj.name} (Dr: {l_obj.doctor_name or 'N/A'}, Phone: {l_obj.primary_phone or 'N/A'})"
+
+                    context_blocks.append(f"[{idx}] [LEAD #{lead_id}{lead_extra}] ({doc_type.upper()}): {content_snip}")
                     citations.append({
                         "id": doc.get("id"),
                         "doc_type": doc_type,

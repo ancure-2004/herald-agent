@@ -38,6 +38,13 @@ def test_agent_tools_search_and_crm_stats(client):
         assert "total_active_leads" in stats
         assert "stage_breakdown" in stats
         assert "ready_packages" in stats
+
+        # 3. Test distinctive query ranking (bhalla dental oasis ranks #1 even among other dental clinics)
+        bhalla_leads = AgentTools.search_leads(db, query="bhalla dental oasis", limit=5)
+        all_leads = db.query(Lead).all()
+        if any("bhalla" in (getattr(l, "name", "") or "").lower() for l in all_leads):
+            assert len(bhalla_leads) >= 1
+            assert "Bhalla" in bhalla_leads[0]["name"]
     finally:
         db.close()
 

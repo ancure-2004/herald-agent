@@ -31,23 +31,57 @@ class AgentTools:
         hustle_id: int = 1,
         limit: int = 5,
     ) -> List[Dict[str, Any]]:
-        """Searches leads via hybrid RAG and DB filters."""
-        # 1. If query is provided, use HybridRetriever
-        matched_lead_ids = []
+        """Searches leads via hybrid RAG and DB filters, ranking exact name/doctor/phone matches FIRST."""
+        import re
+
+        COMMON_STOPWORDS = {
+            "dental", "clinic", "care", "centre", "center", "studio", "hospital",
+            "dr", "doctor", "send", "message", "whatsapp", "move", "lead", "call"
+        }
+
+        # 1. Fetch RAG rank ordering if query provided
+        rag_rank_map: Dict[int, int] = {}
         if query:
             try:
                 retriever = HybridRetriever()
-                rag_results = retriever.retrieve(query, doc_type="lead", top_k=limit * 2)
-                for doc in rag_results:
-                    if doc.get("lead_id"):
-                        matched_lead_ids.append(doc["lead_id"])
+                rag_results = retriever.retrieve(query, doc_type="lead", top_k=limit * 3)
+                for idx, doc in enumerate(rag_results):
+                    lid = doc.get("lead_id")
+                    if lid and lid not in rag_rank_map:
+                        rag_rank_map[lid] = idx
             except Exception as e:
                 logger.warning(f"RAG search_leads fallback to DB: {e}")
 
+        # 2. Query candidates from DB
         q = db.query(Lead).filter(Lead.hustle_id == hustle_id, Lead.is_archived == False)  # noqa: E712
 
-        if matched_lead_ids:
-            q = q.filter(Lead.id.in_(matched_lead_ids))
+        candidate_lead_ids = set(rag_rank_map.keys())
+
+        # Also pull direct DB matches on name, doctor, phone, or distinctive query tokens
+        if query:
+            clean_q = query.strip()
+            direct_q = db.query(Lead.id).filter(
+                Lead.hustle_id == hustle_id,
+                Lead.is_archived == False,
+                (Lead.name.ilike(f"%{clean_q}%"))
+                | (Lead.doctor_name.ilike(f"%{clean_q}%"))
+                | (Lead.primary_phone.ilike(f"%{clean_q}%")),
+            )
+            for r in direct_q.all():
+                candidate_lead_ids.add(r[0])
+
+            tokens = [t for t in re.split(r"[\s\-_,\.]+", clean_q.lower()) if len(t) > 2 and t not in COMMON_STOPWORDS]
+            for tok in tokens:
+                for r in db.query(Lead.id).filter(
+                    Lead.hustle_id == hustle_id,
+                    Lead.is_archived == False,
+                    (Lead.name.ilike(f"%{tok}%"))
+                    | (Lead.doctor_name.ilike(f"%{tok}%")),
+                ).all():
+                    candidate_lead_ids.add(r[0])
+
+        if candidate_lead_ids:
+            q = q.filter(Lead.id.in_(candidate_lead_ids))
         elif query:
             like_pat = f"%{query}%"
             q = q.filter(
@@ -59,10 +93,44 @@ class AgentTools:
         if locality:
             q = q.filter(Lead.locality.ilike(f"%{locality}%"))
 
-        leads = q.limit(limit).all()
+        leads = q.all()
+
+        # 3. Precise scoring & sorting: Direct matches > RAG rank > table order
+        def _score_lead(l: Lead) -> tuple:
+            direct_score = 0.0
+            if query:
+                q_low = query.lower().strip()
+                name_low = (l.name or "").lower()
+                doc_low = (l.doctor_name or "").lower()
+                phone = (l.primary_phone or "").strip()
+
+                if name_low and name_low in q_low:
+                    direct_score += 150.0
+                elif any(part in q_low for part in name_low.split() if len(part) > 2 and part not in COMMON_STOPWORDS):
+                    direct_score += 40.0
+
+                if doc_low and doc_low in q_low:
+                    direct_score += 100.0
+                elif any(part in q_low for part in doc_low.split() if len(part) > 2 and part not in COMMON_STOPWORDS):
+                    direct_score += 30.0
+
+                if phone and phone in q_low:
+                    direct_score += 200.0
+
+                tokens = [t for t in re.split(r"[\s\-_,\.]+", q_low) if len(t) > 2 and t not in COMMON_STOPWORDS]
+                for t in tokens:
+                    if t in name_low:
+                        direct_score += 50.0
+                    if t in doc_low:
+                        direct_score += 35.0
+
+            rag_order = rag_rank_map.get(l.id, 9999)
+            return (direct_score, -rag_order, l.fit_score or 0)
+
+        sorted_leads = sorted(leads, key=_score_lead, reverse=True)
 
         results = []
-        for l in leads:
+        for l in sorted_leads:
             stage_name = l.stage_rel.name if l.stage_rel else (l.status or "STAGED")
             if stage and stage.lower() not in stage_name.lower():
                 continue
@@ -79,6 +147,8 @@ class AgentTools:
                     "next_action": l.next_action,
                 }
             )
+            if len(results) >= limit:
+                break
         return results
 
     @staticmethod
