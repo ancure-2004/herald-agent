@@ -3,6 +3,7 @@
 import React from "react";
 import { Sparkles, X } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
+import { apiFetch } from "@/lib/api/client";
 
 export function AssistantDrawer() {
   const {
@@ -142,16 +143,15 @@ export function AssistantDrawer() {
                               onClick={async () => {
                                 try {
                                   notify(`Sending ${pc.channel.toUpperCase()} message to ${pc.lead_name}...`);
-                                  const res = await fetch("/api/assistant/ask-do", {
+                                  const data = await apiFetch<any>("/api/assistant/ask-do", {
                                     method: "POST",
-                                    headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify({
                                       mode: "do",
                                       prompt: `Send message to lead #${pc.lead_id}: ${pc.draft_text}`,
                                       confirmed: true,
                                     }),
+                                    timeoutMs: 90000,
                                   });
-                                  const data = await res.json();
                                   // Update history entry with confirmation
                                   setAssistantHistory((prev: any[]) =>
                                     prev.map((item: any) =>
@@ -171,8 +171,8 @@ export function AssistantDrawer() {
                                   setSelectedLeadId(pc.lead_id);
                                   setActiveInboxLeadId(pc.lead_id);
                                   setActiveTab("inbox");
-                                } catch (e) {
-                                  notify("Failed to confirm message send", "err");
+                                } catch (e: any) {
+                                  notify(e?.message || "Failed to confirm message send", "err");
                                 }
                               }}
                               className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold cursor-pointer transition-colors shadow-xs"

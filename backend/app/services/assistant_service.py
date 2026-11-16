@@ -171,6 +171,35 @@ class AssistantService:
         from app.services.ai_service import AIService
         from app.services.rag_service import HybridRetriever
 
+        # Direct execution bypass when confirmed=True on structured send request (e.g. "Send message to lead #<id>: <text>")
+        # Avoids wasting extra latency / tokens on LLM re-synthesis when the user explicitly confirmed a draft!
+        if confirmed:
+            match_send = re.match(r"^Send message to lead #(\d+):\s*(.+)$", prompt, flags=re.DOTALL | re.IGNORECASE)
+            if match_send:
+                lead_id = int(match_send.group(1))
+                text = match_send.group(2).strip()
+                res = AgentTools.draft_or_send_message(
+                    db,
+                    lead_id=lead_id,
+                    text=text,
+                    channel="whatsapp",
+                    confirmed=True,
+                )
+                return {
+                    "mode": mode,
+                    "reply": res.get("message") or f"Message successfully sent to {res.get('lead_name', f'lead #{lead_id}')} via WhatsApp.",
+                    "citations": [],
+                    "executed_actions": [{
+                        "tool": "send_message",
+                        "badge": "Sent WHATSAPP",
+                        "result": res,
+                    }],
+                    "pending_confirmation": [],
+                    "matched_leads": [],
+                    "undo_available": False,
+                    "undo_id": None,
+                }
+
         # 1. Fetch AI Provider (raises AINotConfiguredError / AIProviderError if unavailable - zero fallbacks)
         provider = AIService.get_provider(db)
 
