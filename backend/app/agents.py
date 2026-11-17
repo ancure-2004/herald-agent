@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm.attributes import flag_modified
 
 from .autopilot import (
     BATCH_RECORDER_DIR,
@@ -497,8 +498,8 @@ def ensure_hustle_lead_batches(
     # Fetch ALL non-archived leads ordered by id asc
     leads = (
         db.query(Lead)
-        .options(joinedload(Lead.stage_rel))
-        .filter(Lead.hustle_id == hustle_id, Lead.is_archived == False)  # noqa: E712
+        .options(joinedload(Lead.stage_rel), joinedload(Lead.outbox_items))
+        .filter(Lead.hustle_id == hustle_id, Lead.is_archived == False, Lead.do_not_contact == False)  # noqa: E712
         .order_by(Lead.id.asc())
         .all()
     )
@@ -519,6 +520,7 @@ def ensure_hustle_lead_batches(
             if cf.get("batch_id") != new_bid:
                 cf["batch_id"] = new_bid
                 lead.custom_fields = cf
+                flag_modified(lead, "custom_fields")
                 any_updated = True
             slot_count += 1
     else:
@@ -555,6 +557,7 @@ def ensure_hustle_lead_batches(
             cf = dict(lead.custom_fields or {})
             cf["batch_id"] = current_batch_id
             lead.custom_fields = cf
+            flag_modified(lead, "custom_fields")
             any_updated = True
             slot_count += 1
 
@@ -570,7 +573,12 @@ def ensure_hustle_lead_batches(
         batch_map[bid]["total"] += 1
         stage_slug = lead.stage_rel.slug if lead.stage_rel else "discovered"
         batch_map[bid]["stage_counts"][stage_slug] = batch_map[bid]["stage_counts"].get(stage_slug, 0) + 1
-        already_sent = stage_slug in ("contacted", "viewed_demo", "replied", "won")
+        already_sent = stage_slug in ("contacted", "viewed_demo", "replied", "won") or any(
+            ob.status == "sent" for ob in (lead.outbox_items or [])
+        )
+        has_queued = any(ob.status == "queued" for ob in (lead.outbox_items or []))
+        if has_queued:
+            already_sent = False
         if not already_sent and not lead.do_not_contact:
             batch_map[bid]["ready_unsent"] += 1
         else:
@@ -604,7 +612,13 @@ def build_cockpit_batch_payload(db: Session, hustle_id: int = 1, batch_id: Optio
 
     # Ensure all leads have batch assignments; get active batch meta
     batch_meta = ensure_hustle_lead_batches(db, hustle_id)
-    target_batch_id = batch_id or batch_meta["active_batch_id"]
+    valid_batch_ids = {b["batch_id"] for b in batch_meta["batches"]}
+    saved_batch_id = None
+    if not batch_id:
+        setting_row = db.query(AppSetting).filter(AppSetting.key == "active_outreach_batch_id").first()
+        if setting_row and setting_row.value in valid_batch_ids:
+            saved_batch_id = setting_row.value
+    target_batch_id = batch_id or saved_batch_id or batch_meta["active_batch_id"]
 
     leads = (
         db.query(Lead)
@@ -699,12 +713,11 @@ def build_cockpit_batch_payload(db: Session, hustle_id: int = 1, batch_id: Optio
             }
         )
 
-    # Filter to the target batch unless ALL is requested
-    # Always include leads with a queued outbox item (manual inbox messages must go through)
-    if batch_id and batch_id != "ALL":
+    # Filter to the target batch unless ALL is explicitly requested
+    if batch_id != "ALL" and target_batch_id:
         clinics_out = [
             c for c in clinics_out
-            if c["batch_id"] == target_batch_id or c.get("queued_outbox_id") is not None
+            if c["batch_id"] == target_batch_id
         ]
 
     return {
@@ -761,7 +774,19 @@ def run_closer_agent(
                 unsent_in_batch = b["ready_unsent"]
                 break
         if unsent_in_batch == 0:
-            unsent_in_batch = batch_size_setting  # fallback: allow full batch size
+            _emit(f"[CLOSER] Batch {target_batch_id} has 0 unsent clinics remaining. Skipping dispatch.")
+            set_autopilot_running(False)
+            broadcast_sse("autopilot_stopped", {"task": "closer", "channel": channel.lower().strip()})
+            return {
+                "agent": "closer",
+                "channel": channel.lower().strip(),
+                "dry_run": dry_run,
+                "batch_id": target_batch_id,
+                "dispatch_log": f"Batch {target_batch_id} has 0 unsent clinics remaining.",
+                "hot_viewers_followed_up": 0,
+                "items": [],
+                "trace": trace,
+            }
 
     # Store the active batch in AppSetting so autopilot scripts calling GET /api/batch
     # automatically get the right batch filtered payload.

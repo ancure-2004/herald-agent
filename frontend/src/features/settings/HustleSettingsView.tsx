@@ -92,7 +92,7 @@ export function HustleSettingsView() {
       isDental ? false : (activeHustle.pipeline_steps || []).includes("find_instagram")
     );
     setSettingsBatchSize(activeHustle.channel_limits?.batch_size ?? 25);
-    setSettingsDryRun(Boolean(activeHustle.channel_limits?.dry_run ?? true));
+    setSettingsDryRun(activeHustle.channel_limits?.dry_run !== false);
   }, [activeHustle]);
 
   useEffect(() => {
@@ -108,6 +108,37 @@ export function HustleSettingsView() {
 
   const isDentalHustle =
     activeHustle.slug.includes("dental") || activeHustle.name.toLowerCase().includes("dental");
+
+  // Instantly persist a quick-toggle (dry-run / batch size) without needing "Save Settings"
+  const persistQuickSetting = async (patch: { dry_run?: boolean; batch_size?: number }) => {
+    const prevDryRun = settingsDryRun;
+    const prevBatch = settingsBatchSize;
+    const nextDryRun = patch.dry_run ?? settingsDryRun;
+    const nextBatch = patch.batch_size ?? settingsBatchSize;
+    setSettingsDryRun(nextDryRun);
+    setSettingsBatchSize(nextBatch);
+    try {
+      await settingsApi.updateHustle(activeHustle.id, {
+        channel_limits: {
+          whatsapp: Number(settingsWaLimit),
+          instagram: Number(settingsIgLimit),
+          email: Number(settingsEmailLimit),
+          batch_size: Number(nextBatch) || 25,
+          dry_run: nextDryRun,
+        },
+      } as any);
+      await loadAll();
+      if (patch.dry_run !== undefined) {
+        notify(nextDryRun ? "Switched to DRY-RUN safe mode" : "Switched to LIVE SEND mode");
+      } else {
+        notify(`Batch size set to ${nextBatch}`);
+      }
+    } catch (err) {
+      setSettingsDryRun(prevDryRun);
+      setSettingsBatchSize(prevBatch);
+      notify(err instanceof Error ? err.message : "Failed to update setting", "err");
+    }
+  };
 
   // Save Settings Handler
   const handleSaveHustleSettings = async (e?: React.FormEvent) => {
@@ -148,7 +179,7 @@ export function HustleSettingsView() {
         pipeline_steps: baseSteps,
       } as any);
       notify("Settings and preferences saved successfully!");
-      loadAll();
+      await loadAll();
     } catch (err) {
       notify(err instanceof Error ? err.message : "Failed to update hustle settings", "err");
     }
@@ -584,7 +615,7 @@ export function HustleSettingsView() {
 
               <button
                 type="button"
-                onClick={() => setSettingsDryRun((prev) => !prev)}
+                onClick={() => persistQuickSetting({ dry_run: !settingsDryRun })}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer shadow-xs ${
                   settingsDryRun
                     ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800"
@@ -625,7 +656,7 @@ export function HustleSettingsView() {
                   <button
                     key={preset}
                     type="button"
-                    onClick={() => setSettingsBatchSize(preset)}
+                    onClick={() => persistQuickSetting({ batch_size: preset })}
                     className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors cursor-pointer ${
                       settingsBatchSize === preset
                         ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100"

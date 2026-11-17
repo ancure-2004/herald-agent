@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { apiFetch } from "@/lib/api/client";
+import { env } from "@/config/env";
 import { autopilotApi } from "@/api/autopilotApi";
 import { OutreachConsole } from "./outreach/OutreachConsole";
 
@@ -136,6 +137,8 @@ export function OutreachHubSubpage() {
   const [savingDeck, setSavingDeck] = useState<boolean>(false);
   const [togglingSent, setTogglingSent] = useState<boolean>(false);
 
+  const latestBatchReqRef = useRef<number>(0);
+
   const fetchBatchMeta = useCallback(async () => {
     setBatchLoading(true);
     try {
@@ -155,8 +158,6 @@ export function OutreachHubSubpage() {
         if (prev && meta.batches.some((b) => b.batch_id === prev)) return prev;
         return meta.active_batch_id || oldestId;
       });
-
-      setBatchClinics(Array.isArray(res.clinics) ? res.clinics : []);
     } catch {
       // Non-fatal
     } finally {
@@ -165,13 +166,25 @@ export function OutreachHubSubpage() {
   }, [activeHustleId]);
 
   const fetchBatchClinics = useCallback(async (batchId: string) => {
+    const reqId = ++latestBatchReqRef.current;
+    setBatchLoading(true);
     try {
       const res = await apiFetch<BatchMeta & { clinics: BatchClinic[] }>(
-        `/api/batch?hustle_id=${activeHustleId}&batch_id=${batchId}`
+        `/api/batch?hustle_id=${activeHustleId}&batch_id=${encodeURIComponent(batchId)}`
       );
+      if (reqId !== latestBatchReqRef.current) return;
       setBatchClinics(Array.isArray(res.clinics) ? res.clinics : []);
+      setBatchMeta({
+        batch_size: res.batch_size,
+        batches: res.batches,
+        active_batch_id: res.active_batch_id,
+      });
     } catch {
       // Non-fatal - keep previous clinics
+    } finally {
+      if (reqId === latestBatchReqRef.current) {
+        setBatchLoading(false);
+      }
     }
   }, [activeHustleId]);
 
@@ -189,9 +202,13 @@ export function OutreachHubSubpage() {
   // Refresh batch meta after outreach finishes
   useEffect(() => {
     if (!isOutreachRunning) {
-      fetchBatchMeta();
+      if (selectedBatchId) {
+        fetchBatchClinics(selectedBatchId);
+      } else {
+        fetchBatchMeta();
+      }
     }
-  }, [isOutreachRunning, fetchBatchMeta]);
+  }, [isOutreachRunning, selectedBatchId, fetchBatchClinics, fetchBatchMeta]);
 
   const handleRebalance = async () => {
     setRebalancing(true);
@@ -199,6 +216,9 @@ export function OutreachHubSubpage() {
       await autopilotApi.rebalanceBatches(activeHustleId, true);
       notify("Leads re-batched successfully!");
       await fetchBatchMeta();
+      if (selectedBatchId) {
+        await fetchBatchClinics(selectedBatchId);
+      }
     } catch (err) {
       notify(err instanceof Error ? err.message : "Re-batch failed", "err");
     } finally {
@@ -336,7 +356,7 @@ export function OutreachHubSubpage() {
         target_channel: selectedClinic.target_channel || "whatsapp",
       });
       notify("Phone updated successfully");
-      await fetchBatchClinics(selectedClinic.batch_id);
+      await fetchBatchClinics(effectiveBatchId || selectedClinic.batch_id);
     } catch (err) {
       notify(err instanceof Error ? err.message : "Save phone failed", "err");
     } finally {
@@ -357,7 +377,7 @@ export function OutreachHubSubpage() {
         ig_dm_invite: selectedClinic.ig_dm_invite || "",
       });
       notify("WhatsApp messages saved for this clinic");
-      await fetchBatchClinics(selectedClinic.batch_id);
+      await fetchBatchClinics(effectiveBatchId || selectedClinic.batch_id);
     } catch (err) {
       notify(err instanceof Error ? err.message : "Save messages failed", "err");
     } finally {
@@ -370,8 +390,9 @@ export function OutreachHubSubpage() {
     setSavingDeck(true);
     try {
       await postJson("/api/reset-messages", { id: selectedClinic.id });
+      const targetBatch = effectiveBatchId || selectedClinic.batch_id;
       const res = await apiFetch<BatchMeta & { clinics: BatchClinic[] }>(
-        `/api/batch?hustle_id=${activeHustleId}&batch_id=${selectedClinic.batch_id}`
+        `/api/batch?hustle_id=${activeHustleId}&batch_id=${encodeURIComponent(targetBatch)}`
       );
       const clinics = Array.isArray(res.clinics) ? res.clinics : [];
       setBatchClinics(clinics);
@@ -396,8 +417,7 @@ export function OutreachHubSubpage() {
         await postJson("/api/mark-sent", { id: selectedClinic.id, channel: selectedClinic.target_channel });
         notify("Marked as sent ✓");
       }
-      await fetchBatchClinics(selectedClinic.batch_id);
-      fetchBatchMeta();
+      await fetchBatchClinics(effectiveBatchId || selectedClinic.batch_id);
     } catch (err) {
       notify(err instanceof Error ? err.message : "Update failed", "err");
     } finally {
@@ -414,7 +434,7 @@ export function OutreachHubSubpage() {
       notify("No phone number available for this clinic", "err");
       return;
     }
-    const msg = editWaMsg1 || selectedClinic.wa_msg1 || "";
+    const msg = editWaMsg1;
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
     window.open(url, "_blank");
     notify("Opened WhatsApp with Message 1 pre-filled");
@@ -451,7 +471,7 @@ export function OutreachHubSubpage() {
   // Keyboard action: Copy Message 2
   const handleCopyMessage2 = useCallback(async () => {
     if (!selectedClinic) return;
-    const msg = editWaMsg2 || selectedClinic.wa_msg2 || "";
+    const msg = editWaMsg2;
     if (!msg) {
       notify("Message 2 is empty", "err");
       return;
@@ -478,14 +498,13 @@ export function OutreachHubSubpage() {
           setSelectedClinicId(filteredClinics[currentIndex + 1].id);
         }
       }
-      await fetchBatchClinics(selectedClinic.batch_id);
-      fetchBatchMeta();
+      await fetchBatchClinics(effectiveBatchId || selectedClinic.batch_id);
     } catch (err) {
       notify(err instanceof Error ? err.message : "Update failed", "err");
     } finally {
       setTogglingSent(false);
     }
-  }, [selectedClinic, filteredClinics, fetchBatchClinics, fetchBatchMeta, notify]);
+  }, [selectedClinic, filteredClinics, fetchBatchClinics, effectiveBatchId, notify]);
 
   // Keyboard shortcut listener
   useEffect(() => {
@@ -608,7 +627,13 @@ export function OutreachHubSubpage() {
           {/* Reload / Refresh Button Island */}
           <button
             type="button"
-            onClick={fetchBatchMeta}
+            onClick={() => {
+              if (selectedBatchId) {
+                fetchBatchClinics(selectedBatchId);
+              } else {
+                fetchBatchMeta();
+              }
+            }}
             disabled={batchLoading}
             title="Reload Batch Data"
             className="p-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer disabled:opacity-50 shadow-xs"
@@ -788,7 +813,7 @@ export function OutreachHubSubpage() {
                         playsInline
                         preload="metadata"
                         className="w-full h-full object-contain"
-                        src={`/api/leads/${selectedClinic.id}/recording`}
+                        src={`${env.NEXT_PUBLIC_API_BASE_URL}/api/leads/${selectedClinic.id}/recording`}
                       />
                     ) : (
                       <div className="p-4 text-center space-y-2">

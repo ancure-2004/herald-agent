@@ -45,8 +45,8 @@ class HustleCreate(BaseSchema):
         ]
     )
     allowed_channels: List[str] = Field(default_factory=lambda: ["whatsapp", "instagram", "email"])
-    channel_limits: Dict[str, int] = Field(default_factory=lambda: {"whatsapp": 20, "instagram": 15, "email": 25})
-    channel_goals: Dict[str, int] = Field(default_factory=lambda: {"whatsapp": 15, "instagram": 5, "email": 5})
+    channel_limits: Dict[str, Any] = Field(default_factory=lambda: {"whatsapp": 20, "instagram": 15, "email": 25})
+    channel_goals: Dict[str, Any] = Field(default_factory=lambda: {"whatsapp": 15, "instagram": 5, "email": 5})
     minimum_stock_days: int = 3
     ai_field_questions: List[Dict[str, str]] = Field(default_factory=list)
     custom_field_defs: List[Dict[str, str]] = Field(default_factory=list)
@@ -59,8 +59,9 @@ class HustleUpdate(BaseSchema):
     description: Optional[str] = None
     search_query: Optional[str] = None
     allowed_channels: Optional[List[str]] = None
-    channel_limits: Optional[Dict[str, int]] = None
-    channel_goals: Optional[Dict[str, int]] = None
+    channel_limits: Optional[Dict[str, Any]] = None
+    channel_goals: Optional[Dict[str, Any]] = None
+    pipeline_steps: Optional[List[str]] = None
     minimum_stock_days: Optional[int] = None
     ai_field_questions: Optional[List[Dict[str, str]]] = None
     custom_field_defs: Optional[List[Dict[str, str]]] = None

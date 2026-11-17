@@ -21,6 +21,19 @@ def stream_events():
     )
 
 
+@router.post("/terminal/clear")
+@router.post("/events/clear")
+@router.delete("/events")
+def clear_terminal_logs_endpoint(
+    service: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+) -> Any:
+    """Clears the terminal replay for a service (or all): older lines are ignored on reload."""
+    from app.services.event_bus import clear_terminal_logs
+
+    return clear_terminal_logs(db, service)
+
+
 @router.get("/terminal/logs")
 def get_terminal_logs_endpoint(
     service: Optional[str] = Query(None),

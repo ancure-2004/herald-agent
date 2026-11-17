@@ -241,6 +241,7 @@ export const DemoFactoryConsole: React.FC<DemoFactoryConsoleProps> = ({
   const handleClearLogs = () => {
     setLogs([]);
     seenSeqsRef.current.clear();
+    apiFetch("/api/terminal/clear?service=building", { method: "POST" }).catch(() => {});
   };
 
   // Edge 1 (1 -> 2) & Edge 2 (2 -> 3): Left to Right

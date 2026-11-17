@@ -376,7 +376,8 @@ class MessageService:
         if not lead:
             raise NotFoundError("Lead not found.")
 
-        if lead.preferred_channel == "whatsapp" and lead.instagram_handle:
+        current_pref = (lead.preferred_channel or "whatsapp").lower()
+        if current_pref == "whatsapp" and lead.instagram_handle:
             lead.preferred_channel = "instagram"
         elif lead.email:
             lead.preferred_channel = "email"
@@ -688,15 +689,20 @@ class MessageService:
         if not lead:
             raise NotFoundError("Lead not found.")
 
+        from sqlalchemy.orm.attributes import flag_modified
         override_keys = ["wa_msg1", "wa_msg2", "ig_dm_invite", "ig_reply_caption", "email_subject", "email_body"]
         cf = dict(lead.custom_fields or {})
         overrides = dict(cf.get("pitch_overrides") or {})
         for key in override_keys:
-            val = payload.get(key)
-            if val is not None and str(val).strip():
-                overrides[key] = str(val).strip()
+            if key in payload and payload[key] is not None:
+                stripped = str(payload[key]).strip()
+                if stripped:
+                    overrides[key] = stripped
+                else:
+                    overrides.pop(key, None)
         cf["pitch_overrides"] = overrides
         lead.custom_fields = cf
+        flag_modified(lead, "custom_fields")
         db.commit()
         broadcast_sse("lead_updated", {"lead_id": lead.id, "has_custom_edits": True})
         return {"success": True, "has_custom_edits": True}

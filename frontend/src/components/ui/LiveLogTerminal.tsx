@@ -261,6 +261,8 @@ export function LiveLogTerminal({
   const handleClear = () => {
     setLogs([]);
     setNewLogsCount(0);
+    const svc = selectedService && selectedService.toLowerCase() !== "all" ? selectedService.toLowerCase() : "all";
+    apiFetch(`/api/terminal/clear?service=${encodeURIComponent(svc)}`, { method: "POST" }).catch(() => {});
   };
 
   return (

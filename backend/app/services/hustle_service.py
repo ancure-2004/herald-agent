@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.core.exceptions import ConflictError, NotFoundError, UnprocessableEntityError
 from app.models.entities import Hustle, Lead, SmartView, Stage
@@ -90,7 +91,12 @@ class HustleService:
             raise UnprocessableEntityError("autonomy_mode must be 'copilot' or 'autopilot'.")
 
         for k, v in update_data.items():
+            if k == "channel_limits" and v is not None:
+                # Merge so partial updates never drop keys such as dry_run / batch_size
+                v = {**(hustle.channel_limits or {}), **v}
             setattr(hustle, k, v)
+            if k in ("channel_limits", "channel_goals", "pipeline_steps", "allowed_channels"):
+                flag_modified(hustle, k)
 
         db.commit()
         db.refresh(hustle)
