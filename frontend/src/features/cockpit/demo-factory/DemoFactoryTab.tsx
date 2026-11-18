@@ -4,7 +4,6 @@ import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { DemoRun, RunStatus } from "../types";
 import { RunMatrixTable } from "./RunMatrixTable";
 import { MultiDevicePreviewDrawer } from "./MultiDevicePreviewDrawer";
-import { BuildLogDrawer } from "./BuildLogDrawer";
 import { DemoFactoryConsole } from "./DemoFactoryConsole";
 import { apiFetch } from "@/lib/api/client";
 import { env } from "@/config/env";
@@ -497,8 +496,7 @@ export const DemoFactoryTab: React.FC = () => {
   }, [runs, filter, selectedBatchId]);
 
   const handleOpenLogs = (run: DemoRun) => {
-    setActiveLogRun(run);
-    setIsLogDrawerOpen(true);
+    handleOpenPreview(run);
   };
 
   const handleOpenPreview = (run: DemoRun) => {
@@ -636,6 +634,27 @@ export const DemoFactoryTab: React.FC = () => {
   ).length;
   const failedRunsCount = runs.filter((r) => r.status === "FAILED").length;
   const passRateNum = parseInt(kpiMetrics.passRate.replace("%", ""), 10) || 100;
+  const recordedVideosCount = runs.filter((r) => Boolean(r.preview?.videoFilePath)).length;
+  const isBatchBuilding = isBuildRunning || isLaunchingBatch;
+  const activeStageHint: 1 | 2 | 3 | 4 | 5 | null = (() => {
+    // Only hint a stage while a batch is actually building or a lead is actively running
+    if (!isBatchBuilding && buildingRunsCount === 0) return null;
+    const statusToStage: Record<string, 1 | 2 | 3 | 4 | 5> = {
+      SCAFFOLDING: 1,
+      BUILDING: 2,
+      RECORDING: 4,
+      DEPLOYING: 5,
+    };
+    for (const r of runs) {
+      const hit = statusToStage[String(r.status)];
+      if (hit) return hit;
+    }
+    for (const r of runs) {
+      const idx = (r.stages || []).findIndex((s) => ["RUNNING", "BUILDING"].includes(String(s.status)));
+      if (idx >= 0) return Math.min(idx + 1, 5) as 1 | 2 | 3 | 4 | 5;
+    }
+    return null;
+  })();
 
   return (
     <div className="space-y-4">
@@ -712,6 +731,9 @@ export const DemoFactoryTab: React.FC = () => {
         runsCount={runs.length}
         readyRunsCount={readyRunsCount}
         buildingRunsCount={buildingRunsCount}
+        recordedVideosCount={recordedVideosCount}
+        failedRunsCount={failedRunsCount}
+        activeStageHint={activeStageHint}
       />
 
       {/* 3. Bottom Row: Unified Action Toolbar & High-Density Demo Runs Table */}
@@ -929,13 +951,6 @@ export const DemoFactoryTab: React.FC = () => {
         run={activePreviewRun}
         isOpen={isPreviewDrawerOpen}
         onClose={() => setIsPreviewDrawerOpen(false)}
-      />
-
-      {/* Observability Build Log Drawer */}
-      <BuildLogDrawer
-        run={activeLogRun}
-        isOpen={isLogDrawerOpen}
-        onClose={() => setIsLogDrawerOpen(false)}
         onRetry={handleRetry}
       />
     </div>

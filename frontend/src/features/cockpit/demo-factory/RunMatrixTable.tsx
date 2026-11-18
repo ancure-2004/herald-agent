@@ -6,9 +6,8 @@ import { EphemeralPreviewLink } from "./EphemeralPreviewLink";
 import {
   Check,
   Copy,
-  Terminal,
+  MonitorSmartphone,
   RotateCcw,
-  ExternalLink,
   Loader2,
   AlertTriangle,
   Clock,
@@ -25,7 +24,6 @@ interface RunMatrixTableProps {
 
 export const RunMatrixTable: React.FC<RunMatrixTableProps> = ({
   runs,
-  onOpenLogs,
   onOpenPreview,
   onRetryRun,
 }) => {
@@ -130,7 +128,7 @@ export const RunMatrixTable: React.FC<RunMatrixTableProps> = ({
               <tr
                 key={run.id}
                 className="h-[48px] hover:bg-slate-50/80 transition-colors group cursor-pointer border-b border-slate-100"
-                onClick={() => (run.status === "READY" ? onOpenPreview(run) : onOpenLogs(run))}
+                onClick={() => onOpenPreview(run)}
               >
                 {/* Clinic Name & City */}
                 <td className="px-4 py-2.5">
@@ -203,15 +201,6 @@ export const RunMatrixTable: React.FC<RunMatrixTableProps> = ({
                 {/* Actions */}
                 <td className="px-4 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-1">
-                    <button
-                      type="button"
-                      onClick={() => onOpenLogs(run)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-zinc-900 hover:bg-slate-100 transition-colors"
-                      title="Inspect Build Logs"
-                    >
-                      <Terminal className="w-3.5 h-3.5" />
-                    </button>
-
                     {run.status === "FAILED" && onRetryRun && (
                       <button
                         type="button"
@@ -223,16 +212,15 @@ export const RunMatrixTable: React.FC<RunMatrixTableProps> = ({
                       </button>
                     )}
 
-                    {run.status === "READY" && (
-                      <button
-                        type="button"
-                        onClick={() => onOpenPreview(run)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-zinc-900 hover:bg-slate-100 transition-colors"
-                        title="Multi-Device Workbench"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => onOpenPreview(run)}
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-zinc-900 text-zinc-700 hover:text-white border border-slate-200/80 text-[11px] font-mono font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                      title="Open Unified Studio Workbench & Build Inspector"
+                    >
+                      <MonitorSmartphone className="w-3.5 h-3.5" />
+                      <span>Studio</span>
+                    </button>
                   </div>
                 </td>
               </tr>

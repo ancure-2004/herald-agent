@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import {
   Trash2,
   Copy,
@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   XCircle,
   Database,
+  Loader2,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
 import { env } from "@/config/env";
@@ -32,17 +33,57 @@ export interface DemoFactoryConsoleProps {
   runsCount: number;
   readyRunsCount: number;
   buildingRunsCount: number;
+  recordedVideosCount?: number;
+  failedRunsCount?: number;
+  activeStageHint?: 1 | 2 | 3 | 4 | 5 | null;
 }
 
 export const DemoFactoryConsole: React.FC<DemoFactoryConsoleProps> = ({
   isBuildRunning,
   runsCount,
   readyRunsCount,
+  buildingRunsCount,
+  recordedVideosCount,
+  activeStageHint,
 }) => {
   const [logs, setLogs] = useState<BuildLogEntry[]>([]);
   const [autoScroll, setAutoScroll] = useState(true);
   const [newLogsCount, setNewLogsCount] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [isCleared, setIsCleared] = useState(false);
+
+  // Strict 3-state pipeline machine: "idle" | "running" | "completed"
+  const { pipelineMode, activeNode } = useMemo<{
+    pipelineMode: "idle" | "running" | "completed";
+    activeNode: 1 | 2 | 3 | 4 | 5 | null;
+  }>(() => {
+    const isRunning = isBuildRunning || buildingRunsCount > 0;
+
+    // Newest-to-oldest scan: first log line matching a real backend stage tag wins
+    let matchedStage: 1 | 2 | 3 | 4 | 5 | null = null;
+    for (let i = logs.length - 1; i >= 0; i--) {
+      const text = String(logs[i]?.message || logs[i]?.line || "");
+      if (/\[demo-ready\]|demo_ready|outbox|attach.*crm/i.test(text)) matchedStage = 5;
+      else if (/\[video\]|\[mp4\]|playwright|walkthrough|\.mp4|recording/i.test(text)) matchedStage = 4;
+      else if (/\[audit\]|200 ok|http 200|route verif|verified/i.test(text)) matchedStage = 3;
+      else if (/\[build\]|theme|compil|modern|premium|warm/i.test(text)) matchedStage = 2;
+      else if (/\[research\]|scaffold|payload|schema|synthesiz/i.test(text)) matchedStage = 1;
+      if (matchedStage !== null) break;
+    }
+
+    if (isRunning) {
+      return { pipelineMode: "running", activeNode: matchedStage ?? activeStageHint ?? 1 };
+    }
+    if (logs.length > 0 && !isCleared) {
+      return { pipelineMode: "completed", activeNode: null };
+    }
+    return { pipelineMode: "idle", activeNode: null };
+  }, [isBuildRunning, buildingRunsCount, activeStageHint, logs, isCleared]);
+
+  // Any new build activity or incoming log re-arms the pipeline after a terminal clear
+  useEffect(() => {
+    if (isBuildRunning || buildingRunsCount > 0) setIsCleared(false);
+  }, [isBuildRunning, buildingRunsCount, logs.length]);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const seenSeqsRef = useRef<Set<number>>(new Set());
@@ -240,9 +281,61 @@ export const DemoFactoryConsole: React.FC<DemoFactoryConsoleProps> = ({
 
   const handleClearLogs = () => {
     setLogs([]);
+    setIsCleared(true);
     seenSeqsRef.current.clear();
     apiFetch("/api/terminal/clear?service=building", { method: "POST" }).catch(() => {});
   };
+
+  type NodeVisual = "active" | "completed" | "idle";
+  const getNodeVisual = (nodeIndex: 1 | 2 | 3 | 4 | 5): NodeVisual => {
+    if (pipelineMode === "idle") return "idle";
+    if (pipelineMode === "completed") return "completed";
+    if (activeNode === nodeIndex) return "active";
+    if (activeNode !== null && nodeIndex < activeNode) return "completed";
+    return "idle";
+  };
+
+  const renderNodeIndicator = (nodeIndex: 1 | 2 | 3 | 4 | 5) => {
+    const visual = getNodeVisual(nodeIndex);
+    if (visual === "active") {
+      return <Loader2 className="w-3.5 h-3.5 text-indigo-500 animate-spin shrink-0" />;
+    }
+    if (visual === "completed") {
+      if (nodeIndex === 5) {
+        return <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0 shadow-[0_0_6px_rgba(14,165,233,0.7)]" />;
+      }
+      return <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_6px_rgba(16,185,129,0.7)]" />;
+    }
+    return <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-600 shrink-0" />;
+  };
+
+  const nodeCardClass = (nodeIndex: 1 | 2 | 3 | 4 | 5) => {
+    if (getNodeVisual(nodeIndex) === "active") {
+      return "border-indigo-500 dark:border-indigo-400 ring-2 ring-indigo-500/25 shadow-indigo-500/10";
+    }
+    if (nodeIndex === 5 && pipelineMode === "completed") {
+      return "border-zinc-900 dark:border-sky-500/50 ring-2 ring-zinc-900/10 dark:ring-sky-500/40";
+    }
+    return "border-slate-200/90 dark:border-zinc-800";
+  };
+
+  const isCurveActive = (k: number) =>
+    pipelineMode === "running" && (activeNode === k || activeNode === k + 1);
+
+  const curveClass = (k: number) => {
+    if (pipelineMode === "completed") return "stroke-emerald-500/60 dark:stroke-emerald-400/50";
+    if (pipelineMode === "idle") return "stroke-slate-400 dark:stroke-zinc-600";
+    return isCurveActive(k)
+      ? "stroke-indigo-500 dark:stroke-indigo-400 transition-all duration-300"
+      : "stroke-slate-400 dark:stroke-zinc-600";
+  };
+
+  const pillClass = (k: number) =>
+    `absolute -translate-x-1/2 -translate-y-1/2 z-20 border shadow-2xs text-[9px] font-medium px-2 py-0.5 rounded-full font-mono pointer-events-none whitespace-nowrap ${
+      isCurveActive(k)
+        ? "border-indigo-500/50 text-indigo-600 dark:text-indigo-300 bg-indigo-50/90 dark:bg-indigo-950/90"
+        : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300"
+    }`;
 
   // Edge 1 (1 -> 2) & Edge 2 (2 -> 3): Left to Right
   const getBezierLeftToRight = (start: { x: number; y: number }, end: { x: number; y: number }) => {
@@ -323,63 +416,83 @@ export const DemoFactoryConsole: React.FC<DemoFactoryConsoleProps> = ({
               d={getBezierLeftToRight(coords.p1Out, coords.p2In)}
               fill="none"
               strokeWidth="1.75"
-              className="stroke-slate-400 dark:stroke-zinc-600"
+              className={curveClass(1)}
+              strokeDasharray={isCurveActive(1) ? "5 4" : undefined}
               markerEnd="url(#dag-arrow-flush)"
-            />
+            >
+              {isCurveActive(1) && (
+                <animate attributeName="stroke-dashoffset" from="18" to="0" dur="0.7s" repeatCount="indefinite" />
+              )}
+            </path>
 
             {/* Curve 2: Node 2 (Theme Compiler) -> Node 3 (HTTP 200 Audit) */}
             <path
               d={getBezierLeftToRight(coords.p2Out, coords.p3In)}
               fill="none"
               strokeWidth="1.75"
-              className="stroke-slate-400 dark:stroke-zinc-600"
+              className={curveClass(2)}
+              strokeDasharray={isCurveActive(2) ? "5 4" : undefined}
               markerEnd="url(#dag-arrow-flush)"
-            />
+            >
+              {isCurveActive(2) && (
+                <animate attributeName="stroke-dashoffset" from="18" to="0" dur="0.7s" repeatCount="indefinite" />
+              )}
+            </path>
 
             {/* Curve 3: Node 3 (HTTP 200 Audit) -> Node 4 (Playwright 9:16) */}
             <path
               d={getBezierDownToLeft(coords.p3Out, coords.p4In)}
               fill="none"
               strokeWidth="1.75"
-              className="stroke-slate-400 dark:stroke-zinc-600"
+              className={curveClass(3)}
+              strokeDasharray={isCurveActive(3) ? "5 4" : undefined}
               markerEnd="url(#dag-arrow-flush)"
-            />
+            >
+              {isCurveActive(3) && (
+                <animate attributeName="stroke-dashoffset" from="18" to="0" dur="0.7s" repeatCount="indefinite" />
+              )}
+            </path>
 
             {/* Curve 4: Node 4 (Playwright 9:16) -> Node 5 (Outbox Sync) */}
             <path
               d={getBezierRightToLeft(coords.p4Out, coords.p5In)}
               fill="none"
               strokeWidth="1.75"
-              className="stroke-slate-400 dark:stroke-zinc-600"
+              className={curveClass(4)}
+              strokeDasharray={isCurveActive(4) ? "5 4" : undefined}
               markerEnd="url(#dag-arrow-flush)"
-            />
+            >
+              {isCurveActive(4) && (
+                <animate attributeName="stroke-dashoffset" from="18" to="0" dur="0.7s" repeatCount="indefinite" />
+              )}
+            </path>
           </svg>
 
           {/* Floating Pill Labels Sitting Along Curves */}
           <span
             style={{ left: `${mid1_2.x}px`, top: `${mid1_2.y}px` }}
-            className="absolute -translate-x-1/2 -translate-y-1/2 z-20 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 shadow-2xs text-[9px] font-medium px-2 py-0.5 rounded-full font-mono pointer-events-none whitespace-nowrap"
+            className={pillClass(1)}
           >
             synthesized
           </span>
 
           <span
             style={{ left: `${mid2_3.x}px`, top: `${mid2_3.y}px` }}
-            className="absolute -translate-x-1/2 -translate-y-1/2 z-20 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 shadow-2xs text-[9px] font-medium px-2 py-0.5 rounded-full font-mono pointer-events-none whitespace-nowrap"
+            className={pillClass(2)}
           >
             compiled
           </span>
 
           <span
             style={{ left: `${mid3_4.x}px`, top: `${mid3_4.y}px` }}
-            className="absolute -translate-x-1/2 -translate-y-1/2 z-20 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 shadow-2xs text-[9px] font-medium px-2 py-0.5 rounded-full font-mono pointer-events-none whitespace-nowrap"
+            className={pillClass(3)}
           >
             verified
           </span>
 
           <span
             style={{ left: `${mid4_5.x}px`, top: `${mid4_5.y}px` }}
-            className="absolute -translate-x-1/2 -translate-y-1/2 z-20 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 shadow-2xs text-[9px] font-medium px-2 py-0.5 rounded-full font-mono pointer-events-none whitespace-nowrap"
+            className={pillClass(4)}
           >
             mp4 ready
           </span>
@@ -387,11 +500,11 @@ export const DemoFactoryConsole: React.FC<DemoFactoryConsoleProps> = ({
           {/* Node 1: Top-Left (Start) - 1. Clinic Research */}
           <div
             ref={node1Ref}
-            className="absolute left-[0%] top-[36px] z-10 bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl px-3.5 py-2.5 shadow-md shadow-slate-900/5 hover:shadow-lg transition-all w-[155px] xl:w-[165px]"
+            className={`absolute left-[0%] top-[36px] z-10 bg-white dark:bg-zinc-900 rounded-2xl border px-3.5 py-2.5 shadow-md shadow-slate-900/5 hover:shadow-lg transition-all w-[155px] xl:w-[165px] ${nodeCardClass(1)}`}
           >
             <div className="text-xs font-semibold text-zinc-900 dark:text-white flex items-center justify-between">
               <span className="truncate">1. Clinic Research</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+              {renderNodeIndicator(1)}
             </div>
             <div className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5 truncate">
               Payload &amp; Schema
@@ -406,15 +519,11 @@ export const DemoFactoryConsole: React.FC<DemoFactoryConsoleProps> = ({
           {/* Node 2: Top-Center - 2. 3x Theme Compiler */}
           <div
             ref={node2Ref}
-            className="absolute left-[41%] top-[36px] z-10 bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl px-3.5 py-2.5 shadow-md shadow-slate-900/5 hover:shadow-lg transition-all w-[155px] xl:w-[165px]"
+            className={`absolute left-[41%] top-[36px] z-10 bg-white dark:bg-zinc-900 rounded-2xl border px-3.5 py-2.5 shadow-md shadow-slate-900/5 hover:shadow-lg transition-all w-[155px] xl:w-[165px] ${nodeCardClass(2)}`}
           >
             <div className="text-xs font-semibold text-zinc-900 dark:text-white flex items-center justify-between">
               <span className="truncate">2. 3x Theme Compiler</span>
-              {isBuildRunning ? (
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
-              ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-              )}
+              {renderNodeIndicator(2)}
             </div>
             <div className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5 truncate">
               Modern · Premium · Warm
@@ -430,11 +539,11 @@ export const DemoFactoryConsole: React.FC<DemoFactoryConsoleProps> = ({
           {/* Node 3: Middle-Right - 3. HTTP 200 Audit */}
           <div
             ref={node3Ref}
-            className="absolute left-[74%] top-[132px] z-10 bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl px-3.5 py-2.5 shadow-md shadow-slate-900/5 hover:shadow-lg transition-all w-[155px] xl:w-[165px]"
+            className={`absolute left-[74%] top-[132px] z-10 bg-white dark:bg-zinc-900 rounded-2xl border px-3.5 py-2.5 shadow-md shadow-slate-900/5 hover:shadow-lg transition-all w-[155px] xl:w-[165px] ${nodeCardClass(3)}`}
           >
             <div className="text-xs font-semibold text-zinc-900 dark:text-white flex items-center justify-between">
               <span className="truncate">3. HTTP 200 Audit</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+              {renderNodeIndicator(3)}
             </div>
             <div className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5 truncate">
               Route Verification
@@ -450,17 +559,17 @@ export const DemoFactoryConsole: React.FC<DemoFactoryConsoleProps> = ({
           {/* Node 4: Bottom-Center - 4. Playwright 9:16 */}
           <div
             ref={node4Ref}
-            className="absolute left-[46%] top-[236px] z-10 bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl px-3.5 py-2.5 shadow-md shadow-slate-900/5 hover:shadow-lg transition-all w-[155px] xl:w-[165px]"
+            className={`absolute left-[46%] top-[236px] z-10 bg-white dark:bg-zinc-900 rounded-2xl border px-3.5 py-2.5 shadow-md shadow-slate-900/5 hover:shadow-lg transition-all w-[155px] xl:w-[165px] ${nodeCardClass(4)}`}
           >
             <div className="text-xs font-semibold text-zinc-900 dark:text-white flex items-center justify-between">
               <span className="truncate">4. Playwright 9:16</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+              {renderNodeIndicator(4)}
             </div>
             <div className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5 truncate">
               Mobile Walkthrough
             </div>
             <span className="bg-slate-100 dark:bg-zinc-800 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-medium px-2 py-0.5 rounded-md mt-1.5 inline-block">
-              {readyRunsCount} mp4s
+              {recordedVideosCount ?? readyRunsCount} mp4s
             </span>
             {/* Input Port (Right) & Output Port (Left) */}
             <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-900 border-2 border-slate-400 dark:border-zinc-500 z-20" />
@@ -470,11 +579,11 @@ export const DemoFactoryConsole: React.FC<DemoFactoryConsoleProps> = ({
           {/* Node 5: Bottom-Left (Terminal Node) - 5. Outbox Sync */}
           <div
             ref={node5Ref}
-            className="absolute left-[3%] top-[236px] z-10 bg-white dark:bg-zinc-900 border border-zinc-900 dark:border-sky-500/50 ring-2 ring-zinc-900/10 dark:ring-sky-500/40 rounded-2xl px-3.5 py-2.5 shadow-md shadow-slate-900/5 hover:shadow-lg transition-all w-[155px] xl:w-[165px]"
+            className={`absolute left-[3%] top-[236px] z-10 bg-white dark:bg-zinc-900 rounded-2xl border px-3.5 py-2.5 shadow-md shadow-slate-900/5 hover:shadow-lg transition-all w-[155px] xl:w-[165px] ${nodeCardClass(5)}`}
           >
             <div className="text-xs font-semibold text-zinc-900 dark:text-white flex items-center justify-between">
               <span className="truncate">5. Outbox Sync</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0 shadow-[0_0_6px_rgba(56,189,248,0.8)]" />
+              {renderNodeIndicator(5)}
             </div>
             <div className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5 truncate">
               Attached to CRM

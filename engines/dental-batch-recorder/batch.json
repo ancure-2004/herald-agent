@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "name": "Clinic-prime-dental-solutions-test",
+    "url": "http://localhost:3001/modern/prime-dental-solutions-test"
+  },
+  {
+    "name": "Clinic-zen-dental-lounge-test",
+    "url": "http://localhost:3001/modern/zen-dental-lounge-test"
+  }
+]
