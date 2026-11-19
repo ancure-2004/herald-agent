@@ -197,7 +197,7 @@ export function WhatsAppInboxView() {
     }
   }, [activeLead?.messages, activeLead?.id]);
 
-  // Fetch AI Reply Suggestions when active lead changes
+  // Fetch AI Reply Suggestions when triggered by user
   const fetchSuggestions = async (leadId: number) => {
     setLoadingSuggestions(true);
     try {
@@ -205,42 +205,16 @@ export function WhatsAppInboxView() {
       if (res.suggestions && res.suggestions.length > 0) {
         setAiSuggestions(res.suggestions);
       } else {
-        setAiSuggestions([
-          {
-            category: "Direct Answer",
-            text: `Hi Dr. ${activeLead?.doctor_name || "Doctor"}, thank you for reaching out! Here is the live link to your clinic's custom preview: https://preview.dentalos.in/${activeLead?.slug || "demo"}`,
-            tone: "professional",
-          },
-          {
-            category: "Value Reframe",
-            text: `Hello Dr. ${activeLead?.doctor_name || "Doctor"}, we specifically built this for ${activeLead?.locality || "Delhi NCR"} patients searching on Google on mobile devices.`,
-            tone: "persuasive",
-          },
-          {
-            category: "Quick OPD Check-in",
-            text: `Hi Dr. ${activeLead?.doctor_name || "Doctor"}, are you free for a quick 2-minute walkthrough between appointments this afternoon?`,
-            tone: "conversational",
-          },
-        ]);
+        setAiSuggestions([]);
       }
-    } catch {
-      setAiSuggestions([
-        {
-          category: "Direct Answer",
-          text: `Hi Dr. ${activeLead?.doctor_name || "Doctor"}, thank you for reaching out! Here is the link to your clinic preview: https://preview.dentalos.in/${activeLead?.slug || "demo"}`,
-          tone: "professional",
-        },
-        {
-          category: "Value Reframe",
-          text: `Hello Dr. ${activeLead?.doctor_name || "Doctor"}, this demo is optimized to turn local Google map visitors into booked dental consultations.`,
-          tone: "persuasive",
-        },
-        {
-          category: "Quick OPD Check-in",
-          text: `Hi Dr. ${activeLead?.doctor_name || "Doctor"}, would 4:30pm today work for a brief 2-minute demo call?`,
-          tone: "conversational",
-        },
-      ]);
+    } catch (err: any) {
+      const isNotConfigured = err?.status === 503 || String(err?.message || "").includes("ai_not_configured");
+      if (isNotConfigured) {
+        notify("AI provider not configured. Please configure an AI provider in Settings.", "err");
+      } else {
+        notify(err instanceof Error ? err.message : "Failed to generate AI suggestions", "err");
+      }
+      setAiSuggestions([]);
     } finally {
       setLoadingSuggestions(false);
     }
@@ -695,8 +669,16 @@ export function WhatsAppInboxView() {
                       <span>Crafting contextual suggestions for {activeLead.name}...</span>
                     </div>
                   ) : aiSuggestions.length === 0 ? (
-                    <div className="py-6 text-center text-xs text-slate-400">
-                      Click Refresh above to generate AI suggestions.
+                    <div className="py-6 text-center text-xs text-slate-400 space-y-2">
+                      <p>No AI suggestions loaded.</p>
+                      <button
+                        type="button"
+                        onClick={() => activeLead?.id && fetchSuggestions(activeLead.id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Generate Suggestions</span>
+                      </button>
                     </div>
                   ) : (
                     <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-0.5">

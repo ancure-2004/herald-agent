@@ -77,3 +77,15 @@ class MessageController:
     def update_automation_settings(payload: Dict[str, Any], db: Optional[Session] = None) -> Dict[str, Any]:
         return MessageService.update_automation_settings(payload, db)
 
+    @staticmethod
+    def get_ai_settings(db: Optional[Session] = None) -> Dict[str, Any]:
+        return MessageService.get_ai_settings(db)
+
+    @staticmethod
+    def update_ai_settings(payload: Dict[str, Any], db: Session) -> Dict[str, Any]:
+        return MessageService.update_ai_settings(payload, db)
+
+    @staticmethod
+    def test_ai_connection(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return MessageService.test_ai_connection(db, payload)
+

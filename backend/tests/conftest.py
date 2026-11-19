@@ -31,6 +31,8 @@ def client():
             session.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app) as c:
+    c = TestClient(app)
+    c.get_db_session = TestingSessionLocal
+    with c:
         yield c
     app.dependency_overrides.clear()

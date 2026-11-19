@@ -10,6 +10,23 @@ export interface AutomationSettings {
   [key: string]: unknown;
 }
 
+export interface AISettings {
+  provider: "auto" | "local_cli" | "gemini" | "groq";
+  gemini_api_key?: string;
+  groq_api_key?: string;
+  has_gemini_key: boolean;
+  has_groq_key: boolean;
+  has_local_cli: boolean;
+}
+
+export interface AITestResponse {
+  ok: boolean;
+  provider: string;
+  model?: string;
+  message: string;
+  sample_response?: unknown;
+}
+
 export const settingsApi = {
   getAutomation: (): Promise<AutomationSettings> =>
     apiFetch<AutomationSettings>("/api/settings/automation"),
@@ -18,6 +35,28 @@ export const settingsApi = {
     apiFetch<AutomationSettings>("/api/settings/automation", {
       method: "PATCH",
       body: JSON.stringify(payload),
+    }),
+
+  getAISettings: (): Promise<AISettings> =>
+    apiFetch<AISettings>("/api/settings/ai"),
+
+  updateAISettings: (payload: {
+    provider?: string;
+    gemini_api_key?: string;
+    groq_api_key?: string;
+  }): Promise<AISettings> =>
+    apiFetch<AISettings>("/api/settings/ai", {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+
+  testAIConnection: (payload?: {
+    provider?: string;
+    api_key?: string;
+  }): Promise<AITestResponse> =>
+    apiFetch<AITestResponse>("/api/ai/test", {
+      method: "POST",
+      body: JSON.stringify(payload || {}),
     }),
 
   listHustles: (): Promise<Hustle[]> =>

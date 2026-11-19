@@ -202,6 +202,11 @@ class LeadService:
         db.commit()
         db.refresh(lead)
         EventPublisher.publish_lead_created(lead.id, lead.name)
+        try:
+            from app.services.rag_service import RAGIndexingService
+            RAGIndexingService.index_lead(lead)
+        except Exception:
+            pass
         return lead
 
     @staticmethod
@@ -266,6 +271,11 @@ class LeadService:
         db.commit()
         db.refresh(lead)
         EventPublisher.publish_lead_updated(lead.id, stage_id=lead.stage_id)
+        try:
+            from app.services.rag_service import RAGIndexingService
+            RAGIndexingService.index_lead(lead)
+        except Exception:
+            pass
         return lead
 
     @staticmethod

@@ -71,6 +71,92 @@ export function HustleSettingsView() {
   // MCP Snippet Copied State
   const [mcpCopied, setMcpCopied] = useState<boolean>(false);
 
+  // AI Provider & Key Settings State
+  const [aiProvider, setAiProvider] = useState<"auto" | "local_cli" | "gemini" | "groq">("auto");
+  const [geminiKeyInput, setGeminiKeyInput] = useState<string>("");
+  const [groqKeyInput, setGroqKeyInput] = useState<string>("");
+  const [aiSettingsLoaded, setAiSettingsLoaded] = useState<boolean>(false);
+  const [hasGeminiKey, setHasGeminiKey] = useState<boolean>(false);
+  const [hasGroqKey, setHasGroqKey] = useState<boolean>(false);
+  const [hasLocalCli, setHasLocalCli] = useState<boolean>(false);
+  const [testingConnection, setTestingConnection] = useState<boolean>(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; message: string; model?: string } | null>(null);
+
+  // Fetch AI Settings on mount
+  useEffect(() => {
+    settingsApi
+      .getAISettings()
+      .then((res) => {
+        setAiProvider(res.provider || "auto");
+        setGeminiKeyInput(res.gemini_api_key || "");
+        setGroqKeyInput(res.groq_api_key || "");
+        setHasGeminiKey(res.has_gemini_key);
+        setHasGroqKey(res.has_groq_key);
+        setHasLocalCli(res.has_local_cli);
+        setAiSettingsLoaded(true);
+      })
+      .catch((err) => {
+        console.warn("Failed to load AI settings:", err);
+      });
+  }, []);
+
+  const handleSaveAISettings = async () => {
+    try {
+      const payload: { provider: string; gemini_api_key?: string; groq_api_key?: string } = {
+        provider: aiProvider,
+      };
+      if (geminiKeyInput && !geminiKeyInput.includes("••••")) {
+        payload.gemini_api_key = geminiKeyInput.trim();
+      }
+      if (groqKeyInput && !groqKeyInput.includes("••••")) {
+        payload.groq_api_key = groqKeyInput.trim();
+      }
+      const res = await settingsApi.updateAISettings(payload);
+      setAiProvider(res.provider);
+      setGeminiKeyInput(res.gemini_api_key || "");
+      setGroqKeyInput(res.groq_api_key || "");
+      setHasGeminiKey(res.has_gemini_key);
+      setHasGroqKey(res.has_groq_key);
+      setHasLocalCli(res.has_local_cli);
+      notify("AI provider settings saved!", "ok");
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Failed to save AI settings", "err");
+    }
+  };
+
+  const handleTestAIConnection = async (targetProvider?: string) => {
+    setTestingConnection(true);
+    setTestResult(null);
+    try {
+      const prov = targetProvider || aiProvider;
+      let keyToTest: string | undefined = undefined;
+      if (prov === "gemini" && geminiKeyInput && !geminiKeyInput.includes("••••")) {
+        keyToTest = geminiKeyInput.trim();
+      } else if (prov === "groq" && groqKeyInput && !groqKeyInput.includes("••••")) {
+        keyToTest = groqKeyInput.trim();
+      }
+      const res = await settingsApi.testAIConnection({
+        provider: prov,
+        api_key: keyToTest,
+      });
+      setTestResult({
+        ok: res.ok,
+        message: res.message,
+        model: res.model,
+      });
+      notify(res.message, res.ok ? "ok" : "err");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Connection test failed";
+      setTestResult({
+        ok: false,
+        message: msg,
+      });
+      notify(msg, "err");
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
   // Operator Profile Local Draft State
   const [profileName, setProfileName] = useState<string>(operatorProfile?.name || "Ankur Tyagi");
   const [profileRole, setProfileRole] = useState<string>(operatorProfile?.role || "CRM Architect");
@@ -737,6 +823,170 @@ export function HustleSettingsView() {
       {/* 5. TAB 4: MCP & INTEGRATIONS */}
       {settingsTab === "mcp" && (
         <div className="space-y-4">
+          {/* AI Provider Configuration Card */}
+          <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+            <div className="flex items-start justify-between flex-wrap gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    AI Provider &amp; Model Engine
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Choose how AI features (Ask &amp; Do, AI Reply Suggestions, AI Call Briefs) are powered.
+                  Zero silent fallbacks: real AI is used across all suggestions.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleTestAIConnection()}
+                  disabled={testingConnection}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  <Zap className={`w-3.5 h-3.5 ${testingConnection ? "animate-spin text-amber-500" : "text-emerald-500"}`} />
+                  <span>{testingConnection ? "Testing..." : "Test Connection"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveAISettings}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>Save AI Config</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Test Result Banner */}
+            {testResult && (
+              <div
+                className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+                  testResult.ok
+                    ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200"
+                    : "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {testResult.ok ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  ) : (
+                    <Shield className="w-4 h-4 text-rose-500 shrink-0" />
+                  )}
+                  <span>{testResult.message}</span>
+                </div>
+                {testResult.model && (
+                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-white/60 dark:bg-zinc-900/60 shrink-0">
+                    {testResult.model}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Provider Options Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+              {[
+                {
+                  id: "auto",
+                  label: "Auto (Recommended)",
+                  desc: "Prioritizes Gemini BYOK, then Groq, then local agy CLI bridge.",
+                  badge: "Adaptive",
+                },
+                {
+                  id: "local_cli",
+                  label: "Local CLI Bridge",
+                  desc: "Zero API cost via local agy CLI (gemini-3.8-flash-low).",
+                  badge: hasLocalCli ? "Installed" : "Not Found",
+                  badgeColor: hasLocalCli ? "text-emerald-500" : "text-amber-500",
+                },
+                {
+                  id: "gemini",
+                  label: "Gemini BYOK",
+                  desc: "Direct REST API call to gemini-2.5-flash with your own key.",
+                  badge: hasGeminiKey ? "Key Saved" : "No Key",
+                  badgeColor: hasGeminiKey ? "text-emerald-500" : "text-slate-400",
+                },
+                {
+                  id: "groq",
+                  label: "Groq BYOK",
+                  desc: "High-speed Llama-3.3-70b-versatile via Groq REST API.",
+                  badge: hasGroqKey ? "Key Saved" : "No Key",
+                  badgeColor: hasGroqKey ? "text-emerald-500" : "text-slate-400",
+                },
+              ].map((p) => {
+                const isSelected = aiProvider === p.id;
+                return (
+                  <div
+                    key={p.id}
+                    onClick={() => setAiProvider(p.id as any)}
+                    className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                      isSelected
+                        ? "border-zinc-900 dark:border-white bg-slate-50 dark:bg-zinc-800/80 shadow-xs"
+                        : "border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 hover:border-slate-300 dark:hover:border-zinc-700"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                          {p.label}
+                        </span>
+                        <span className={`text-[10px] font-mono font-bold ${p.badgeColor || "text-slate-500"}`}>
+                          {p.badge}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                        {p.desc}
+                      </p>
+                    </div>
+                    <div className="pt-2 flex items-center justify-between text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                      <span>{isSelected ? "Active Provider" : "Click to select"}</span>
+                      {isSelected && <Check className="w-3.5 h-3.5 text-emerald-500" />}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* BYOK Keys Inputs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-100 dark:border-zinc-800">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>Gemini API Key (BYOK)</span>
+                  <span className="text-[10px] font-mono text-slate-400">gemini-2.5-flash</span>
+                </label>
+                <input
+                  type="password"
+                  value={geminiKeyInput}
+                  onChange={(e) => setGeminiKeyInput(e.target.value)}
+                  placeholder={hasGeminiKey ? "•••••••••••••••• (configured)" : "Paste AIzaSy... key"}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950 font-mono text-xs text-slate-800 dark:text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-400"
+                />
+                <p className="text-[10px] text-slate-400">
+                  Free tier keys at aistudio.google.com. Stored securely and masked.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>Groq API Key (BYOK)</span>
+                  <span className="text-[10px] font-mono text-slate-400">llama-3.3-70b-versatile</span>
+                </label>
+                <input
+                  type="password"
+                  value={groqKeyInput}
+                  onChange={(e) => setGroqKeyInput(e.target.value)}
+                  placeholder={hasGroqKey ? "•••••••••••••••• (configured)" : "Paste gsk_... key"}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950 font-mono text-xs text-slate-800 dark:text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-400"
+                />
+                <p className="text-[10px] text-slate-400">
+                  Free tier keys at console.groq.com. Stored securely and masked.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* MCP Server Overview Card */}
           <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-3">
             <div className="flex items-start justify-between flex-wrap gap-2">

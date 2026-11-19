@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session
 
@@ -13,13 +13,20 @@ from app.services.event_bus import emit_terminal_log
 
 class CallService:
     @staticmethod
+    def list_calls(db: Session, lead_id: int) -> List[Call]:
+        lead = LeadRepository.get_by_id(db, lead_id)
+        if not lead:
+            raise NotFoundError("Lead not found.")
+        return db.query(Call).filter(Call.lead_id == lead.id).order_by(Call.created_at.desc()).all()
+
+    @staticmethod
     def log_call(db: Session, lead_id: int, payload: CallCreate) -> Dict[str, Any]:
         lead = LeadRepository.get_by_id(db, lead_id)
         if not lead:
             raise NotFoundError("Lead not found.")
 
         # AI structuring into 5 sections + prep brief (<10s)
-        structured = AIService.structure_raw_call_notes(lead, payload.raw_text)
+        structured = AIService.structure_raw_call_notes(lead, payload.raw_text, db=db)
 
         call = Call(
             lead_id=lead.id,
@@ -45,8 +52,21 @@ class CallService:
             lead.next_action = str(structured["next_steps"][0])
             lead.what_changed_summary = f"Call logged: {structured.get('summary', '')[:80]}"
 
+        # Invalidate any cached call brief on lead
+        cf = dict(lead.custom_fields or {})
+        if "cached_call_brief" in cf:
+            cf.pop("cached_call_brief", None)
+            lead.custom_fields = cf
+
         db.commit()
         db.refresh(call)
+
+        try:
+            from app.services.rag_service import RAGIndexingService
+            RAGIndexingService.index_call(call, lead=lead)
+        except Exception as e:
+            from app.core.logging import logger
+            logger.warning(f"Failed to incrementally index call: {e}")
 
         emit_terminal_log(
             "OUTREACH",
@@ -73,13 +93,25 @@ class CallService:
         }
 
     @staticmethod
-    def get_call_brief(db: Session, lead_id: int) -> Dict[str, Any]:
+    def get_call_brief(db: Session, lead_id: int, force_regenerate: bool = False) -> Dict[str, Any]:
         lead = LeadRepository.get_by_id(db, lead_id)
         if not lead:
             raise NotFoundError("Lead not found.")
 
-        brief_data = AIService.generate_call_prep_brief(lead, lead.calls, lead.messages)
-        return {
+        cf = dict(lead.custom_fields or {})
+        cached = cf.get("cached_call_brief")
+        if not force_regenerate and cached and isinstance(cached, dict) and cached.get("prep_brief"):
+            return {
+                "lead_id": lead.id,
+                "clinic_name": lead.name,
+                "doctor_name": lead.doctor_name,
+                "prep_brief": cached.get("prep_brief", ""),
+                "past_commitments": cached.get("past_commitments", []),
+                "key_objections": cached.get("key_objections", []),
+            }
+
+        brief_data = AIService.generate_call_prep_brief(lead, lead.calls, lead.messages, db=db)
+        result = {
             "lead_id": lead.id,
             "clinic_name": lead.name,
             "doctor_name": lead.doctor_name,
@@ -87,3 +119,14 @@ class CallService:
             "past_commitments": brief_data.get("past_commitments", []),
             "key_objections": brief_data.get("key_objections", []),
         }
+
+        # Cache in DB custom_fields
+        cf["cached_call_brief"] = {
+            "prep_brief": result["prep_brief"],
+            "past_commitments": result["past_commitments"],
+            "key_objections": result["key_objections"],
+        }
+        lead.custom_fields = cf
+        db.commit()
+
+        return result

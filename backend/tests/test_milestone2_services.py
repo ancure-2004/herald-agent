@@ -6,11 +6,42 @@
 - Live Log Store & Streaming Filters (service, level, lead_id, since_seq)
 """
 
-from app.services.ai_service import AIService
+from app.services.ai_service import AIService, LLMProvider
 
 
-def test_ai_service_generate_reply_suggestions():
+class MockMilestone2Provider(LLMProvider):
+    def generate_json(self, prompt: str, json_schema=None, timeout_seconds: float = 30.0):
+        if "reply" in prompt.lower() or "suggestions" in prompt.lower():
+            return {
+                "suggestions": [
+                    {"category": "Direct Answer", "text": "Direct test answer.", "tone": "professional"},
+                    {"category": "Value Reframe", "text": "Value reframe test text.", "tone": "consultative"},
+                    {"category": "Quick OPD Check-in", "text": "Quick OPD check-in test.", "tone": "polite_brief"},
+                ]
+            }
+        elif "call" in prompt.lower() or "transcript" in prompt.lower() or "structuring" in prompt.lower():
+            return {
+                "summary": "Spoke with Dr. Pooja Mehra for 8 minutes.",
+                "interests": ["Modern template layout", "Direct WhatsApp booking"],
+                "objections": ["Existing Practo spend"],
+                "commitments": [{"who_owes_it": "us", "what": "Send pricing options", "due_phrase": "on Friday"}],
+                "next_steps": ["Follow up on Friday with pricing options"],
+                "prep_brief": "Review pricing options with doctor.",
+            }
+        return {
+            "prep_brief": "- Discuss Rs. 15,000 package with free domain setup.\n- Emphasize Google Maps direct WhatsApp conversion.",
+            "past_commitments": [{"who_owes_it": "us", "what": "Send domain mapping instructions", "due_phrase": "by Friday"}],
+            "key_objections": ["Worried about ongoing website updates"],
+        }
+
+    def test_connection(self):
+        return {"ok": True, "provider": "mock", "message": "Connected"}
+
+
+def test_ai_service_generate_reply_suggestions(monkeypatch):
     """Verifies AIService returns 3 distinct reply options with proper schema and categories."""
+    mock_p = MockMilestone2Provider()
+    monkeypatch.setattr(AIService, "get_provider", lambda *args, **kwargs: mock_p)
     lead = {
         "id": 1,
         "name": "Apex Dental Clinic",
@@ -36,8 +67,10 @@ def test_ai_service_generate_reply_suggestions():
         assert "tone" in s
 
 
-def test_ai_service_structure_raw_call_notes():
+def test_ai_service_structure_raw_call_notes(monkeypatch):
     """Verifies AIService structures raw transcript into 5 sections + prep brief in <10s."""
+    mock_p = MockMilestone2Provider()
+    monkeypatch.setattr(AIService, "get_provider", lambda *args, **kwargs: mock_p)
     lead = {
         "id": 2,
         "name": "Smile Care Centre",
@@ -68,8 +101,10 @@ def test_ai_service_structure_raw_call_notes():
     assert len(structured["prep_brief"]) > 0
 
 
-def test_ai_service_generate_call_prep_brief():
+def test_ai_service_generate_call_prep_brief(monkeypatch):
     """Verifies AIService combines call notes and chat history into a prep brief."""
+    mock_p = MockMilestone2Provider()
+    monkeypatch.setattr(AIService, "get_provider", lambda *args, **kwargs: mock_p)
     lead = {
         "id": 3,
         "name": "Dr. Grover Dental Clinic",
@@ -138,8 +173,10 @@ def test_whatsapp_send_automation_off_generates_wame_link(client):
     assert "wa.me" in data["wa_url"]
 
 
-def test_manual_reply_logging_multiline_and_suggestions(client):
+def test_manual_reply_logging_multiline_and_suggestions(client, monkeypatch):
     """Verifies POST /api/leads/{id}/messages/log-reply handles multiline paste, sets REPLIED, and triggers AI analysis."""
+    mock_p = MockMilestone2Provider()
+    monkeypatch.setattr(AIService, "get_provider", lambda *args, **kwargs: mock_p)
     leads_res = client.get("/api/leads")
     assert leads_res.status_code == 200
     lead = leads_res.json()[0]
@@ -185,9 +222,12 @@ def test_manual_reply_stop_activates_dnc_and_clears_needs_followup(client):
     assert updated_lead["needs_followup"] is False
 
 
-def test_calls_logging_and_prep_brief_endpoints(client):
+def test_calls_logging_and_prep_brief_endpoints(client, monkeypatch):
     """Verifies POST /api/leads/{id}/calls logs and structures raw calls, and GET /call-brief returns brief."""
+    mock_p = MockMilestone2Provider()
+    monkeypatch.setattr(AIService, "get_provider", lambda *args, **kwargs: mock_p)
     leads_res = client.get("/api/leads")
+
     assert leads_res.status_code == 200
     lead = leads_res.json()[0]
     lead_id = lead["id"]

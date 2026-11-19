@@ -145,6 +145,13 @@ class MessageService:
         db.commit()
         db.refresh(msg)
         broadcast_sse("message_appended", {"lead_id": lead.id, "direction": msg.direction, "ai_label": msg.ai_label})
+
+        try:
+            from app.services.rag_service import RAGIndexingService
+            RAGIndexingService.index_message(msg, lead=lead)
+        except Exception:
+            pass
+
         return msg
 
     @staticmethod
@@ -644,8 +651,12 @@ class MessageService:
             db.refresh(m)
         db.refresh(lead)
 
-        suggestions = AIService.generate_reply_suggestions(lead, lead.messages)
-        emit_terminal_log("OUTREACH", f"Inbound reply logged for {lead.name} ({len(created_messages)} msgs) -> AI suggestions ready")
+        try:
+            suggestions = AIService.generate_reply_suggestions(lead, lead.messages, db=db)
+            emit_terminal_log("OUTREACH", f"Inbound reply logged for {lead.name} ({len(created_messages)} msgs) -> AI suggestions ready")
+        except Exception as e:
+            suggestions = []
+            emit_terminal_log("OUTREACH", f"Inbound reply logged for {lead.name} ({len(created_messages)} msgs) -> AI suggestions skipped: {e}", level="warning")
 
         return {
             "messages": [MessageOut.model_validate(m).model_dump() for m in created_messages],
@@ -659,7 +670,7 @@ class MessageService:
         lead = LeadRepository.get_by_id(db, lead_id)
         if not lead:
             raise NotFoundError("Lead not found.")
-        suggestions = AIService.generate_reply_suggestions(lead, lead.messages)
+        suggestions = AIService.generate_reply_suggestions(lead, lead.messages, db=db)
         return {
             "lead_id": lead.id,
             "suggestions": suggestions,
@@ -814,4 +825,21 @@ class MessageService:
         merged = dict(_AUTOMATION_DEFAULTS)
         merged.update(filtered)
         return merged
+
+    @staticmethod
+    def get_ai_settings(db: Optional[Session] = None) -> Dict[str, Any]:
+        return AIService.get_masked_ai_settings(db)
+
+    @staticmethod
+    def update_ai_settings(payload: Dict[str, Any], db: Session) -> Dict[str, Any]:
+        return AIService.save_ai_settings(db, payload)
+
+    @staticmethod
+    def test_ai_connection(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return AIService.test_connection(
+            db=db,
+            provider=payload.get("provider"),
+            api_key=payload.get("api_key"),
+        )
+
 

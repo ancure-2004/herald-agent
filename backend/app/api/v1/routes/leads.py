@@ -103,6 +103,12 @@ def copy_lead_video(lead_id: int, db: Session = Depends(get_db)):
     return LeadController.copy_lead_video(db, lead_id)
 
 
+@router.get("/leads/{lead_id}/calls", response_model=List[CallOut])
+def get_lead_calls(lead_id: int, db: Session = Depends(get_db)):
+    """Returns chronological call logs for a lead (most recent first)."""
+    return LeadController.list_calls(db, lead_id)
+
+
 @router.post("/leads/{lead_id}/calls", response_model=CallOut, status_code=201)
 def log_lead_call(lead_id: int, payload: CallCreate, db: Session = Depends(get_db)):
     """Logs raw call text, structures into 5 sections + prep brief in <10s, and updates lead."""
@@ -110,9 +116,13 @@ def log_lead_call(lead_id: int, payload: CallCreate, db: Session = Depends(get_d
 
 
 @router.get("/leads/{lead_id}/call-brief", response_model=CallBriefOut)
-def get_lead_call_brief(lead_id: int, db: Session = Depends(get_db)):
+def get_lead_call_brief(
+    lead_id: int,
+    force_regenerate: bool = Query(default=False),
+    db: Session = Depends(get_db),
+):
     """Returns pre-call 'what to talk about' briefing card combining call notes and chat history."""
-    return LeadController.get_call_brief(db, lead_id)
+    return LeadController.get_call_brief(db, lead_id, force_regenerate=force_regenerate)
 
 
 @router.post("/admin/wipe-leads")

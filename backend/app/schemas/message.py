@@ -98,3 +98,31 @@ class AutomationSettingsUpdate(BaseSchema):
     whatsapp_sender_mode: Optional[str] = None
     auto_reply_analysis: Optional[bool] = None
 
+
+class AISettingsSchema(BaseSchema):
+    provider: str = "auto"
+    gemini_api_key: str = ""
+    groq_api_key: str = ""
+    has_gemini_key: bool = False
+    has_groq_key: bool = False
+    has_local_cli: bool = False
+
+
+class AISettingsUpdate(BaseSchema):
+    provider: Optional[str] = None
+    gemini_api_key: Optional[str] = None
+    groq_api_key: Optional[str] = None
+
+
+class AITestRequest(BaseSchema):
+    provider: Optional[str] = None
+    api_key: Optional[str] = None
+
+
+class AITestResponse(BaseSchema):
+    ok: bool
+    provider: str
+    model: Optional[str] = None
+    message: str
+    sample_response: Optional[Any] = None
+
