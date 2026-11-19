@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const BASE_URL = 'http://localhost:3000';
-const OUT_SCREENS_DIR = '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/screens/after';
+const OUT_SCREENS_DIR = '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/tests/ui_pass/screens/after';
 
 const WIDTHS = [
   { width: 1440, height: 900, name: '1440' },

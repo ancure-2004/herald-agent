@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const BASE_URL = 'http://localhost:3000';
-const OUT_SCREENS_DIR = process.env.OUT_SCREENS_DIR || '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/screens/before';
-const OUT_REPORT_JSON = process.env.OUT_REPORT_JSON || '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/reports/probe-before.json';
-const OUT_REPORT_MD = process.env.OUT_REPORT_MD || '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/reports/probe-before.md';
+const OUT_SCREENS_DIR = process.env.OUT_SCREENS_DIR || '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/tests/ui_pass/screens/before';
+const OUT_REPORT_JSON = process.env.OUT_REPORT_JSON || '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/tests/ui_pass/reports/probe-before.json';
+const OUT_REPORT_MD = process.env.OUT_REPORT_MD || '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/tests/ui_pass/reports/probe-before.md';
 
 const WIDTHS = [
   { width: 1440, height: 900, name: '1440' },

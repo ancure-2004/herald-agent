@@ -640,7 +640,7 @@ class AIService:
         locality = getattr(lead, "locality", "") or (lead.get("locality") if isinstance(lead, dict) else "Delhi NCR")
 
         prompt = (
-            f"You are Firstmate AI structuring a phone call with Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
+            f"You are Herald AI structuring a phone call with Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
             f"Raw Transcript:\n'''\n{raw_text[:2000]}\n'''\n\n"
             "Return a JSON object with exactly these keys:\n"
             "1. 'summary': string (2-3 sentences summary of the call)\n"
@@ -752,7 +752,7 @@ class AIService:
 
         if sorted_calls:
             prompt = (
-                f"You are Firstmate AI generating an ongoing pre-call follow-up brief for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
+                f"You are Herald AI generating an ongoing pre-call follow-up brief for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
                 f"Past Calls History (Chronological):\n{chr(10).join(chronological_call_summaries)}\n\n"
                 f"Known Doctor Objections Across Calls: {json.dumps(key_objections)}\n"
                 f"Past Commitments Across Calls: {json.dumps(past_commitments)}\n\n"
@@ -764,7 +764,7 @@ class AIService:
             )
         else:
             prompt = (
-                f"You are Firstmate AI generating a tailored first-time discovery call script for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
+                f"You are Herald AI generating a tailored first-time discovery call script for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
                 "There are no prior phone calls logged with this clinic yet.\n\n"
                 "Return JSON object with exactly these keys:\n"
                 "1. 'prep_brief': string (structured first-time discovery call script: 1) Warm doctor-centric opener acknowledging OPD hours, 2) Hook on patient acquisition & direct WhatsApp OPD booking vs Practo cuts, 3) 2-minute demo offer of the 3 custom clinic sites already built, 4) Closing question to confirm mutual fit)\n"

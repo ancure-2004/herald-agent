@@ -54,7 +54,7 @@ def test_mcp_initialize():
     }
     resp = mcp.handle_request(req)
     assert resp["result"]["protocolVersion"] == "2024-11-05"
-    assert resp["result"]["serverInfo"]["name"] == "firstmate-crm-mcp"
+    assert resp["result"]["serverInfo"]["name"] == "herald-mcp"
     assert resp["result"]["serverInfo"]["version"] == "2.0.0"
 
 

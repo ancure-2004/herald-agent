@@ -11,7 +11,7 @@ export default function ErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Personal OS CRM App Error:", error);
+    console.error("Herald App Error:", error);
   }, [error]);
 
   return (

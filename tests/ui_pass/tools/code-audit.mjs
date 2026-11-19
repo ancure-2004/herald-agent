@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const SRC_DIR = '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/frontend/src';
-const OUT_FILE = '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/ui_pass/reports/code-patterns.md';
+const OUT_FILE = '/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/tests/ui_pass/reports/code-patterns.md';
 
 function getAllFiles(dir, exts = ['.ts', '.tsx', '.css']) {
   let results = [];

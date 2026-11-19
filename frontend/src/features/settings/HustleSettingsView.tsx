@@ -304,11 +304,11 @@ export function HustleSettingsView() {
   const mcpConfigSnippet = JSON.stringify(
     {
       mcpServers: {
-        "firstmate-crm": {
+        "herald-mcp": {
           command:
-            "/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/backend/.venv/bin/python3",
+            "/path/to/herald/backend/.venv/bin/python3",
           args: [
-            "/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/backend/mcp_server.py",
+            "/path/to/herald/backend/mcp_server.py",
           ],
         },
       },

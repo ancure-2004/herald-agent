@@ -1,4 +1,4 @@
-"""Centralized, typed SSE event publisher for PersonalOS & CRM.
+"""Centralized, typed SSE event publisher for Herald Operations Engine.
 
 Provides standard helper methods for broadcasting domain events:
   - Lead lifecycle: lead_created, lead_updated, task_completed, leads_wiped

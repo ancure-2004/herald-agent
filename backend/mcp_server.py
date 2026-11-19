@@ -698,7 +698,7 @@ def handle_request(req: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "firstmate-crm-mcp", "version": "2.0.0"},
+                "serverInfo": {"name": "herald-mcp", "version": "2.0.0"},
             },
         }
     if method == "notifications/initialized":
