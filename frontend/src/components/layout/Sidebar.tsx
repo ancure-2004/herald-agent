@@ -362,14 +362,14 @@ export function Sidebar() {
       <div className="flex items-center justify-between pb-2">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs">
-            FM
+            H
           </div>
           <div>
             <div className="text-xs font-bold text-zinc-900 dark:text-white leading-tight">
-              FirstMate
+              Herald
             </div>
             <div className="text-[10px] text-slate-400 font-medium leading-tight">
-              {isSettings ? "Workspace Settings" : "CRM Workspace"}
+              {isSettings ? "Workspace Settings" : "Operations Workspace"}
             </div>
           </div>
         </div>

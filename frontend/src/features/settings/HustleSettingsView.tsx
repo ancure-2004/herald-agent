@@ -1086,7 +1086,7 @@ export function HustleSettingsView() {
                 <div className="flex items-center gap-2">
                   <Cpu className="w-4 h-4 text-zinc-900 dark:text-white" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    FirstMate Personal OS MCP Server
+                    Herald Operations MCP Server
                   </h3>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold">
                     v2.0.0

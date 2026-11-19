@@ -1,8 +1,10 @@
-# System Architecture & Design: Herald - Personal Automation OS
+# System Architecture & Design: Herald - Multi-Agent Operations Engine
+
+> **Everything, handled automatically.**
 
 ## 1. Executive Summary
 
-**Herald** is an executive-grade Personal Automation Operating System and autonomous agency cockpit engineered for solo founders and high-velocity service operators. Originally conceived as a specialized CRM for service agency acquisition, Herald has evolved into a multi-hustle command center featuring autonomous prospect discovery, live template demo factories, automated walkthrough video generation, multi-channel outreach guardrails, hybrid RAG copilot assistance, and Model Context Protocol (MCP v2.0.0) agent interoperability.
+**Herald** is an executive-grade Multi-Agent Operations Engine and autonomous agency cockpit engineered for solo founders and high-velocity service operators. Originally conceived as a specialized CRM for service agency acquisition, Herald has evolved into a multi-hustle command center featuring autonomous prospect discovery, live template demo factories, automated walkthrough video generation, multi-channel outreach guardrails, hybrid RAG copilot assistance, and Model Context Protocol (MCP v2.0.0) agent interoperability.
 
 ---
 

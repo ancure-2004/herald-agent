@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FirstMate Personal OS & CRM - Model Context Protocol (MCP) Server
+Herald - Multi-Agent Operations Engine - Model Context Protocol (MCP) Server
 Protocol Version: 2024-11-05 (JSON-RPC 2.0 over stdio)
 
 Exposes production CRM intelligence, direct lead ingestion, lead communications,

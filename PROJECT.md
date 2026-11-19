@@ -1,8 +1,10 @@
-# Project Manifesto: Herald - Personal Automation OS
+# Project Manifesto: Herald - Multi-Agent Operations Engine
+
+> **Everything, handled automatically.**
 
 ## 1. Vision & Core Mission
 
-**Herald** is an autonomous Personal Automation Operating System engineered to free solo creators, agency founders, and high-velocity builders from repetitive operational drag.
+**Herald** is an autonomous Multi-Agent Operations Engine engineered to free solo creators, agency founders, and high-velocity builders from repetitive operational drag.
 
 Modern single-operator businesses face an operational bottleneck: customer discovery, lead qualification, collateral generation, cold outreach, follow-up scheduling, and context-switching across spreadsheets consume 80% of human attention. Herald flips this equation. It provides an autonomous execution cockpit that handles the entire pipeline—from discovering verified prospects and synthesizing customized demo assets to managing CRM pipeline stages and dispatching safe outreach—while keeping the human firmly in command.
 

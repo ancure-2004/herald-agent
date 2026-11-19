@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Personal OS - Side Hustle CRM & Autopilot",
-  description: "Autopilot-first CRM for service side hustles: finds leads, builds proof assets, tracks demo views, and enforces next steps.",
+  title: "Herald - Multi-Agent Operations Engine",
+  description: "Everything, handled automatically. Autonomous engine for service operations: discovers leads, builds proof assets, tracks demo views, and enforces next steps.",
 };
 
 export default function RootLayout({

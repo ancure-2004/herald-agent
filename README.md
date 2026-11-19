@@ -1,13 +1,13 @@
-# Herald - Personal Automation OS
+# Herald - Multi-Agent Operations Engine
 
-> **Autonomous Flight Deck & Execution Operating System for High-Velocity Solo Operators**  
+> **Everything, handled automatically.**  
 > Streamline client discovery, demo asset generation, safe multi-channel outreach, and deal execution with native Model Context Protocol (MCP v2.0.0) support.
 
 ---
 
 ## Overview
 
-**Herald** is an open-source, keyboard-first Personal Automation Operating System built to eliminate operational drag for solo founders, creators, and agency builders.
+**Herald** is an open-source, keyboard-first Multi-Agent Operations Engine built to eliminate operational drag for solo founders, creators, and agency builders.
 
 Combining an executive command center with an autonomous acquisition factory, Herald handles the entire outbound lifecycle:
 1. **Discovers & Verifies Prospects**: Multi-provider waterfall (Google Places, Overpass OSM, local cache) with strict no-website and active-phone validation.
