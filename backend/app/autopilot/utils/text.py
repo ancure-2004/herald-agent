@@ -3,10 +3,17 @@ from typing import List
 
 
 def clean_clinic_name(raw_title: str) -> str:
-    """Strips SEO suffixes from Maps titles (after '|', ' - ', '. Dr.' etc.)."""
+    """Strips SEO, panel, and location suffixes from Maps titles."""
     name = raw_title.split("|")[0].strip()
     name = re.split(r"\s+-\s+", name)[0].strip()
+    name = re.split(r"-\s*Dr\.?\s+", name, flags=re.I)[0].strip()
     name = re.split(r"\.\s*Dr\.", name, flags=re.I)[0].strip()
+    name = re.sub(
+        r"\s*\([^)]*(?:under\s+cghs|cghs|dghes|mcd|panel|govt|near\s+|opp\.?|behind\s+|sector|delhi|noida|gurgaon|gurugram|ncr|branch|formerly)[^)]*\)\s*$",
+        "",
+        name,
+        flags=re.I,
+    ).strip()
     name = re.sub(
         r"\s+(?:Best Dentist|Dental Clinic near me|Tooth pain).*$",
         "",

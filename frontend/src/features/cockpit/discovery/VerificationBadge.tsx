@@ -1,18 +1,22 @@
 "use client";
 
 import React from "react";
-import { DeliverabilityStatus, VerificationDetails } from "../types";
+import { DeliverabilityStatus, DiscoveryLead, VerificationDetails } from "../types";
 import { VerificationTooltip } from "./VerificationTooltip";
 
 interface VerificationBadgeProps {
   status: DeliverabilityStatus;
   details?: VerificationDetails;
+  lead?: DiscoveryLead;
+  placement?: "top" | "bottom";
   showTooltip?: boolean;
 }
 
 export const VerificationBadge: React.FC<VerificationBadgeProps> = ({
   status,
   details,
+  lead,
+  placement = "top",
   showTooltip = true,
 }) => {
   const getConfig = () => {
@@ -53,7 +57,11 @@ export const VerificationBadge: React.FC<VerificationBadgeProps> = ({
   );
 
   if (showTooltip && details) {
-    return <VerificationTooltip details={details}>{badgeContent}</VerificationTooltip>;
+    return (
+      <VerificationTooltip details={details} lead={lead} placement={placement}>
+        {badgeContent}
+      </VerificationTooltip>
+    );
   }
 
   return badgeContent;

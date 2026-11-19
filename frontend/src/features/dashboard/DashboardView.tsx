@@ -201,34 +201,12 @@ export function DashboardView() {
   const donutR = 58;
   const donutCircumference = 2 * Math.PI * donutR; // ~364.42
 
-  // 5. Priority Clinic Pipeline
-  // Week columns for current month
-  const weekCols = useMemo(() => {
-    const endDay = daysInMonth;
-    return [
-      { id: 0, label: `${currentMonthName} 1 - 7`, start: 1, end: 7 },
-      { id: 1, label: `${currentMonthName} 8 - 14`, start: 8, end: 14 },
-      { id: 2, label: `${currentMonthName} 15 - 21`, start: 15, end: 21 },
-      { id: 3, label: `${currentMonthName} 22 - 28`, start: 22, end: 28 },
-      { id: 4, label: `${currentMonthName} 29 - ${endDay}`, start: 29, end: endDay },
-    ];
-  }, [currentMonthName, daysInMonth]);
-
-  const todayDay = now.getDate();
-  const todayColIdx = useMemo(() => {
-    if (todayDay <= 7) return 0;
-    if (todayDay <= 14) return 1;
-    if (todayDay <= 21) return 2;
-    if (todayDay <= 28) return 3;
-    return 4;
-  }, [todayDay]);
-
-  // Real top clinics from leads with clean milestone labels and wider non-truncating pills
+  // 5. Priority Clinics Stage-Progress (Top 6 high-intent leads, real 7-step stage progress)
   const pipelineRows = useMemo(() => {
     const sorted = [...leads].sort(
       (a, b) => (b.intent_score || b.fit_score || 0) - (a.intent_score || a.fit_score || 0)
     );
-    const topLeads = sorted.slice(0, 4);
+    const topLeads = sorted.slice(0, 6);
 
     const milestoneStages: Record<number, string> = {
       1: "Discovered",
@@ -237,14 +215,13 @@ export function DashboardView() {
       4: "WhatsApp Sent",
       5: "Demo Viewed",
       6: "Call Scheduled",
-      7: "Won / Client",
-      8: "Closed",
+      7: "Won",
     };
 
-    return topLeads.map((lead, idx) => {
-      const milestone = milestoneStages[lead.stage_id] || "In Progress";
-      const startPcts = [4, 22, 34, 52];
-      const widthPcts = [40, 42, 40, 42];
+    return topLeads.map((lead) => {
+      const stageStep = Math.min(7, Math.max(1, Number(lead.stage_id) || 1));
+      const milestone = milestoneStages[stageStep] || "Discovered";
+      const fitScore = Math.round(lead.intent_score || lead.fit_score || 0);
       const initials =
         lead.name
           .split(" ")
@@ -253,21 +230,23 @@ export function DashboardView() {
           .map((w) => w[0]?.toUpperCase())
           .join("") || "CL";
 
-      const startD = Math.max(1, todayDay - 5);
-      const endD = Math.min(daysInMonth, todayDay + 6);
+      const rawTs = lead.updated_at || lead.created_at;
+      const updatedLabel = rawTs
+        ? new Date(rawTs).toLocaleDateString("en-IN", { month: "short", day: "numeric" })
+        : "Recently";
 
       return {
         id: lead.id,
         name: lead.name,
         locality: lead.locality || lead.city || "Delhi NCR",
         milestone,
-        milestoneDate: `${currentMonthName} ${startD}-${endD}`,
-        startPct: startPcts[idx % startPcts.length],
-        widthPct: widthPcts[idx % widthPcts.length],
+        stageStep,
+        fitScore,
+        nextAction: lead.next_action || `Updated ${updatedLabel}`,
         avatar: initials,
       };
     });
-  }, [leads, currentMonthName, daysInMonth, todayDay]);
+  }, [leads]);
 
   // 6. Upcoming Follow-Ups from real leads
   const upcomingFollowUps = useMemo(() => {
@@ -791,121 +770,86 @@ export function DashboardView() {
               </p>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[9px] font-semibold text-slate-700 dark:text-slate-300">
-                <span>{pipelineMonth}</span>
-                <ChevronDown className="w-2.5 h-2.5 text-slate-400" />
-              </div>
-              <div className="flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700">
-                <button
-                  type="button"
-                  className="p-0.5 rounded text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
-                  title="Previous interval"
-                >
-                  <ChevronLeft className="w-2.5 h-2.5" />
-                </button>
-                <button
-                  type="button"
-                  className="p-0.5 rounded text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
-                  title="Next interval"
-                >
-                  <ChevronRight className="w-2.5 h-2.5" />
-                </button>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                Top {pipelineRows.length} by Fit/Intent
+              </span>
               <button
                 type="button"
                 onClick={() => setActiveTab("table")}
-                className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 hover:text-[#111827] dark:hover:text-white hover:underline cursor-pointer ml-1"
+                className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 hover:text-[#111827] dark:hover:text-white hover:underline cursor-pointer"
               >
                 View all
               </button>
             </div>
           </div>
 
-          {/* 2-Part Timeline Matrix with Today Pill cleanly ABOVE Date Column */}
-          <div className="relative flex-1 flex flex-col border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden bg-slate-50/40 dark:bg-slate-900/30">
-            {/* Timeline Header Row with ample top clearance for Today pill */}
-            <div className="flex items-center shrink-0 border-b border-slate-200/80 dark:border-slate-800 text-[10px] font-medium text-slate-400 bg-slate-100/50 dark:bg-slate-800/40">
-              <div className="w-44 sm:w-48 px-3 shrink-0 font-semibold text-slate-600 dark:text-slate-300 flex items-center h-10">
-                Clinic
+          {/* Priority Clinics Stage-Progress List */}
+          <div className="flex-1 flex flex-col justify-between divide-y divide-slate-100 dark:divide-white/[0.06] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden bg-slate-50/30 dark:bg-slate-900/20">
+            {pipelineRows.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center py-10 text-xs text-slate-400">
+                No clinics in pipeline yet.
               </div>
-              <div className="flex-1 grid grid-cols-5 text-center font-mono relative h-10">
-                {weekCols.map((col, idx) => {
-                  const isToday = idx === todayColIdx;
-                  return (
-                    <div key={col.id} className="relative flex flex-col items-center justify-end pb-1.5 h-10">
-                      {isToday && (
-                        <div className="absolute top-1 px-2 py-0.5 rounded-full bg-[#111827] text-white dark:bg-white dark:text-[#111827] text-[8px] font-bold tracking-tight shadow-xs select-none">
-                          Today
-                        </div>
-                      )}
-                      <span className={isToday ? "font-semibold text-slate-800 dark:text-slate-200" : "text-slate-400"}>
-                        {col.label}
-                      </span>
+            ) : (
+              pipelineRows.map((row) => (
+                <button
+                  key={row.id}
+                  type="button"
+                  onClick={() => setActiveTab("board")}
+                  className="w-full flex-1 text-left px-3.5 py-2.5 flex items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer group"
+                >
+                  {/* Clinic + Locality */}
+                  <div className="flex items-center gap-2.5 min-w-0 w-48 sm:w-56 shrink-0">
+                    <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center font-bold text-[10px] text-slate-700 dark:text-slate-200 shrink-0">
+                      {row.avatar}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Matrix Body with Left-Right separation stretched to fill card height */}
-            <div className="relative flex flex-1">
-              {/* Left Clinics Column: Clinic Names Only (No Doctors, No Percentages) */}
-              <div className="w-44 sm:w-48 shrink-0 flex flex-col divide-y divide-slate-100 dark:divide-white/[0.04] border-r border-slate-100 dark:border-white/[0.04]">
-                {pipelineRows.map((row) => (
-                  <div key={row.id} className="px-3 flex-1 min-h-[64px] flex flex-col justify-center">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center font-bold text-[9px] text-indigo-600 dark:text-indigo-400 shrink-0">
-                        {row.avatar}
-                      </div>
-                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-slate-600 dark:group-hover:text-white transition-colors">
                         {row.name}
+                      </div>
+                      <div className="text-[10px] text-slate-400 truncate">
+                        {row.locality}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 7-Step Stage Progress Bar + Stage Pill */}
+                  <div className="flex-1 min-w-[140px] flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-[10px] font-semibold text-slate-700 dark:text-slate-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-900 dark:bg-white shrink-0" />
+                        {row.milestone}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                        Step {row.stageStep}/7
                       </span>
                     </div>
-                    <div className="text-[10px] text-slate-400 truncate pl-7 mt-0.5">
-                      {row.locality}
+                    <div className="grid grid-cols-7 gap-1">
+                      {[1, 2, 3, 4, 5, 6, 7].map((step) => (
+                        <div
+                          key={step}
+                          className={`h-1.5 rounded-full transition-colors ${
+                            step <= row.stageStep
+                              ? "bg-slate-900 dark:bg-white"
+                              : "bg-slate-200 dark:bg-slate-700/70"
+                          }`}
+                        />
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
 
-              {/* Right Timeline Grid with Exact-Centered Today Dashed Line */}
-              <div className="flex-1 relative flex flex-col divide-y divide-slate-100 dark:divide-white/[0.04]">
-                {/* Vertical Dashed Line centered exactly at Today's column */}
-                <div
-                  className="absolute top-0 bottom-0 -translate-x-1/2 pointer-events-none z-10 border-r-2 border-dashed border-slate-300 dark:border-slate-700"
-                  style={{ left: `${(todayColIdx + 0.5) * 20}%` }}
-                />
-
-                {pipelineRows.map((row) => (
-                  <div key={row.id} className="relative flex-1 min-h-[64px] px-2 flex items-center">
-                    <div
-                      className="absolute rounded-xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs px-2.5 py-1.5 flex items-center justify-between gap-2 text-xs transition-all hover:shadow-xs cursor-pointer group"
-                      style={{
-                        left: `${row.startPct}%`,
-                        minWidth: `${row.widthPct}%`,
-                      }}
-                      onClick={() => setActiveTab("board")}
-                    >
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
-                        <span className="text-[10px] font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                          {row.milestone}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="font-mono text-[9px] text-slate-400 hidden xl:inline whitespace-nowrap">
-                          {row.milestoneDate}
-                        </span>
-                        <div className="w-4 h-4 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[8px] font-bold flex items-center justify-center shrink-0">
-                          {row.avatar}
-                        </div>
-                      </div>
-                    </div>
+                  {/* Fit/Intent Score % & Next Action / Updated */}
+                  <div className="hidden sm:flex flex-col items-end shrink-0 w-32 text-right">
+                    <span className="text-xs font-bold font-mono text-slate-900 dark:text-white tabular-nums">
+                      {row.fitScore}% Fit
+                    </span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-full">
+                      {row.nextAction}
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
+                </button>
+              ))
+            )}
           </div>
         </div>
 

@@ -26,7 +26,7 @@ logger = logging.getLogger("personal_os.pipeline_service")
 # RunLog table as the authoritative lock: a row with status='running' that is
 # younger than STALE_RUN_TIMEOUT_SECONDS is considered an active lock.
 # ---------------------------------------------------------------------------
-_STALE_RUN_TIMEOUT_SECONDS = 3600  # 1 hour: runs older than this are force-released
+_STALE_RUN_TIMEOUT_SECONDS = 1200  # 20 min: runs older than this are force-released
 
 
 def _db_check_active_run(db: Session) -> Optional[RunLog]:
@@ -181,6 +181,16 @@ class PipelineService:
                         )
                     except Exception as ex:
                         logger.error("Async discovery run failed: %s", ex)
+                        try:
+                            rl = bg_db.query(RunLog).filter(RunLog.id == run_log.id).first()
+                            if rl and rl.status == "running":
+                                rl.status = "failed"
+                                rl.finished_at = datetime.now(timezone.utc)
+                                rl.errors = (rl.errors or []) + [str(ex)]
+                                bg_db.commit()
+                        except Exception:
+                            pass
+                    finally:
                         JobManager.release_single_flight(run_log.id)
                         set_autopilot_running(False, run_id=run_log.id)
 
@@ -193,6 +203,7 @@ class PipelineService:
                 "run_id": run_log.id,
             }
 
+        _db_assert_no_active_run(db)
         return DiscoveryService.run_discovery_and_staging(
             db=db,
             hustle_id=hustle_id,
@@ -777,6 +788,44 @@ class PipelineService:
 
         staged_pool_cnt = DiscoveryService.get_staged_count(db, hustle_id=hustle_id)
 
+        last_discovery_run = (
+            db.query(RunLog)
+            .filter(RunLog.hustle_id == hustle_id, RunLog.job_type == "autopilot_discovery_and_staging")
+            .order_by(RunLog.id.desc())
+            .first()
+        )
+        if last_discovery_run:
+            d_drops = last_discovery_run.drop_reasons or {}
+            d_passed = int(last_discovery_run.count_passed or 0)
+            d_dropped = int(last_discovery_run.count_dropped or 0)
+            d_found = int(last_discovery_run.count_found or 0)
+            d_raw = max(d_found + d_dropped, d_passed)
+            d_pre_site_drops = (
+                int(d_drops.get("hospital_or_chain", 0))
+                + int(d_drops.get("cached_rejection", 0))
+                + int(d_drops.get("already_in_db", 0))
+                + int(d_drops.get("has_official_domain", 0))
+            )
+            d_unique_no_site = max(d_passed, min(d_raw, d_raw - d_pre_site_drops))
+            d_mobile_verified = max(d_passed, min(d_unique_no_site, d_unique_no_site - int(d_drops.get("no_mobile_whatsapp", 0))))
+            discovery_funnel = {
+                "runId": last_discovery_run.id,
+                "rawScanned": d_raw,
+                "uniqueNoWebsite": d_unique_no_site,
+                "mobileVerified": d_mobile_verified,
+                "staged": d_passed,
+                "dropped": d_dropped,
+            }
+        else:
+            discovery_funnel = {
+                "runId": None,
+                "rawScanned": 0,
+                "uniqueNoWebsite": 0,
+                "mobileVerified": 0,
+                "staged": 0,
+                "dropped": 0,
+            }
+
         metrics = {
             "runId": f"#run-{last_run.id}" if last_run else "#run-0",
             "triggeredAgo": "Recently" if last_run else "Never",
@@ -792,6 +841,7 @@ class PipelineService:
             "reviewTrayReady": review_buffer_cnt,
             "stagedPoolCount": staged_pool_cnt,
             "stagedCeiling": STAGING_BUFFER_CEILING,
+            "discoveryFunnel": discovery_funnel,
             "duration": dur_str,
             "recentLead": recent_lead_data,
         }
