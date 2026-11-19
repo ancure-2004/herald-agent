@@ -43,3 +43,11 @@ Take Herald everywhere with a dedicated **iOS & Android companion app**:
 - **Daily Briefings**: Glanceable summaries of overnight agent runs, pipeline movement, and revenue metrics.
 - **1-Tap Approvals**: Approve or tweak queued outreach, demo deploys, and agent plans on the go.
 - **Voice & Chat Command**: Talk to Herald naturally to check status, kick off a discovery batch, or log a quick note.
+
+## 6. Two-Way WhatsApp Transport (`WhatsAppTransport`)
+
+Replace brittle Playwright browser automation with a pluggable **`WhatsAppTransport` adapter** supporting two-way client conversations:
+
+- **Local Personal Driver (Baileys WebSocket Sidecar)**: Scan QR once, ~50 MB RAM footprint, real-time incoming webhooks for two-way replies, 30/day safe cap with SIM warm-up, 6-8 hour jittered pacing, unique phrasing per message, and a dedicated SIM.
+- **Production Driver (Official Meta WhatsApp Business Cloud API)**: Zero ban risk at scale with the official 24-hour free reply window.
+
