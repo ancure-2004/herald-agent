@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable E2E Test Suite Runner for Personal OS & CRM.
+"""Executable E2E Test Suite Runner for Herald.
 
 Runs the complete 4-tier independent opaque-box test suite:
 - Tier 1: Feature Coverage (>=5 tests per feature)
@@ -74,7 +74,7 @@ class E2EResultCollector:
 
 def main():
     print("=" * 80)
-    print(" Personal OS & CRM - Independent E2E Test Suite Runner")
+    print(" Herald - Independent E2E Test Suite Runner")
     print(" Integrity Mode: Development | Methodology: 4-Tier Opaque-Box")
     print("=" * 80)
 

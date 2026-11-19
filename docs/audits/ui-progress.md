@@ -18,7 +18,7 @@
   - [x] Run `/impeccable document` to capture current visual system into `DESIGN.md`
   - [x] Commit `PRODUCT.md` and `DESIGN.md`
 - [x] **Phase 3. Baseline (Read-Only)**
-  - [x] Start backend and frontend services (`start_crm.sh`)
+  - [x] Start backend and frontend services (`start.sh`)
   - [x] Track A: Detector (`npx impeccable detect` for source and URL)
   - [x] Track B: Screenshot matrix via Playwright (6 views, 5 modals across 1440, 1024, 768, 390px in dark & light)
   - [x] Track C: Layout probe (`ui_pass/tools/probe.mjs`)

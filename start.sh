@@ -7,7 +7,7 @@ FRONTEND_DIR="$ROOT_DIR/frontend"
 ENGINE_DIR="$ROOT_DIR/engines/dental-clinic-engine"
 
 echo "=========================================================================="
-echo " Starting Personal OS & CRM Stack (Backend: 8000 | UI: 3000 | Engine: 3001)"
+echo " Starting Herald - Multi-Agent Operations Engine (Backend: 8000 | UI: 3000 | Engine: 3001)"
 echo "=========================================================================="
 
 # 1. Clean up processes listening on 8000, 3000, 3001 before starting
@@ -41,7 +41,7 @@ cleanup() {
   fi
   CLEANED_UP=1
   echo ""
-  echo "--> Stopping Personal OS services..."
+  echo "--> Stopping Herald services..."
   if [ -n "$BACKEND_PID" ]; then kill -TERM "$BACKEND_PID" 2>/dev/null || true; fi
   if [ -n "$FRONTEND_PID" ]; then kill -TERM "$FRONTEND_PID" 2>/dev/null || true; fi
   if [ -n "$ENGINE_PID" ]; then kill -TERM "$ENGINE_PID" 2>/dev/null || true; fi
@@ -50,7 +50,7 @@ cleanup() {
   kill_port 8000
   kill_port 3000
   kill_port 3001
-  echo "--> Personal OS services stopped."
+  echo "--> Herald services stopped."
 }
 trap cleanup EXIT INT TERM
 
@@ -129,7 +129,7 @@ else
 fi
 
 echo "=========================================================================="
-echo " Personal OS Stack is running. Press Ctrl+C to terminate all services."
+echo " Herald Engine is running. Press Ctrl+C to terminate all services."
 echo "=========================================================================="
 
 wait

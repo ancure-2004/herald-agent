@@ -108,8 +108,8 @@ Clone the repository and launch both the backend and frontend services using the
 ```bash
 git clone https://github.com/ancure-2004/herald.git
 cd herald
-chmod +x start_crm.sh
-./start_crm.sh
+chmod +x start.sh
+./start.sh
 ```
 
 - **Frontend Application**: `http://localhost:3000`
@@ -185,7 +185,7 @@ herald/
 │   └── tailwind.config.ts
 ├── docs/                    # Architectural plans, design specifications, and audits
 ├── tests/                   # Unified E2E opaque-box and UI validation test suites
-├── start_crm.sh             # Unified startup daemon script
+├── start.sh                 # Unified startup daemon script
 ├── PROJECT.md               # Project manifesto, current state, and roadmap
 ├── LICENSE                  # MIT Open Source License
 └── README.md

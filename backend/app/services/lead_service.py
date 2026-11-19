@@ -321,7 +321,7 @@ class LeadService:
 
     @staticmethod
     def delete_lead_blocked() -> None:
-        raise MethodNotAllowedError("Leads are never deleted in Personal OS. Use POST /api/leads/{id}/archive instead.")
+        raise MethodNotAllowedError("Leads are never deleted in Herald. Use POST /api/leads/{id}/archive instead.")
 
     @staticmethod
     def archive_lead(db: Session, lead_id: int, reason: str = "Archived by user") -> Lead:

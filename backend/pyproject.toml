@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "personal-os-crm-backend"
-version = "1.0.0"
-description = "Autopilot-first CRM backend for service side hustles"
+name = "herald-backend"
+version = "2.0.0"
+description = "Multi-Agent Operations Engine backend"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

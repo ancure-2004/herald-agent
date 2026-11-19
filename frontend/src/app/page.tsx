@@ -94,7 +94,7 @@ function CRMContent() {
   );
 }
 
-export default function PersonalOSCRM() {
+export default function HeraldApp() {
   return (
     <CRMProvider>
       <CRMContent />

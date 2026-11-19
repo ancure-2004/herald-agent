@@ -20,7 +20,7 @@ LOCAL_CLI_DEFAULT_MODEL = "gemini-3.8-flash-low"
 
 
 class LLMProvider(ABC):
-    """Abstract base class for all LLM providers in PersonalOS & CRM."""
+    """Abstract base class for all LLM providers in Herald."""
 
     @abstractmethod
     def generate_json(
@@ -50,7 +50,7 @@ class LocalCLIProvider(LLMProvider):
 
     def _get_isolated_env(self) -> Dict[str, str]:
         env = os.environ.copy()
-        sandbox_home = os.path.expanduser("~/.personalos-agy-sandbox")
+        sandbox_home = os.path.expanduser("~/.herald-agy-sandbox")
         os.makedirs(sandbox_home, exist_ok=True)
         env["HOME"] = sandbox_home
         return env
@@ -559,7 +559,7 @@ class AIService:
         for m in recent_thread:
             direction = getattr(m, "direction", None) or (m.get("direction") if isinstance(m, dict) else "")
             text = getattr(m, "text", None) or (m.get("text") if isinstance(m, dict) else "")
-            role = "Lead/Doctor" if direction == "inbound" else "Firstmate/Outreach"
+            role = "Lead/Doctor" if direction == "inbound" else "Herald/Outreach"
             t_str = get_msg_time(m)
             thread_lines.append(f"[{t_str}] {role}: {text}")
             if direction == "inbound":
@@ -568,7 +568,7 @@ class AIService:
         thread_history_block = "\n".join(thread_lines) if thread_lines else "No previous messages."
 
         prompt = (
-            f"You are Firstmate AI copilot for dental clinic outreach in Delhi NCR.\n"
+            f"You are Herald AI copilot for dental clinic outreach in Delhi NCR.\n"
             f"Lead Profile: {clinic_name} in {locality}. Doctor: Dr. {doctor_clean}.\n"
             f"Recent Conversation Thread (Chronological):\n{thread_history_block}\n\n"
             f"Latest Inbound Reply From Doctor: '{last_inbound_text}'\n\n"

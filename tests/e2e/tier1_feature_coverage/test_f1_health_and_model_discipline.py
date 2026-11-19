@@ -20,7 +20,7 @@ def test_root_endpoint_metadata(client: E2EClientWrapper):
     res = client.get("/")
     assert res.status_code == 200
     data = res.json()
-    assert data.get("name") == "Personal OS & CRM"
+    assert data.get("name") == "Herald - Multi-Agent Operations Engine"
     assert data.get("health") == "/api/health"
 
 
