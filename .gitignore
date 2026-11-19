@@ -74,3 +74,8 @@ ui_pass/tools/node_modules
 **/.impeccable/live/*.png
 # impeccable-ignore-end
 .fuse_hidden*
+.impeccable/
+.impeccable
+
+tests/ui_pass/screens/
+

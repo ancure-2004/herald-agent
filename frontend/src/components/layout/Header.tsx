@@ -606,7 +606,7 @@ export function Header() {
                 </span>
               </div>
               <div className="font-semibold text-[10px] text-zinc-500 dark:text-zinc-400 tracking-wide">
-                FirstMate Command
+                Herald Command
               </div>
             </div>
           </div>

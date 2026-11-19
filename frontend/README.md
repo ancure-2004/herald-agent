@@ -1,6 +1,6 @@
-# PersonalOS and CRM - Frontend
+# Herald - Frontend
 
-Production-grade Next.js App Router frontend for PersonalOS and CRM. Built with TypeScript, Tailwind CSS, Lucide icons, and a feature-based modular architecture.
+Production-grade Next.js App Router frontend for Herald - Multi-Agent Operations Engine. Built with TypeScript, Tailwind CSS, Lucide icons, and a feature-based modular architecture.
 
 ## Overview
 

@@ -33,7 +33,7 @@ class AutopilotSettings:
     website_check_on_unverified: str = os.getenv("WEBSITE_CHECK_ON_UNVERIFIED", "hold")  # "hold" | "allow_flagged"
     test_mode_max_target: int = int(os.getenv("TEST_MODE_MAX_TARGET", "10"))
     recorder_timeout_per_clinic_seconds: int = int(os.getenv("RECORDER_TIMEOUT_PER_CLINIC_SECONDS", "180"))
-    contact_user_agent: str = os.getenv("CONTACT_USER_AGENT", "PersonalOS-Autopilot/2.0 (contact: info@example.com)")
+    contact_user_agent: str = os.getenv("CONTACT_USER_AGENT", "Herald-Autopilot/2.0 (contact: info@example.com)")
     google_places_api_key: str = field(
         default_factory=lambda: (
             os.getenv("GOOGLE_PLACES_API_KEY")

@@ -548,7 +548,7 @@ export function WhatsAppInboxView() {
                       className={`flex flex-col ${isOutbound ? "items-end" : "items-start"}`}
                     >
                       <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mb-1 px-1">
-                        <span>{isInbound ? activeLead.doctor_name || activeLead.name : "Firstmate Autopilot"}</span>
+                        <span>{isInbound ? activeLead.doctor_name || activeLead.name : "Herald Autopilot"}</span>
                         <span>•</span>
                         <span>
                           {new Date(msg.created_at).toLocaleTimeString([], {

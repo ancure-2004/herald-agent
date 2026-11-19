@@ -28,7 +28,7 @@ def verify_live_demo_links(slug: str, base_url: str) -> Tuple[bool, Dict[str, An
 
     for key, url in urls.items():
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "PersonalOS-LinkVerifier/2.0"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Herald-LinkVerifier/2.0"})
             with urllib.request.urlopen(req, timeout=15) as resp:
                 code = resp.getcode()
                 body_sample = resp.read(8192).decode("utf-8", errors="ignore")

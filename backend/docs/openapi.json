@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Personal OS & CRM",
+    "title": "Herald - Multi-Agent Operations Engine",
     "description": "Autopilot-first CRM for service side hustles (layered production-grade backend).",
     "version": "/api/v1"
   },

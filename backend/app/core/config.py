@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     )
 
     # Server & Environment
-    PROJECT_NAME: str = Field(default="Personal OS & CRM", description="Project application name")
+    PROJECT_NAME: str = Field(default="Herald - Multi-Agent Operations Engine", description="Project application name")
     API_V1_STR: str = Field(default="/api/v1", description="API v1 prefix")
     ENVIRONMENT: str = Field(
         default="development", description="Runtime environment: development | staging | production"
@@ -113,7 +113,7 @@ class Settings(BaseSettings):
         default=90, description="Subprocess timeout in seconds per clinic recording"
     )
     CONTACT_USER_AGENT: str = Field(
-        default="PersonalOS-Autopilot/2.0 (contact: info@example.com)",
+        default="Herald-Autopilot/2.0 (contact: info@example.com)",
         description="User-Agent header including contact information for external APIs",
     )
 

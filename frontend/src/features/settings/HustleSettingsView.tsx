@@ -304,11 +304,11 @@ export function HustleSettingsView() {
   const mcpConfigSnippet = JSON.stringify(
     {
       mcpServers: {
-        "firstmate-crm": {
+        "herald-mcp": {
           command:
-            "/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/backend/.venv/bin/python3",
+            "/path/to/herald/backend/.venv/bin/python3",
           args: [
-            "/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/backend/mcp_server.py",
+            "/path/to/herald/backend/mcp_server.py",
           ],
         },
       },
@@ -346,7 +346,7 @@ export function HustleSettingsView() {
     },
     appearance: {
       title: "Appearance & UI Preferences",
-      subtitle: "Themes, motion preferences, and density configuration for Personal OS",
+      subtitle: "Themes, motion preferences, and density configuration for Herald",
     },
     profile: {
       title: "Operator Profile & Identity",
@@ -687,7 +687,7 @@ export function HustleSettingsView() {
                 )}
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                Instagram discovery is maintained in Personal OS for other agency hustles, but is strictly turned OFF for Dental Clinics (which find higher conversion from verified Google Maps &amp; Practo records).
+                Instagram discovery is maintained in Herald for other agency hustles, but is strictly turned OFF for Dental Clinics (which find higher conversion from verified Google Maps &amp; Practo records).
               </p>
             </div>
 
@@ -1086,7 +1086,7 @@ export function HustleSettingsView() {
                 <div className="flex items-center gap-2">
                   <Cpu className="w-4 h-4 text-zinc-900 dark:text-white" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    FirstMate Personal OS MCP Server
+                    Herald Operations MCP Server
                   </h3>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold">
                     v2.0.0
@@ -1465,7 +1465,7 @@ export function HustleSettingsView() {
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/30 border border-slate-200/60 dark:border-zinc-700/60 text-[11px] text-slate-400 flex items-center gap-2">
               <User className="w-4 h-4 text-slate-500 shrink-0" />
               <span>
-                Personal OS is client-authenticated. Operator identity is stored in local storage and persists across page reloads.
+                Herald is client-authenticated. Operator identity is stored in local storage and persists across page reloads.
               </span>
             </div>
           </div>

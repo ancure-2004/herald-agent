@@ -19,5 +19,5 @@ def test_root_endpoint(client):
     res = client.get("/")
     assert res.status_code == 200
     data = res.json()
-    assert data["name"] == "Personal OS & CRM"
+    assert data["name"] == "Herald - Multi-Agent Operations Engine"
     assert data["health"] == "/api/health"

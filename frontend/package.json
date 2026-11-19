@@ -1,6 +1,6 @@
 {
-  "name": "personal-os-crm-frontend",
-  "version": "1.0.0",
+  "name": "herald-frontend",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --webpack --port 3000",

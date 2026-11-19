@@ -1,6 +1,6 @@
-# Personal OS & CRM - Backend API
+# Herald - Backend API
 
-Production-grade, modular, layered FastAPI backend for Personal OS & CRM side-hustle automation.
+Production-grade, modular, layered FastAPI backend for Herald multi-agent operations engine.
 
 ---
 

@@ -1,1 +1,1 @@
-"""Personal OS & CRM Backend Package."""
+"""Herald Backend Package."""

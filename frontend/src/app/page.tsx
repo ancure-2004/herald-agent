@@ -66,7 +66,7 @@ function CRMContent() {
         >
           {loading ? (
             <div className="p-8 sm:p-16 text-center text-sm text-slate-500 dark:text-slate-400">
-              Loading Personal OS CRM...
+              Loading Herald Operations Engine...
             </div>
           ) : (
             <>
@@ -94,7 +94,7 @@ function CRMContent() {
   );
 }
 
-export default function PersonalOSCRM() {
+export default function HeraldApp() {
   return (
     <CRMProvider>
       <CRMContent />

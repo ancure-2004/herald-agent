@@ -3,7 +3,7 @@ from app.core.config import Settings, get_settings
 
 def test_settings_defaults():
     settings = get_settings()
-    assert settings.PROJECT_NAME == "Personal OS & CRM"
+    assert settings.PROJECT_NAME == "Herald - Multi-Agent Operations Engine"
     assert settings.API_V1_STR == "/api/v1"
     assert settings.PORT == 8000
     assert "http://localhost:3000" in settings.cors_origins_list

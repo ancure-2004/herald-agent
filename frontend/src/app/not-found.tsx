@@ -12,7 +12,7 @@ export default function NotFound() {
         <div className="space-y-1">
           <h2 className="text-xl font-black text-slate-900 dark:text-white">404 - Page Not Found</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            The requested route does not exist in the Personal OS workspace.
+            The requested route does not exist in the Herald workspace.
           </p>
         </div>
 

@@ -156,7 +156,7 @@ class MessageService:
 
     @staticmethod
     def modify_message_blocked() -> None:
-        raise MethodNotAllowedError("Messages are immutable in Personal OS and can never be edited or deleted.")
+        raise MethodNotAllowedError("Messages are immutable in Herald and can never be edited or deleted.")
 
     @staticmethod
     def confirm_commitment(db: Session, commitment_id: int) -> Dict[str, Any]:

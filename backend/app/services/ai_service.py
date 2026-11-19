@@ -20,7 +20,7 @@ LOCAL_CLI_DEFAULT_MODEL = "gemini-3.8-flash-low"
 
 
 class LLMProvider(ABC):
-    """Abstract base class for all LLM providers in PersonalOS & CRM."""
+    """Abstract base class for all LLM providers in Herald."""
 
     @abstractmethod
     def generate_json(
@@ -50,7 +50,7 @@ class LocalCLIProvider(LLMProvider):
 
     def _get_isolated_env(self) -> Dict[str, str]:
         env = os.environ.copy()
-        sandbox_home = os.path.expanduser("~/.personalos-agy-sandbox")
+        sandbox_home = os.path.expanduser("~/.herald-agy-sandbox")
         os.makedirs(sandbox_home, exist_ok=True)
         env["HOME"] = sandbox_home
         return env
@@ -559,7 +559,7 @@ class AIService:
         for m in recent_thread:
             direction = getattr(m, "direction", None) or (m.get("direction") if isinstance(m, dict) else "")
             text = getattr(m, "text", None) or (m.get("text") if isinstance(m, dict) else "")
-            role = "Lead/Doctor" if direction == "inbound" else "Firstmate/Outreach"
+            role = "Lead/Doctor" if direction == "inbound" else "Herald/Outreach"
             t_str = get_msg_time(m)
             thread_lines.append(f"[{t_str}] {role}: {text}")
             if direction == "inbound":
@@ -568,7 +568,7 @@ class AIService:
         thread_history_block = "\n".join(thread_lines) if thread_lines else "No previous messages."
 
         prompt = (
-            f"You are Firstmate AI copilot for dental clinic outreach in Delhi NCR.\n"
+            f"You are Herald AI copilot for dental clinic outreach in Delhi NCR.\n"
             f"Lead Profile: {clinic_name} in {locality}. Doctor: Dr. {doctor_clean}.\n"
             f"Recent Conversation Thread (Chronological):\n{thread_history_block}\n\n"
             f"Latest Inbound Reply From Doctor: '{last_inbound_text}'\n\n"
@@ -640,7 +640,7 @@ class AIService:
         locality = getattr(lead, "locality", "") or (lead.get("locality") if isinstance(lead, dict) else "Delhi NCR")
 
         prompt = (
-            f"You are Firstmate AI structuring a phone call with Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
+            f"You are Herald AI structuring a phone call with Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
             f"Raw Transcript:\n'''\n{raw_text[:2000]}\n'''\n\n"
             "Return a JSON object with exactly these keys:\n"
             "1. 'summary': string (2-3 sentences summary of the call)\n"
@@ -752,7 +752,7 @@ class AIService:
 
         if sorted_calls:
             prompt = (
-                f"You are Firstmate AI generating an ongoing pre-call follow-up brief for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
+                f"You are Herald AI generating an ongoing pre-call follow-up brief for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
                 f"Past Calls History (Chronological):\n{chr(10).join(chronological_call_summaries)}\n\n"
                 f"Known Doctor Objections Across Calls: {json.dumps(key_objections)}\n"
                 f"Past Commitments Across Calls: {json.dumps(past_commitments)}\n\n"
@@ -764,7 +764,7 @@ class AIService:
             )
         else:
             prompt = (
-                f"You are Firstmate AI generating a tailored first-time discovery call script for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
+                f"You are Herald AI generating a tailored first-time discovery call script for Dr. {doctor_clean} of {clinic_name} in {locality}.\n"
                 "There are no prior phone calls logged with this clinic yet.\n\n"
                 "Return JSON object with exactly these keys:\n"
                 "1. 'prep_brief': string (structured first-time discovery call script: 1) Warm doctor-centric opener acknowledging OPD hours, 2) Hook on patient acquisition & direct WhatsApp OPD booking vs Practo cuts, 3) 2-minute demo offer of the 3 custom clinic sites already built, 4) Closing question to confirm mutual fit)\n"

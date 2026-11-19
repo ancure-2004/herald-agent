@@ -253,7 +253,7 @@ class AssistantService:
 
         # 3. Agentic Prompt defining v1 Tools - Turn 1
         agent_system = (
-            "You are Firstmate Ask & Do Agent for PersonalOS & CRM.\n"
+            "You are Herald Ask & Do Agent for Herald Multi-Agent Operations Engine.\n"
             "You operate in unified Ask & Do mode: you can both answer questions and execute CRM actions.\n"
             "You have access to live CRM tools:\n"
             "1. search_leads(query: str, stage: str, locality: str)\n"
@@ -391,7 +391,7 @@ class AssistantService:
         if has_action_intent and not has_executed_action and not pending_actions and matched_leads:
             top_lead = matched_leads[0]
             chain_prompt = (
-                "You are Firstmate Ask & Do Agent for PersonalOS & CRM in unified mode.\n"
+                "You are Herald Ask & Do Agent for Herald Multi-Agent Operations Engine in unified mode.\n"
                 f"User original query: '{prompt}'\n\n"
                 f"Lead found from search:\nID: {top_lead['id']}, Name: {top_lead['name']}, Doctor: {top_lead.get('doctor_name', '')}, Stage: {top_lead.get('status', '')}\n\n"
                 "The user requested an action for this lead. Execute the appropriate tool call now:\n"
@@ -435,7 +435,7 @@ class AssistantService:
                     tool_outputs_summary.append(f"Tool '{t_n}' error:\n{act['error']}")
 
             synthesis_prompt = (
-                "You are Firstmate Ask & Do Agent for PersonalOS & CRM in unified mode.\n"
+                "You are Herald Ask & Do Agent for Herald Multi-Agent Operations Engine in unified mode.\n"
                 f"User original query: '{prompt}'\n\n"
                 f"Retrieved CRM Context:\n{retrieved_context}\n\n"
                 "The following tools were executed with real CRM data:\n"
