@@ -1,6 +1,8 @@
 # Documentation Index
 
-Welcome to the Personal OS & CRM documentation. This index organizes the architectural specifications, audit trails, and operating guides.
+Welcome to the Herald Agent documentation. This index organizes the architectural specifications, audit trails, and operating guides.
+
+- [vision.md](vision.md) - Long-term Herald Agent vision (autonomous core, niche packs, social/video automation, personal assistant, companion mobile app).
 
 ## Architecture (`docs/architecture/`)
 

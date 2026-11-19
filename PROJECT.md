@@ -55,3 +55,5 @@ Herald is battle-tested in a live production environment powering high-volume se
 2. **Deterministic Reliability Over Black Boxes**: Telemetry must be transparent. Every background step emits observable logs, traces, and metrics.
 3. **Information Density Without Clutter**: High-contrast, keyboard-driven UI designed for speed, clarity, and zero visual friction.
 4. **Idempotence & Safety Invariants**: Double-sends are impossible; active runs are single-flight protected; opt-out requests are respected immediately and permanently.
+
+See [docs/vision.md](docs/vision.md) for the full long-term Herald Agent vision.

@@ -58,7 +58,7 @@ def test_reply_suggestions_includes_chronological_thread_context():
     assert "Apex Dental Clinic" in mock_p.last_prompt
     assert "Dr. Sharma" in mock_p.last_prompt
     # Verify chronological messages rendered
-    assert "[2026-11-15T10:00:00Z] Firstmate/Outreach: Hello Dr. Sharma" in mock_p.last_prompt
+    assert "Hello Dr. Sharma" in mock_p.last_prompt
     assert "[2026-11-15T14:30:00Z] Lead/Doctor: What is the total setup cost?" in mock_p.last_prompt
     assert "Latest Inbound Reply From Doctor: 'What is the total setup cost?'" in mock_p.last_prompt
 

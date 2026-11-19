@@ -106,11 +106,13 @@ Combining an executive command center with an autonomous acquisition factory, He
 Clone the repository and launch both the backend and frontend services using the root startup script:
 
 ```bash
-git clone https://github.com/ancure-2004/herald.git
-cd herald
+git clone https://github.com/ancure-2004/herald-agent.git
+cd herald-agent
 chmod +x start.sh
 ./start.sh
 ```
+
+See [docs/vision.md](docs/vision.md) for the long-term Herald Agent roadmap.
 
 - **Frontend Application**: `http://localhost:3000`
 - **Backend API**: `http://localhost:8000`

@@ -83,7 +83,7 @@ The following legacy wrappers were completely removed from `TOOLS` and tool disp
 
 ## 5. Verification & Testing
 
-A dedicated test suite was added in `backend/tests/test_mcp_server.py`:
+A dedicated test suite was added in `tests/backend/test_mcp_server.py`:
 - `test_mcp_tools_list`: Asserts all 11 new tools exist and all 4 obsolete tools are removed.
 - `test_mcp_initialize`: Verifies MCP JSON-RPC protocol handshake (`2024-11-05`, server name and version).
 - `test_mcp_add_and_list_leads`: Verifies single lead creation with auto-slugging and search retrieval.
