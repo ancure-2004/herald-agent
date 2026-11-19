@@ -1,139 +1,215 @@
-# PersonalOS & Autopilot CRM
+# Herald - Personal Automation OS
 
-> **Executive Autopilot Command Center & Kanban CRM for Solo Hustles**  
-> Inspired by the visual elegance of **Homies Lab** and the deal execution speed of **CustomerGo**.
+> **Autonomous Flight Deck & Execution Operating System for High-Velocity Solo Operators**  
+> Streamline client discovery, demo asset generation, safe multi-channel outreach, and deal execution with native Model Context Protocol (MCP v2.0.0) support.
 
 ---
 
 ## Overview
 
-**PersonalOS CRM** is a keyboard-first, high-performance business operating system built for solo founders running high-ticket agency and service side-hustles (specifically configured for the Dental Clinic Website Engine).
+**Herald** is an open-source, keyboard-first Personal Automation Operating System built to eliminate operational drag for solo founders, creators, and agency builders.
 
-It pairs an executive daily command center with an optimistic drag-and-drop pipeline board, backed by an autonomous 7-step lead verification autopilot.
-
----
-
-## Core Capabilities
-
-### 1. Homies Lab Executive Dashboard
-- **Daily Command Greeting**: Contextual greeting with date and mode switcher (Normal, Away, Off).
-- **KPI Health Rings & Metrics**: Circular progress meters displaying real-time stock buffer health and target closing value.
-- **Urgent Action Queue**: Priority-ordered next steps with warm gradient highlight cards.
-- **Channel Outreach Limits**: Real-time safety bars for WhatsApp, Instagram, and Email warmup limits.
-- **Priority Clinic Table**: Recent priority clinic prospects with instant deep-inspection.
-
-### 2. CustomerGo Kanban Board
-- **Drag & Drop Deal Cards**: Native drag-and-drop across customizable stages with optimistic UI updates and live backend sync.
-- **Visual Intelligence**: Deal values, 5-star fit ratings, locality pins, and translucent pastel tags.
-- **Nested Smart Queues**: Expandable file-tree sub-navigation nested directly under the board (Review Tray, Due Today, Hot Intent, Active Replies, Archived).
-
-### 3. Claude-Style Global Command Palette
-- **Global Shortcut**: Press `⌘K` or `Ctrl+K` from anywhere in the app to open.
-- **Instant Search**: In-memory, zero-latency search across clinic names, doctor names, localities, phone numbers, and next steps.
-- **Quick Action Commands**: Run autopilot refills, verify live preview links, switch modes, export CSVs, and trigger diagnostic briefs in one keystroke.
-
-### 4. Dual-Collapsed Floating Dock
-- **Width & Height Collapse**: Instead of stretching an empty sidebar down the entire screen, the sidebar collapses into a floating, compact glass dock anchored on the left.
-- **Big Centered Icons**: Displays prominent `w-12 h-12` buttons with active status rings and tooltips.
-
-### 5. 7-Step Acquisition Autopilot Engine
-- Enforces strict operational invariants:
-  1. **No-Website Verification**: Prospects must have no active mobile website.
-  2. **2-Source Fact Rule**: Contact and doctor details verified across at least 2 independent sources.
-  3. **Live HTTP 200 Verification**: Automatically validates all 3 multi-template preview links before queueing outreach.
-  4. **Pipedrive Mandatory Next Action**: Every lead must have a scheduled next step and due date.
+Combining an executive command center with an autonomous acquisition factory, Herald handles the entire outbound lifecycle:
+1. **Discovers & Verifies Prospects**: Multi-provider waterfall (Google Places, Overpass OSM, local cache) with strict no-website and active-phone validation.
+2. **Scaffolds Live Interactive Collateral**: Generates 3-design Next.js websites and records high-definition walkthrough videos.
+3. **Guards Outbound Communications**: Multi-channel outreach (WhatsApp, Instagram, Email) with database-persisted Dry/Safe Mode, daily channel quotas, and automated opt-out compliance.
+4. **Empowers AI Agent Coordination**: Native Model Context Protocol (MCP v2.0.0) server exposing 11 tools to AI assistants (Claude, Cursor, AGY) alongside an in-app Hybrid RAG "Ask & Do" copilot.
 
 ---
 
-## Tech Stack
+## System Architecture
 
-- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Lucide React
-- **Backend**: FastAPI (Python 3.12+), SQLite with SQLAlchemy ORM, Pydantic v2, Uvicorn
-- **Design System**: Dual-mode theme supporting Homies Lab Warm Cream (`#FAF8F5`) and Obsidian Carbon (`#0B0C10`)
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       External AI Agents (Cursor, Claude, AGY)              │
+│                                           │                                 │
+│                                           ▼                                 │
+│                          Model Context Protocol (MCP v2.0.0)                │
+│                                    (backend/mcp_server.py)                  │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │
+                                       ▼ (Direct DB Lock / Session Local)
+┌──────────────────────────────────────┴──────────────────────────────────────┐
+│                                FastAPI Backend                              │
+│ ┌─────────────────────────────────────────────────────────────────────────┐ │
+│ │ Controllers & API Routers (Leads, Hustles, Messages, Calls, Autopilot)  │ │
+│ └────────────────────────────────────┬────────────────────────────────────┘ │
+│                                      │                                      │
+│ ┌────────────────────────────────────▼────────────────────────────────────┐ │
+│ │ Services Layer                                                          │ │
+│ │ • PipelineService: Cross-Process RunLog DB Locking & Orchestration      │ │
+│ │ • DiscoveryService: Waterfall Scrapers (Google, Overpass, Local)        │ │
+│ │ • DemoFactoryService: 3-Template Scaffolder + 1-by-1 Walkthrough Engine │ │
+│ │ • OutreachService: Safe/Dry-Mode Dispatchers (WhatsApp, Instagram, Mail)│ │
+│ │ • RAGService: Hybrid Semantic + Lexical Context Vector Retrieval        │ │
+│ │ • AgentTools: Unified Copilot Action Suite (Draft, Log, Transition)    │ │
+│ └────────────────────────────────────┬────────────────────────────────────┘ │
+│                                      │                                      │
+│ ┌────────────────────────────────────▼────────────────────────────────────┐ │
+│ │ Storage & State: SQLite / PostgreSQL (SQLAlchemy ORM)                   │ │
+│ └─────────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────▲──────────────────────────────────────┘
+                                       │ (REST API + SSE Live Stream)
+┌──────────────────────────────────────┴──────────────────────────────────────┐
+│                        Next.js Frontend (Single Viewport)                   │
+│ • Executive Command Dashboard & Kanban Deal Pipeline                       │
+│ • Discovery Console (Real-time Filter Funnel & Telemetry Terminal)          │
+│ • Demo Factory Console (1-by-1 Sequential Video Preview & Matrix)           │
+│ • Outreach Console (Safe/Dry-Mode Controls & Dispatchers)                  │
+│ • Ask & Do Unified Copilot Drawer (Hybrid RAG + Action Execution)           │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Getting Started
+## Key Features
+
+### 1. Autopilot Discovery & Waterfall Scraper
+- **Multi-Source Ingestion**: Waterfall progression across Google Places API (with soft-limit QuotaGuard protection) and OpenStreetMap Overpass API.
+- **Strict Qualification Rules**: Drops prospects that already have active official domains or lack verified direct contact channels.
+- **Cross-Process DB Locking**: The `runs` table acts as a single-flight mutex across CLI scripts, background workers, and MCP server requests. Active runs block concurrent triggers with HTTP 409 Conflict.
+- **Live SSE Telemetry**: Real-time log streaming and interactive 4-stage funnel visualization (Raw Scanned → No Website → Mobile Verified → Staged).
+
+### 2. Demo Factory & 1-by-1 Video Recorder
+- **Multi-Template Scaffolding**: Automatically builds and audits 3 responsive demo website themes (`Modern`, `Premium`, `Warm`).
+- **Sequential Walkthrough Recorder**: Playwright + FFmpeg engine captures HD walkthrough videos sequentially (1-by-1) to eliminate resource contention and video glitches.
+- **Multi-Device Drawer**: Instant interactive preview across Mobile, Tablet, and Desktop viewport shells.
+
+### 3. Outreach Hub with Persisted Safe Mode
+- **Database-Persisted Dry/Safe Mode**: Outreach mode is stored in the database (`Hustle.safe_mode`). Safe mode prevents accidental live sends even if the server restarts.
+- **Strict Compliance Invariants**:
+  - Daily channel rate limits for WhatsApp, Instagram, and Email.
+  - Automatic `do_not_contact` activation and outbox purge upon detecting stop/unsubscribe intent.
+  - Idempotent delivery keys (`lead_id + channel + stage`) preventing duplicate messages.
+
+### 4. Model Context Protocol (MCP v2.0.0) & AI Copilot
+- **11 Native MCP Tools**: Connect your favorite AI agent to query dossiers, draft outreach, record calls, and trigger autopilot pipelines:
+  - `add_lead`, `bulk_add_leads`, `list_leads`, `get_lead_dossier`, `move_lead_stage`, `get_lead_activity`
+  - `send_message`, `log_call`
+  - `run_discovery`, `run_demo_factory`, `run_batch_outreach`
+- **Hybrid RAG "Ask & Do" Copilot**: Combines vector semantic search and BM25 lexical indexing over sales playbooks, objection notes, and lead facts.
+
+### 5. "Obsidian Flight Deck" UI/UX
+- **Keyboard-First Navigation**: Global command palette (`⌘K`), quick-action hotkeys, and table focus navigation.
+- **Zero Document Scroll**: Single-viewport fixed shell (`h-full w-full overflow-hidden`) with internal scroll containment.
+- **High-Density Information Architecture**: Optimized contrast, JetBrains Mono telemetry, and custom pill indicators.
+
+---
+
+## Quickstart
 
 ### Prerequisites
-- Node.js 18+ (tested on Node 20 & 26)
-- Python 3.10+ (tested on Python 3.12)
+- Node.js 18+ (Node 20+ recommended)
+- Python 3.10+ (Python 3.12+ recommended)
 
-### 1. Quickstart (One Command)
-Run both backend and frontend with the root startup script:
+### 1. One-Command Launch
+Clone the repository and launch both the backend and frontend services using the root startup script:
 
 ```bash
+git clone https://github.com/ancure-2004/herald.git
+cd herald
 chmod +x start_crm.sh
 ./start_crm.sh
 ```
 
-- **Frontend**: `http://localhost:3000`
+- **Frontend Application**: `http://localhost:3000`
 - **Backend API**: `http://localhost:8000`
-- **Interactive Swagger Docs**: `http://localhost:8000/docs`
+- **Interactive API Docs (Swagger)**: `http://localhost:8000/docs`
 
 ---
 
-### 2. Manual Setup
+### 2. Manual Installation
 
-#### Backend Setup
+#### Backend
 ```bash
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### Frontend Setup
+#### Frontend
 ```bash
 cd frontend
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
 ---
 
-## Project Structure
+## Model Context Protocol (MCP) Setup
+
+To connect Herald to Claude Desktop or Cursor:
+
+```json
+{
+  "mcpServers": {
+    "herald": {
+      "command": "/path/to/herald/backend/.venv/bin/python",
+      "args": ["/path/to/herald/backend/mcp_server.py"],
+      "env": {
+        "DATABASE_URL": "sqlite:////path/to/herald/backend/personal_os.db"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Repository Layout
 
 ```
-PersonalOS and CRM/
+herald/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py          # FastAPI application entrypoint
-│   │   ├── database.py      # SQLite connection & session management
-│   │   ├── models.py        # SQLAlchemy models (Lead, Hustle, Stage, Package, RunLog)
-│   │   ├── schemas.py       # Pydantic validation schemas
-│   │   └── routers/         # REST API endpoints (leads, hustles, autopilot, diagnostics)
+│   │   ├── api/             # REST API routers & endpoint definitions
+│   │   ├── autopilot/       # Discovery, verification, and recording engines
+│   │   ├── controllers/     # Business logic controllers
+│   │   ├── models/          # SQLAlchemy database entities
+│   │   ├── schemas/         # Pydantic validation schemas
+│   │   └── services/        # Pipeline, RAG, agent tools, and safety services
 │   ├── tests/               # Backend pytest suite
+│   ├── mcp_server.py        # Model Context Protocol v2.0.0 server
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── app/
-│   │   │   ├── layout.tsx   # Root layout with viewport locks
-│   │   │   ├── globals.css  # Obsidian carbon & warm cream theme tokens
-│   │   │   └── page.tsx     # Unified PersonalOS CRM application
-│   │   └── lib/
-│   │       └── api.ts       # Type-safe client fetcher & model definitions
-│   ├── tailwind.config.ts   # Design tokens & color extensions
-│   └── package.json
-├── design-system/           # Design system tokens and specifications
-├── start_crm.sh             # Combined daemon runner script
+│   │   ├── app/             # Next.js App Router root layout & views
+│   │   ├── components/      # Reusable UI components & modals
+│   │   ├── context/         # CRM state & real-time telemetry providers
+│   │   └── features/        # Cockpit, Dashboard, Inbox, and Settings features
+│   ├── package.json
+│   └── tailwind.config.ts
+├── docs/                    # Architectural plans, design specifications, and audits
+├── tests/                   # Unified E2E opaque-box and UI validation test suites
+├── start_crm.sh             # Unified startup daemon script
+├── PROJECT.md               # Project manifesto, current state, and roadmap
+├── LICENSE                  # MIT Open Source License
 └── README.md
 ```
 
 ---
 
-## Keyboard Shortcuts
+## Testing & Quality Assurance
 
-| Shortcut | Action |
-| :--- | :--- |
-| `⌘K` / `Ctrl+K` | Open Claude-style Command Palette & Lead Search |
-| `ESC` | Dismiss Command Palette or Floating Modals |
-| `Tab` / `Shift+Tab` | Cycle through interactive inputs |
-| `Arrow Up / Down` | Navigate search results and quick action commands |
+Run the complete test suite to verify system integrity:
+
+```bash
+# Backend Unit & Integration Tests
+cd backend && .venv/bin/pytest -v
+
+# Root Opaque-Box E2E Suite (4 Tiers / 72 Scenarios)
+backend/.venv/bin/python tests/e2e/runner.py
+
+# Frontend Typecheck
+cd frontend && npx tsc --noEmit
+```
 
 ---
 
 ## License
 
-Private & Proprietary. All rights reserved.
+This project is licensed under the [MIT License](LICENSE).
