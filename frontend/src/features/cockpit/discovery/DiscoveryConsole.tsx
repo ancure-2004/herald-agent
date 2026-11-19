@@ -268,6 +268,7 @@ export const DiscoveryConsole: React.FC<DiscoveryConsoleProps> = ({
   const handleClearLogs = () => {
     setLogs([]);
     setNewLogsCount(0);
+    apiFetch("/api/terminal/clear?service=discovery", { method: "POST" }).catch(() => {});
   };
 
   const toggleSqlExpand = (id: number | string) => {

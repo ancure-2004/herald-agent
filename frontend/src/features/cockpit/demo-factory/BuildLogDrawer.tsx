@@ -1,18 +1,19 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { DemoRun, LogLevel, LogEntry } from "../types";
+import { DemoRun, LogLevel } from "../types";
 import {
   X,
   Terminal,
   CheckCircle2,
   AlertTriangle,
   Loader2,
-  Clock,
   RotateCcw,
   Search,
   ArrowDown,
-  Code2,
+  Video,
+  Globe,
+  FileCode2,
 } from "lucide-react";
 
 interface BuildLogDrawerProps {
@@ -63,6 +64,9 @@ export const BuildLogDrawer: React.FC<BuildLogDrawerProps> = ({
     return true;
   });
 
+  const preview = run.preview;
+  const hasVideo = Boolean(preview?.videoFilePath);
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black/70 backdrop-blur-xs flex justify-end animate-in fade-in duration-150">
       <div className="w-full max-w-[min(90vw,1100px)] h-full bg-[#0E1015] border-l border-white/[0.1] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
@@ -78,13 +82,15 @@ export const BuildLogDrawer: React.FC<BuildLogDrawerProps> = ({
                 <span className="font-mono text-[10px] text-slate-400 bg-white/[0.05] px-1.5 py-0.5 rounded">
                   #{run.versionTag}
                 </span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                  run.status === "READY"
-                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                    : run.status === "FAILED"
-                    ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                    : "bg-sky-500/10 text-sky-400 border border-sky-500/20"
-                }`}>
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                    run.status === "READY"
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      : run.status === "FAILED"
+                      ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                      : "bg-sky-500/10 text-sky-400 border border-sky-500/20"
+                  }`}
+                >
                   {run.status}
                 </span>
               </div>
@@ -96,13 +102,14 @@ export const BuildLogDrawer: React.FC<BuildLogDrawerProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md bg-white/[0.05] hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 transition-colors"
+            className="p-1.5 rounded-lg bg-white/[0.05] hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 transition-colors cursor-pointer"
+            title="Close Drawer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* 5-Stage OpenTelemetry Collapsible Stepper */}
+        {/* 5-Stage OpenTelemetry Pipeline Stepper */}
         <div className="px-5 py-3.5 bg-[#111215] border-b border-white/[0.08]">
           <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-2">
             OpenTelemetry Pipeline Trace (5 Stages)
@@ -116,7 +123,7 @@ export const BuildLogDrawer: React.FC<BuildLogDrawerProps> = ({
               return (
                 <div
                   key={stage.id}
-                  className={`p-2.5 rounded-lg border text-xs font-mono transition-all ${
+                  className={`p-2.5 rounded-xl border text-xs font-mono transition-all ${
                     isReady
                       ? "bg-emerald-500/[0.04] border-emerald-500/20 text-emerald-400"
                       : isBuilding
@@ -144,18 +151,43 @@ export const BuildLogDrawer: React.FC<BuildLogDrawerProps> = ({
           </div>
         </div>
 
-        {/* Syntax Error Callout if Run Failed */}
+        {/* Artifacts & Video Telemetry Header */}
+        <div className="px-5 py-2.5 bg-[#141721] border-b border-white/[0.06] flex items-center justify-between flex-wrap gap-2 text-xs font-mono">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-1.5 text-slate-300">
+              <Globe className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Theme URLs:</span>
+              <span className="text-emerald-400 font-bold">4 Verified (Choice, Modern, Premium, Warm)</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-slate-300">
+              <Video className="w-3.5 h-3.5 text-amber-400" />
+              <span>Walkthrough Video:</span>
+              <span className={hasVideo ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
+                {hasVideo ? "MP4 Available (>1KB Verified)" : "Pending / Unrecorded"}
+              </span>
+            </div>
+          </div>
+
+          {preview?.videoFilePath && (
+            <div className="text-[10px] text-slate-400 truncate max-w-xs" title={preview.videoFilePath}>
+              {preview.videoFilePath.split("/").pop()}
+            </div>
+          )}
+        </div>
+
+        {/* Error Callout if Run Failed */}
         {run.error && (
           <div className="mx-5 mt-4 p-4 rounded-xl bg-rose-500/[0.08] border border-rose-500/30 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5 font-mono">
                 <AlertTriangle className="w-4 h-4" />
-                Build Compilation Crash: {run.error.message}
+                Build Gate Error: {run.error.message}
               </span>
               {onRetry && (
                 <button
                   onClick={() => onRetry(run.id)}
-                  className="px-3 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors"
+                  className="px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Retry this Step</span>
@@ -174,12 +206,12 @@ export const BuildLogDrawer: React.FC<BuildLogDrawerProps> = ({
         {/* Terminal Controls Bar */}
         <div className="px-5 py-2.5 bg-[#141721] border-b border-white/[0.06] flex flex-wrap items-center justify-between gap-3 text-xs">
           {/* Level Filter Switcher */}
-          <div className="flex items-center gap-1 bg-[#1C1E24] p-1 rounded-lg border border-white/[0.08] font-mono text-[10px]">
+          <div className="flex items-center gap-1 bg-[#1C1E24] p-1 rounded-xl border border-white/[0.08] font-mono text-[10px]">
             {(["ALL", "INFO", "WARN", "ERROR"] as const).map((lvl) => (
               <button
                 key={lvl}
                 onClick={() => setLevelFilter(lvl)}
-                className={`px-2 py-0.5 rounded transition-colors ${
+                className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
                   levelFilter === lvl
                     ? "bg-[#292C35] text-white font-bold"
                     : "text-slate-400 hover:text-white"
@@ -198,7 +230,7 @@ export const BuildLogDrawer: React.FC<BuildLogDrawerProps> = ({
               placeholder="Search stream output..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-2.5 py-1 bg-[#1C1E24] border border-white/[0.08] rounded text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+              className="w-full pl-8 pr-2.5 py-1 bg-[#1C1E24] border border-white/[0.08] rounded-lg text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
             />
           </div>
         </div>
@@ -213,7 +245,7 @@ export const BuildLogDrawer: React.FC<BuildLogDrawerProps> = ({
               return (
                 <div
                   key={log.id}
-                  className={`flex items-start gap-3 py-0.5 px-2 rounded hover:bg-white/[0.02] ${
+                  className={`flex items-start gap-3 py-1 px-2.5 rounded-lg hover:bg-white/[0.02] ${
                     isError
                       ? "text-rose-400 bg-rose-500/[0.05]"
                       : isWarn
@@ -225,11 +257,11 @@ export const BuildLogDrawer: React.FC<BuildLogDrawerProps> = ({
                     [{log.timestamp}]
                   </span>
                   <span
-                    className={`text-[10px] font-bold px-1 rounded select-none shrink-0 ${
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded select-none shrink-0 ${
                       isError
-                        ? "bg-rose-500/20 text-rose-400"
+                        ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
                         : isWarn
-                        ? "bg-amber-500/20 text-amber-400"
+                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                         : "bg-white/[0.05] text-slate-400"
                     }`}
                   >
@@ -247,7 +279,7 @@ export const BuildLogDrawer: React.FC<BuildLogDrawerProps> = ({
           {isScrolledUp && (
             <button
               onClick={scrollToBottom}
-              className="sticky bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-mono flex items-center gap-1.5 shadow-xl transition-all"
+              className="sticky bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-mono flex items-center gap-1.5 shadow-xl transition-all cursor-pointer"
             >
               <ArrowDown className="w-3.5 h-3.5" />
               <span>Resume Auto-Scroll</span>

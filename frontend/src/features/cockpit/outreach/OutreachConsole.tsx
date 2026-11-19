@@ -339,6 +339,7 @@ export const OutreachConsole: React.FC<OutreachConsoleProps> = ({
   const handleClearLogs = () => {
     setLogs([]);
     setNewLogsCount(0);
+    apiFetch("/api/terminal/clear?service=outreach", { method: "POST" }).catch(() => {});
   };
 
   const toggleSqlExpand = (id: number | string) => {

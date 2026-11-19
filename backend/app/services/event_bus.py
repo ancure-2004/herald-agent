@@ -61,7 +61,7 @@ def emit_terminal_log(
     src_lower = source.lower()
     if "discover" in src_lower or "scout" in src_lower:
         service = "discovery"
-    elif "build" in src_lower or "factory" in src_lower or "auditor" in src_lower:
+    elif "build" in src_lower or "factory" in src_lower or "auditor" in src_lower or "record" in src_lower or "video" in src_lower or "walkthrough" in src_lower or "verify" in src_lower:
         service = "building"
     elif "outreach" in src_lower or "closer" in src_lower or "call" in src_lower or "message" in src_lower:
         service = "outreach"
@@ -170,7 +170,69 @@ def emit_terminal_log(
             "timestamp": now.isoformat(),
         },
     )
+    # Also flush directly to backend uvicorn terminal / stdout
+    try:
+        import sys as _sys
+        print(formatted, file=_sys.stdout, flush=True)
+    except Exception:
+        pass
     return formatted
+
+
+_CLEARED_KEY_PREFIX = "terminal_cleared_at:"
+
+
+def _start_of_today() -> datetime:
+    return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def _service_key(service: Optional[str]) -> str:
+    s = (service or "all").strip().lower()
+    return s or "all"
+
+
+def clear_terminal_logs(db: Any, service: Optional[str] = None) -> Dict[str, Any]:
+    """Persist a 'cleared at' marker for a service (or all) and drop matching buffered lines.
+
+    Rows stay in the DB for audit; get_terminal_logs ignores anything older than the marker.
+    """
+    from app.models.entities import AppSetting
+
+    key = _service_key(service)
+    now = datetime.now()
+    row = db.query(AppSetting).filter(AppSetting.key == _CLEARED_KEY_PREFIX + key).first()
+    if row:
+        row.value = now.isoformat()
+    else:
+        db.add(AppSetting(key=_CLEARED_KEY_PREFIX + key, value=now.isoformat()))
+    db.commit()
+
+    TERMINAL_LOG_BUFFER[:] = [
+        b for b in TERMINAL_LOG_BUFFER
+        if key != "all" and (b.get("service") or "").lower() != key
+    ]
+    return {"ok": True, "service": key, "cleared_at": now.isoformat()}
+
+
+def _terminal_cutoff(db: Any, service: Optional[str]) -> datetime:
+    """Latest of: start of today (local) and the last explicit clear for this service / all."""
+    cutoff = _start_of_today()
+    if db is None:
+        return cutoff
+    try:
+        from app.models.entities import AppSetting
+
+        keys = {_CLEARED_KEY_PREFIX + "all", _CLEARED_KEY_PREFIX + _service_key(service)}
+        for row in db.query(AppSetting).filter(AppSetting.key.in_(list(keys))).all():
+            try:
+                ts = datetime.fromisoformat(row.value)
+                if ts > cutoff:
+                    cutoff = ts
+            except (TypeError, ValueError):
+                continue
+    except Exception:
+        pass
+    return cutoff
 
 
 def get_terminal_logs(
@@ -183,6 +245,7 @@ def get_terminal_logs(
 ) -> Any:
     """Fetches terminal logs from persistent store and merges with active buffer with query filtering."""
     merged_logs: List[Dict[str, Any]] = []
+    cutoff = _terminal_cutoff(db, service)
     # Item 14: Track DB row IDs (not messages) to avoid duplicating rows that are
     # already in the in-memory buffer.  Identical message text from different steps
     # must NOT be collapsed — only exact same DB row id is a true duplicate.
@@ -193,7 +256,7 @@ def get_terminal_logs(
         try:
             from app.models.entities import TerminalLog
 
-            query = db.query(TerminalLog)
+            query = db.query(TerminalLog).filter(TerminalLog.created_at >= cutoff)
             if service and service.strip().lower() != "all":
                 query = query.filter(TerminalLog.service == service.strip().lower())
             if level:
@@ -240,6 +303,11 @@ def get_terminal_logs(
             continue
         if since_seq is not None and b_seq <= since_seq:
             continue
+        try:
+            if datetime.fromisoformat(b_log.get("timestamp") or "") < cutoff:
+                continue
+        except (TypeError, ValueError):
+            pass
 
         # Only skip if this buffer entry is already represented by a DB row
         if b_id and b_id in seen_db_ids:

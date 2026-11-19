@@ -11,6 +11,7 @@ router = APIRouter(tags=["Events & Telemetry"])
 
 
 @router.get("/events")
+@router.get("/events/stream")
 def stream_events():
     """Server-Sent Events endpoint streaming pipeline progress and agent logs."""
     return StreamingResponse(
@@ -18,6 +19,19 @@ def stream_events():
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
     )
+
+
+@router.post("/terminal/clear")
+@router.post("/events/clear")
+@router.delete("/events")
+def clear_terminal_logs_endpoint(
+    service: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+) -> Any:
+    """Clears the terminal replay for a service (or all): older lines are ignored on reload."""
+    from app.services.event_bus import clear_terminal_logs
+
+    return clear_terminal_logs(db, service)
 
 
 @router.get("/terminal/logs")

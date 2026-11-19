@@ -119,10 +119,10 @@ class DemoFactoryService:
             except Exception as batch_err:
                 emit(f"[DEMO-FACTORY] Note: batch ensure notice: {batch_err}")
 
-            # a) Query candidate staged leads for this hustle
+            # a) Query candidate leads for this hustle: STAGED leads or BUILD_FAILED / unrecorded leads requiring build retry
             q = db.query(Lead).filter(
                 Lead.hustle_id == hustle.id,
-                Lead.status == "STAGED",
+                Lead.status.in_(["STAGED", "BUILD_FAILED"]),
                 Lead.is_archived == False,
             )
             if not testing_mode and hasattr(Lead, "is_test"):
@@ -133,7 +133,7 @@ class DemoFactoryService:
             # Determine target batch_id
             target_batch_id: Optional[str] = batch_id
             if not target_batch_id:
-                # Pick the earliest BATCH-XX that has STAGED leads
+                # Pick the earliest BATCH-XX that has STAGED / BUILD_FAILED leads
                 for l in all_staged:
                     bid = (l.custom_fields or {}).get("batch_id")
                     if bid and bid.startswith("BATCH-"):
@@ -193,6 +193,20 @@ class DemoFactoryService:
                 db.query(Stage).filter(Stage.hustle_id == hustle.id, Stage.slug == "package_ready").first()
             )
             stage_package_ready_id = pkg_stage.id if pkg_stage else 2
+
+            # Immediately mark target batch leads as BUILDING so UI shows live status right away
+            for lead in staged_leads:
+                lead.status = "BUILDING"
+                pkg_existing = (
+                    db.query(Package)
+                    .filter(Package.lead_id == lead.id)
+                    .order_by(Package.id.desc())
+                    .first()
+                )
+                if pkg_existing:
+                    pkg_existing.status = "building"
+            db.commit()
+            broadcast_sse("lead_updated", {"status": "BUILDING", "batch_id": target_batch_id})
 
             built_lead_objects: List[Lead] = []
             failed_leads: List[Dict[str, Any]] = []
@@ -400,6 +414,7 @@ class DemoFactoryService:
                     pkg.status = "video_pending"
 
                 db.commit()
+                broadcast_sse("lead_updated", {"lead_id": lead.id, "status": lead.status, "pkg_status": "video_pending"})
                 built_lead_objects.append(lead)
                 emit(f"[BUILD] ✓ Scaffolding & gate passed for lead #{lead.id}: '{lead.name}'")
 
@@ -435,6 +450,8 @@ class DemoFactoryService:
                     base_url=base_url,
                     log_cb=emit,
                     testing_mode=testing_mode,
+                    cancel_check=lambda: cancel_token.is_cancelled,
+                    promote_to_ready=True,
                 )
 
             # d) State Transition & Immediate Commit
@@ -458,9 +475,14 @@ class DemoFactoryService:
                 if video_ok:
                     lead.status = "DEMO_READY"
                     lead.next_action = "Outreach via WhatsApp"
+                    c_fields = dict(lead.custom_fields or {})
+                    if "build_error" in c_fields:
+                        del c_fields["build_error"]
+                    lead.custom_fields = c_fields
                     if pkg:
                         pkg.status = "ready"
                     db.commit()
+                    broadcast_sse("lead_updated", {"lead_id": lead.id, "status": "DEMO_READY", "pkg_status": "ready"})
                     built_leads.append(
                         {
                             "id": lead.id,
@@ -480,11 +502,20 @@ class DemoFactoryService:
                 else:
                     lead.status = "BUILD_FAILED"
                     c_fields = dict(lead.custom_fields or {})
-                    c_fields["build_error"] = "Walkthrough video recording failed"
+                    if not c_fields.get("build_error"):
+                        c_fields["build_error"] = (
+                            "Walkthrough video recording stopped"
+                            if cancel_token.is_cancelled
+                            else "Walkthrough video recording failed"
+                        )
                     lead.custom_fields = c_fields
                     if pkg:
-                        pkg.status = "failed"
+                        pkg.status = "video_pending" if cancel_token.is_cancelled else "failed"
                     db.commit()
+                    broadcast_sse(
+                        "lead_updated",
+                        {"lead_id": lead.id, "status": "BUILD_FAILED", "pkg_status": pkg.status if pkg else "failed"},
+                    )
                     failed_leads.append(
                         {
                             "id": lead.id,
@@ -495,7 +526,8 @@ class DemoFactoryService:
                             "reason": "Walkthrough video recording failed",
                         }
                     )
-                    emit(f"[FAIL] Walkthrough recording failed for lead #{lead.id} ('{lead.name}')")
+                    if not cancel_token.is_cancelled:
+                        emit(f"[FAIL] Walkthrough recording failed for lead #{lead.id} ('{lead.name}')")
 
             # e) Return structured result
             remaining = cls.get_staged_count(db, hustle_id=hustle.id, testing_mode=testing_mode)
@@ -565,3 +597,287 @@ class DemoFactoryService:
         finally:
             set_autopilot_running(False, run_id=run_log.id)
             JobManager.release_single_flight(run_log.id)
+
+    @classmethod
+    def retry_recordings(
+        cls,
+        db: Session,
+        hustle_id: int = 1,
+        batch_id: Optional[str] = None,
+        testing_mode: bool = False,
+        base_url: Optional[str] = None,
+        log_cb: Optional[Callable[[str], None]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Retries video walkthrough recording for leads that are in BUILD_FAILED,
+        or whose packages have status 'video_pending' / 'failed' or missing video files on disk.
+        Syncs links, runs Playwright recording, and promotes successful candidates to DEMO_READY.
+        """
+        hustle = HustleRepository.get_by_id(db, hustle_id)
+        if not hustle:
+            raise NotFoundError(f"Hustle #{hustle_id} not found")
+
+        ensure_lead_schema(db)
+        base_url = (base_url or os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001")).rstrip("/")
+
+        # Initialize RunLog for visibility and single-flight control
+        run_log = RunLog(
+            hustle_id=hustle.id,
+            job_type="demo_factory_retry_recordings",
+            status="running",
+            count_found=0,
+            count_passed=0,
+            count_dropped=0,
+            drop_reasons={},
+            errors=[],
+            trace_logs=[],
+            started_at=datetime.now(timezone.utc),
+        )
+        db.add(run_log)
+        db.commit()
+        db.refresh(run_log)
+
+        cancel_token = JobManager.acquire_single_flight(run_log.id)
+        set_autopilot_running(True, run_id=run_log.id)
+
+        trace_logs: List[str] = []
+
+        def emit(text: str) -> None:
+            trace_logs.append(text)
+            if log_cb:
+                try:
+                    log_cb(text)
+                except Exception:
+                    pass
+
+        try:
+            pkg_stage = db.query(Stage).filter(Stage.hustle_id == hustle.id, Stage.slug == "package_ready").first()
+            stage_package_ready_id = pkg_stage.id if pkg_stage else 2
+
+            # Find candidate leads: status in ('BUILD_FAILED', 'STAGED', 'DEMO_READY') that have packages with video_pending/failed or missing video
+            leads_query = (
+                db.query(Lead)
+                .filter(
+                    Lead.hustle_id == hustle.id,
+                    Lead.is_archived == False,  # noqa: E712
+                )
+            )
+            if not testing_mode and hasattr(Lead, "is_test"):
+                leads_query = leads_query.filter((Lead.is_test == False) | (Lead.is_test == None))  # noqa: E711, E712
+
+            all_candidate_leads = leads_query.order_by(Lead.id.asc()).all()
+
+            candidates: List[Lead] = []
+            for lead in all_candidate_leads:
+                cf = lead.custom_fields or {}
+                lead_batch = cf.get("batch_id")
+                if batch_id and lead_batch != batch_id:
+                    continue
+
+                pkg = (
+                    db.query(Package)
+                    .filter(Package.lead_id == lead.id)
+                    .order_by(Package.id.desc())
+                    .first()
+                )
+                if not pkg:
+                    continue
+
+                v_path = pkg.video_file_path or ""
+                video_exists = bool(v_path and os.path.exists(v_path) and os.path.getsize(v_path) > 1000)
+
+                # Needs retry if build failed due to walkthrough, video status is pending/failed, or file missing
+                is_unrecorded = (
+                    lead.status == "BUILD_FAILED"
+                    or pkg.status in ("video_pending", "failed")
+                    or not video_exists
+                )
+                if is_unrecorded:
+                    candidates.append(lead)
+
+            emit(f"[RETRY-RECORDER] Found {len(candidates)} candidate leads for video walkthrough retry (batch: {batch_id or 'ALL'}).")
+
+            if not candidates:
+                run_log.status = "succeeded"
+                run_log.finished_at = datetime.now(timezone.utc)
+                db.commit()
+                return {
+                    "status": "succeeded",
+                    "batch_id": batch_id,
+                    "retried_count": 0,
+                    "succeeded_count": 0,
+                    "failed_count": 0,
+                    "leads": [],
+                }
+
+            # Immediately mark all candidate leads & packages as RECORDING so the UI table reflects active recording right away
+            for lead in candidates:
+                lead.status = "RECORDING"
+                pkg_cand = (
+                    db.query(Package)
+                    .filter(Package.lead_id == lead.id)
+                    .order_by(Package.id.desc())
+                    .first()
+                )
+                if pkg_cand:
+                    pkg_cand.status = "recording"
+            db.commit()
+            broadcast_sse("lead_updated", {"status": "RECORDING", "batch_id": batch_id})
+
+            emit_pipeline_step(
+                node_id="node-5",
+                step_name="WALKTHROUGH",
+                status="RUNNING",
+                clinic_name="Retrying links & recording walkthroughs...",
+                metrics={
+                    "processed": 0,
+                    "total": len(candidates),
+                    "badge_text": f"Retrying ({len(candidates)})",
+                },
+                payload=[],
+            )
+
+            candidate_ids = [l.id for l in candidates]
+            sync_verified_links_to_batch_json(
+                db=db,
+                base_url=base_url,
+                log_cb=emit,
+                only_lead_ids=candidate_ids,
+                cancel_check=lambda: cancel_token.is_cancelled,
+                testing_mode=testing_mode,
+            )
+
+            if not cancel_token.is_cancelled:
+                record_walkthrough_batch(
+                    db=db,
+                    leads=candidates,
+                    base_url=base_url,
+                    log_cb=emit,
+                    testing_mode=testing_mode,
+                    cancel_check=lambda: cancel_token.is_cancelled,
+                    promote_to_ready=True,
+                )
+
+            succeeded_leads: List[Dict[str, Any]] = []
+            failed_leads: List[Dict[str, Any]] = []
+
+            for lead in candidates:
+                pkg = (
+                    db.query(Package)
+                    .filter(Package.lead_id == lead.id)
+                    .order_by(Package.id.desc())
+                    .first()
+                )
+                video_path = pkg.video_file_path if pkg else None
+                video_ok = bool(
+                    video_path
+                    and (
+                        (os.path.exists(video_path) and os.path.getsize(video_path) > 1000)
+                        or (testing_mode and video_path)
+                    )
+                )
+
+                if video_ok:
+                    lead.status = "DEMO_READY"
+                    lead.stage_id = stage_package_ready_id
+                    lead.next_action = "Outreach via WhatsApp"
+                    c_fields = dict(lead.custom_fields or {})
+                    if "build_error" in c_fields:
+                        del c_fields["build_error"]
+                    lead.custom_fields = c_fields
+                    if pkg:
+                        pkg.status = "ready"
+                    db.commit()
+                    broadcast_sse("lead_updated", {"lead_id": lead.id, "status": "DEMO_READY", "pkg_status": "ready"})
+                    succeeded_leads.append(
+                        {
+                            "id": lead.id,
+                            "slug": lead.slug,
+                            "name": lead.name,
+                            "phone": lead.primary_phone,
+                            "status": lead.status,
+                            "video_path": video_path,
+                        }
+                    )
+                    emit(f"[DEMO-READY] ✓ #{lead.id} '{lead.name}' promoted to DEMO_READY")
+                else:
+                    lead.status = "BUILD_FAILED"
+                    c_fields = dict(lead.custom_fields or {})
+                    if not c_fields.get("build_error"):
+                        c_fields["build_error"] = (
+                            "Walkthrough video recording stopped"
+                            if cancel_token.is_cancelled
+                            else "Walkthrough video recording retry failed"
+                        )
+                    lead.custom_fields = c_fields
+                    if pkg:
+                        pkg.status = "video_pending" if cancel_token.is_cancelled else "failed"
+                    db.commit()
+                    broadcast_sse(
+                        "lead_updated",
+                        {"lead_id": lead.id, "status": "BUILD_FAILED", "pkg_status": pkg.status if pkg else "failed"},
+                    )
+                    failed_leads.append(
+                        {
+                            "id": lead.id,
+                            "slug": lead.slug,
+                            "name": lead.name,
+                            "status": "BUILD_FAILED",
+                        }
+                    )
+                    if not cancel_token.is_cancelled:
+                        emit(f"[FAIL] Walkthrough recording retry failed for #{lead.id} '{lead.name}'")
+
+            emit_pipeline_step(
+                node_id="node-5",
+                step_name="WALKTHROUGH",
+                status="SUCCESS" if succeeded_leads else "FAILED",
+                clinic_name=f"{len(succeeded_leads)} Videos Ready",
+                metrics={
+                    "processed": len(succeeded_leads),
+                    "total": len(candidates),
+                    "badge_text": f"✓ {len(succeeded_leads)} Ready",
+                },
+                payload=succeeded_leads[:15],
+            )
+
+            broadcast_sse(
+                "autopilot_retry_recordings_completed",
+                {
+                    "retried_count": len(candidates),
+                    "succeeded_count": len(succeeded_leads),
+                    "failed_count": len(failed_leads),
+                },
+            )
+
+            run_status = "cancelled" if cancel_token.is_cancelled else "succeeded"
+            run_log.status = run_status
+            run_log.count_found = len(candidates)
+            run_log.count_passed = len(succeeded_leads)
+            run_log.count_dropped = len(failed_leads)
+            run_log.trace_logs = trace_logs
+            run_log.finished_at = datetime.now(timezone.utc)
+            db.commit()
+
+            return {
+                "status": run_status,
+                "batch_id": batch_id,
+                "retried_count": len(candidates),
+                "succeeded_count": len(succeeded_leads),
+                "failed_count": len(failed_leads),
+                "succeeded_leads": succeeded_leads,
+                "failed_leads": failed_leads,
+            }
+
+        except Exception as e:
+            db.rollback()
+            run_log.status = "failed"
+            run_log.errors = [str(e)]
+            run_log.finished_at = datetime.now(timezone.utc)
+            db.commit()
+            emit(f"[FAIL] Retry recordings error: {e}")
+            raise
+        finally:
+            set_autopilot_running(False, run_id=run_log.id)
+            JobManager.release_single_flight(run_log.id)
+

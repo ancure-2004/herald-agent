@@ -499,6 +499,17 @@ class LeadService:
         if not lead:
             raise NotFoundError("Lead not found.")
 
+        # Same resolution order as build_cockpit_batch_payload: package path if on disk first
+        try:
+            import os as _os
+
+            pkgs = getattr(lead, "packages", None) or []
+            pkg_path = (pkgs[-1].video_file_path or "") if pkgs else ""
+            if pkg_path and _os.path.exists(pkg_path):
+                return pkg_path
+        except Exception:
+            pass
+
         from app.autopilot.recording.naming import find_lead_recording_path as find_canonical_path
         canonical = find_canonical_path(lead)
         if canonical:

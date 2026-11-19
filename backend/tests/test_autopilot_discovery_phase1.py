@@ -463,8 +463,8 @@ def test_discovery_providers_default_and_waterfall_streamlining():
     assert len(results) == 1
     assert results[0].name == "Apex Smiles Dental"
     primary_provider.search_candidates.assert_called_once()
-    # Secondary provider should NOT be queried because primary yielded candidates
-    secondary_provider.search_candidates.assert_not_called()
+    # Secondary provider IS queried because target_count=5 was not yet satisfied
+    secondary_provider.search_candidates.assert_called_once()
 
     # 2. When primary provider yields 0 candidates, secondary provider IS queried
     empty_primary = MagicMock()

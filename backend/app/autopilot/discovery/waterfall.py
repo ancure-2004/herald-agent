@@ -101,17 +101,8 @@ class CandidateStream:
         yielded_count = 0
 
         for provider in self.providers:
-            # If target count already satisfied or previous provider already yielded candidates, do not query subsequent providers
+            # Stop only once target_count verified candidates have been yielded
             if yielded_count >= self.target_count:
-                break
-            if yielded_count > 0:
-                msg = (
-                    f"[{TAG_SCRAPE}] Provider already yielded {yielded_count} candidates "
-                    f"(target={self.target_count}). Skipping subsequent fallback providers."
-                )
-                logger.info(msg)
-                if self.emit_cb:
-                    self.emit_cb(msg)
                 break
 
             # Circuit-breaker: immediately stop querying Google if quota is exhausted

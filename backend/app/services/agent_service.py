@@ -69,12 +69,18 @@ class AgentService:
         body = payload or {}
         hustle_id = int(body.get("hustle_id", 1))
         channel = str(body.get("channel", "whatsapp"))
-        dry_run = bool(body.get("dry_run", True))
         clinic_id = body.get("clinic_id")
         batch_id = body.get("batch_id") or None
         hustle = HustleRepository.get_by_id(db, hustle_id)
         if not hustle:
             raise NotFoundError("Hustle not found.")
+
+        # Determine dry_run: if explicitly passed in payload, respect it; otherwise fallback to hustle settings/channel_limits
+        if "dry_run" in body:
+            dry_run = bool(body["dry_run"])
+        else:
+            channel_limits = hustle.channel_limits or {}
+            dry_run = bool(channel_limits.get("dry_run", True))
         res = run_closer_agent(
             db=db,
             hustle=hustle,

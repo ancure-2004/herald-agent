@@ -128,6 +128,22 @@ export const DiscoveryTab: React.FC = () => {
   const [stagedCount, setStagedCount] = useState<number>(() => discoveryTabCache?.stagedCount ?? 0);
   const [discoveredTodayCount, setDiscoveredTodayCount] = useState<number>(() => discoveryTabCache?.discoveredTodayCount ?? 0);
   const [filteredCount, setFilteredCount] = useState<number>(() => discoveryTabCache?.filteredCount ?? 0);
+  const [discoveryFunnel, setDiscoveryFunnel] = useState<{
+    runId: number | null;
+    rawScanned: number;
+    uniqueNoWebsite: number;
+    mobileVerified: number;
+    staged: number;
+    dropped: number;
+  }>({
+    runId: null,
+    rawScanned: 0,
+    uniqueNoWebsite: 0,
+    mobileVerified: 0,
+    staged: 0,
+    dropped: 0,
+  });
+  const [funnelAnimStep, setFunnelAnimStep] = useState<number>(4);
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -163,6 +179,25 @@ export const DiscoveryTab: React.FC = () => {
         }
         if (typeof res.metrics.droppedCount === "number") {
           setFilteredCount(res.metrics.droppedCount);
+        }
+        const df = (res.metrics as Record<string, any>).discoveryFunnel;
+        if (df && typeof df === "object") {
+          setDiscoveryFunnel((prev) => {
+            if (prev.runId !== df.runId || prev.staged !== df.staged || prev.rawScanned !== df.rawScanned) {
+              setFunnelAnimStep(1);
+              setTimeout(() => setFunnelAnimStep(2), 120);
+              setTimeout(() => setFunnelAnimStep(3), 240);
+              setTimeout(() => setFunnelAnimStep(4), 360);
+            }
+            return {
+              runId: df.runId ?? null,
+              rawScanned: Number(df.rawScanned ?? 0),
+              uniqueNoWebsite: Number(df.uniqueNoWebsite ?? 0),
+              mobileVerified: Number(df.mobileVerified ?? 0),
+              staged: Number(df.staged ?? 0),
+              dropped: Number(df.dropped ?? 0),
+            };
+          });
         }
       }
       if (res?.is_running !== undefined) {
@@ -248,45 +283,21 @@ export const DiscoveryTab: React.FC = () => {
     }
   };
 
-  // Funnel & Telemetry Computed Stats
-  const rawScannedCount = useMemo(() => {
-    const totalKnown = discoveredTodayCount + filteredCount;
-    if (totalKnown > 0) return totalKnown;
-    return leads.length > 0 ? leads.length + filteredCount : 210;
-  }, [discoveredTodayCount, filteredCount, leads.length]);
+  // Funnel & Telemetry Computed Stats (Left Funnel = latest Discovery run only)
+  const funnelRawScanned = discoveryFunnel.rawScanned;
+  const funnelUniqueNoSite = discoveryFunnel.uniqueNoWebsite;
+  const funnelMobileVerified = discoveryFunnel.mobileVerified;
+  const funnelStaged = discoveryFunnel.staged;
 
-  const phoneVerifiedCount = useMemo(() => {
-    const withPhone = leads.filter((l) => Boolean(l.phone)).length;
-    return Math.max(withPhone, discoveredTodayCount);
-  }, [leads, discoveredTodayCount]);
+  const funnelUniquePct = funnelRawScanned > 0 ? Math.min(100, Math.round((funnelUniqueNoSite / funnelRawScanned) * 100)) : 0;
+  const funnelMobilePct = funnelRawScanned > 0 ? Math.min(100, Math.round((funnelMobileVerified / funnelRawScanned) * 100)) : 0;
+  const funnelStagedPct = funnelRawScanned > 0 ? Math.min(100, Math.round((funnelStaged / funnelRawScanned) * 100)) : 0;
 
-  const stagedBufferCount = stagedCount || leads.length;
-
-  const demoReadyCount = useMemo(() => {
-    return leads.filter((l) => l.demoReady).length;
+  // Breakdown metrics for right Staged Buffer Capacity card (strictly scoped to currently STAGED leads)
+  const stagedMobileVerifiedCount = useMemo(() => {
+    return leads.filter((l) => Boolean(l.phone)).length;
   }, [leads]);
 
-  const yieldRate = useMemo(() => {
-    if (rawScannedCount === 0) return 100;
-    return Math.min(100, Math.round((phoneVerifiedCount / rawScannedCount) * 100));
-  }, [phoneVerifiedCount, rawScannedCount]);
-
-  const phoneVerifiedPct = useMemo(() => {
-    if (rawScannedCount === 0) return 100;
-    return Math.min(100, Math.round((phoneVerifiedCount / rawScannedCount) * 100));
-  }, [phoneVerifiedCount, rawScannedCount]);
-
-  const stagedBufferPct = useMemo(() => {
-    if (rawScannedCount === 0) return 0;
-    return Math.min(100, Math.round((stagedBufferCount / rawScannedCount) * 100));
-  }, [stagedBufferCount, rawScannedCount]);
-
-  const demoReadyPct = useMemo(() => {
-    if (rawScannedCount === 0) return 0;
-    return Math.min(100, Math.round((demoReadyCount / rawScannedCount) * 100));
-  }, [demoReadyCount, rawScannedCount]);
-
-  // Breakdown metrics for right card
   const highIntentCount = useMemo(() => {
     return leads.filter((l) => l.tags.includes("High Intent") || l.verification.confidenceScore >= 85).length;
   }, [leads]);
@@ -432,11 +443,11 @@ export const DiscoveryTab: React.FC = () => {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-2xl font-bold font-mono tracking-tight text-white flex items-baseline gap-2">
-                  <span>{yieldRate}%</span>
-                  <span className="text-sm font-sans font-medium text-zinc-400">Mobile WhatsApp Verified</span>
+                  <span>{funnelStagedPct}%</span>
+                  <span className="text-sm font-sans font-medium text-zinc-400">Discovery Yield</span>
                 </div>
                 <div className="text-xs text-zinc-400 mt-0.5">
-                  Discovery yield: <span className="text-zinc-200 font-medium">{stagedBufferCount}</span> staged from <span className="text-zinc-200 font-medium">{rawScannedCount}</span> scanned
+                  Latest run: <span className="text-zinc-200 font-medium">{funnelStaged}</span> staged from <span className="text-zinc-200 font-medium">{funnelRawScanned}</span> scanned
                 </div>
               </div>
 
@@ -450,23 +461,23 @@ export const DiscoveryTab: React.FC = () => {
             <div className="mt-5 pt-3 border-t border-zinc-800/80">
               <div className="grid grid-cols-4 divide-x divide-zinc-800/80">
                 {/* Column 1: Raw Scanned */}
-                <div className="text-center px-2">
-                  <div className="text-base font-bold font-mono text-zinc-100">{rawScannedCount}</div>
+                <div className={`text-center px-2 transition-all duration-300 ${funnelAnimStep >= 1 ? "opacity-100 translate-y-0" : "opacity-30 translate-y-1"}`}>
+                  <div className="text-base font-bold font-mono text-zinc-100 tabular-nums">{funnelRawScanned}</div>
                 </div>
 
-                {/* Column 2: Phone Verified */}
-                <div className="text-center px-2">
-                  <div className="text-base font-bold font-mono text-zinc-100">{phoneVerifiedCount}</div>
+                {/* Column 2: Unique & No Website */}
+                <div className={`text-center px-2 transition-all duration-300 delay-100 ${funnelAnimStep >= 2 ? "opacity-100 translate-y-0" : "opacity-30 translate-y-1"}`}>
+                  <div className="text-base font-bold font-mono text-zinc-100 tabular-nums">{funnelUniqueNoSite}</div>
                 </div>
 
-                {/* Column 3: Staged Buffer */}
-                <div className="text-center px-2">
-                  <div className="text-base font-bold font-mono text-zinc-100">{stagedBufferCount}</div>
+                {/* Column 3: Mobile Verified */}
+                <div className={`text-center px-2 transition-all duration-300 delay-200 ${funnelAnimStep >= 3 ? "opacity-100 translate-y-0" : "opacity-30 translate-y-1"}`}>
+                  <div className="text-base font-bold font-mono text-zinc-100 tabular-nums">{funnelMobileVerified}</div>
                 </div>
 
-                {/* Column 4: Demo Ready */}
-                <div className="text-center px-2">
-                  <div className="text-base font-bold font-mono text-zinc-100">{demoReadyCount}</div>
+                {/* Column 4: Staged */}
+                <div className={`text-center px-2 transition-all duration-300 delay-300 ${funnelAnimStep >= 4 ? "opacity-100 translate-y-0" : "opacity-30 translate-y-1"}`}>
+                  <div className="text-base font-bold font-mono text-emerald-400 tabular-nums">{funnelStaged}</div>
                 </div>
               </div>
 
@@ -497,24 +508,24 @@ export const DiscoveryTab: React.FC = () => {
 
                 {/* Centered Percentage Pills directly over the ribbon */}
                 <div className="absolute inset-0 grid grid-cols-4 pointer-events-none items-center">
-                  <div className="flex justify-center">
-                    <span className="bg-white text-zinc-900 font-bold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm font-mono">
-                      100%
+                  <div className={`flex justify-center transition-all duration-300 ${funnelAnimStep >= 1 ? "opacity-100 scale-100" : "opacity-40 scale-95"}`}>
+                    <span className="bg-white text-zinc-900 font-bold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm font-mono tabular-nums">
+                      {funnelRawScanned > 0 ? "100%" : "0%"}
                     </span>
                   </div>
-                  <div className="flex justify-center">
-                    <span className="bg-white text-zinc-900 font-bold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm font-mono">
-                      {phoneVerifiedPct}%
+                  <div className={`flex justify-center transition-all duration-300 delay-100 ${funnelAnimStep >= 2 ? "opacity-100 scale-100" : "opacity-40 scale-95"}`}>
+                    <span className="bg-white text-zinc-900 font-bold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm font-mono tabular-nums">
+                      {funnelUniquePct}%
                     </span>
                   </div>
-                  <div className="flex justify-center">
-                    <span className="bg-white text-zinc-900 font-bold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm font-mono">
-                      {stagedBufferPct}%
+                  <div className={`flex justify-center transition-all duration-300 delay-200 ${funnelAnimStep >= 3 ? "opacity-100 scale-100" : "opacity-40 scale-95"}`}>
+                    <span className="bg-white text-zinc-900 font-bold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm font-mono tabular-nums">
+                      {funnelMobilePct}%
                     </span>
                   </div>
-                  <div className="flex justify-center">
-                    <span className="bg-white text-zinc-900 font-bold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm font-mono">
-                      {demoReadyPct}%
+                  <div className={`flex justify-center transition-all duration-300 delay-300 ${funnelAnimStep >= 4 ? "opacity-100 scale-100" : "opacity-40 scale-95"}`}>
+                    <span className="bg-emerald-400 text-zinc-950 font-bold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm font-mono tabular-nums">
+                      {funnelStagedPct}%
                     </span>
                   </div>
                 </div>
@@ -526,13 +537,13 @@ export const DiscoveryTab: React.FC = () => {
                   <div className="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">Raw Scanned</div>
                 </div>
                 <div className="text-center px-1">
-                  <div className="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">Phone Verified</div>
+                  <div className="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">Unique & No Site</div>
                 </div>
                 <div className="text-center px-1">
-                  <div className="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">Staged Buffer</div>
+                  <div className="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">Mobile Verified</div>
                 </div>
                 <div className="text-center px-1">
-                  <div className="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">Demo Ready</div>
+                  <div className="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">Staged</div>
                 </div>
               </div>
             </div>
@@ -577,10 +588,10 @@ export const DiscoveryTab: React.FC = () => {
             {/* Dotted Leader Breakdown Metric List */}
             <div className="space-y-1.5 text-xs">
               <div className="flex items-center justify-between py-0.5">
-                <span className="text-slate-600 dark:text-zinc-400 shrink-0 font-medium">Mobile WhatsApp Verified</span>
+                <span className="text-slate-600 dark:text-zinc-400 shrink-0 font-medium">Mobile Verified</span>
                 <div className="flex-1 border-b border-dotted border-slate-300 dark:border-zinc-700 mx-2.5 mb-1" />
                 <span className="font-mono font-medium text-slate-900 dark:text-zinc-100 shrink-0">
-                  {phoneVerifiedCount} <span className="text-slate-400 dark:text-zinc-500">({phoneVerifiedPct}%)</span>
+                  {stagedMobileVerifiedCount} <span className="text-slate-400 dark:text-zinc-500">({Math.round((stagedMobileVerifiedCount / Math.max(leads.length, 1)) * 100)}%)</span>
                 </span>
               </div>
 
@@ -601,10 +612,10 @@ export const DiscoveryTab: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between py-0.5">
-                <span className="text-slate-600 dark:text-zinc-400 shrink-0 font-medium">Filtered / Dropped</span>
+                <span className="text-slate-600 dark:text-zinc-400 shrink-0 font-medium">Last Run Filtered</span>
                 <div className="flex-1 border-b border-dotted border-slate-300 dark:border-zinc-700 mx-2.5 mb-1" />
                 <span className="font-mono font-medium text-amber-600 dark:text-amber-400 shrink-0">
-                  {filteredCount} <span className="text-slate-400 dark:text-zinc-500 text-[11px]">(site/landline/dupe)</span>
+                  {discoveryFunnel.dropped || filteredCount} <span className="text-slate-400 dark:text-zinc-500 text-[11px]">(site/landline/dupe)</span>
                 </span>
               </div>
             </div>

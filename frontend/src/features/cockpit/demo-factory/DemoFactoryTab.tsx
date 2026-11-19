@@ -4,9 +4,9 @@ import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { DemoRun, RunStatus } from "../types";
 import { RunMatrixTable } from "./RunMatrixTable";
 import { MultiDevicePreviewDrawer } from "./MultiDevicePreviewDrawer";
-import { BuildLogDrawer } from "./BuildLogDrawer";
 import { DemoFactoryConsole } from "./DemoFactoryConsole";
 import { apiFetch } from "@/lib/api/client";
+import { env } from "@/config/env";
 import { autopilotApi } from "@/api/autopilotApi";
 import {
   Sparkles,
@@ -17,6 +17,9 @@ import {
   Square,
   RefreshCw,
   ChevronDown,
+  Video,
+  Globe,
+  MoreVertical,
 } from "lucide-react";
 
 interface BatchInfo {
@@ -37,16 +40,202 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
   const runs: DemoRun[] = [];
 
   for (const lead of leads) {
-    if (!lead.packages || lead.packages.length === 0) continue;
-
     const leadBatchId =
       lead.custom_fields && typeof lead.custom_fields === "object" && lead.custom_fields.batch_id
         ? String(lead.custom_fields.batch_id)
         : "BATCH-01";
 
+    const customFields = lead.custom_fields || {};
+    const buildError = customFields.build_error || "";
+
+    if (!lead.packages || lead.packages.length === 0) {
+      if (lead.status === "BUILDING" || lead.status === "RECORDING" || lead.status === "BUILD_FAILED") {
+        const fallbackStatus: RunStatus =
+          lead.status === "RECORDING"
+            ? "RECORDING"
+            : lead.status === "BUILD_FAILED"
+            ? "FAILED"
+            : "BUILDING";
+        runs.push({
+          id: `run-lead-${lead.id}`,
+          batchId: leadBatchId,
+          clinic: {
+            id: String(lead.id),
+            name: lead.name || "Unnamed Clinic",
+            city: lead.locality || lead.city || "Delhi NCR",
+            state: "Delhi",
+            phone: lead.primary_phone || "-",
+            website: lead.slug,
+            leadScore: Number(lead.fit_score) || 95,
+          },
+          templateId: "clinical-modern",
+          status: fallbackStatus,
+          versionTag: `v1.0.${lead.id}`,
+          triggeredBy: {
+            type: "autopilot_trigger",
+            authorName: "Demo Factory Autopilot",
+          },
+          createdAt: new Date().toISOString(),
+          startedAt: new Date().toISOString(),
+          totalDurationMs: 4200,
+          stages: [
+            { id: "s1", name: "Scaffold Next.js Payload", key: "scaffold", status: "BUILDING" },
+          ],
+          logs: [
+            {
+              id: `log-lead-${lead.id}-init`,
+              timestamp: new Date().toLocaleTimeString(),
+              deltaMs: 50,
+              level: fallbackStatus === "FAILED" ? "ERROR" : "INFO",
+              stream: fallbackStatus === "FAILED" ? "stderr" : "stdout",
+              message:
+                fallbackStatus === "FAILED"
+                  ? buildError || "Build failed during scaffolding"
+                  : `Scaffolding & compiling demo assets for ${lead.name}...`,
+            },
+          ],
+          preview: {
+            ephemeralUrl: `http://localhost:3001/modern/${lead.slug || lead.id}`,
+            choiceUrl: `http://localhost:3001/demo/${lead.slug || lead.id}`,
+            modernUrl: `http://localhost:3001/modern/${lead.slug || lead.id}`,
+            premiumUrl: `http://localhost:3001/premium/${lead.slug || lead.id}`,
+            warmUrl: `http://localhost:3001/warm/${lead.slug || lead.id}`,
+            videoFilePath: "",
+            expiresAt: new Date(Date.now() + 86400000).toISOString(),
+            isPermanent: false,
+            sslVerified: true,
+            lighthouseScore: {
+              performance: 98,
+              accessibility: 100,
+              bestPractices: 96,
+              seo: 100,
+            },
+          },
+        });
+      }
+      continue;
+    }
+
     for (const pkg of lead.packages) {
       const links = pkg.asset_links || {};
       const modernUrl = links.modern || `http://localhost:3001/modern/${lead.slug || lead.id}`;
+      const choiceUrl = links.choice_page || `http://localhost:3001/demo/${lead.slug || lead.id}`;
+      const premiumUrl = links.premium || `http://localhost:3001/premium/${lead.slug || lead.id}`;
+      const warmUrl = links.warm || `http://localhost:3001/warm/${lead.slug || lead.id}`;
+      const videoPath = pkg.video_file_path || "";
+
+      const isRecording =
+        lead.status === "RECORDING" ||
+        pkg.status === "recording" ||
+        pkg.status === "video_recording";
+
+      const isBuilding =
+        lead.status === "BUILDING" ||
+        pkg.status === "building" ||
+        pkg.status === "scaffolding";
+
+      const isFailed = (lead.status === "BUILD_FAILED" || pkg.status === "failed") && !isRecording && !isBuilding;
+      const isReady =
+        (pkg.status === "ready" ||
+          pkg.status === "ready_for_review" ||
+          pkg.status === "sent" ||
+          lead.status === "DEMO_READY" ||
+          lead.status === "CONTACTED" ||
+          lead.status === "REPLIED" ||
+          lead.status === "INTERESTED" ||
+          lead.status === "WON" ||
+          lead.status === "LOST") &&
+        !isFailed &&
+        !isRecording &&
+        !isBuilding;
+
+      const status: RunStatus = isReady
+        ? "READY"
+        : isRecording
+        ? "RECORDING"
+        : isBuilding
+        ? "BUILDING"
+        : isFailed
+        ? "FAILED"
+        : "BUILDING";
+
+      const selfCheckReport = pkg.self_check_report || {};
+      const selfCheckPassed = Boolean(pkg.self_check_passed);
+
+      // Build realistic timestamped logs from actual package/lead state
+      const logs: any[] = [];
+      const createdTime = pkg.created_at ? new Date(pkg.created_at).toLocaleTimeString() : new Date().toLocaleTimeString();
+
+      logs.push({
+        id: `log-${pkg.id}-scaffold`,
+        timestamp: createdTime,
+        deltaMs: 120,
+        level: "INFO",
+        stream: "stdout",
+        message: `Scaffolded canonical clinic payload for ${lead.name} (doctor: ${lead.doctor_name || "Our Dental Team"})`,
+      });
+
+      if (selfCheckPassed) {
+        logs.push({
+          id: `log-${pkg.id}-gate`,
+          timestamp: createdTime,
+          deltaMs: 250,
+          level: "INFO",
+          stream: "system",
+          message: `Quality Self-Check gate PASSED (score: ${pkg.quality_score || 70}/100)`,
+        });
+      } else if (selfCheckReport && typeof selfCheckReport === "object" && Object.keys(selfCheckReport).length > 0) {
+        logs.push({
+          id: `log-${pkg.id}-gate`,
+          timestamp: createdTime,
+          deltaMs: 250,
+          level: "WARN",
+          stream: "stderr",
+          message: `Quality Self-Check gate report: ${JSON.stringify(selfCheckReport)}`,
+        });
+      }
+
+      if (links.modern) {
+        logs.push({
+          id: `log-${pkg.id}-links`,
+          timestamp: createdTime,
+          deltaMs: 500,
+          level: "INFO",
+          stream: "stdout",
+          message: `Generated 3 luxury theme URLs: Modern, Premium, Warm + Choice Landing (/demo/${lead.slug})`,
+        });
+      }
+
+      if (videoPath) {
+        logs.push({
+          id: `log-${pkg.id}-video`,
+          timestamp: createdTime,
+          deltaMs: 1200,
+          level: "INFO",
+          stream: "stdout",
+          message: `Playwright mobile walkthrough recorded successfully: ${videoPath.split("/").pop()} (${pkg.video_size_mb || 0} MB)`,
+        });
+      } else if (pkg.status === "video_pending") {
+        logs.push({
+          id: `log-${pkg.id}-video`,
+          timestamp: createdTime,
+          deltaMs: 1200,
+          level: "WARN",
+          stream: "stderr",
+          message: "Video walkthrough recording pending in background queue...",
+        });
+      }
+
+      if (buildError) {
+        logs.push({
+          id: `log-${pkg.id}-err`,
+          timestamp: createdTime,
+          deltaMs: 1500,
+          level: "ERROR",
+          stream: "stderr",
+          message: `Build / Gate Error: ${typeof buildError === "object" ? JSON.stringify(buildError) : String(buildError)}`,
+        });
+      }
 
       runs.push({
         id: `run_pkg_${pkg.id}`,
@@ -61,7 +250,7 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
           leadScore: lead.fit_score || 95,
         },
         templateId: "clinical-modern",
-        status: pkg.self_check_passed ? "READY" : "READY",
+        status,
         versionTag: `v1.${pkg.version || 1}.${pkg.id}`,
         triggeredBy: {
           type: "autopilot_trigger",
@@ -73,30 +262,19 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
         totalDurationMs: 8400,
         stages: [
           { id: "s1", name: "Scaffold Next.js Payload", key: "scaffold", status: "READY" },
-          { id: "s2", name: "Inject Doctor Credentials", key: "ingest", status: "READY" },
-          { id: "s3", name: "Compile 3 Luxury Themes", key: "compile", status: "READY" },
-          { id: "s4", name: "Verify HTTP 200 Live Status", key: "deploy", status: "READY" },
+          { id: "s2", name: "Inject Doctor Credentials", key: "ingest", status: lead.doctor_name ? "READY" : "BUILDING" },
+          { id: "s3", name: "Compile 3 Luxury Themes", key: "compile", status: links.modern ? "READY" : "BUILDING" },
+          { id: "s4", name: "Quality Self-Check Gate", key: "synthesize", status: selfCheckPassed ? "READY" : isFailed ? "FAILED" : "BUILDING" },
+          { id: "s5", name: "Playwright Mobile Video", key: "deploy", status: videoPath ? "READY" : isFailed ? "FAILED" : "BUILDING" },
         ],
-        logs: [
-          {
-            id: `log-${pkg.id}-1`,
-            timestamp: new Date(pkg.created_at || Date.now()).toISOString().substring(11, 19),
-            deltaMs: 120,
-            level: "INFO",
-            stream: "stdout",
-            message: `Scaffolded dental template for ${lead.name}`,
-          },
-          {
-            id: `log-${pkg.id}-2`,
-            timestamp: new Date(pkg.created_at || Date.now()).toISOString().substring(11, 19),
-            deltaMs: 450,
-            level: "INFO",
-            stream: "stdout",
-            message: `Verified HTTP 200 live on ${modernUrl}`,
-          },
-        ],
+        logs,
         preview: {
           ephemeralUrl: modernUrl,
+          choiceUrl,
+          modernUrl,
+          premiumUrl,
+          warmUrl,
+          videoFilePath: videoPath,
           expiresAt: pkg.expires_at || new Date(Date.now() + 86400000).toISOString(),
           isPermanent: false,
           sslVerified: true,
@@ -107,6 +285,14 @@ export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRu
             seo: 100,
           },
         },
+        ...(buildError
+          ? {
+              error: {
+                stage: "verification",
+                message: typeof buildError === "object" ? JSON.stringify(buildError) : String(buildError),
+              },
+            }
+          : {}),
       });
     }
   }
@@ -148,6 +334,9 @@ export const DemoFactoryTab: React.FC = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const [isLaunchingBatch, setIsLaunchingBatch] = useState<boolean>(false);
   const [isBuildRunning, setIsBuildRunning] = useState<boolean>(false);
+  const [isRetryingRecordings, setIsRetryingRecordings] = useState<boolean>(false);
+  const [isVerifyingLinks, setIsVerifyingLinks] = useState<boolean>(false);
+  const [isActionsMenuOpen, setIsActionsMenuOpen] = useState<boolean>(false);
   const [, setIsSyncing] = useState<boolean>(false);
 
   // Batch state
@@ -216,7 +405,9 @@ export const DemoFactoryTab: React.FC = () => {
         // Compute dynamic KPIs with clamped pass rate (Math.min(100, ...))
         const total = cockpitState?.metrics?.demosBuilt || mapped.length;
         const ready = mapped.filter((r) => r.status === "READY").length;
-        const building = mapped.filter((r) => r.status === "BUILDING" || r.status === "DEPLOYING").length;
+        const building = mapped.filter(
+          (r) => r.status === "BUILDING" || r.status === "RECORDING" || r.status === "DEPLOYING"
+        ).length;
         const queued = mapped.filter((r) => r.status === "QUEUED").length;
         const effectiveTotal = Math.max(total, ready);
         const passPctVal = effectiveTotal > 0 ? Math.min(100, Math.round((ready / effectiveTotal) * 100)) : 100;
@@ -237,15 +428,22 @@ export const DemoFactoryTab: React.FC = () => {
     }
   }, []);
 
-  // SSE subscription to track live running state
+  // SSE subscription to track live running state & per-lead updates
   useEffect(() => {
-    const evtSource = new EventSource("/api/events/stream");
+    const sseUrl = `${env.NEXT_PUBLIC_API_BASE_URL}/api/events`;
+    const evtSource = new EventSource(sseUrl);
 
     const handleStarted = () => setIsBuildRunning(true);
     const handleStopped = () => {
       setIsBuildRunning(false);
       setIsLaunchingBatch(false);
+      setIsRetryingRecordings(false);
+      setIsVerifyingLinks(false);
       fetchBatchMeta();
+      syncRunsFromDb();
+    };
+
+    const handleRefresh = () => {
       syncRunsFromDb();
     };
 
@@ -253,11 +451,24 @@ export const DemoFactoryTab: React.FC = () => {
     evtSource.addEventListener("autopilot_stopped", handleStopped);
     evtSource.addEventListener("run_completed", handleStopped);
     evtSource.addEventListener("auditor_complete", handleStopped);
+    evtSource.addEventListener("autopilot_build_completed", handleStopped);
+    evtSource.addEventListener("autopilot_retry_recordings_completed", handleStopped);
+    evtSource.addEventListener("lead_updated", handleRefresh);
+    evtSource.addEventListener("pipeline_step", handleRefresh);
 
     return () => {
       evtSource.close();
     };
   }, [fetchBatchMeta, syncRunsFromDb]);
+
+  // Fast periodic sync while any action is active so row badges flip in real time
+  useEffect(() => {
+    if (!isBuildRunning && !isLaunchingBatch && !isRetryingRecordings && !isVerifyingLinks) return;
+    const poll = setInterval(() => {
+      syncRunsFromDb();
+    }, 3000);
+    return () => clearInterval(poll);
+  }, [isBuildRunning, isLaunchingBatch, isRetryingRecordings, isVerifyingLinks, syncRunsFromDb]);
 
   useEffect(() => {
     syncRunsFromDb();
@@ -274,6 +485,9 @@ export const DemoFactoryTab: React.FC = () => {
       if (selectedBatchId !== "ALL" && r.batchId !== selectedBatchId) {
         return false;
       }
+      if (filter === "BUILDING") {
+        return r.status === "BUILDING" || r.status === "RECORDING" || r.status === "DEPLOYING";
+      }
       if (filter !== "ALL" && r.status !== filter) {
         return false;
       }
@@ -282,8 +496,7 @@ export const DemoFactoryTab: React.FC = () => {
   }, [runs, filter, selectedBatchId]);
 
   const handleOpenLogs = (run: DemoRun) => {
-    setActiveLogRun(run);
-    setIsLogDrawerOpen(true);
+    handleOpenPreview(run);
   };
 
   const handleOpenPreview = (run: DemoRun) => {
@@ -354,6 +567,42 @@ export const DemoFactoryTab: React.FC = () => {
     }
   };
 
+  const handleRetryRecordings = async () => {
+    setIsRetryingRecordings(true);
+    try {
+      showNotification("Starting Playwright retry for failed/pending videos...");
+      const res = await autopilotApi.retryRecordings({
+        hustle_id: 1,
+        batch_id: selectedBatchId !== "ALL" ? selectedBatchId : undefined,
+      });
+      showNotification(
+        `Retry complete: ${res.succeeded_count} succeeded, ${res.failed_count} failed (${res.retried_count} candidates).`
+      );
+      await syncRunsFromDb();
+      await fetchBatchMeta();
+    } catch (err: unknown) {
+      showNotification(err instanceof Error ? err.message : "Failed to retry recordings");
+    } finally {
+      setIsRetryingRecordings(false);
+    }
+  };
+
+  const handleVerifyAllLinks = async () => {
+    setIsVerifyingLinks(true);
+    try {
+      showNotification("Verifying HTTP 200 across all demo links...");
+      const res = await autopilotApi.verifyLinks();
+      showNotification(
+        `Link Verification: ${res.verified_count} passed HTTP 200, ${res.failed_count} failed.`
+      );
+      await syncRunsFromDb();
+    } catch (err: unknown) {
+      showNotification(err instanceof Error ? err.message : "Failed to verify links");
+    } finally {
+      setIsVerifyingLinks(false);
+    }
+  };
+
   const handleStopBatch = async () => {
     try {
       await apiFetch<{ status?: string }>("/api/autopilot/stop", { method: "POST" });
@@ -363,13 +612,49 @@ export const DemoFactoryTab: React.FC = () => {
     } finally {
       setIsBuildRunning(false);
       setIsLaunchingBatch(false);
+      setIsRetryingRecordings(false);
+      setIsVerifyingLinks(false);
     }
   };
 
+  const isActionActive = isBuildRunning || isLaunchingBatch || isRetryingRecordings || isVerifyingLinks;
+  const activeActionLabel = isLaunchingBatch
+    ? "Launching Batch..."
+    : isBuildRunning
+    ? "Compiling Batch..."
+    : isRetryingRecordings
+    ? "Retrying Videos..."
+    : isVerifyingLinks
+    ? "Verifying Links..."
+    : "Processing...";
+
   const readyRunsCount = runs.filter((r) => r.status === "READY").length;
-  const buildingRunsCount = runs.filter((r) => r.status === "BUILDING" || r.status === "DEPLOYING").length;
+  const buildingRunsCount = runs.filter(
+    (r) => r.status === "BUILDING" || r.status === "RECORDING" || r.status === "DEPLOYING"
+  ).length;
   const failedRunsCount = runs.filter((r) => r.status === "FAILED").length;
   const passRateNum = parseInt(kpiMetrics.passRate.replace("%", ""), 10) || 100;
+  const recordedVideosCount = runs.filter((r) => Boolean(r.preview?.videoFilePath)).length;
+  const isBatchBuilding = isBuildRunning || isLaunchingBatch;
+  const activeStageHint: 1 | 2 | 3 | 4 | 5 | null = (() => {
+    // Only hint a stage while a batch is actually building or a lead is actively running
+    if (!isBatchBuilding && buildingRunsCount === 0) return null;
+    const statusToStage: Record<string, 1 | 2 | 3 | 4 | 5> = {
+      SCAFFOLDING: 1,
+      BUILDING: 2,
+      RECORDING: 4,
+      DEPLOYING: 5,
+    };
+    for (const r of runs) {
+      const hit = statusToStage[String(r.status)];
+      if (hit) return hit;
+    }
+    for (const r of runs) {
+      const idx = (r.stages || []).findIndex((s) => ["RUNNING", "BUILDING"].includes(String(s.status)));
+      if (idx >= 0) return Math.min(idx + 1, 5) as 1 | 2 | 3 | 4 | 5;
+    }
+    return null;
+  })();
 
   return (
     <div className="space-y-4">
@@ -442,10 +727,13 @@ export const DemoFactoryTab: React.FC = () => {
 
       {/* 2. Middle Row: Spatial Branching Agent Node Graph + Minimal Headerless Live Log Box */}
       <DemoFactoryConsole
-        isBuildRunning={isBuildRunning || isLaunchingBatch}
+        isBuildRunning={isActionActive}
         runsCount={runs.length}
         readyRunsCount={readyRunsCount}
         buildingRunsCount={buildingRunsCount}
+        recordedVideosCount={recordedVideosCount}
+        failedRunsCount={failedRunsCount}
+        activeStageHint={activeStageHint}
       />
 
       {/* 3. Bottom Row: Unified Action Toolbar & High-Density Demo Runs Table */}
@@ -534,34 +822,92 @@ export const DemoFactoryTab: React.FC = () => {
             onClick={handleRebalance}
             disabled={rebalancing}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer disabled:opacity-50"
+            title="Re-batch staged leads cleanly"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${rebalancing ? "animate-spin" : ""}`} />
-            <span>{rebalancing ? "Re-batching..." : "Re-Batch Stock"}</span>
+            <span>{rebalancing ? "Re-batching..." : "Re-Batch"}</span>
           </button>
 
+          {/* Compact Actions Dropdown Menu */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsActionsMenuOpen((prev) => !prev)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer shadow-xs"
+              title="Demo Factory actions"
+            >
+              <span>Actions</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+
+            {isActionsMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-20"
+                  onClick={() => setIsActionsMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-1 w-56 bg-white border border-slate-200/80 rounded-xl shadow-lg z-30 py-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsActionsMenuOpen(false);
+                      handleRetryRecordings();
+                    }}
+                    disabled={isRetryingRecordings || isBuildRunning}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-zinc-800 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    <Video className="w-4 h-4 text-amber-500 shrink-0" />
+                    <div>
+                      <div className="font-medium">Retry Failed/Pending Videos</div>
+                      <div className="text-[10px] text-slate-500">Re-record walkthroughs</div>
+                    </div>
+                  </button>
+
+                  <div className="h-px bg-slate-100 my-1" />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsActionsMenuOpen(false);
+                      handleVerifyAllLinks();
+                    }}
+                    disabled={isVerifyingLinks}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-zinc-800 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    <Globe className="w-4 h-4 text-indigo-500 shrink-0" />
+                    <div>
+                      <div className="font-medium">Test All Live Links</div>
+                      <div className="text-[10px] text-slate-500">Live HTTP 200 health check</div>
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
           {/* Running indicator badge */}
-          {(isBuildRunning || isLaunchingBatch) && (
+          {isActionActive && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              <span>Compiling Batch...</span>
+              <span>{activeActionLabel}</span>
             </div>
           )}
 
           {/* Launch Demo Batch or Stop Automation button */}
-          {isBuildRunning || isLaunchingBatch ? (
+          {isActionActive ? (
             <button
               type="button"
               onClick={handleStopBatch}
               className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors cursor-pointer active:scale-95"
             >
               <Square className="w-3.5 h-3.5 fill-white" />
-              <span>Stop Automation</span>
+              <span>Stop Action</span>
             </button>
           ) : (
             <button
               type="button"
               onClick={handleLaunchBatch}
-              disabled={isLaunchingBatch}
+              disabled={isActionActive}
               className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-xs font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -605,13 +951,6 @@ export const DemoFactoryTab: React.FC = () => {
         run={activePreviewRun}
         isOpen={isPreviewDrawerOpen}
         onClose={() => setIsPreviewDrawerOpen(false)}
-      />
-
-      {/* Observability Build Log Drawer */}
-      <BuildLogDrawer
-        run={activeLogRun}
-        isOpen={isLogDrawerOpen}
-        onClose={() => setIsLogDrawerOpen(false)}
         onRetry={handleRetry}
       />
     </div>

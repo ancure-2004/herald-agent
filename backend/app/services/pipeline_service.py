@@ -26,7 +26,7 @@ logger = logging.getLogger("personal_os.pipeline_service")
 # RunLog table as the authoritative lock: a row with status='running' that is
 # younger than STALE_RUN_TIMEOUT_SECONDS is considered an active lock.
 # ---------------------------------------------------------------------------
-_STALE_RUN_TIMEOUT_SECONDS = 3600  # 1 hour: runs older than this are force-released
+_STALE_RUN_TIMEOUT_SECONDS = 1200  # 20 min: runs older than this are force-released
 
 
 def _db_check_active_run(db: Session) -> Optional[RunLog]:
@@ -181,6 +181,16 @@ class PipelineService:
                         )
                     except Exception as ex:
                         logger.error("Async discovery run failed: %s", ex)
+                        try:
+                            rl = bg_db.query(RunLog).filter(RunLog.id == run_log.id).first()
+                            if rl and rl.status == "running":
+                                rl.status = "failed"
+                                rl.finished_at = datetime.now(timezone.utc)
+                                rl.errors = (rl.errors or []) + [str(ex)]
+                                bg_db.commit()
+                        except Exception:
+                            pass
+                    finally:
                         JobManager.release_single_flight(run_log.id)
                         set_autopilot_running(False, run_id=run_log.id)
 
@@ -193,6 +203,7 @@ class PipelineService:
                 "run_id": run_log.id,
             }
 
+        _db_assert_no_active_run(db)
         return DiscoveryService.run_discovery_and_staging(
             db=db,
             hustle_id=hustle_id,
@@ -408,12 +419,19 @@ class PipelineService:
     @staticmethod
     def verify_links(db: Session) -> Dict[str, Any]:
         from app.core.config import get_settings as _get_settings
+        from app.autopilot.runs.job_manager import JobManager
+        from app.services.event_bus import set_autopilot_running
+
         base_url = _get_settings().DEMO_ENGINE_BASE_URL
         emit_terminal_log("VERIFY-LINKS", f"Starting HTTP 200 verification on {base_url}...")
+
+        # Temporary lightweight lock or active cancel token check
+        cancel_token = JobManager.get_active_cancel_token()
         report = sync_verified_links_to_batch_json(
             db=db,
             base_url=base_url,
             log_cb=lambda msg: emit_terminal_log("VERIFY-LINKS", msg),
+            cancel_check=lambda: cancel_token.is_cancelled if cancel_token else False,
         )
         emit_terminal_log(
             "VERIFY-LINKS",
@@ -424,6 +442,47 @@ class PipelineService:
             {"verified_count": report["verified_count"], "title": f"Verified {report['verified_count']} live links"},
         )
         return report
+
+    @classmethod
+    def retry_recordings(
+        cls,
+        db: Session,
+        hustle_id: int = 1,
+        batch_id: Optional[str] = None,
+        testing_mode: bool = False,
+        async_mode: bool = False,
+    ) -> Dict[str, Any]:
+        from app.autopilot.build.factory_service import DemoFactoryService
+
+        if async_mode:
+            def _bg_worker():
+                with SessionLocal() as bg_db:
+                    try:
+                        DemoFactoryService.retry_recordings(
+                            db=bg_db,
+                            hustle_id=hustle_id,
+                            batch_id=batch_id,
+                            testing_mode=testing_mode,
+                            log_cb=lambda msg: emit_terminal_log("RETRY-RECORDER", msg),
+                        )
+                    except Exception as ex:
+                        logger.error("Async retry recordings failed: %s", ex)
+
+            t = threading.Thread(target=_bg_worker, daemon=True)
+            t.start()
+            return {
+                "status": "running",
+                "async": True,
+                "message": "Retry recordings started in background thread",
+            }
+
+        return DemoFactoryService.retry_recordings(
+            db=db,
+            hustle_id=hustle_id,
+            batch_id=batch_id,
+            testing_mode=testing_mode,
+            log_cb=lambda msg: emit_terminal_log("RETRY-RECORDER", msg),
+        )
 
     @staticmethod
     def get_cockpit_batch(db: Session, hustle_id: int = 1, batch_id: Optional[str] = None) -> Dict[str, Any]:
@@ -729,6 +788,44 @@ class PipelineService:
 
         staged_pool_cnt = DiscoveryService.get_staged_count(db, hustle_id=hustle_id)
 
+        last_discovery_run = (
+            db.query(RunLog)
+            .filter(RunLog.hustle_id == hustle_id, RunLog.job_type == "autopilot_discovery_and_staging")
+            .order_by(RunLog.id.desc())
+            .first()
+        )
+        if last_discovery_run:
+            d_drops = last_discovery_run.drop_reasons or {}
+            d_passed = int(last_discovery_run.count_passed or 0)
+            d_dropped = int(last_discovery_run.count_dropped or 0)
+            d_found = int(last_discovery_run.count_found or 0)
+            d_raw = max(d_found + d_dropped, d_passed)
+            d_pre_site_drops = (
+                int(d_drops.get("hospital_or_chain", 0))
+                + int(d_drops.get("cached_rejection", 0))
+                + int(d_drops.get("already_in_db", 0))
+                + int(d_drops.get("has_official_domain", 0))
+            )
+            d_unique_no_site = max(d_passed, min(d_raw, d_raw - d_pre_site_drops))
+            d_mobile_verified = max(d_passed, min(d_unique_no_site, d_unique_no_site - int(d_drops.get("no_mobile_whatsapp", 0))))
+            discovery_funnel = {
+                "runId": last_discovery_run.id,
+                "rawScanned": d_raw,
+                "uniqueNoWebsite": d_unique_no_site,
+                "mobileVerified": d_mobile_verified,
+                "staged": d_passed,
+                "dropped": d_dropped,
+            }
+        else:
+            discovery_funnel = {
+                "runId": None,
+                "rawScanned": 0,
+                "uniqueNoWebsite": 0,
+                "mobileVerified": 0,
+                "staged": 0,
+                "dropped": 0,
+            }
+
         metrics = {
             "runId": f"#run-{last_run.id}" if last_run else "#run-0",
             "triggeredAgo": "Recently" if last_run else "Never",
@@ -744,6 +841,7 @@ class PipelineService:
             "reviewTrayReady": review_buffer_cnt,
             "stagedPoolCount": staged_pool_cnt,
             "stagedCeiling": STAGING_BUFFER_CEILING,
+            "discoveryFunnel": discovery_funnel,
             "duration": dur_str,
             "recentLead": recent_lead_data,
         }

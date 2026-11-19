@@ -227,6 +227,52 @@ def verify_and_sync_links(db: Session = Depends(get_db)):
     return PipelineController.verify_links(db)
 
 
+@router.post("/autopilot/retry-recordings")
+def retry_failed_or_pending_recordings(
+    response: Response,
+    payload: Optional[Dict[str, Any]] = Body(None),
+    hustle_id: Optional[int] = Query(None),
+    batch_id: Optional[str] = Query(None),
+    testing_mode: Optional[bool] = Query(None),
+    async_mode: Optional[bool] = Query(None),
+    db: Session = Depends(get_db),
+):
+    h_id = 1
+    if payload and "hustle_id" in payload:
+        h_id = int(payload["hustle_id"])
+    elif hustle_id is not None:
+        h_id = hustle_id
+
+    b_id = None
+    if payload and "batch_id" in payload:
+        b_id = str(payload["batch_id"]).strip() or None
+    elif batch_id is not None:
+        b_id = str(batch_id).strip() or None
+
+    t_mode = False
+    if payload and "testing_mode" in payload:
+        t_mode = bool(payload["testing_mode"])
+    elif testing_mode is not None:
+        t_mode = testing_mode
+
+    is_async = False
+    if payload and "async_mode" in payload:
+        is_async = bool(payload["async_mode"])
+    elif async_mode is not None:
+        is_async = async_mode
+
+    res = PipelineController.retry_recordings(
+        db=db,
+        hustle_id=h_id,
+        batch_id=b_id,
+        testing_mode=t_mode,
+        async_mode=is_async,
+    )
+    if is_async:
+        response.status_code = status.HTTP_202_ACCEPTED
+    return res
+
+
 @router.get("/batch")
 def get_dispatch_cockpit_batch(
     hustle_id: int = Query(1),

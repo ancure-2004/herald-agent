@@ -201,6 +201,7 @@ export type RunStatus =
   | "QUEUED"
   | "SCAFFOLDING"
   | "BUILDING"
+  | "RECORDING"
   | "DEPLOYING"
   | "READY"
   | "FAILED"
@@ -251,6 +252,11 @@ export interface PreviewConfig {
   expiresAt: string;      // ISO 8601
   isPermanent: boolean;
   sslVerified: boolean;
+  choiceUrl?: string;
+  modernUrl?: string;
+  premiumUrl?: string;
+  warmUrl?: string;
+  videoFilePath?: string;
   lighthouseScore?: {
     performance: number;
     accessibility: number;

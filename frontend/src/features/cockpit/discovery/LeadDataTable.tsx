@@ -287,7 +287,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
 
             {/* Table Body: Horizontal hairline dividers, no vertical grid lines */}
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-              {leads.map((lead) => {
+              {leads.map((lead, idx) => {
                 const isSelected = selectedIds.has(lead.id);
 
                 // Extract primary status badge (e.g. STAGED, REPLIED, etc.) excluding high/standard fit
@@ -382,6 +382,8 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
                       <VerificationBadge
                         status={lead.verification.status}
                         details={lead.verification}
+                        lead={lead}
+                        placement={idx < 2 ? "bottom" : "top"}
                       />
                     </td>
 

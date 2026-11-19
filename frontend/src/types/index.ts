@@ -29,7 +29,7 @@ export interface Hustle {
   search_query: string;
   pipeline_steps: string[];
   allowed_channels: string[];
-  channel_limits: Record<string, number>;
+  channel_limits: Record<string, any>;
   channel_goals: Record<string, number>;
   minimum_stock_days: number;
   ai_field_questions: Array<{ key: string; question: string }>;
@@ -154,7 +154,7 @@ export interface StockPlan {
   needs_refill: boolean;
   upcoming_schedule: Array<{ date: string; mode: string }>;
   today_channel_sends: Record<string, number>;
-  channel_limits: Record<string, number>;
+  channel_limits: Record<string, any>;
   channel_goals: Record<string, number>;
 }
 
