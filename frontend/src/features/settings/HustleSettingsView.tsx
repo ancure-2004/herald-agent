@@ -271,7 +271,8 @@ export function HustleSettingsView() {
     {
       mcpServers: {
         "firstmate-crm": {
-          command: "python3",
+          command:
+            "/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/backend/.venv/bin/python3",
           args: [
             "/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/backend/mcp_server.py",
           ],
@@ -321,42 +322,62 @@ export function HustleSettingsView() {
 
   const currentTab = tabMetadata[settingsTab] || tabMetadata.blueprint;
 
-  // Real MCP Tools list matching backend/mcp_server.py
+  // Real MCP Tools list matching backend/mcp_server.py (v2.0.0)
   const realMcpTools = [
     {
+      name: "add_lead",
+      description: "Ingest a single new lead directly into CRM with duplicate contact checks (phone/IG) and auto-slugging.",
+      schema: "name, doctor_name?, locality?, city?, address?, primary_phone?, email?, instagram_handle?, preferred_channel?, next_action?, deal_value_inr?, hustle_id?",
+    },
+    {
+      name: "bulk_add_leads",
+      description: "Bulk ingest multiple leads with deduplication, atomic database commit, and per-lead success/skip reporting.",
+      schema: "leads, hustle_id?",
+    },
+    {
+      name: "send_message",
+      description: "Draft or send an external outreach message with explicit safety check (requires confirmed=True to transmit).",
+      schema: "lead_id, text, channel?, confirmed?",
+    },
+    {
+      name: "log_call",
+      description: "Log a completed call note for a lead, automatically generating structured summaries and next steps.",
+      schema: "lead_id, raw_text, duration_seconds?, outcome?",
+    },
+    {
+      name: "run_discovery",
+      description: "Run lead discovery waterfall (Google Places -> Serper -> Brave -> Playwright) with locality/query targeting and stop_after stages.",
+      schema: "locality?, limit?, stop_after?, hustle_id?",
+    },
+    {
+      name: "run_demo_factory",
+      description: "Trigger the Autopilot Demo Factory to scaffold websites, validate gates, and record Playwright demo videos for staged leads.",
+      schema: "batch_id?, batch_size?, testing_mode?, hustle_id?",
+    },
+    {
+      name: "run_batch_outreach",
+      description: "Execute batch outreach across WhatsApp, Instagram, or Email with dry_run safety verification.",
+      schema: "channel?, batch_id?, dry_run?, clinic_id?, hustle_id?",
+    },
+    {
       name: "list_leads",
-      description: "List CRM leads with optional filters for stage_id, locality, or search query.",
-      schema: "stage_id?, search?, limit?",
+      description: "List CRM leads with stage_id, locality, or text search filters ordered by intent and fit scores.",
+      schema: "stage_id?, locality?, search?, limit?, hustle_id?",
     },
     {
       name: "get_lead_dossier",
-      description: "Retrieve full dossier, verified facts, packages, and commitments for a specific lead ID.",
-      schema: "lead_id (required)",
+      description: "Retrieve comprehensive lead details including verified facts, packages, commitments, and demo URLs.",
+      schema: "lead_id",
     },
     {
       name: "move_lead_stage",
-      description: "Move a lead to a new Kanban stage_id and optionally update next_action note.",
-      schema: "lead_id, stage_id (required), next_action?",
+      description: "Move a lead to a new Kanban stage with strict SSOT stage/status syncing and optional next action update.",
+      schema: "lead_id, stage_id, next_action?",
     },
     {
-      name: "run_refill_batch",
-      description: "Trigger the 4-Tier Lead Discovery Waterfall (Google Places -> Serper -> Brave -> Playwright) for a hustle.",
-      schema: "hustle_id?, limit?",
-    },
-    {
-      name: "run_scout_agent",
-      description: "Run the Scout Agent to enrich un-enriched leads using the 4-tier Maps/Web waterfall.",
-      schema: "hustle_id?, batch_size?",
-    },
-    {
-      name: "run_auditor_agent",
-      description: "Run the Auditor Agent to verify live /demo/<slug> health, sync batch.json, and link MP4 walkthroughs.",
-      schema: "hustle_id?, record_video?",
-    },
-    {
-      name: "run_closer_agent",
-      description: "Run the Closer Agent across WhatsApp, Instagram, or Email (defaults to dry_run=true for safety).",
-      schema: "hustle_id?, channel, dry_run?",
+      name: "get_lead_activity",
+      description: "Retrieve full activity timeline and audit log for a lead: past call logs, message history, tracking events, and terminal logs.",
+      schema: "lead_id, limit?",
     },
   ];
 
@@ -996,22 +1017,31 @@ export function HustleSettingsView() {
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     FirstMate Personal OS MCP Server
                   </h3>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold">
+                    v2.0.0
+                  </span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  JSON-RPC 2.0 stdio server exposing live CRM intelligence and specialized autonomous agents to Antigravity, Claude Code, and Cursor.
+                  JSON-RPC 2.0 stdio server exposing production CRM intelligence, lead ingestion, communications, and batch autopilot execution to Antigravity, Claude Code, and Cursor.
                 </p>
               </div>
 
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px] font-mono font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Ready / Stdio
+                Ready / Stdio (v2.0.0)
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100 dark:border-zinc-800/80 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100 dark:border-zinc-800/80 text-xs">
               <div>
                 <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Transport</span>
                 <div className="font-semibold text-slate-800 dark:text-slate-200">JSON-RPC 2.0 over stdio</div>
+              </div>
+              <div>
+                <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Protocol &amp; Version</span>
+                <div className="font-semibold text-slate-800 dark:text-slate-200 font-mono text-[11px]">
+                  v2.0.0 (2024-11-05)
+                </div>
               </div>
               <div>
                 <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Entry Point</span>
@@ -1039,21 +1069,19 @@ export function HustleSettingsView() {
               {realMcpTools.map((tool) => (
                 <div
                   key={tool.name}
-                  className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap"
+                  className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 flex flex-col gap-2.5"
                 >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                        {tool.name}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      {tool.description}
-                    </div>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <span className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                      {tool.name}
+                    </span>
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-700/60 text-slate-700 dark:text-slate-300 break-all max-w-full">
+                      {tool.schema}
+                    </span>
                   </div>
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-700/60 text-slate-700 dark:text-slate-300 shrink-0">
-                    {tool.schema}
-                  </span>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                    {tool.description}
+                  </div>
                 </div>
               ))}
             </div>
