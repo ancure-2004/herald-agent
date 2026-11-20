@@ -225,88 +225,88 @@ export function Sidebar() {
   );
 
   // -------------------------------------------------------------
-  // COLLAPSED SIDEBAR DOCK RENDERER
+  // COLLAPSED SIDEBAR CONTENT RENDERER
   // -------------------------------------------------------------
-  const renderCollapsedDock = (extraClasses = "") => {
+  const renderCollapsedContent = () => {
     const collapsedItems = isSettings ? settingsNav : isCockpit ? cockpitNav : managementNav;
 
     return (
-      <aside
-        className={`w-18 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm p-2.5 flex flex-col justify-start items-center transition-all duration-200 z-20 relative ${extraClasses}`}
-      >
-        {/* Top: Logo + Expand Toggle */}
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs">
-            FM
+      <div className="flex flex-col justify-between items-center w-full h-full">
+        <div className="flex flex-col items-center w-full">
+          {/* Top: Logo + Expand Toggle */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs">
+              FM
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(false)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+              title="Expand Sidebar"
+              aria-label="Expand Sidebar"
+            >
+              <PanelLeft className="w-4 h-4" />
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setSidebarCollapsed(false)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-            title="Expand Sidebar"
-            aria-label="Expand Sidebar"
-          >
-            <PanelLeft className="w-4 h-4" />
-          </button>
+          {/* Compact Divider */}
+          <div className="w-8 my-3 border-t border-slate-100 dark:border-[#27272A]" />
+
+          {/* If Settings is active, show crisp Back to Workspace button */}
+          {isSettings && (
+            <button
+              type="button"
+              onClick={handleBackToWorkspace}
+              className="w-10 h-10 mb-2 rounded-xl flex items-center justify-center bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-zinc-800 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
+              title="Back to Workspace"
+              aria-label="Back to Workspace"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Navigation Icons Grouped Right Below Divider (No middle gap!) */}
+          <nav className="flex flex-col items-center gap-2">
+            {collapsedItems.map((item) => {
+              const Icon = item.icon;
+              const active = isSettings
+                ? settingsTab === item.id
+                : isCockpit
+                ? cockpitTab === item.id
+                : activeTab === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    if (isSettings) {
+                      setSettingsTab(item.id);
+                    } else if (isCockpit) {
+                      setCockpitTab(item.id as any);
+                    } else {
+                      setActiveTab(item.id as CRMTab);
+                      if (item.id === "board") setPipelineBoardExpanded(true);
+                    }
+                  }}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer relative group ${
+                    active
+                      ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900 scale-105"
+                      : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
+                  title={item.label}
+                  aria-label={item.label}
+                >
+                  <Icon className="w-4 h-4" />
+                  {active && (
+                    <span className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-4 rounded-full bg-zinc-900 dark:bg-white" />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
         </div>
-
-        {/* Compact Divider */}
-        <div className="w-8 my-3 border-t border-slate-100 dark:border-[#27272A]" />
-
-        {/* If Settings is active, show crisp Back to Workspace button */}
-        {isSettings && (
-          <button
-            type="button"
-            onClick={handleBackToWorkspace}
-            className="w-10 h-10 mb-2 rounded-xl flex items-center justify-center bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-zinc-800 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
-            title="Back to Workspace"
-            aria-label="Back to Workspace"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-        )}
-
-        {/* Navigation Icons Grouped Right Below Divider (No middle gap!) */}
-        <nav className="flex flex-col items-center gap-2">
-          {collapsedItems.map((item) => {
-            const Icon = item.icon;
-            const active = isSettings
-              ? settingsTab === item.id
-              : isCockpit
-              ? cockpitTab === item.id
-              : activeTab === item.id;
-
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  if (isSettings) {
-                    setSettingsTab(item.id);
-                  } else if (isCockpit) {
-                    setCockpitTab(item.id as any);
-                  } else {
-                    setActiveTab(item.id as CRMTab);
-                    if (item.id === "board") setPipelineBoardExpanded(true);
-                  }
-                }}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer relative group ${
-                  active
-                    ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900 scale-105"
-                    : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
-                title={item.label}
-                aria-label={item.label}
-              >
-                <Icon className="w-4 h-4" />
-                {active && (
-                  <span className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-4 rounded-full bg-zinc-900 dark:bg-white" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
 
         {/* Bottom Footer Block: Pushed to bottom via mt-auto */}
         <div
@@ -356,24 +356,15 @@ export function Sidebar() {
               "absolute left-full bottom-0 ml-3 w-64 animate-in fade-in slide-in-from-left-2 duration-150"
             )}
         </div>
-      </aside>
+      </div>
     );
   };
 
   // -------------------------------------------------------------
-  // CLOSED / COLLAPSED SIDEBAR DOCK
+  // EXPANDED SIDEBAR CONTENT RENDERER
   // -------------------------------------------------------------
-  if (sidebarCollapsed) {
-    return renderCollapsedDock();
-  }
-
-  // -------------------------------------------------------------
-  // OPEN SIDEBAR (on mobile viewports, stays collapsed dock to eliminate CLS)
-  // -------------------------------------------------------------
-  return (
-    <>
-      {renderCollapsedDock("md:hidden")}
-      <aside className="hidden md:flex w-64 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm p-3.5 flex-col justify-start transition-all duration-200 z-20 relative">
+  const renderExpandedContent = () => (
+    <div className="flex flex-col justify-between w-full h-full min-w-0">
       {/* Top Header: Brand Logo + Workspace Name + Collapse Toggle */}
       <div className="flex items-center justify-between pb-2">
         <div className="flex items-center gap-2.5">
@@ -672,7 +663,29 @@ export function Sidebar() {
             )}
         </div>
       </div>
+    </div>
+  );
+
+  return (
+    <aside
+      className={`shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm flex flex-col justify-start transition-all duration-200 z-20 relative ${
+        sidebarCollapsed
+          ? "w-18 p-2.5 items-center"
+          : "w-18 md:w-64 p-2.5 md:p-3.5 items-center md:items-stretch"
+      }`}
+    >
+      {sidebarCollapsed ? (
+        renderCollapsedContent()
+      ) : (
+        <>
+          <div className="w-full h-full flex flex-col md:hidden">
+            {renderCollapsedContent()}
+          </div>
+          <div className="w-full h-full hidden md:flex flex-col min-w-0">
+            {renderExpandedContent()}
+          </div>
+        </>
+      )}
     </aside>
-  </>
-);
+  );
 }
