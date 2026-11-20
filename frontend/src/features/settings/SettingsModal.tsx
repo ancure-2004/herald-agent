@@ -430,25 +430,15 @@ export function SettingsModal() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-5xl w-[90vw] h-[82vh] bg-white dark:bg-[#141721] rounded-2xl border border-slate-200/90 dark:border-white/[0.1] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
+        className="w-full max-w-6xl w-[92vw] h-[88vh] bg-white dark:bg-[#141721] rounded-2xl border border-slate-200/90 dark:border-white/[0.1] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
       >
         {/* Top Minimal Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between shrink-0 bg-white dark:bg-[#161925]">
-          <div className="flex items-center gap-2.5">
-            <h2 id="settings-modal-title" className="text-base font-bold text-slate-900 dark:text-white">
-              Settings
-            </h2>
-            <span className="text-slate-300 dark:text-slate-600">•</span>
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {currentCategoryMeta.label}
-            </span>
-          </div>
+          <h2 id="settings-modal-title" className="text-base font-bold text-slate-900 dark:text-white">
+            Settings
+          </h2>
 
           <div className="flex items-center gap-3">
-            <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-slate-100 dark:bg-white/[0.08] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/[0.08]">
-              <span>⌘</span>
-              <span>,</span>
-            </kbd>
             <button
               type="button"
               onClick={() => setSettingsModalOpen(false)}
