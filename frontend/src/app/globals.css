@@ -40,19 +40,19 @@
 .dark {
   color-scheme: dark;
 
-  /* Design system tokens - Dark Mode (Obsidian & Gold / Indigo High-Contrast) */
+  /* Design system tokens - Dark Mode (Obsidian & Claude-Charcoal High-Contrast) */
   --color-primary: #6366f1;
   --color-on-primary: #ffffff;
   --color-secondary: #818cf8;
   --color-accent: #f59e0b;
   --color-on-accent: #ffffff;
-  --color-background: #0b0c10;
-  --color-foreground: #f8fafc;
-  --color-card: #141721;
-  --color-card-foreground: #f8fafc;
-  --color-muted: #12141d;
-  --color-muted-foreground: #94a3b8;
-  --color-border: #202538;
+  --color-background: #09090b;
+  --color-foreground: #f4f4f5;
+  --color-card: #18181b;
+  --color-card-foreground: #f4f4f5;
+  --color-muted: #1c1c1f;
+  --color-muted-foreground: #a1a1aa;
+  --color-border: #27272a;
   --color-destructive: #ef4444;
   --color-on-destructive: #ffffff;
   --color-ring: #6366f1;
@@ -75,21 +75,21 @@ body {
   background: #f1f5f9;
 }
 .dark ::-webkit-scrollbar-track {
-  background: #0b0c10;
+  background: #09090b;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #202538;
+  background: #27272a;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #333c57;
+  background: #3f3f46;
 }
 
 /* Base interactive defaults */

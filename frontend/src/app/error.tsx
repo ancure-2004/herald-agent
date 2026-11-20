@@ -15,7 +15,7 @@ export default function ErrorBoundary({
   }, [error]);
 
   return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#FAF9F6] dark:bg-[#0B0C10] text-slate-900 dark:text-zinc-100 p-6">
+    <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#FAF9F6] dark:bg-[#09090B] text-slate-900 dark:text-zinc-100 p-6">
       <div className="max-w-md w-full p-8 rounded-3xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.08] shadow-2xl text-center space-y-4">
         <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 flex items-center justify-center text-rose-600 dark:text-rose-400">
           <AlertOctagon className="w-7 h-7" />

@@ -62,7 +62,7 @@ function CRMContent() {
               : activeTab === "inbox" || activeTab === "calls"
               ? "p-3 sm:p-4 overflow-hidden h-full bg-[#F1F3F6] dark:bg-[#09090B]"
               : activeTab === "dashboard"
-              ? "overflow-y-auto no-scrollbar p-3 sm:p-3.5 sm:px-6 h-full bg-[#F1F3F6] dark:bg-[#0B0F17]"
+              ? "overflow-y-auto no-scrollbar p-3 sm:p-3.5 sm:px-6 h-full bg-[#F1F3F6] dark:bg-[#09090B]"
               : "overflow-y-auto p-4 sm:p-6 space-y-6 bg-[#F1F3F6] dark:bg-[#09090B]"
           }`}
         >

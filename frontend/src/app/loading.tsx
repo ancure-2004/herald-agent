@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#FAF9F6] dark:bg-[#0B0C10] text-slate-900 dark:text-zinc-100">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#FAF9F6] dark:bg-[#09090B] text-slate-900 dark:text-zinc-100">
       {/* Top Header Skeleton */}
       <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#0F1117]/95 px-6 flex items-center justify-between animate-pulse">
         <div className="flex items-center gap-3">
