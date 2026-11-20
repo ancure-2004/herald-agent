@@ -17,7 +17,7 @@ export const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
   if (selectedCount === 0) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#111215]/95 backdrop-blur-md border border-white/[0.12] rounded-full px-4 py-2 flex items-center gap-3 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-150">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#111215]/95 dark:bg-zinc-800/95 backdrop-blur-md border border-white/[0.12] dark:border-zinc-600/80 rounded-full px-4 py-2 flex items-center gap-3 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-150">
       <div className="flex items-center gap-2 pr-3 border-r border-white/[0.1]">
         <span className="w-5 h-5 rounded-full bg-indigo-500 text-white font-mono text-[11px] font-bold flex items-center justify-center">
           {selectedCount}
