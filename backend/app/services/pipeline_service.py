@@ -2,7 +2,7 @@ import logging
 import os
 import threading
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
@@ -70,11 +70,118 @@ def _db_assert_no_active_run(db: Session) -> None:
 
 class PipelineService:
     @staticmethod
-    def list_runs(db: Session, hustle_id: Optional[int] = None) -> List[RunLog]:
+    def list_runs(
+        db: Session,
+        hustle_id: Optional[int] = None,
+        job_type: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[RunLog], Dict[str, Any]]:
         q = db.query(RunLog)
         if hustle_id is not None:
             q = q.filter(RunLog.hustle_id == hustle_id)
+        if job_type is not None:
+            q = q.filter(RunLog.job_type == job_type)
+
+        is_paginated = (limit is not None) or (offset is not None) or (cursor is not None)
+        if is_paginated:
+            total = q.count()
+            q = q.order_by(RunLog.id.desc())
+            if cursor is not None:
+                q = q.filter(RunLog.id < cursor)
+            if offset is not None:
+                q = q.offset(offset)
+            if limit is not None:
+                q = q.limit(limit)
+            items = q.all()
+            next_cursor = items[-1].id if (items and limit is not None and len(items) == limit) else None
+            return {
+                "items": items,
+                "next_cursor": next_cursor,
+                "total": total,
+            }
+
         return q.order_by(RunLog.id.desc()).limit(30).all()
+
+    @staticmethod
+    def list_discovery_candidates(
+        db: Session,
+        hustle_id: Optional[int] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+        q = db.query(Lead).filter(Lead.status == "STAGED", Lead.is_archived == False)  # noqa: E712
+        if hustle_id is not None:
+            q = q.filter(Lead.hustle_id == hustle_id)
+        if hasattr(Lead, "is_test"):
+            q = q.filter((Lead.is_test == False) | (Lead.is_test == None))  # noqa: E711, E712
+
+        is_paginated = (limit is not None) or (offset is not None) or (cursor is not None)
+        if is_paginated:
+            total = q.count()
+            q = q.order_by(Lead.id.desc())
+            if cursor is not None:
+                q = q.filter(Lead.id < cursor)
+            if offset is not None:
+                q = q.offset(offset)
+            if limit is not None:
+                q = q.limit(limit)
+            leads = q.all()
+            items = [
+                {
+                    "id": l.id,
+                    "name": l.name,
+                    "doctor_name": l.doctor_name,
+                    "locality": l.locality,
+                    "phone": l.primary_phone,
+                    "status": l.status,
+                    "fit_score": l.fit_score,
+                    "intent_score": l.intent_score,
+                    "created_at": l.created_at.isoformat() if l.created_at else None,
+                }
+                for l in leads
+            ]
+            next_cursor = items[-1]["id"] if (items and limit is not None and len(items) == limit) else None
+            return {
+                "items": items,
+                "next_cursor": next_cursor,
+                "total": total,
+            }
+
+        leads = q.order_by(Lead.id.desc()).limit(50).all()
+        return [
+            {
+                "id": l.id,
+                "name": l.name,
+                "doctor_name": l.doctor_name,
+                "locality": l.locality,
+                "phone": l.primary_phone,
+                "status": l.status,
+                "fit_score": l.fit_score,
+                "intent_score": l.intent_score,
+                "created_at": l.created_at.isoformat() if l.created_at else None,
+            }
+            for l in leads
+        ]
+
+    @staticmethod
+    def list_discovery_runs(
+        db: Session,
+        hustle_id: Optional[int] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[RunLog], Dict[str, Any]]:
+        return PipelineService.list_runs(
+            db=db,
+            hustle_id=hustle_id,
+            job_type="autopilot_discovery_and_staging",
+            limit=limit,
+            offset=offset,
+            cursor=cursor,
+        )
 
     @staticmethod
     def get_run_by_id(db: Session, run_id: int) -> Dict[str, Any]:

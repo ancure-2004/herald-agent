@@ -1,14 +1,14 @@
 import json
 import urllib.parse
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import MethodNotAllowedError, NotFoundError
 from app.core.logging import logger
-from app.models.entities import AppSetting, Message, OutboxItem, Stage
+from app.models.entities import AppSetting, Lead, Message, OutboxItem, Stage
 from app.repositories.hustle_repo import HustleRepository
 from app.repositories.lead_repo import LeadRepository
 from app.repositories.message_repo import MessageRepository
@@ -708,11 +708,37 @@ class MessageService:
         return res
 
     @staticmethod
-    def get_lead_messages(db: Session, lead_id: int) -> List[Message]:
+    def get_lead_messages(
+        db: Session,
+        lead_id: int,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[Message], Dict[str, Any]]:
         lead = db.query(Lead).filter(Lead.id == lead_id).first()
         if not lead:
             raise NotFoundError("Lead not found.")
-        return db.query(Message).filter(Message.lead_id == lead.id).order_by(Message.created_at.asc()).all()
+
+        q = db.query(Message).filter(Message.lead_id == lead.id)
+        is_paginated = (limit is not None) or (offset is not None) or (cursor is not None)
+        if is_paginated:
+            total = q.count()
+            q = q.order_by(Message.created_at.asc(), Message.id.asc())
+            if cursor is not None:
+                q = q.filter(Message.id > cursor)
+            if offset is not None:
+                q = q.offset(offset)
+            if limit is not None:
+                q = q.limit(limit)
+            items = q.all()
+            next_cursor = items[-1].id if (items and limit is not None and len(items) == limit) else None
+            return {
+                "items": items,
+                "next_cursor": next_cursor,
+                "total": total,
+            }
+
+        return q.order_by(Message.created_at.asc()).all()
 
     # -------------------------------------------------------------------------
     # Dispatch Cockpit persistence helpers

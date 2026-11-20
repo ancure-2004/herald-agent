@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy.orm import Session, joinedload, selectinload
 
@@ -67,7 +67,10 @@ class LeadRepository:
         include_archived: bool = False,
         search: Optional[str] = None,
         status: Optional[str] = None,
-    ) -> List[Lead]:
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[Lead], Dict[str, Any]]:
         q = db.query(Lead).options(*LeadRepository._lead_load_options())
 
         if hustle_id is not None:
@@ -106,6 +109,24 @@ class LeadRepository:
                 | (Lead.primary_phone.ilike(pattern))
                 | (Lead.instagram_handle.ilike(pattern))
             )
+
+        is_paginated = (limit is not None) or (offset is not None) or (cursor is not None)
+        if is_paginated:
+            total = q.count()
+            q = q.order_by(Lead.id.desc())
+            if cursor is not None:
+                q = q.filter(Lead.id < cursor)
+            if offset is not None:
+                q = q.offset(offset)
+            if limit is not None:
+                q = q.limit(limit)
+            items = q.all()
+            next_cursor = items[-1].id if (items and limit is not None and len(items) == limit) else None
+            return {
+                "items": items,
+                "next_cursor": next_cursor,
+                "total": total,
+            }
 
         return q.order_by(Lead.intent_score.desc(), Lead.fit_score.desc(), Lead.id.desc()).all()
 

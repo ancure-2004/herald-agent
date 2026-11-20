@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy.orm import Session
@@ -6,12 +6,13 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.controllers.lead_controller import LeadController
 from app.schemas.call import CallBriefOut, CallCreate, CallOut
+from app.schemas.common import PaginatedResponse
 from app.schemas.lead import CompleteTaskRequest, LeadCreate, LeadOut, LeadUpdate
 
 router = APIRouter(tags=["Leads"])
 
 
-@router.get("/leads", response_model=List[LeadOut])
+@router.get("/leads", response_model=Union[PaginatedResponse[LeadOut], List[LeadOut]])
 def list_leads(
     hustle_id: Optional[int] = Query(None),
     stage_slug: Optional[str] = Query(None),
@@ -19,6 +20,9 @@ def list_leads(
     include_archived: bool = Query(False),
     search: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    limit: Optional[int] = Query(None, ge=1, le=500),
+    offset: Optional[int] = Query(None, ge=0),
+    cursor: Optional[int] = Query(None),
     db: Session = Depends(get_db),
 ):
     return LeadController.list_leads(
@@ -29,6 +33,9 @@ def list_leads(
         include_archived=include_archived,
         search=search,
         status=status,
+        limit=limit,
+        offset=offset,
+        cursor=cursor,
     )
 
 

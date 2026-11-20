@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy.orm import Session
 
@@ -8,8 +8,54 @@ from app.services.pipeline_service import PipelineService
 
 class PipelineController:
     @staticmethod
-    def list_runs(db: Session, hustle_id: Optional[int] = None) -> List[RunLog]:
-        return PipelineService.list_runs(db, hustle_id)
+    def list_runs(
+        db: Session,
+        hustle_id: Optional[int] = None,
+        job_type: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[RunLog], Dict[str, Any]]:
+        return PipelineService.list_runs(
+            db,
+            hustle_id=hustle_id,
+            job_type=job_type,
+            limit=limit,
+            offset=offset,
+            cursor=cursor,
+        )
+
+    @staticmethod
+    def list_discovery_candidates(
+        db: Session,
+        hustle_id: Optional[int] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+        return PipelineService.list_discovery_candidates(
+            db,
+            hustle_id=hustle_id,
+            limit=limit,
+            offset=offset,
+            cursor=cursor,
+        )
+
+    @staticmethod
+    def list_discovery_runs(
+        db: Session,
+        hustle_id: Optional[int] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[RunLog], Dict[str, Any]]:
+        return PipelineService.list_discovery_runs(
+            db,
+            hustle_id=hustle_id,
+            limit=limit,
+            offset=offset,
+            cursor=cursor,
+        )
 
     @staticmethod
     def get_run(db: Session, run_id: int) -> Dict[str, Any]:
