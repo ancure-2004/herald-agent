@@ -7,16 +7,40 @@ import { CRMProvider, useCRM } from "@/context/CRMContext";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DashboardView } from "@/features/dashboard/DashboardView";
-import { WhatsAppInboxView } from "@/features/inbox/WhatsAppInboxView";
-import { CallsManagementView } from "@/features/calls/CallsManagementView";
-import { KanbanBoardView } from "@/features/board/KanbanBoardView";
-import { LeadsTableView } from "@/features/table/LeadsTableView";
-import { EveningSprintView } from "@/features/sprint/EveningSprintView";
-import { HustleSettingsView } from "@/features/settings/HustleSettingsView";
 import { Toast } from "@/components/ui/Toast";
 import { KanbanSkeleton, TableSkeleton } from "@/components/ui/Skeleton";
 
 // Dynamic imports with ssr: false for heavy views, modals, and drawers
+const KanbanBoardView = dynamic(
+  () => import("@/features/board/KanbanBoardView").then((mod) => mod.KanbanBoardView),
+  { ssr: false, loading: () => <KanbanSkeleton /> }
+);
+
+const LeadsTableView = dynamic(
+  () => import("@/features/table/LeadsTableView").then((mod) => mod.LeadsTableView),
+  { ssr: false, loading: () => <TableSkeleton rows={8} columns={8} /> }
+);
+
+const WhatsAppInboxView = dynamic(
+  () => import("@/features/inbox/WhatsAppInboxView").then((mod) => mod.WhatsAppInboxView),
+  { ssr: false, loading: () => <TableSkeleton rows={6} columns={4} /> }
+);
+
+const CallsManagementView = dynamic(
+  () => import("@/features/calls/CallsManagementView").then((mod) => mod.CallsManagementView),
+  { ssr: false, loading: () => <TableSkeleton rows={6} columns={4} /> }
+);
+
+const EveningSprintView = dynamic(
+  () => import("@/features/sprint/EveningSprintView").then((mod) => mod.EveningSprintView),
+  { ssr: false, loading: () => <TableSkeleton rows={6} columns={4} /> }
+);
+
+const HustleSettingsView = dynamic(
+  () => import("@/features/settings/HustleSettingsView").then((mod) => mod.HustleSettingsView),
+  { ssr: false, loading: () => <TableSkeleton rows={6} columns={4} /> }
+);
+
 const AutopilotCockpitView = dynamic(
   () => import("@/features/cockpit/AutopilotCockpitView").then((mod) => mod.AutopilotCockpitView),
   { ssr: false, loading: () => <TableSkeleton rows={8} columns={6} /> }
@@ -63,7 +87,19 @@ const LogReplyModal = dynamic(
 );
 
 function CRMContent() {
-  const { activeTab, loading, toast, closeToast } = useCRM();
+  const {
+    activeTab,
+    loading,
+    toast,
+    closeToast,
+    settingsModalOpen,
+    cmdKOpen,
+    selectedLeadId,
+    newLeadModalOpen,
+    problemModalOpen,
+    logCallModalOpen,
+    logReplyModalOpen,
+  } = useCRM();
   const isCockpit = activeTab === "autopilot";
 
   return (
@@ -127,14 +163,14 @@ function CRMContent() {
         </main>
       </div>
 
-      {/* Modals & Drawers */}
-      <SettingsModal />
-      <CommandPaletteModal />
-      <LeadDetailModal />
-      <AddLeadModal />
-      <ProblemReportModal />
-      <LogCallModal />
-      <LogReplyModal />
+      {/* Modals & Drawers - only mounted when activated */}
+      {settingsModalOpen && <SettingsModal />}
+      {cmdKOpen && <CommandPaletteModal />}
+      {Boolean(selectedLeadId) && <LeadDetailModal />}
+      {newLeadModalOpen && <AddLeadModal />}
+      {problemModalOpen && <ProblemReportModal />}
+      {logCallModalOpen && <LogCallModal />}
+      {logReplyModalOpen && <LogReplyModal />}
       {!isCockpit && <AssistantDrawer />}
       <Toast toast={toast} onClose={closeToast} />
     </div>
