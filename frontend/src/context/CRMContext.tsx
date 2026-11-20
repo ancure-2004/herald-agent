@@ -166,6 +166,8 @@ interface CRMContextType {
   setCmdKOpen: React.Dispatch<React.SetStateAction<boolean>>;
   cmdSearchQuery: string;
   setCmdSearchQuery: (q: string) => void;
+  settingsModalOpen: boolean;
+  setSettingsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   newLeadModalOpen: boolean;
   setNewLeadModalOpen: (b: boolean) => void;
   problemModalOpen: boolean;
@@ -321,6 +323,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   // Modals
   const [cmdKOpen, setCmdKOpen] = useState<boolean>(false);
   const [cmdSearchQuery, setCmdSearchQuery] = useState<string>("");
+  const [settingsModalOpen, setSettingsModalOpen] = useState<boolean>(false);
   const [newLeadModalOpen, setNewLeadModalOpen] = useState<boolean>(false);
   const [problemModalOpen, setProblemModalOpen] = useState<boolean>(false);
   const [logCallModalOpen, setLogCallModalOpen] = useState<boolean>(false);
@@ -938,6 +941,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     setCmdKOpen,
     cmdSearchQuery,
     setCmdSearchQuery,
+    settingsModalOpen,
+    setSettingsModalOpen,
     newLeadModalOpen,
     setNewLeadModalOpen,
     problemModalOpen,
@@ -1032,6 +1037,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     dragOverStageId,
     cmdKOpen,
     cmdSearchQuery,
+    settingsModalOpen,
+    setSettingsModalOpen,
     newLeadModalOpen,
     problemModalOpen,
     logCallModalOpen,

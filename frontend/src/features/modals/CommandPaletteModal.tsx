@@ -121,6 +121,7 @@ export function CommandPaletteModal() {
     setCmdKOpen,
     cmdSearchQuery,
     setCmdSearchQuery,
+    setSettingsModalOpen,
     leads,
     setSelectedLeadId,
     setActiveTab,
@@ -426,7 +427,7 @@ export function CommandPaletteModal() {
     } else if (item.type === "setting") {
       addRecentSearch(item.item.tabLabel);
       setSettingsTab(item.item.id);
-      setActiveTab("settings");
+      setSettingsModalOpen(true);
       notify(`Opened Settings: ${item.item.tabLabel}`, "ok");
       setCmdKOpen(false);
       setCmdSearchQuery("");

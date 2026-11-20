@@ -20,6 +20,7 @@ import { AssistantDrawer } from "@/features/modals/AssistantDrawer";
 import { LogCallModal } from "@/features/modals/LogCallModal";
 import { LogReplyModal } from "@/features/modals/LogReplyModal";
 import { CommandPaletteModal } from "@/features/modals/CommandPaletteModal";
+import { SettingsModal } from "@/features/settings/SettingsModal";
 
 function CRMContent() {
   const { activeTab, loading, toast } = useCRM();
@@ -85,6 +86,7 @@ function CRMContent() {
       </div>
 
       {/* Modals & Drawers */}
+      <SettingsModal />
       <CommandPaletteModal />
       <LeadDetailModal />
       <AddLeadModal />

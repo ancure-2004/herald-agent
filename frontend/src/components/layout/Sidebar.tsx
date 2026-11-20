@@ -56,6 +56,7 @@ export function Sidebar() {
     toggleDarkMode,
     settingsTab,
     setSettingsTab,
+    setSettingsModalOpen,
     handleBackToWorkspace,
     operatorProfile,
   } = useCRM();
@@ -153,7 +154,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={() => {
-            setActiveTab("settings");
+            setSettingsModalOpen(true);
             setProfileMenuOpen(false);
           }}
           className="w-full flex items-center justify-between py-2 px-2.5 rounded-xl text-xs font-medium text-zinc-200 hover:text-white hover:bg-zinc-700/60 transition-colors cursor-pointer group"
@@ -162,7 +163,7 @@ export function Sidebar() {
             <Settings className="w-4 h-4 text-zinc-400 group-hover:text-white group-hover:rotate-45 transition-transform" />
             <span>Settings</span>
           </div>
-          <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300" />
+          <span className="text-[10px] font-mono text-zinc-400 group-hover:text-zinc-200">⌘,</span>
         </button>
 
         <button
