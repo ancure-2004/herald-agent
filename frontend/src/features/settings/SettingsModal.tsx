@@ -17,10 +17,11 @@ import {
   Sun,
   Monitor,
   Shield,
+  ShieldCheck,
   Save,
   Loader2,
-  RefreshCw,
   Zap,
+  ArrowRight,
 } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { settingsApi } from "@/api/settingsApi";
@@ -38,6 +39,7 @@ interface CategoryMeta {
   label: string;
   description: string;
   icon: React.ElementType;
+  group: "operations" | "system";
 }
 
 const SETTINGS_CATEGORIES: CategoryMeta[] = [
@@ -46,36 +48,113 @@ const SETTINGS_CATEGORIES: CategoryMeta[] = [
     label: "Hustle & Blueprint",
     description: "Autonomy mode, delivery pipeline steps, and target package values",
     icon: Sparkles,
+    group: "operations",
   },
   {
     id: "waterfall",
     label: "Discovery Waterfall",
     description: "4-tier Maps and search queries with multi-source fallback routing",
     icon: Layers,
+    group: "operations",
   },
   {
     id: "quotas",
     label: "Quotas & Safety Caps",
     description: "Daily channel limits, batch size, and dry-run safety simulation",
     icon: Sliders,
+    group: "operations",
   },
   {
     id: "mcp",
     label: "MCP & AI Provider",
     description: "AI Provider keys (Gemini / Groq) and Antigravity stdio MCP server",
     icon: Cpu,
+    group: "system",
   },
   {
     id: "appearance",
     label: "Appearance & UI",
     description: "Theme styling, reduced motion, and compact table density",
     icon: Palette,
+    group: "system",
   },
   {
     id: "profile",
     label: "Operator Profile",
     description: "Operator identity, monogram badge, and message sign-off",
     icon: User,
+    group: "system",
+  },
+];
+
+// SSOT Registered MCP tools from backend/mcp_server.py (v2.0.0)
+const REAL_MCP_TOOLS = [
+  {
+    name: "add_lead",
+    description:
+      "Ingest a single new lead directly into CRM with duplicate contact checks (phone/IG) and auto-slugging.",
+    schema:
+      "name, doctor_name?, locality?, city?, address?, primary_phone?, email?, instagram_handle?, preferred_channel?, next_action?, deal_value_inr?, hustle_id?",
+  },
+  {
+    name: "bulk_add_leads",
+    description:
+      "Bulk ingest multiple leads with deduplication, atomic database commit, and per-lead success/skip reporting.",
+    schema: "leads, hustle_id?",
+  },
+  {
+    name: "send_message",
+    description:
+      "Draft or send an external outreach message with explicit safety check (requires confirmed=True to transmit).",
+    schema: "lead_id, text, channel?, confirmed?",
+  },
+  {
+    name: "log_call",
+    description:
+      "Log a completed call note for a lead, automatically generating structured summaries and next steps.",
+    schema: "lead_id, raw_text, duration_seconds?, outcome?",
+  },
+  {
+    name: "run_discovery",
+    description:
+      "Run lead discovery waterfall (Google Places -> Serper -> Brave -> Playwright) with locality/query targeting and stop_after stages.",
+    schema: "locality?, limit?, stop_after?, hustle_id?",
+  },
+  {
+    name: "run_demo_factory",
+    description:
+      "Trigger the Autopilot Demo Factory to scaffold websites, validate gates, and record Playwright demo videos for staged leads.",
+    schema: "batch_id?, batch_size?, testing_mode?, hustle_id?",
+  },
+  {
+    name: "run_batch_outreach",
+    description:
+      "Execute batch outreach across WhatsApp, Instagram, or Email with dry_run safety verification.",
+    schema: "channel?, batch_id?, dry_run?, clinic_id?, hustle_id?",
+  },
+  {
+    name: "list_leads",
+    description:
+      "List CRM leads with stage_id, locality, or text search filters ordered by intent and fit scores.",
+    schema: "stage_id?, locality?, search?, limit?, hustle_id?",
+  },
+  {
+    name: "get_lead_dossier",
+    description:
+      "Retrieve comprehensive lead details including verified facts, packages, commitments, and demo URLs.",
+    schema: "lead_id",
+  },
+  {
+    name: "move_lead_stage",
+    description:
+      "Move a lead to a new Kanban stage with strict SSOT stage/status syncing and optional next action update.",
+    schema: "lead_id, stage_id, next_action?",
+  },
+  {
+    name: "get_lead_activity",
+    description:
+      "Retrieve full activity timeline and audit log for a lead: past call logs, message history, tracking events, and terminal logs.",
+    schema: "lead_id, limit?",
   },
 ];
 
@@ -88,8 +167,6 @@ export function SettingsModal() {
     activeHustle,
     notify,
     loadAll,
-    isDarkMode,
-    toggleDarkMode,
     themeMode,
     setThemeMode,
     operatorProfile,
@@ -134,13 +211,6 @@ export function SettingsModal() {
     return false;
   });
 
-  const [autoExpandConsoles, setAutoExpandConsoles] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("crm_auto_expand_consoles") !== "false";
-    }
-    return true;
-  });
-
   // MCP Snippet Copied State
   const [mcpCopied, setMcpCopied] = useState<boolean>(false);
 
@@ -148,7 +218,6 @@ export function SettingsModal() {
   const [aiProvider, setAiProvider] = useState<"auto" | "local_cli" | "gemini" | "groq">("auto");
   const [geminiKeyInput, setGeminiKeyInput] = useState<string>("");
   const [groqKeyInput, setGroqKeyInput] = useState<string>("");
-  const [aiSettingsLoaded, setAiSettingsLoaded] = useState<boolean>(false);
   const [hasGeminiKey, setHasGeminiKey] = useState<boolean>(false);
   const [hasGroqKey, setHasGroqKey] = useState<boolean>(false);
   const [hasLocalCli, setHasLocalCli] = useState<boolean>(false);
@@ -181,7 +250,7 @@ export function SettingsModal() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [settingsModalOpen, setSettingsModalOpen]);
 
-  // Load AI Settings on mount
+  // Load AI Settings on mount / open
   useEffect(() => {
     if (!settingsModalOpen) return;
     settingsApi
@@ -193,7 +262,6 @@ export function SettingsModal() {
         setHasGeminiKey(res.has_gemini_key);
         setHasGroqKey(res.has_groq_key);
         setHasLocalCli(res.has_local_cli);
-        setAiSettingsLoaded(true);
       })
       .catch((err) => {
         console.warn("Failed to load AI settings:", err);
@@ -248,106 +316,109 @@ export function SettingsModal() {
 
     // Persist operator profile
     updateOperatorProfile({
-      name: profileName.trim() || "Ankur Tyagi",
-      role: profileRole.trim() || "CRM Architect",
-      initials: (profileInitials.trim() || "AT").toUpperCase(),
-      signoff: profileSignoff.trim() || "Ankur",
+      name: profileName.trim(),
+      role: profileRole.trim(),
+      initials: profileInitials.trim().toUpperCase() || "AT",
+      signoff: profileSignoff.trim() || profileName.split(" ")[0] || "Ankur",
     });
 
     try {
+      // 1. Save Hustle Settings
       await settingsApi.updateHustle(activeHustle.id, {
         autonomy_mode: settingsAutonomy,
         search_query: settingsQuery,
-        minimum_stock_days: Number(settingsMinDays),
-        channel_limits: {
-          whatsapp: Number(settingsWaLimit),
-          instagram: Number(settingsIgLimit),
-          email: Number(settingsEmailLimit),
-          batch_size: Number(settingsBatchSize) || 25,
-          dry_run: Boolean(settingsDryRun),
-        },
+        minimum_stock_days: settingsMinDays,
         pipeline_steps: baseSteps,
-      } as any);
+        channel_limits: {
+          whatsapp: settingsWaLimit,
+          instagram: settingsIgLimit,
+          email: settingsEmailLimit,
+          batch_size: settingsBatchSize,
+          dry_run: settingsDryRun,
+        },
+      });
 
-      // Save AI provider settings if modified
-      const aiPayload: { provider: string; gemini_api_key?: string; groq_api_key?: string } = {
+      // 2. Save AI Configuration
+      await settingsApi.updateAISettings({
         provider: aiProvider,
-      };
-      if (geminiKeyInput && !geminiKeyInput.includes("••••")) {
-        aiPayload.gemini_api_key = geminiKeyInput.trim();
-      }
-      if (groqKeyInput && !groqKeyInput.includes("••••")) {
-        aiPayload.groq_api_key = groqKeyInput.trim();
-      }
-      await settingsApi.updateAISettings(aiPayload);
+        gemini_api_key: geminiKeyInput.trim() || undefined,
+        groq_api_key: groqKeyInput.trim() || undefined,
+      });
 
-      notify("All settings and preferences saved successfully!", "ok");
+      notify("All settings & configurations saved successfully", "ok");
       await loadAll();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to update settings", "err");
+      setSettingsModalOpen(false);
+    } catch (err: any) {
+      console.error("Save all settings error:", err);
+      notify(err.message || "Failed to save settings", "err");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleTestAIConnection = async () => {
+  const handleTestAIConnection = async (targetProvider?: string) => {
     setTestingConnection(true);
     setTestResult(null);
     try {
+      const prov = targetProvider || aiProvider;
       let keyToTest: string | undefined = undefined;
-      if (aiProvider === "gemini" && geminiKeyInput && !geminiKeyInput.includes("••••")) {
+      if (prov === "gemini" && geminiKeyInput && !geminiKeyInput.includes("••••")) {
         keyToTest = geminiKeyInput.trim();
-      } else if (aiProvider === "groq" && groqKeyInput && !groqKeyInput.includes("••••")) {
+      } else if (prov === "groq" && groqKeyInput && !groqKeyInput.includes("••••")) {
         keyToTest = groqKeyInput.trim();
       }
       const res = await settingsApi.testAIConnection({
-        provider: aiProvider,
+        provider: prov,
         api_key: keyToTest,
       });
-      setTestResult({
-        ok: res.ok,
-        message: res.message,
-        model: res.model,
-      });
+      setTestResult(res);
       notify(res.message, res.ok ? "ok" : "err");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Connection test failed";
-      setTestResult({
-        ok: false,
-        message: msg,
-      });
+    } catch (err: any) {
+      const msg = err.message || "Failed to reach AI service";
+      setTestResult({ ok: false, message: msg });
       notify(msg, "err");
     } finally {
       setTestingConnection(false);
     }
   };
 
-  const mcpConfigSnippet = JSON.stringify(
-    {
-      mcpServers: {
-        herald_crm: {
-          command: "python3",
-          args: ["/mnt/database/Developing/firstmate/projects/PersonalOS and CRM/backend/mcp_server.py"],
+  const mcpConfigSnippet = useMemo(() => {
+    return JSON.stringify(
+      {
+        mcpServers: {
+          herald: {
+            command: "python3",
+            args: ["backend/mcp_server.py"],
+            env: {
+              CRM_ENV: "production",
+              PYTHONPATH: ".",
+            },
+          },
         },
       },
-    },
-    null,
-    2
-  );
+      null,
+      2
+    );
+  }, []);
 
-  const handleCopyMcp = () => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(mcpConfigSnippet);
+  const handleCopyMcp = async () => {
+    try {
+      await navigator.clipboard.writeText(mcpConfigSnippet);
       setMcpCopied(true);
-      notify("MCP config snippet copied to clipboard!", "ok");
-      setTimeout(() => setMcpCopied(false), 2000);
+      notify("MCP config copied to clipboard", "ok");
+      setTimeout(() => setMcpCopied(false), 2500);
+    } catch (err) {
+      notify("Failed to copy MCP config", "err");
     }
   };
 
-  if (!settingsModalOpen || !mounted || typeof document === "undefined") return null;
+  if (!mounted || !settingsModalOpen) return null;
 
   const currentCategoryMeta =
     SETTINGS_CATEGORIES.find((c) => c.id === activeCategory) || SETTINGS_CATEGORIES[0];
+
+  const operationsCategories = SETTINGS_CATEGORIES.filter((c) => c.group === "operations");
+  const systemCategories = SETTINGS_CATEGORIES.filter((c) => c.group === "system");
 
   return createPortal(
     <div
@@ -359,7 +430,7 @@ export function SettingsModal() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-4xl h-[82vh] bg-white dark:bg-[#141721] rounded-2xl border border-slate-200/90 dark:border-white/[0.1] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
+        className="w-full max-w-5xl w-[90vw] h-[82vh] bg-white dark:bg-[#141721] rounded-2xl border border-slate-200/90 dark:border-white/[0.1] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
       >
         {/* Top Minimal Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between shrink-0 bg-white dark:bg-[#161925]">
@@ -390,48 +461,104 @@ export function SettingsModal() {
           </div>
         </div>
 
-        {/* Modal Main Content: Left Sidebar + Right Settings Rows */}
+        {/* Modal Main Content: Left Grouped Sidebar + Right Settings Rows */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
-          {/* Left Category Sidebar */}
-          <div className="w-56 sm:w-64 border-r border-slate-100 dark:border-white/[0.08] p-3 space-y-1 bg-slate-50/50 dark:bg-white/[0.01] overflow-y-auto shrink-0">
-            {SETTINGS_CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
-              const isActive = activeCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveCategory(cat.id);
-                    setSettingsTab(cat.id);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left ${
-                    isActive
-                      ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05]"
-                  }`}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span className="truncate">{cat.label}</span>
-                </button>
-              );
-            })}
+          {/* Left Category Sidebar: Logical Groups with Subtle Dividers */}
+          <div className="w-60 sm:w-68 border-r border-slate-100 dark:border-white/[0.08] p-3 space-y-4 bg-slate-50/50 dark:bg-white/[0.01] overflow-y-auto shrink-0">
+            {/* Group 1: Operations */}
+            <div className="space-y-1">
+              <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Operations
+              </div>
+              {operationsCategories.map((cat) => {
+                const Icon = cat.icon;
+                const isActive = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveCategory(cat.id);
+                      setSettingsTab(cat.id);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left ${
+                      isActive
+                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05]"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="truncate">{cat.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Subtle Divider */}
+            <div className="border-t border-slate-200/60 dark:border-white/[0.06] mx-2" />
+
+            {/* Group 2: Platform & System */}
+            <div className="space-y-1">
+              <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Platform &amp; System
+              </div>
+              {systemCategories.map((cat) => {
+                const Icon = cat.icon;
+                const isActive = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveCategory(cat.id);
+                      setSettingsTab(cat.id);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left ${
+                      isActive
+                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05]"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="truncate">{cat.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Right Pane: Clean Horizontal Setting Rows */}
+          {/* Right Pane: Clean Setting Rows without Redundant Title Block */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {/* 1. HUSTLE & BLUEPRINT */}
             {activeCategory === "blueprint" && (
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Hustle Blueprint &amp; Autonomy
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Configure target market parameters and execution autonomy
-                  </p>
+                {/* 7-Step Delivery Pipeline Badges */}
+                <div className="p-4 rounded-xl bg-slate-50/70 dark:bg-zinc-900/40 border border-slate-200/80 dark:border-zinc-800 space-y-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Active 7-Step Delivery Pipeline
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      "01 · Maps 4-Tier Discovery",
+                      "02 · No-Website Verification",
+                      "03 · Practo Research & Facts",
+                      "04 · Outbound Channel Check",
+                      "05 · 3x Theme Demos Build",
+                      "06 · HTTP 200 Health Audit",
+                      "07 · batch.json Sync",
+                    ].map((step, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-[11px] font-medium border border-slate-200/60 dark:border-zinc-700/60"
+                      >
+                        <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                        <span>{step}</span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
+                {/* Settings Rows */}
                 <div className="divide-y divide-slate-100 dark:divide-white/[0.06] border-y border-slate-100 dark:border-white/[0.06] text-xs">
                   {/* Row: Active Hustle */}
                   <div className="py-3.5 flex items-center justify-between gap-4">
@@ -498,21 +625,134 @@ export function SettingsModal() {
                     </div>
                   </div>
                 </div>
+
+                {/* Standard Deal Packages Preview Cards */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Standard Deal Package Pricing (INR)
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 space-y-1">
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Package 01</span>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">Basic Modern SSR</div>
+                      <div className="text-sm font-mono font-bold text-zinc-900 dark:text-white">₹15,000</div>
+                      <div className="text-[10px] text-slate-400">Single-page fast Next.js SSR website</div>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 space-y-1 ring-1 ring-zinc-900/10 dark:ring-white/10">
+                      <span className="text-[10px] font-mono uppercase text-indigo-500 font-bold">Package 02 · Recommended</span>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">Premium High-Converting</div>
+                      <div className="text-sm font-mono font-bold text-zinc-900 dark:text-white">₹25,000</div>
+                      <div className="text-[10px] text-slate-400">Full multi-page with appointment booking</div>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 space-y-1">
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Package 03</span>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">Multi-Clinic Network</div>
+                      <div className="text-sm font-mono font-bold text-zinc-900 dark:text-white">₹35,000</div>
+                      <div className="text-[10px] text-slate-400">Multi-branch locations &amp; doctor rosters</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
             {/* 2. DISCOVERY WATERFALL */}
             {activeCategory === "waterfall" && (
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Discovery Waterfall &amp; Sources
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Locality search seeds and multi-source web discovery routing
-                  </p>
+                {/* 4-Tier Discovery Cards */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Waterfall Cascade Routing
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold">
+                      Zero DB Re-Use Guarantee
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                    {/* Tier 1 */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-700/60 space-y-2 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="bg-slate-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-md px-2 py-0.5 text-[10px] font-mono font-semibold">
+                            Tier 01 · Primary
+                          </span>
+                          <ArrowRight className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />
+                        </div>
+                        <div className="font-bold text-slate-900 dark:text-white mt-2">
+                          Google Places API
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                          Official Maps Search + No-Website Filter across Delhi NCR.
+                        </div>
+                      </div>
+                      <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                        Active · Latency ~240ms
+                      </div>
+                    </div>
+
+                    {/* Tier 2 */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-700/60 space-y-2 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="bg-slate-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-md px-2 py-0.5 text-[10px] font-mono font-semibold">
+                            Tier 02 · Fallback
+                          </span>
+                          <ArrowRight className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />
+                        </div>
+                        <div className="font-bold text-slate-900 dark:text-white mt-2">
+                          Serper Maps API
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                          High-volume Google Maps search fallback if Places quota exhausts.
+                        </div>
+                      </div>
+                      <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                        Standby · Hot
+                      </div>
+                    </div>
+
+                    {/* Tier 3 */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-700/60 space-y-2 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="bg-slate-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-md px-2 py-0.5 text-[10px] font-mono font-semibold">
+                            Tier 03 · Web
+                          </span>
+                          <ArrowRight className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />
+                        </div>
+                        <div className="font-bold text-slate-900 dark:text-white mt-2">
+                          Brave Search API
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                          Directory, Practo, and Justdial cross-check for contact details.
+                        </div>
+                      </div>
+                      <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                        Active · Enrichment
+                      </div>
+                    </div>
+
+                    {/* Tier 4 */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-700/60 space-y-2 flex flex-col justify-between">
+                      <div>
+                        <span className="bg-slate-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-md px-2 py-0.5 text-[10px] font-mono font-semibold">
+                          Tier 04 · Browser
+                        </span>
+                        <div className="font-bold text-slate-900 dark:text-white mt-2">
+                          Playwright Maps
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                          Direct headless Maps scraper for deep local verification pools.
+                        </div>
+                      </div>
+                      <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                        Active · Headless Pool
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
+                {/* Settings Rows */}
                 <div className="divide-y divide-slate-100 dark:divide-white/[0.06] border-y border-slate-100 dark:border-white/[0.06] text-xs">
                   {/* Row: Search Query Seed */}
                   <div className="py-3.5 flex items-center justify-between gap-4">
@@ -531,35 +771,32 @@ export function SettingsModal() {
                     />
                   </div>
 
-                  {/* Row: 4-Tier Discovery Routing */}
-                  <div className="py-3.5 flex items-center justify-between gap-4">
-                    <div className="space-y-0.5 max-w-sm">
-                      <div className="font-semibold text-slate-900 dark:text-white">Waterfall Routing</div>
-                      <div className="text-slate-500 dark:text-slate-400">
-                        Places API → Serper Maps → Brave Search → Playwright Scraping
-                      </div>
-                    </div>
-                    <span className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                      Active (4 Tiers)
-                    </span>
-                  </div>
-
                   {/* Row: Instagram Channel Discovery */}
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
-                      <div className="font-semibold text-slate-900 dark:text-white">Instagram Profile Discovery</div>
+                      <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>Instagram Channel Discovery</span>
+                        {isDentalHustle && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 font-semibold">
+                            Disabled for Dental
+                          </span>
+                        )}
+                      </div>
                       <div className="text-slate-500 dark:text-slate-400">
-                        Scrape Instagram business profiles as secondary contact channel
+                        {isDentalHustle
+                          ? "Disabled for Dental Clinics (Maps & Practo deliver higher conversion)."
+                          : "Scrape Instagram business profiles as secondary contact channel"}
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
                         checked={settingsIgDiscovery}
+                        disabled={isDentalHustle}
                         onChange={(e) => setSettingsIgDiscovery(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-slate-200 dark:bg-white/[0.12] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900 dark:peer-checked:bg-white dark:peer-checked:after:bg-zinc-900"></div>
+                      <div className="w-9 h-5 bg-slate-200 dark:bg-white/[0.12] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900 dark:peer-checked:bg-white dark:peer-checked:after:bg-zinc-900 peer-disabled:opacity-40"></div>
                     </label>
                   </div>
                 </div>
@@ -569,15 +806,58 @@ export function SettingsModal() {
             {/* 3. QUOTAS & SAFETY CAPS */}
             {activeCategory === "quotas" && (
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Quotas, Caps &amp; Safety Invariants
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Daily outbound rate limits, batch size, and dry-run safety simulation
-                  </p>
+                {/* Outbound Safety Guardrails */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Active Outbound Safety Guardrails</span>
+                  </span>
+                  <div className="space-y-2 text-xs">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="font-semibold text-slate-900 dark:text-white">
+                          60-Second Outbound Idempotency Window
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">
+                          Locks message sending per lead ID to prevent duplicate WhatsApp or email deliveries.
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] font-bold border border-emerald-200 dark:border-emerald-800 shrink-0">
+                        Active
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="font-semibold text-slate-900 dark:text-white">
+                          Hinglish &amp; Negative-Context DNC Guard
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">
+                          Scans inbound replies for phrases like &quot;mat bhejo&quot;, &quot;band karo&quot;, &quot;not interested&quot; and halts outbound sequences automatically.
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] font-bold border border-emerald-200 dark:border-emerald-800 shrink-0">
+                        Active
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="font-semibold text-slate-900 dark:text-white">
+                          Recorder View Debounce (?recorder=1 Exclusion)
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">
+                          Internal Playwright automated preview video generation runs are omitted from client telemetry intent scoring.
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] font-bold border border-emerald-200 dark:border-emerald-800 shrink-0">
+                        Active
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
+                {/* Settings Rows */}
                 <div className="divide-y divide-slate-100 dark:divide-white/[0.06] border-y border-slate-100 dark:border-white/[0.06] text-xs">
                   {/* Row: Dry-Run Mode */}
                   <div className="py-3.5 flex items-center justify-between gap-4">
@@ -602,8 +882,8 @@ export function SettingsModal() {
                     </button>
                   </div>
 
-                  {/* Row: Batch Size */}
-                  <div className="py-3.5 flex items-center justify-between gap-4">
+                  {/* Row: Batch Size with Presets */}
+                  <div className="py-3.5 flex items-center justify-between gap-4 flex-wrap">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Batch Size Limit</div>
                       <div className="text-slate-500 dark:text-slate-400">
@@ -611,6 +891,22 @@ export function SettingsModal() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        {[10, 15, 25, 50].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setSettingsBatchSize(preset)}
+                            className={`px-2 py-1 rounded-md text-[11px] font-mono font-bold border transition-colors cursor-pointer ${
+                              settingsBatchSize === preset
+                                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100"
+                                : "bg-slate-50 dark:bg-zinc-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-zinc-700 hover:border-slate-400"
+                            }`}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
                       <input
                         type="number"
                         min={5}
@@ -618,7 +914,7 @@ export function SettingsModal() {
                         step={5}
                         value={settingsBatchSize}
                         onChange={(e) => setSettingsBatchSize(Number(e.target.value))}
-                        className="w-20 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
+                        className="w-16 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-2.5 py-1 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
                       />
                       <span className="text-slate-400 font-mono">leads</span>
                     </div>
@@ -636,7 +932,7 @@ export function SettingsModal() {
                       <input
                         type="number"
                         min={1}
-                        max={50}
+                        max={100}
                         value={settingsWaLimit}
                         onChange={(e) => setSettingsWaLimit(Number(e.target.value))}
                         className="w-20 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
@@ -656,13 +952,34 @@ export function SettingsModal() {
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
-                        min={1}
-                        max={50}
+                        min={0}
+                        max={100}
                         value={settingsIgLimit}
                         onChange={(e) => setSettingsIgLimit(Number(e.target.value))}
                         className="w-20 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
                       />
-                      <span className="text-slate-400 font-mono">msgs/day</span>
+                      <span className="text-slate-400 font-mono">dms/day</span>
+                    </div>
+                  </div>
+
+                  {/* Row: Email Daily Cap */}
+                  <div className="py-3.5 flex items-center justify-between gap-4">
+                    <div className="space-y-0.5 max-w-sm">
+                      <div className="font-semibold text-slate-900 dark:text-white">Email Daily Cap</div>
+                      <div className="text-slate-500 dark:text-slate-400">
+                        Maximum outbound cold email pitches per day
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={1}
+                        max={200}
+                        value={settingsEmailLimit}
+                        onChange={(e) => setSettingsEmailLimit(Number(e.target.value))}
+                        className="w-20 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
+                      />
+                      <span className="text-slate-400 font-mono">emails/day</span>
                     </div>
                   </div>
                 </div>
@@ -672,121 +989,261 @@ export function SettingsModal() {
             {/* 4. MCP & AI PROVIDER */}
             {activeCategory === "mcp" && (
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    MCP Server &amp; AI Provider
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Configure AI keys and connect Antigravity / Claude Code to Herald CRM
-                  </p>
-                </div>
-
-                <div className="divide-y divide-slate-100 dark:divide-white/[0.06] border-y border-slate-100 dark:border-white/[0.06] text-xs">
-                  {/* Row: Active AI Provider */}
-                  <div className="py-3.5 flex items-center justify-between gap-4">
-                    <div className="space-y-0.5 max-w-sm">
-                      <div className="font-semibold text-slate-900 dark:text-white">AI Inference Provider</div>
-                      <div className="text-slate-500 dark:text-slate-400">
-                        Model routing for research dossiers and personalized outreach pitches
-                      </div>
-                    </div>
-                    <select
-                      value={aiProvider}
-                      onChange={(e) => setAiProvider(e.target.value as any)}
-                      className="bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none cursor-pointer"
+                {/* AI Provider Selector Grid */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      AI Provider &amp; Model Engine
+                    </span>
+                    <button
+                      type="button"
+                      disabled={testingConnection}
+                      onClick={() => handleTestAIConnection()}
+                      className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-white/[0.12] bg-slate-50 dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] font-semibold text-[11px] text-slate-800 dark:text-slate-200 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                     >
-                      <option value="auto">Auto (Local CLI / Fallback)</option>
-                      <option value="gemini">Google Gemini 3.8 Flash</option>
-                      <option value="groq">Groq (Llama 3.3 70B)</option>
-                      <option value="local_cli">Local CLI</option>
-                    </select>
+                      {testingConnection ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin text-amber-500" />
+                          <span>Testing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-3 h-3 text-emerald-500" />
+                          <span>Test Connection</span>
+                        </>
+                      )}
+                    </button>
                   </div>
 
+                  {/* Test Result Banner */}
+                  {testResult && (
+                    <div
+                      className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+                        testResult.ok
+                          ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200"
+                          : "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {testResult.ok ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        ) : (
+                          <Shield className="w-4 h-4 text-rose-500 shrink-0" />
+                        )}
+                        <span>{testResult.message}</span>
+                      </div>
+                      {testResult.model && (
+                        <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-white/60 dark:bg-zinc-900/60 shrink-0">
+                          {testResult.model}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Provider Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {[
+                      {
+                        id: "auto",
+                        label: "Auto (Recommended)",
+                        desc: "Prioritizes Gemini BYOK, then Groq, then local agy CLI bridge.",
+                        badge: "Adaptive",
+                      },
+                      {
+                        id: "local_cli",
+                        label: "Local CLI Bridge",
+                        desc: "Zero API cost via local agy CLI (gemini-3.8-flash-low).",
+                        badge: hasLocalCli ? "Installed" : "Not Found",
+                        badgeColor: hasLocalCli ? "text-emerald-500" : "text-amber-500",
+                      },
+                      {
+                        id: "gemini",
+                        label: "Gemini BYOK",
+                        desc: "Direct REST API call to gemini-2.5-flash with your own key.",
+                        badge: hasGeminiKey ? "Key Saved" : "No Key",
+                        badgeColor: hasGeminiKey ? "text-emerald-500" : "text-slate-400",
+                      },
+                      {
+                        id: "groq",
+                        label: "Groq BYOK",
+                        desc: "High-speed Llama-3.3-70b-versatile via Groq REST API.",
+                        badge: hasGroqKey ? "Key Saved" : "No Key",
+                        badgeColor: hasGroqKey ? "text-emerald-500" : "text-slate-400",
+                      },
+                    ].map((p) => {
+                      const isSelected = aiProvider === p.id;
+                      return (
+                        <div
+                          key={p.id}
+                          onClick={() => setAiProvider(p.id as any)}
+                          className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                            isSelected
+                              ? "border-zinc-900 dark:border-white bg-slate-50 dark:bg-zinc-800/80 shadow-xs"
+                              : "border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 hover:border-slate-300 dark:hover:border-zinc-700"
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between gap-1 mb-1">
+                              <span className="text-xs font-bold text-slate-900 dark:text-white">
+                                {p.label}
+                              </span>
+                              <span className={`text-[10px] font-mono font-bold ${p.badgeColor || "text-slate-500"}`}>
+                                {p.badge}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                              {p.desc}
+                            </p>
+                          </div>
+                          <div className="pt-2 flex items-center justify-between text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                            <span>{isSelected ? "Active Provider" : "Click to select"}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-emerald-500" />}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* BYOK Keys Inputs */}
+                <div className="divide-y divide-slate-100 dark:divide-white/[0.06] border-y border-slate-100 dark:border-white/[0.06] text-xs">
                   {/* Row: Gemini API Key */}
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
-                      <div className="font-semibold text-slate-900 dark:text-white">Gemini API Key</div>
+                      <div className="font-semibold text-slate-900 dark:text-white">Gemini API Key (BYOK)</div>
                       <div className="text-slate-500 dark:text-slate-400">
-                        {hasGeminiKey ? "Key configured in environment" : "Enter GEMINI_API_KEY"}
+                        {hasGeminiKey ? "Key configured in environment" : "Free key at aistudio.google.com"}
                       </div>
                     </div>
                     <input
                       type="password"
                       value={geminiKeyInput}
                       onChange={(e) => setGeminiKeyInput(e.target.value)}
-                      placeholder={hasGeminiKey ? "••••••••••••••••" : "AIzaSy..."}
-                      className="w-56 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none"
+                      placeholder={hasGeminiKey ? "••••••••••••••••" : "Paste AIzaSy... key"}
+                      className="w-64 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
 
                   {/* Row: Groq API Key */}
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
-                      <div className="font-semibold text-slate-900 dark:text-white">Groq API Key</div>
+                      <div className="font-semibold text-slate-900 dark:text-white">Groq API Key (BYOK)</div>
                       <div className="text-slate-500 dark:text-slate-400">
-                        {hasGroqKey ? "Key configured in environment" : "Enter GROQ_API_KEY"}
+                        {hasGroqKey ? "Key configured in environment" : "Free key at console.groq.com"}
                       </div>
                     </div>
                     <input
                       type="password"
                       value={groqKeyInput}
                       onChange={(e) => setGroqKeyInput(e.target.value)}
-                      placeholder={hasGroqKey ? "••••••••••••••••" : "gsk_..."}
-                      className="w-56 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none"
+                      placeholder={hasGroqKey ? "••••••••••••••••" : "Paste gsk_... key"}
+                      className="w-64 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
+                </div>
 
-                  {/* Row: Test Connection */}
-                  <div className="py-3.5 flex items-center justify-between gap-4">
-                    <div className="space-y-0.5 max-w-sm">
-                      <div className="font-semibold text-slate-900 dark:text-white">Test Model Connection</div>
-                      <div className="text-slate-500 dark:text-slate-400">
-                        {testResult ? testResult.message : "Verify API key authentication and latency"}
+                {/* MCP Server Overview Details */}
+                <div className="p-4 rounded-xl bg-slate-50/70 dark:bg-zinc-900/40 border border-slate-200/80 dark:border-zinc-800 space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <Cpu className="w-4 h-4 text-zinc-900 dark:text-white" />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        Herald Operations MCP Server
+                      </span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold">
+                        v2.0.0
+                      </span>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px] font-mono font-bold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Ready / Stdio (JSON-RPC 2.0)
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1 border-t border-slate-200/60 dark:border-white/[0.06]">
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Transport</span>
+                      <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">JSON-RPC stdio</div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Protocol</span>
+                      <div className="font-semibold text-slate-800 dark:text-slate-200 font-mono text-[11px]">
+                        v2.0.0 (2024-11-05)
                       </div>
                     </div>
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Entry Point</span>
+                      <div className="font-semibold text-slate-800 dark:text-slate-200 font-mono text-[11px] truncate">
+                        backend/mcp_server.py
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Harnesses</span>
+                      <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] truncate">
+                        Antigravity · Claude · Cursor
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Registered MCP Tools List */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Registered MCP Tools ({REAL_MCP_TOOLS.length})
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">SSOT: backend/mcp_server.py</span>
+                  </div>
+
+                  <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                    {REAL_MCP_TOOLS.map((tool) => (
+                      <div
+                        key={tool.name}
+                        className="p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 flex flex-col gap-1 text-xs"
+                      >
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                            {tool.name}
+                          </span>
+                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-700/60 text-slate-700 dark:text-slate-300 break-all max-w-full">
+                            {tool.schema}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          {tool.description}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quick Harness Config Snippet with Copy Button */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Harness JSON Configuration
+                    </span>
                     <button
                       type="button"
-                      disabled={testingConnection}
-                      onClick={handleTestAIConnection}
-                      className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/[0.12] bg-slate-50 dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] font-semibold text-slate-800 dark:text-slate-200 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                      onClick={handleCopyMcp}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                     >
-                      {testingConnection ? (
+                      {mcpCopied ? (
                         <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Testing...</span>
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Copied</span>
                         </>
                       ) : (
-                        <span>Test Connection</span>
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy JSON</span>
+                        </>
                       )}
                     </button>
                   </div>
-
-                  {/* Row: MCP Stdio Config Snippet */}
-                  <div className="py-3.5 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="font-semibold text-slate-900 dark:text-white">MCP Config Snippet</div>
-                      <button
-                        type="button"
-                        onClick={handleCopyMcp}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                      >
-                        {mcpCopied ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-500" />
-                            <span>Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Copy JSON</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                    <pre className="p-3 rounded-xl bg-slate-900 dark:bg-black/60 text-emerald-400 font-mono text-[11px] overflow-x-auto border border-slate-800 dark:border-white/[0.08]">
-                      {mcpConfigSnippet}
-                    </pre>
-                  </div>
+                  <pre className="p-3 rounded-xl bg-slate-900 dark:bg-black/60 text-emerald-400 font-mono text-[11px] overflow-x-auto border border-slate-800 dark:border-white/[0.08]">
+                    {mcpConfigSnippet}
+                  </pre>
                 </div>
               </div>
             )}
@@ -794,15 +1251,6 @@ export function SettingsModal() {
             {/* 5. APPEARANCE & UI */}
             {activeCategory === "appearance" && (
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Appearance &amp; UI Preferences
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Theme mode, motion preferences, and table density
-                  </p>
-                </div>
-
                 <div className="divide-y divide-slate-100 dark:divide-white/[0.06] border-y border-slate-100 dark:border-white/[0.06] text-xs">
                   {/* Row: Theme Mode */}
                   <div className="py-3.5 flex items-center justify-between gap-4">
@@ -909,15 +1357,6 @@ export function SettingsModal() {
             {/* 6. OPERATOR PROFILE */}
             {activeCategory === "profile" && (
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Operator Profile &amp; Identity
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Operator credentials, monogram badge, and message sign-off signature
-                  </p>
-                </div>
-
                 <div className="divide-y divide-slate-100 dark:divide-white/[0.06] border-y border-slate-100 dark:border-white/[0.06] text-xs">
                   {/* Row: Operator Name */}
                   <div className="py-3.5 flex items-center justify-between gap-4">
