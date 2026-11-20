@@ -1,28 +1,47 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models.entities import Lead, LeadFact, Message, Stage
+from app.services.cache_manager import get_cache_manager
 
 
 class LeadRepository:
     @staticmethod
+    def _lead_load_options():
+        return (
+            joinedload(Lead.stage_rel),
+            selectinload(Lead.facts),
+            selectinload(Lead.packages),
+            selectinload(Lead.messages),
+            selectinload(Lead.events),
+            selectinload(Lead.commitments),
+            selectinload(Lead.calls),
+            selectinload(Lead.outbox_items),
+        )
+
+    @staticmethod
     def get_by_id(db: Session, lead_id: int) -> Optional[Lead]:
         return (
             db.query(Lead)
-            .options(
-                joinedload(Lead.facts),
-                joinedload(Lead.packages),
-                joinedload(Lead.messages),
-                joinedload(Lead.events),
-                joinedload(Lead.commitments),
-                joinedload(Lead.calls),
-                joinedload(Lead.stage_rel),
-            )
+            .options(*LeadRepository._lead_load_options())
             .filter(Lead.id == lead_id)
             .first()
         )
+
+    @staticmethod
+    def get_by_ids(db: Session, lead_ids: List[int]) -> Dict[int, Lead]:
+        """Batched IN (...) query returning {id: lead} mapped into O(1) lookup dictionary."""
+        if not lead_ids:
+            return {}
+        leads = (
+            db.query(Lead)
+            .options(*LeadRepository._lead_load_options())
+            .filter(Lead.id.in_(lead_ids))
+            .all()
+        )
+        return {l.id: l for l in leads}
 
     @staticmethod
     def get_by_slug(db: Session, slug: str) -> Optional[Lead]:
@@ -30,7 +49,14 @@ class LeadRepository:
 
     @staticmethod
     def count_active(db: Session) -> int:
-        return db.query(Lead).filter(Lead.is_archived == False).count()  # noqa: E712
+        cache = get_cache_manager()
+        cache_key = "leads:count_active"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+        count = db.query(Lead).filter(Lead.is_archived == False).count()  # noqa: E712
+        cache.set(cache_key, count, ttl=60)
+        return count
 
     @staticmethod
     def list_leads(
@@ -42,15 +68,7 @@ class LeadRepository:
         search: Optional[str] = None,
         status: Optional[str] = None,
     ) -> List[Lead]:
-        q = db.query(Lead).options(
-            joinedload(Lead.facts),
-            joinedload(Lead.packages),
-            joinedload(Lead.messages),
-            joinedload(Lead.events),
-            joinedload(Lead.commitments),
-            joinedload(Lead.calls),
-            joinedload(Lead.stage_rel),
-        )
+        q = db.query(Lead).options(*LeadRepository._lead_load_options())
 
         if hustle_id is not None:
             q = q.filter(Lead.hustle_id == hustle_id)

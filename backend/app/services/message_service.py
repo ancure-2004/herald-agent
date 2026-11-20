@@ -20,6 +20,7 @@ from app.schemas.message import (
     OutboxApproveRequest,
 )
 from app.services.ai_service import AIService
+from app.services.cache_manager import get_cache_manager
 from app.services.event_bus import broadcast_sse, emit_terminal_log
 from app.utils.reply import classify_inbound_reply
 from app.utils.safety import (
@@ -144,6 +145,9 @@ class MessageService:
 
         db.commit()
         db.refresh(msg)
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("messages:")
+        get_cache_manager().invalidate_prefix("leads:")
         broadcast_sse("message_appended", {"lead_id": lead.id, "direction": msg.direction, "ai_label": msg.ai_label})
 
         try:
@@ -233,6 +237,9 @@ class MessageService:
             lead.what_changed_summary = f"Approved & sent {payload.channel} pitch. Demo link expires in 7 days."
 
         db.commit()
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("messages:")
+        get_cache_manager().invalidate_prefix("leads:")
         broadcast_sse("outbox_sent", {"lead_id": lead.id, "channel": payload.channel, "unique_key": unique_key})
         return {
             "status": status,
@@ -367,6 +374,9 @@ class MessageService:
         lead.what_changed_summary = f"Approved & sent {channel} pitch. Demo link expires in 7 days."
 
         db.commit()
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("messages:")
+        get_cache_manager().invalidate_prefix("leads:")
         broadcast_sse("outbox_sent", {"lead_id": lead.id, "channel": channel, "unique_key": unique_key})
         return {
             "status": "sent",
@@ -402,6 +412,9 @@ class MessageService:
             ),
         )
         db.commit()
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("messages:")
+        get_cache_manager().invalidate_prefix("leads:")
         return {"status": "fallback_applied", "lead_id": lead.id, "preferred_channel": lead.preferred_channel}
 
     @staticmethod
@@ -542,6 +555,9 @@ class MessageService:
             db.commit()
             db.refresh(outbox_item)
             db.refresh(msg)
+            get_cache_manager().invalidate_prefix("cockpit:")
+            get_cache_manager().invalidate_prefix("messages:")
+            get_cache_manager().invalidate_prefix("leads:")
 
             broadcast_sse("message_queued", {"lead_id": lead.id, "outbox_id": outbox_item.id, "text": msg.text})
             emit_terminal_log("OUTREACH", f"Queued WhatsApp message for {lead.name}: {msg.text[:60]}")
@@ -575,6 +591,9 @@ class MessageService:
             MessageRepository.create_message(db, msg)
             db.commit()
             db.refresh(msg)
+            get_cache_manager().invalidate_prefix("cockpit:")
+            get_cache_manager().invalidate_prefix("messages:")
+            get_cache_manager().invalidate_prefix("leads:")
 
             emit_terminal_log("OUTREACH", f"Generated manual wa.me link for {lead.name}")
             return {
@@ -651,6 +670,9 @@ class MessageService:
         for m in created_messages:
             db.refresh(m)
         db.refresh(lead)
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("messages:")
+        get_cache_manager().invalidate_prefix("leads:")
 
         try:
             suggestions = AIService.generate_reply_suggestions(lead, lead.messages, db=db)
@@ -668,14 +690,22 @@ class MessageService:
 
     @staticmethod
     def get_reply_suggestions(db: Session, lead_id: int) -> Dict[str, Any]:
+        cache = get_cache_manager()
+        cache_key = f"messages:reply_suggestions:{lead_id}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         lead = LeadRepository.get_by_id(db, lead_id)
         if not lead:
             raise NotFoundError("Lead not found.")
         suggestions = AIService.generate_reply_suggestions(lead, lead.messages, db=db)
-        return {
+        res = {
             "lead_id": lead.id,
             "suggestions": suggestions,
         }
+        cache.set(cache_key, res, ttl=60)
+        return res
 
     @staticmethod
     def get_lead_messages(db: Session, lead_id: int) -> List[Message]:
@@ -715,6 +745,9 @@ class MessageService:
         lead.custom_fields = cf
         flag_modified(lead, "custom_fields")
         db.commit()
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("messages:")
+        get_cache_manager().invalidate_prefix("leads:")
         broadcast_sse("lead_updated", {"lead_id": lead.id, "has_custom_edits": True})
         return {"success": True, "has_custom_edits": True}
 
@@ -730,6 +763,9 @@ class MessageService:
         cf.pop("pitch_overrides", None)
         lead.custom_fields = cf
         db.commit()
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("messages:")
+        get_cache_manager().invalidate_prefix("leads:")
         broadcast_sse("lead_updated", {"lead_id": lead.id, "has_custom_edits": False})
         return {"success": True, "has_custom_edits": False}
 
@@ -771,6 +807,9 @@ class MessageService:
                 lead.preferred_channel = ch
 
         db.commit()
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("messages:")
+        get_cache_manager().invalidate_prefix("leads:")
         broadcast_sse("lead_updated", {"lead_id": lead.id})
         return {
             "success": True,
@@ -807,6 +846,11 @@ class MessageService:
         for ob in lead.outbox_items:
             if ob.status == "sent":
                 ob.status = "cancelled"
+        db.commit()
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("messages:")
+        get_cache_manager().invalidate_prefix("leads:")
+        return {"success": True, "lead_id": lead.id, "stage_id": lead.stage_id}
 
         db.commit()
         broadcast_sse("outbox_sent", {"lead_id": lead.id, "action": "unmark_sent"})

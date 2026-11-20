@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models.entities import Lead
+from app.services.cache_manager import get_cache_manager
 
 
 def _to_utc(dt: Any) -> Any:
@@ -69,14 +70,20 @@ class CockpitService:
         end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=999999)
         three_days_ago = now - timedelta(days=3)
 
+        cache = get_cache_manager()
+        cache_key = f"cockpit:attention_dashboards:{hustle_id}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         # Query all active non-archived, non-DNC leads for hustle
         leads = (
             db.query(Lead)
             .options(
                 joinedload(Lead.stage_rel),
-                joinedload(Lead.calls),
-                joinedload(Lead.messages),
-                joinedload(Lead.packages),
+                selectinload(Lead.calls),
+                selectinload(Lead.messages),
+                selectinload(Lead.packages),
             )
             .filter(
                 Lead.hustle_id == hustle_id,
@@ -163,9 +170,11 @@ class CockpitService:
                 )
 
 
-        return {
+        res = {
             "followup_required": followup_required,
             "unreplied_messages": unreplied_messages,
             "todays_actions": todays_actions,
             "call_preparation": call_preparation,
         }
+        cache.set(cache_key, res, ttl=30)
+        return res
