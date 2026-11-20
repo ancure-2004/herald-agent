@@ -710,22 +710,10 @@ class HistoricalLeadScanner:
             reason = "contacted_only_ig" if contacted_ig else "never_contacted"
             return "STAGED", stage_id, reason
 
-        # RULE (a): Contacted via WhatsApp / Call / Email -> keep accurate stage
-        if lead.get("is_dnc") or "dnc" in lead.get("tracker_status", "").lower():
-            stage_id = stage_map.get("lost", stage_map["discovered"]).id
-            return "DNC", stage_id, "contacted_dnc"
-
-        if lead.get("is_closed_lost") or "closed-lost" in lead.get("tracker_status", "").lower():
-            stage_id = stage_map.get("lost", stage_map["discovered"]).id
-            return "CLOSED_LOST", stage_id, "contacted_lost"
-
-        if lead.get("has_replied") or "replied" in lead.get("tracker_status", "").lower():
-            stage_id = stage_map.get("replied", stage_map["contacted"]).id
-            return "REPLIED", stage_id, "contacted_replied"
-
-        # Default contacted
-        stage_id = stage_map.get("contacted", stage_map["discovered"]).id
-        return "CONTACTED", stage_id, "contacted_pitch_sent"
+        # Previously contacted via WhatsApp / Call / Email -> set to CLOSED_LOST
+        # Acts as historical discovery-deduplication records without cluttering active outreach.
+        stage_id = stage_map.get("lost", stage_map["discovered"]).id
+        return "CLOSED_LOST", stage_id, "contacted_closed_lost"
 
     def run(self) -> Dict[str, Any]:
         """Runs the historical scan and classification."""
