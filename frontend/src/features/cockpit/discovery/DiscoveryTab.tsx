@@ -8,6 +8,7 @@ import { FloatingActionBar } from "./FloatingActionBar";
 import { DiscoveryConsole } from "./DiscoveryConsole";
 import { DiscoveryLeadDrawer } from "./DiscoveryLeadDrawer";
 import { apiFetch } from "@/lib/api/client";
+import { getPollingInterval } from "@/lib/utils/polling";
 import {
   Sparkles,
   CheckCircle2,
@@ -224,13 +225,30 @@ export const DiscoveryTab: React.FC = () => {
     discoveryTabCache = { leads, stagedCount, discoveredTodayCount, filteredCount };
   }, [hasLoaded, leads, stagedCount, discoveredTodayCount, filteredCount]);
 
-  // Periodic poll during active discovery
+  // Periodic poll during active discovery with network and tab-visibility backoff
   useEffect(() => {
     if (!isDiscovering) return;
-    const interval = setInterval(() => {
-      fetchCockpitTelemetry();
-    }, 2500);
-    return () => clearInterval(interval);
+    let timer: NodeJS.Timeout | null = null;
+    let isCancelled = false;
+
+    const scheduleNext = () => {
+      if (isCancelled || !isDiscovering) return;
+      const interval = getPollingInterval(2500, 10000);
+      timer = setTimeout(async () => {
+        try {
+          await fetchCockpitTelemetry();
+        } finally {
+          scheduleNext();
+        }
+      }, interval);
+    };
+
+    scheduleNext();
+
+    return () => {
+      isCancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [isDiscovering, fetchCockpitTelemetry]);
 
   const handleStartDiscovery = async () => {

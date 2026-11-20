@@ -21,9 +21,10 @@ import { LogCallModal } from "@/features/modals/LogCallModal";
 import { LogReplyModal } from "@/features/modals/LogReplyModal";
 import { CommandPaletteModal } from "@/features/modals/CommandPaletteModal";
 import { SettingsModal } from "@/features/settings/SettingsModal";
+import { Toast } from "@/components/ui/Toast";
 
 function CRMContent() {
-  const { activeTab, loading, toast } = useCRM();
+  const { activeTab, loading, toast, closeToast } = useCRM();
   const isCockpit = activeTab === "autopilot";
 
   return (
@@ -94,6 +95,7 @@ function CRMContent() {
       <LogCallModal />
       <LogReplyModal />
       {!isCockpit && <AssistantDrawer />}
+      <Toast toast={toast} onClose={closeToast} />
     </div>
   );
 }

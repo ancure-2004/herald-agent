@@ -7,6 +7,7 @@ import { RunMatrixTable } from "./RunMatrixTable";
 import { MultiDevicePreviewDrawer } from "./MultiDevicePreviewDrawer";
 import { DemoFactoryConsole } from "./DemoFactoryConsole";
 import { apiFetch } from "@/lib/api/client";
+import { getPollingInterval } from "@/lib/utils/polling";
 import { env } from "@/config/env";
 import { autopilotApi } from "@/api/autopilotApi";
 import {
@@ -462,13 +463,30 @@ export const DemoFactoryTab: React.FC = () => {
     };
   }, [fetchBatchMeta, syncRunsFromDb]);
 
-  // Fast periodic sync while any action is active so row badges flip in real time
+  // Fast periodic sync while any action is active with network and tab-visibility backoff
   useEffect(() => {
     if (!isBuildRunning && !isLaunchingBatch && !isRetryingRecordings && !isVerifyingLinks) return;
-    const poll = setInterval(() => {
-      syncRunsFromDb();
-    }, 3000);
-    return () => clearInterval(poll);
+    let timer: NodeJS.Timeout | null = null;
+    let isCancelled = false;
+
+    const scheduleNext = () => {
+      if (isCancelled || (!isBuildRunning && !isLaunchingBatch && !isRetryingRecordings && !isVerifyingLinks)) return;
+      const interval = getPollingInterval(3000, 12000);
+      timer = setTimeout(async () => {
+        try {
+          await syncRunsFromDb();
+        } finally {
+          scheduleNext();
+        }
+      }, interval);
+    };
+
+    scheduleNext();
+
+    return () => {
+      isCancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [isBuildRunning, isLaunchingBatch, isRetryingRecordings, isVerifyingLinks, syncRunsFromDb]);
 
   useEffect(() => {
