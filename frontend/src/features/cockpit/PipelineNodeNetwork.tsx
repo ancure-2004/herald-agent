@@ -166,12 +166,12 @@ export function PipelineNodeNetwork({
               <div
                 className={`relative z-10 w-full p-3 rounded-2xl backdrop-blur-md shadow-md border transition-all ${
                   isRunning
-                    ? "bg-white/95 dark:bg-[#141721]/95 border-transparent shadow-indigo-500/10"
+                    ? "bg-white/95 dark:bg-[#18181B]/95 border-transparent shadow-indigo-500/10"
                     : isSuccess
-                    ? "bg-white/90 dark:bg-[#141721]/90 border-emerald-500/60 dark:border-emerald-500/50 shadow-xs shadow-emerald-500/10"
+                    ? "bg-white/90 dark:bg-[#18181B]/90 border-emerald-500/60 dark:border-emerald-500/50 shadow-xs shadow-emerald-500/10"
                     : isFailed
-                    ? "bg-white/90 dark:bg-[#141721]/90 border-rose-500/60 dark:border-rose-500/50"
-                    : "bg-white/90 dark:bg-[#141721]/90 border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-400/50 dark:hover:border-white/[0.18]"
+                    ? "bg-white/90 dark:bg-[#18181B]/90 border-rose-500/60 dark:border-rose-500/50"
+                    : "bg-white/90 dark:bg-[#18181B]/90 border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-400/50 dark:hover:border-white/[0.18]"
                 }`}
               >
                 {/* Header: Icon + Stage Title + Status Pill */}
@@ -190,13 +190,13 @@ export function PipelineNodeNetwork({
                 </div>
 
                 {/* Subtitle / Tools */}
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate mb-2 font-medium">
+                <div className="text-[10px] text-slate-500 dark:text-zinc-400 truncate mb-2 font-medium">
                   {node.subtitle || node.tools}
                 </div>
 
                 {/* Footer: Count badge + Inspect indicator */}
                 <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-white/[0.06] text-xs">
-                  <span className="font-mono text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate max-w-[85px]">
+                  <span className="font-mono text-[10px] font-bold text-slate-700 dark:text-zinc-300 truncate max-w-[85px]">
                     {node.badge}
                   </span>
                   <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 group-hover:underline flex items-center gap-0.5 shrink-0">

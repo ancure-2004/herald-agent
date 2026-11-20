@@ -116,7 +116,7 @@ export function AttentionVelocityDashboard() {
   return (
     <div className="space-y-6">
       {/* Top Banner & Refresh Controls */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors">
+      <div className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-[#18181B]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
@@ -127,7 +127,7 @@ export function AttentionVelocityDashboard() {
               Live Telemetry
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             Surfacing high-leverage follow-ups, unreplied inbounds, overdue actions, and pre-call prep briefs.
           </p>
         </div>
@@ -136,7 +136,7 @@ export function AttentionVelocityDashboard() {
           type="button"
           onClick={fetchAttention}
           disabled={loading}
-          className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
+          className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#27272A] dark:hover:bg-slate-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           <span>Refresh Radar</span>
@@ -162,8 +162,8 @@ export function AttentionVelocityDashboard() {
       {/* 4 Summary Telemetry Gauges */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Metric 1 */}
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-amber-500/40 shadow-sm transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+        <div className="p-4 rounded-2xl bg-white/80 dark:bg-[#18181B]/80 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-amber-500/40 shadow-sm transition-all">
+          <div className="flex items-center justify-between text-slate-500 dark:text-zinc-400">
             <span className="text-[11px] font-bold uppercase tracking-wider">Follow-ups Due</span>
             <div className="w-7 h-7 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
               <Clock className="w-3.5 h-3.5" />
@@ -178,8 +178,8 @@ export function AttentionVelocityDashboard() {
         </div>
 
         {/* Metric 2 */}
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-rose-500/40 shadow-sm transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+        <div className="p-4 rounded-2xl bg-white/80 dark:bg-[#18181B]/80 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-rose-500/40 shadow-sm transition-all">
+          <div className="flex items-center justify-between text-slate-500 dark:text-zinc-400">
             <span className="text-[11px] font-bold uppercase tracking-wider">Unreplied Inbound</span>
             <div className="w-7 h-7 rounded-xl bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <MessageSquare className="w-3.5 h-3.5" />
@@ -194,8 +194,8 @@ export function AttentionVelocityDashboard() {
         </div>
 
         {/* Metric 3 */}
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-500/40 shadow-sm transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+        <div className="p-4 rounded-2xl bg-white/80 dark:bg-[#18181B]/80 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-500/40 shadow-sm transition-all">
+          <div className="flex items-center justify-between text-slate-500 dark:text-zinc-400">
             <span className="text-[11px] font-bold uppercase tracking-wider">Today&apos;s Actions</span>
             <div className="w-7 h-7 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
               <Calendar className="w-3.5 h-3.5" />
@@ -210,8 +210,8 @@ export function AttentionVelocityDashboard() {
         </div>
 
         {/* Metric 4 */}
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-emerald-500/40 shadow-sm transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+        <div className="p-4 rounded-2xl bg-white/80 dark:bg-[#18181B]/80 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-emerald-500/40 shadow-sm transition-all">
+          <div className="flex items-center justify-between text-slate-500 dark:text-zinc-400">
             <span className="text-[11px] font-bold uppercase tracking-wider">Hot Intent &amp; Prep</span>
             <div className="w-7 h-7 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               <Flame className="w-3.5 h-3.5 fill-current" />
@@ -236,9 +236,9 @@ export function AttentionVelocityDashboard() {
         {/* Dashboard 1: Follow-ups Due */}
         <motion.div
           variants={itemVariants}
-          className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-amber-500/40 shadow-sm flex flex-col transition-all group"
+          className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-[#18181B]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-amber-500/40 shadow-sm flex flex-col transition-all group"
         >
-          <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-[#27272A]">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                 <Clock className="w-4 h-4" />
@@ -247,7 +247,7 @@ export function AttentionVelocityDashboard() {
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white">
                   1. Follow-ups Required
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Leads with pending follow-up triggers or unacknowledged proposals
                 </p>
               </div>
@@ -267,7 +267,7 @@ export function AttentionVelocityDashboard() {
               followupList.map((card) => (
                 <div
                   key={`followup-${card.id}`}
-                  className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-white/[0.06] hover:border-amber-500/40 transition-colors space-y-2"
+                  className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#27272A]/60 border border-slate-200/80 dark:border-white/[0.06] hover:border-amber-500/40 transition-colors space-y-2"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -277,7 +277,7 @@ export function AttentionVelocityDashboard() {
                           ({card.doctor_name})
                         </span>
                       </h4>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                         {card.locality}, {card.city} &bull; Stage: {card.stage}
                       </p>
                     </div>
@@ -286,7 +286,7 @@ export function AttentionVelocityDashboard() {
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 line-clamp-2">
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 bg-white dark:bg-[#18181B] p-2.5 rounded-xl border border-slate-200/80 dark:border-[#27272A] line-clamp-2">
                     {card.attention_reason || "Scheduled follow-up reminder is now due."}
                   </p>
 
@@ -294,7 +294,7 @@ export function AttentionVelocityDashboard() {
                     <button
                       type="button"
                       onClick={() => setSelectedLeadId(card.id)}
-                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       <PanelRightOpen className="w-3.5 h-3.5" />
                       <span>View Details</span>
@@ -304,7 +304,7 @@ export function AttentionVelocityDashboard() {
                       <button
                         type="button"
                         onClick={() => openLogCallModal(card.id)}
-                        className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-zinc-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         <PhoneCall className="w-3 h-3" />
                         <span>Log Call</span>
@@ -329,9 +329,9 @@ export function AttentionVelocityDashboard() {
         {/* Dashboard 2: Unreplied Messages */}
         <motion.div
           variants={itemVariants}
-          className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-rose-500/40 shadow-sm flex flex-col transition-all group"
+          className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-[#18181B]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-rose-500/40 shadow-sm flex flex-col transition-all group"
         >
-          <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-[#27272A]">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
                 <MessageSquare className="w-4 h-4" />
@@ -340,7 +340,7 @@ export function AttentionVelocityDashboard() {
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white">
                   2. Unreplied Inbound Messages
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Customers who replied and are waiting on an operational response
                 </p>
               </div>
@@ -360,7 +360,7 @@ export function AttentionVelocityDashboard() {
               unrepliedList.map((card) => (
                 <div
                   key={`unreplied-${card.id}`}
-                  className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-white/[0.06] hover:border-rose-500/40 transition-colors space-y-2"
+                  className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#27272A]/60 border border-slate-200/80 dark:border-white/[0.06] hover:border-rose-500/40 transition-colors space-y-2"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -370,7 +370,7 @@ export function AttentionVelocityDashboard() {
                           ({card.doctor_name})
                         </span>
                       </h4>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                         {card.city} &bull; Channel: {card.preferred_channel}
                       </p>
                     </div>
@@ -379,7 +379,7 @@ export function AttentionVelocityDashboard() {
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-200 font-sans italic line-clamp-2">
+                  <div className="p-2.5 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#27272A] text-xs text-slate-700 dark:text-zinc-200 font-sans italic line-clamp-2">
                     &ldquo;{card.last_message_text || "Customer sent a new inbound WhatsApp inquiry."}&rdquo;
                   </div>
 
@@ -387,7 +387,7 @@ export function AttentionVelocityDashboard() {
                     <button
                       type="button"
                       onClick={() => setSelectedLeadId(card.id)}
-                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       <PanelRightOpen className="w-3.5 h-3.5" />
                       <span>View Details</span>
@@ -411,9 +411,9 @@ export function AttentionVelocityDashboard() {
         {/* Dashboard 3: Today's Actions */}
         <motion.div
           variants={itemVariants}
-          className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-500/40 shadow-sm flex flex-col transition-all group"
+          className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-[#18181B]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-500/40 shadow-sm flex flex-col transition-all group"
         >
-          <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-[#27272A]">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                 <Calendar className="w-4 h-4" />
@@ -422,7 +422,7 @@ export function AttentionVelocityDashboard() {
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white">
                   3. Today&apos;s Actions &amp; Next Steps
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Explicit commitments and tasks scheduled for execution today
                 </p>
               </div>
@@ -442,7 +442,7 @@ export function AttentionVelocityDashboard() {
               actionsList.map((card) => (
                 <div
                   key={`action-${card.id}`}
-                  className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-white/[0.06] hover:border-indigo-500/40 transition-colors space-y-2"
+                  className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#27272A]/60 border border-slate-200/80 dark:border-white/[0.06] hover:border-indigo-500/40 transition-colors space-y-2"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -452,7 +452,7 @@ export function AttentionVelocityDashboard() {
                           ({card.doctor_name})
                         </span>
                       </h4>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                         {card.city} &bull; Stage: {card.stage}
                       </p>
                     </div>
@@ -461,7 +461,7 @@ export function AttentionVelocityDashboard() {
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 font-medium">
+                  <p className="text-xs text-slate-800 dark:text-zinc-200 bg-white dark:bg-[#18181B] p-2.5 rounded-xl border border-slate-200/80 dark:border-[#27272A] font-medium">
                     {card.next_action || "Pending agreed next step commitment."}
                   </p>
 
@@ -469,7 +469,7 @@ export function AttentionVelocityDashboard() {
                     <button
                       type="button"
                       onClick={() => setSelectedLeadId(card.id)}
-                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       <PanelRightOpen className="w-3.5 h-3.5" />
                       <span>View Details</span>
@@ -479,7 +479,7 @@ export function AttentionVelocityDashboard() {
                       <button
                         type="button"
                         onClick={() => openInboxForLead(card.id)}
-                        className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-zinc-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         <MessageSquare className="w-3 h-3" />
                         <span>Inbox</span>
@@ -504,9 +504,9 @@ export function AttentionVelocityDashboard() {
         {/* Dashboard 4: Call Prep & Hot Intent */}
         <motion.div
           variants={itemVariants}
-          className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-emerald-500/40 shadow-sm flex flex-col transition-all group"
+          className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-[#18181B]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] hover:border-emerald-500/40 shadow-sm flex flex-col transition-all group"
         >
-          <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-[#27272A]">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <Flame className="w-4 h-4 fill-current" />
@@ -515,7 +515,7 @@ export function AttentionVelocityDashboard() {
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white">
                   4. Call Prep &amp; Hot Intent
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                   AI strategic briefing, objection battlecards &amp; high buyer intent leads
                 </p>
               </div>
@@ -538,7 +538,7 @@ export function AttentionVelocityDashboard() {
                 return (
                   <div
                     key={`prep-${card.id}`}
-                    className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-white/[0.06] hover:border-emerald-500/40 transition-colors space-y-2"
+                    className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#27272A]/60 border border-slate-200/80 dark:border-white/[0.06] hover:border-emerald-500/40 transition-colors space-y-2"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -549,7 +549,7 @@ export function AttentionVelocityDashboard() {
                           </span>
                         </h4>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          <span className="text-[11px] text-slate-500 dark:text-zinc-400">
                             {card.city} &bull; Stage: {card.stage || "Warm"}
                           </span>
                           <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
@@ -574,7 +574,7 @@ export function AttentionVelocityDashboard() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 line-clamp-2">
+                    <p className="text-xs text-slate-600 dark:text-zinc-300 bg-white dark:bg-[#18181B] p-2.5 rounded-xl border border-slate-200/80 dark:border-[#27272A] line-clamp-2">
                       {card.prep_brief || card.last_call_summary || card.attention_reason || "Pre-call strategy brief available"}
                     </p>
 
@@ -582,7 +582,7 @@ export function AttentionVelocityDashboard() {
                       <button
                         type="button"
                         onClick={() => setSelectedLeadId(card.id)}
-                        className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                        className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
                       >
                         <PanelRightOpen className="w-3.5 h-3.5" />
                         <span>View Details</span>

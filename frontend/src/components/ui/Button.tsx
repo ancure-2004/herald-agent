@@ -14,9 +14,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary: "bg-indigo-600 hover:bg-indigo-500 text-white focus:ring-indigo-500 shadow-sm shadow-indigo-600/20 active:scale-[0.98]",
-      secondary: "bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] dark:text-slate-100 border border-transparent dark:border-white/[0.08]",
-      outline: "border border-slate-300 dark:border-white/[0.1] hover:bg-slate-50 dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-200",
-      ghost: "hover:bg-slate-100 dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-300",
+      secondary: "bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] dark:text-zinc-100 border border-transparent dark:border-white/[0.08]",
+      outline: "border border-slate-300 dark:border-white/[0.1] hover:bg-slate-50 dark:hover:bg-white/[0.06] text-slate-700 dark:text-zinc-200",
+      ghost: "hover:bg-slate-100 dark:hover:bg-white/[0.06] text-slate-700 dark:text-zinc-300",
       danger: "bg-rose-600 hover:bg-rose-500 text-white focus:ring-rose-500 shadow-sm active:scale-[0.98]",
     };
 

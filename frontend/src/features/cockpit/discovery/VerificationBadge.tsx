@@ -49,7 +49,7 @@ export const VerificationBadge: React.FC<VerificationBadgeProps> = ({
 
   const badgeContent = (
     <span
-      className="bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-zinc-700 rounded-full px-2.5 py-1 text-[11px] font-medium inline-flex items-center gap-1.5 transition-colors cursor-default select-none shrink-0"
+      className="bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-200/80 dark:border-zinc-700 rounded-full px-2.5 py-1 text-[11px] font-medium inline-flex items-center gap-1.5 transition-colors cursor-default select-none shrink-0"
     >
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${config.dotClass}`} />
       <span>{config.label}</span>

@@ -26,7 +26,7 @@ export function AssistantDrawer() {
   return (
     <div className="fixed bottom-4 sm:bottom-5 right-4 sm:right-5 z-40 flex flex-col items-end gap-2">
       {assistantOpen && (
-        <div className="w-[calc(100vw-2rem)] sm:w-[560px] md:w-[620px] h-[640px] max-h-[85vh] rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="w-[calc(100vw-2rem)] sm:w-[560px] md:w-[620px] h-[640px] max-h-[85vh] rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           <div className="px-4 py-3 bg-slate-50 dark:bg-[#0F1117] border-b border-slate-200/80 dark:border-white/[0.08] flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-500" />
@@ -62,7 +62,7 @@ export function AssistantDrawer() {
                   onClick={() => {
                     setAssistantPrompt(chip.q);
                   }}
-                  className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[10px] text-slate-600 dark:text-slate-300 cursor-pointer transition-colors"
+                  className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[10px] text-slate-600 dark:text-zinc-300 cursor-pointer transition-colors"
                 >
                   {chip.label}
                 </button>
@@ -96,7 +96,7 @@ export function AssistantDrawer() {
                       <span className="text-emerald-500 font-mono">Reverted</span>
                     )}
                   </div>
-                  <div className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
+                  <div className="text-slate-800 dark:text-zinc-200 whitespace-pre-wrap leading-relaxed">
                     {entry.reply}
                   </div>
 
@@ -134,7 +134,7 @@ export function AssistantDrawer() {
                             <span>Confirm External {pc.channel.toUpperCase()} Send</span>
                             <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400">Target: {pc.lead_name} (#{pc.lead_id})</span>
                           </div>
-                          <div className="p-2 rounded bg-white dark:bg-zinc-900 border border-amber-200 dark:border-amber-900 text-slate-700 dark:text-slate-300 font-mono text-[11px] whitespace-pre-wrap">
+                          <div className="p-2 rounded bg-white dark:bg-zinc-900 border border-amber-200 dark:border-amber-900 text-slate-700 dark:text-zinc-300 font-mono text-[11px] whitespace-pre-wrap">
                             "{pc.draft_text}"
                           </div>
                           <div className="flex items-center gap-2 pt-1">
@@ -195,7 +195,7 @@ export function AssistantDrawer() {
                                 );
                                 notify(`Outbound send to ${pc.lead_name} cancelled.`);
                               }}
-                              className="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-slate-300 text-[11px] font-semibold cursor-pointer transition-colors"
+                              className="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-[11px] font-semibold cursor-pointer transition-colors"
                             >
                               Cancel
                             </button>
@@ -216,7 +216,7 @@ export function AssistantDrawer() {
                           <span
                             key={idx}
                             title={c.snippet}
-                            className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08] text-[9px] font-mono text-slate-500 dark:text-slate-400"
+                            className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08] text-[9px] font-mono text-slate-500 dark:text-zinc-400"
                           >
                             [{c.doc_type} #{c.lead_id}]
                           </span>
@@ -252,7 +252,7 @@ export function AssistantDrawer() {
               value={assistantPrompt}
               onChange={(e) => setAssistantPrompt(e.target.value)}
               placeholder="Ask anything or run any action (e.g. 'How many leads in each stage?', 'Move lead #3 to replied')..."
-              className="flex-1 bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-all"
+              className="flex-1 bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-all"
             />
             <button
               type="submit"

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { Select } from "@/components/ui/Select";
 import { DemoRun, LogLevel } from "../types";
 import {
   X,
@@ -446,21 +447,18 @@ export const MultiDevicePreviewDrawer: React.FC<MultiDevicePreviewDrawerProps> =
                 ))}
               </div>
 
-              <select
+              <Select
                 value={presetId}
-                onChange={(e) => handlePresetSelect(e.target.value)}
-                className="px-1.5 py-1 bg-[#1A1D27] border border-white/10 rounded text-white text-[11px] cursor-pointer max-w-[210px]"
-              >
-                {CATEGORIES.map(({ key, label }) => (
-                  <optgroup key={key} label={label}>
-                    {PRESETS.filter((p) => p.category === key).map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+                onChange={(val) => handlePresetSelect(val)}
+                options={CATEGORIES.flatMap(({ key, label }) =>
+                  PRESETS.filter((p) => p.category === key).map((p) => ({
+                    value: p.id,
+                    label: `${label}: ${p.label}`,
+                  }))
+                )}
+                className="max-w-[210px]"
+                triggerClassName="!py-1 !px-2 !bg-[#1A1D27] !border-white/10 !text-white !text-[11px] !rounded"
+              />
 
               <div className="flex items-center gap-1 text-slate-400">
                 <input

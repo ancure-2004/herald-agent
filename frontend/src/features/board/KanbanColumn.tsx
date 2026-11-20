@@ -128,7 +128,7 @@ function BatchGroup({ batchId, batchLeads, expanded, onToggle, renderLead }: Bat
       {/* Redesigned Clean Batch Card Surface */}
       <div
         onClick={onToggle}
-        className="rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] p-3.5 shadow-xs hover:shadow-md transition-all cursor-pointer select-none space-y-2.5"
+        className="rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#18181B] p-3.5 shadow-xs hover:shadow-md transition-all cursor-pointer select-none space-y-2.5"
       >
         {/* Top Row: Batch Pill + Full Locality + Count Badge */}
         <div className="flex items-center justify-between gap-2">
@@ -140,20 +140,20 @@ function BatchGroup({ batchId, batchLeads, expanded, onToggle, renderLead }: Bat
               {localitySummary}
             </span>
           </div>
-          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0">
+          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#27272A] text-slate-600 dark:text-zinc-400 shrink-0">
             {count} Clinics
           </span>
         </div>
 
         {/* Middle Row: Clean Inline Summary */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-medium">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-zinc-400 font-medium">
             <span>{avgFit}% Avg Fit</span>
             <span>{demosReady}/{count} Demos Ready</span>
           </div>
 
           {/* Sleek 4px Progress Bar */}
-          <div className="h-1 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+          <div className="h-1 w-full rounded-full bg-slate-100 dark:bg-[#27272A] overflow-hidden">
             <div
               className="h-full rounded-full bg-emerald-500 transition-all duration-500"
               style={{ width: `${progressPct}%` }}
@@ -162,8 +162,8 @@ function BatchGroup({ batchId, batchLeads, expanded, onToggle, renderLead }: Bat
         </div>
 
         {/* Bottom Toggle Trigger */}
-        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80">
-          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-1">
+        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#27272A]/80">
+          <span className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-1">
             <span>{expanded ? "Collapse Batch" : `Inspect ${count} Leads`}</span>
             <ChevronDown
               className={`w-3.5 h-3.5 transition-transform duration-200 ${
@@ -229,10 +229,10 @@ export function KanbanColumn({
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onClick={() => setManuallyExpanded(true)}
-        className={`w-12 shrink-0 flex flex-col items-center py-4 rounded-2xl bg-[#EAEEF3]/60 dark:bg-slate-900/60 border border-dashed transition-all cursor-pointer group hover:bg-[#EAEEF3] dark:hover:bg-slate-800 ${
+        className={`w-12 shrink-0 flex flex-col items-center py-4 rounded-2xl bg-[#EAEEF3]/60 dark:bg-[#18181B]/60 border border-dashed transition-all cursor-pointer group hover:bg-[#EAEEF3] dark:hover:bg-slate-800 ${
           isDragOver
             ? "border-zinc-900 ring-2 ring-zinc-900/20 bg-zinc-100/50"
-            : "border-slate-200/80 dark:border-slate-800"
+            : "border-slate-200/80 dark:border-[#27272A]"
         }`}
         title={`Click to expand empty stage: ${stage.name}`}
       >
@@ -282,10 +282,10 @@ export function KanbanColumn({
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      className={`w-[350px] min-w-[350px] shrink-0 flex flex-col rounded-2xl bg-[#EAEEF3]/75 dark:bg-slate-900/60 border transition-all duration-200 snap-start p-3 ${
+      className={`w-[350px] min-w-[350px] shrink-0 flex flex-col rounded-2xl bg-[#EAEEF3]/75 dark:bg-[#18181B]/60 border transition-all duration-200 snap-start p-3 ${
         isDragOver
           ? "border-zinc-900 dark:border-white ring-2 ring-zinc-900/10"
-          : "border-slate-200/60 dark:border-slate-800"
+          : "border-slate-200/60 dark:border-[#27272A]"
       }`}
     >
       {/* Taskk-Style Single-Line Column Header with Vertical Accent Pill */}
@@ -295,11 +295,11 @@ export function KanbanColumn({
           <span className="font-semibold text-xs uppercase tracking-wider text-zinc-800 dark:text-zinc-200 truncate">
             {stage.name}
           </span>
-          <span className="bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md px-1.5 py-0.5 text-[11px] font-medium shrink-0">
+          <span className="bg-slate-200/80 dark:bg-[#27272A] text-slate-700 dark:text-zinc-300 rounded-md px-1.5 py-0.5 text-[11px] font-medium shrink-0">
             {leads.length}
           </span>
           {useBatchView && (
-            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-white/70 dark:bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-slate-700 shrink-0">
+            <span className="text-[10px] font-mono text-slate-500 dark:text-zinc-400 bg-white/70 dark:bg-[#27272A]/80 px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-[#3F3F46] shrink-0">
               {batchGroups.length} {batchGroups.length === 1 ? "batch" : "batches"}
             </span>
           )}
@@ -329,7 +329,7 @@ export function KanbanColumn({
       {/* Cards Container */}
       <div className="flex-1 overflow-y-auto space-y-2.5 min-h-[450px] pr-0.5">
         {leads.length === 0 ? (
-          <div className="h-36 border border-dashed border-slate-300/60 dark:border-slate-800 rounded-xl flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+          <div className="h-36 border border-dashed border-slate-300/60 dark:border-[#27272A] rounded-xl flex flex-col items-center justify-center text-slate-400 p-4 text-center">
             <span className="text-xs font-medium">Empty stage</span>
             <span className="text-[10px] text-slate-400 mt-0.5">Drag cards here</span>
           </div>

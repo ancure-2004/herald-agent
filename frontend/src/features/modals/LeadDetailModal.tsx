@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Select } from "@/components/ui/Select";
 import {
   X,
   Phone,
@@ -110,7 +111,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
     : "No prior contact";
 
   return (
-    <div className="w-full flex flex-col h-full overflow-hidden bg-white dark:bg-[#141721]">
+    <div className="w-full flex flex-col h-full overflow-hidden bg-white dark:bg-[#18181B]">
       {/* 1. CLEAN DRAWER HEADER */}
       <div className="px-5 pt-5 pb-4 border-b border-slate-100 dark:border-white/[0.06] shrink-0">
         {/* Row 1: Status Dot + Clinic Name + Close Button */}
@@ -134,9 +135,9 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
         </div>
 
         {/* Row 2: Doctor & Locality + Fit/Intent Inline */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex flex-wrap items-center justify-between gap-2 mt-1.5 text-xs text-slate-500 dark:text-zinc-400">
           <div className="flex items-center gap-1.5 min-w-0 truncate">
-            <span className="font-semibold text-slate-700 dark:text-slate-200 truncate">
+            <span className="font-semibold text-slate-700 dark:text-zinc-200 truncate">
               {lead.doctor_name
                 ? /^dr\.?\s+/i.test(lead.doctor_name)
                   ? lead.doctor_name
@@ -150,10 +151,10 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="bg-slate-100 dark:bg-slate-800 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700 rounded-md px-1.5 py-0.5 text-[11px] font-medium font-mono">
+            <span className="bg-slate-100 dark:bg-[#27272A] text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-[#3F3F46] rounded-md px-1.5 py-0.5 text-[11px] font-medium font-mono">
               Fit {lead.fit_score || 0}%
             </span>
-            <span className="bg-slate-100 dark:bg-slate-800 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700 rounded-md px-1.5 py-0.5 text-[11px] font-medium font-mono">
+            <span className="bg-slate-100 dark:bg-[#27272A] text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-[#3F3F46] rounded-md px-1.5 py-0.5 text-[11px] font-medium font-mono">
               Intent {lead.intent_score || 0}%
             </span>
           </div>
@@ -166,31 +167,30 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
               href={`https://wa.me/${phoneDigits}?text=Hi%20${encodeURIComponent(lead.doctor_name || lead.name)},`}
               target="_blank"
               rel="noreferrer"
-              className="bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-slate-800 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+              className="bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-[#27272A] dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-[#3F3F46] rounded-xl px-3 py-1.5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
             >
               <Phone className="w-3 h-3 fill-current shrink-0" />
               <span className="truncate">{lead.primary_phone}</span>
             </a>
           ) : (
-            <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center italic">
+            <div className="bg-slate-50 dark:bg-[#27272A]/60 border border-slate-200/60 dark:border-[#3F3F46]/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center italic">
               No phone registered
             </div>
           )}
 
           {activeHustle?.stages ? (
-            <select
-              value={lead.stage_id}
-              onChange={(e) => handleStageChange(lead, Number(e.target.value))}
-              className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-800 dark:text-zinc-200 w-full focus:outline-none cursor-pointer"
-            >
-              {activeHustle.stages.map((st) => (
-                <option key={st.id} value={st.id}>
-                  {st.name}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={String(lead.stage_id)}
+              onChange={(val) => handleStageChange(lead, Number(val))}
+              options={activeHustle.stages.map((st) => ({
+                value: String(st.id),
+                label: st.name,
+              }))}
+              className="w-full"
+              triggerClassName="!py-1.5 !px-3 font-semibold text-zinc-800 dark:text-zinc-200"
+            />
           ) : (
-            <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center">
+            <div className="bg-slate-50 dark:bg-[#27272A]/60 border border-slate-200/60 dark:border-[#3F3F46]/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center">
               Stage
             </div>
           )}
@@ -200,7 +200,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
       {/* SCROLLABLE BODY */}
       <div className={`flex-1 overflow-y-auto p-5 space-y-5 ${isDocked ? "no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : ""}`}>
         {/* 2. REFINED LAST CONTACT & BRIEF (Executive Callout Box) */}
-        <div className="bg-slate-50/90 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2">
+        <div className="bg-slate-50/90 dark:bg-[#18181B]/60 border border-slate-200/80 dark:border-[#27272A] rounded-xl p-3.5 space-y-2">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5 font-semibold text-zinc-900 dark:text-white min-w-0 truncate">
               <Sparkles className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300 shrink-0" />
@@ -210,7 +210,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
               {lastContactDate}
             </span>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed break-words font-sans">
+          <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed break-words font-sans">
             {lead.what_changed_summary ||
               lead.next_action ||
               "Lead is evaluated for 3 bespoke dental clinic website themes. Ready for 1-on-1 WhatsApp outreach."}
@@ -219,7 +219,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
 
         {/* 3. COMPACT 3-COLUMN DEMOS & WALKTHROUGH */}
         <div className="space-y-2.5">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
             <span className="font-semibold uppercase tracking-wider text-[11px]">
               3 Live Demos &amp; Walkthrough
             </span>
@@ -236,7 +236,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
                   href={url}
                   target="_blank"
                   rel="noreferrer"
-                  className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/70 border border-slate-200/80 dark:border-slate-800 hover:border-zinc-900/40 dark:hover:border-slate-600 rounded-xl p-2.5 transition-all group flex flex-col justify-between cursor-pointer"
+                  className="bg-white hover:bg-slate-50 dark:bg-[#18181B] dark:hover:bg-slate-800/70 border border-slate-200/80 dark:border-[#27272A] hover:border-zinc-900/40 dark:hover:border-slate-600 rounded-xl p-2.5 transition-all group flex flex-col justify-between cursor-pointer"
                 >
                   <div className="flex items-center justify-between w-full">
                     <Globe className="w-3.5 h-3.5 text-slate-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
@@ -256,7 +256,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
           </div>
 
           {/* Compact 45s Video Walkthrough Row */}
-          <div className="mt-2 bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl px-3.5 py-2.5 flex items-center justify-between">
+          <div className="mt-2 bg-slate-50/80 dark:bg-[#18181B]/60 border border-slate-200/80 dark:border-[#27272A] rounded-xl px-3.5 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <Video className="w-4 h-4 text-zinc-700 dark:text-zinc-300 shrink-0" />
               <div>
@@ -282,7 +282,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
                   <span>{showVideo ? "Hide" : "Watch"}</span>
                 </button>
               ) : (
-                <span className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-medium px-2 py-0.5 rounded-md">
+                <span className="bg-white dark:bg-[#27272A] border border-slate-200/80 dark:border-[#3F3F46] text-slate-600 dark:text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-md">
                   Auto-build ready
                 </span>
               )}
@@ -293,7 +293,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
             <div className="mt-2 pt-2 border-t border-slate-200/60 dark:border-white/[0.06]">
               <video
                 controls
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm"
+                className="w-full rounded-xl border border-slate-200 dark:border-[#27272A] shadow-sm"
                 src={`/api/leads/${lead.id}/recording/download`}
               />
             </div>
@@ -302,7 +302,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
 
         {/* 4. SLEEK VERTICAL ACTIVITY TIMELINE */}
         <div className="space-y-2.5">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
             <span className="font-semibold uppercase tracking-wider text-[11px]">
               Live Activity Timeline ({timelineItems.length})
             </span>
@@ -310,26 +310,26 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
           </div>
 
           {timelineItems.length === 0 ? (
-            <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 text-center text-xs text-slate-400">
+            <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#18181B]/40 border border-slate-200/60 dark:border-[#27272A]/60 text-center text-xs text-slate-400">
               No recorded activity yet.
             </div>
           ) : (
             <div className="max-h-[300px] overflow-y-auto pr-1 pl-1">
-              <div className="ml-2.5 border-l border-slate-200 dark:border-slate-700 space-y-3 my-2">
+              <div className="ml-2.5 border-l border-slate-200 dark:border-[#3F3F46] space-y-3 my-2">
                 {timelineItems.map((item) => (
                   <div key={item.id} className="relative pl-4">
                     {/* Status dot on the vertical line */}
-                    <div className="absolute -left-[5.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-900 border-2 border-zinc-800 dark:border-zinc-200" />
+                    <div className="absolute -left-[5.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-white dark:bg-[#18181B] border-2 border-zinc-800 dark:border-zinc-200" />
 
                     {/* Compact content row */}
-                    <div className="bg-slate-50/60 hover:bg-slate-50 dark:bg-slate-900/40 dark:hover:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/80 rounded-xl px-3 py-2 transition-colors">
+                    <div className="bg-slate-50/60 hover:bg-slate-50 dark:bg-[#18181B]/40 dark:hover:bg-slate-900/80 border border-slate-200/60 dark:border-[#27272A]/80 rounded-xl px-3 py-2 transition-colors">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate min-w-0">
                           {item.title}
                         </span>
                         <div className="flex items-center gap-1.5 shrink-0">
                           {item.badge && (
-                            <span className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[10px] px-1.5 py-0.5 rounded font-mono">
+                            <span className="bg-white dark:bg-[#27272A] border border-slate-200/80 dark:border-[#3F3F46] text-slate-600 dark:text-zinc-300 text-[10px] px-1.5 py-0.5 rounded font-mono">
                               {item.badge}
                             </span>
                           )}
@@ -338,7 +338,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
                           </span>
                         </div>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed line-clamp-2">
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed line-clamp-2">
                         {item.description}
                       </p>
                     </div>
@@ -351,7 +351,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
       </div>
 
       {/* 5. UNIFIED FOOTER ACTIONS */}
-      <div className="px-5 py-3.5 border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#141721] grid grid-cols-2 gap-2.5 shrink-0">
+      <div className="px-5 py-3.5 border-t border-slate-100 dark:border-[#27272A]/80 bg-white dark:bg-[#18181B] grid grid-cols-2 gap-2.5 shrink-0">
         {activeTab === "calls" ? (
           <>
             <button
@@ -375,7 +375,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
                   el?.scrollIntoView({ behavior: "smooth", block: "center" });
                 }, 100);
               }}
-              className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-900 dark:text-zinc-100 border border-slate-200/80 dark:border-slate-700 rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              className="bg-slate-100 hover:bg-slate-200 dark:bg-[#27272A] dark:hover:bg-slate-700 text-zinc-900 dark:text-zinc-100 border border-slate-200/80 dark:border-[#3F3F46] rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
               <FileText className="w-4 h-4" />
               <span>Focus Call Form</span>
@@ -400,7 +400,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
               onClick={() => {
                 openLogCallModal(lead.id);
               }}
-              className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-900 dark:text-zinc-100 border border-slate-200/80 dark:border-slate-700 rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              className="bg-slate-100 hover:bg-slate-200 dark:bg-[#27272A] dark:hover:bg-slate-700 text-zinc-900 dark:text-zinc-100 border border-slate-200/80 dark:border-[#3F3F46] rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
               <PhoneCall className="w-4 h-4" />
               <span>Log Call</span>
@@ -432,7 +432,7 @@ export function LeadDetailModal() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="my-2 mr-2 h-[calc(100vh-16px)] w-full max-w-[480px] sm:w-[480px] rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-2xl overflow-hidden flex flex-col z-50 animate-in slide-in-from-right duration-300"
+        className="my-2 mr-2 h-[calc(100vh-16px)] w-full max-w-[480px] sm:w-[480px] rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-2xl overflow-hidden flex flex-col z-50 animate-in slide-in-from-right duration-300"
       >
         <LeadDetailContent lead={selectedLead} onClose={() => setSelectedLeadId(null)} isDocked={false} />
       </div>

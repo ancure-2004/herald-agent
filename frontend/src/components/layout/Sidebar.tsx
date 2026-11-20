@@ -56,6 +56,7 @@ export function Sidebar() {
     toggleDarkMode,
     settingsTab,
     setSettingsTab,
+    setSettingsModalOpen,
     handleBackToWorkspace,
     operatorProfile,
   } = useCRM();
@@ -114,10 +115,10 @@ export function Sidebar() {
     { id: "profile", label: "Operator Profile", icon: User },
   ];
 
-  // Shared Compact Popover Content (w-64 with premium dark grayish styling)
+  // Shared Compact Popover Content (premium dark grayish styling)
   const renderProfilePopover = (positionClasses: string) => (
     <div
-      className={`${positionClasses} w-64 rounded-2xl bg-[#242529] border border-zinc-700/80 shadow-2xl shadow-black/40 p-2 z-50 text-zinc-100 space-y-2`}
+      className={`${positionClasses} rounded-2xl bg-[#242529] border border-zinc-700/80 shadow-2xl shadow-black/40 p-2 z-50 text-zinc-100 space-y-2`}
     >
       {/* Header */}
       <div className="flex items-center gap-2.5 p-1.5 pb-2.5 border-b border-zinc-700/70">
@@ -153,7 +154,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={() => {
-            setActiveTab("settings");
+            setSettingsModalOpen(true);
             setProfileMenuOpen(false);
           }}
           className="w-full flex items-center justify-between py-2 px-2.5 rounded-xl text-xs font-medium text-zinc-200 hover:text-white hover:bg-zinc-700/60 transition-colors cursor-pointer group"
@@ -162,7 +163,7 @@ export function Sidebar() {
             <Settings className="w-4 h-4 text-zinc-400 group-hover:text-white group-hover:rotate-45 transition-transform" />
             <span>Settings</span>
           </div>
-          <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300" />
+          <span className="text-[10px] font-mono text-zinc-400 group-hover:text-zinc-200">⌘,</span>
         </button>
 
         <button
@@ -198,8 +199,8 @@ export function Sidebar() {
         {/* Light / Dark Mode Toggle Row */}
         <button
           type="button"
-          onClick={() => {
-            toggleDarkMode();
+          onClick={(e) => {
+            toggleDarkMode(e);
           }}
           className="w-full flex items-center justify-between py-2 px-2.5 rounded-xl text-xs font-medium text-zinc-200 hover:text-white hover:bg-zinc-700/60 transition-colors cursor-pointer group"
         >
@@ -226,7 +227,7 @@ export function Sidebar() {
     const collapsedItems = isSettings ? settingsNav : isCockpit ? cockpitNav : managementNav;
 
     return (
-      <aside className="w-18 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-2.5 flex flex-col justify-start items-center transition-all duration-200 z-20 relative">
+      <aside className="w-18 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm p-2.5 flex flex-col justify-start items-center transition-all duration-200 z-20 relative">
         {/* Top: Logo + Expand Toggle */}
         <div className="flex flex-col items-center gap-2">
           <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs">
@@ -245,7 +246,7 @@ export function Sidebar() {
         </div>
 
         {/* Compact Divider */}
-        <div className="w-8 my-3 border-t border-slate-100 dark:border-slate-800" />
+        <div className="w-8 my-3 border-t border-slate-100 dark:border-[#27272A]" />
 
         {/* If Settings is active, show crisp Back to Workspace button */}
         {isSettings && (
@@ -287,7 +288,7 @@ export function Sidebar() {
                 className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer relative group ${
                   active
                     ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900 scale-105"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+                    : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
                 title={item.label}
                 aria-label={item.label}
@@ -304,7 +305,7 @@ export function Sidebar() {
         {/* Bottom Footer Block: Pushed to bottom via mt-auto */}
         <div
           ref={dropdownRef}
-          className="mt-auto flex flex-col items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 w-full relative"
+          className="mt-auto flex flex-col items-center gap-2 pt-2 border-t border-slate-100 dark:border-[#27272A] w-full relative"
         >
           {/* Autopilot Indicator Button with crisp emerald dot */}
           <button
@@ -343,10 +344,10 @@ export function Sidebar() {
             {operatorProfile?.initials || "AT"}
           </button>
 
-          {/* Compact Popover anchored to the right side of the sidebar */}
+          {/* Compact Popover anchored to the right side of the collapsed dock */}
           {profileMenuOpen &&
             renderProfilePopover(
-              "absolute left-full bottom-2 ml-3 animate-in fade-in slide-in-from-left-2 duration-150"
+              "absolute left-full bottom-0 ml-3 w-64 animate-in fade-in slide-in-from-left-2 duration-150"
             )}
         </div>
       </aside>
@@ -357,7 +358,7 @@ export function Sidebar() {
   // OPEN SIDEBAR
   // -------------------------------------------------------------
   return (
-    <aside className="w-64 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-3.5 flex flex-col justify-start transition-all duration-200 z-20 relative">
+    <aside className="w-64 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm p-3.5 flex flex-col justify-start transition-all duration-200 z-20 relative">
       {/* Top Header: Brand Logo + Workspace Name + Collapse Toggle */}
       <div className="flex items-center justify-between pb-2">
         <div className="flex items-center gap-2.5">
@@ -386,7 +387,7 @@ export function Sidebar() {
       </div>
 
       {/* Compact Divider */}
-      <div className="my-3 border-t border-slate-100 dark:border-slate-800" />
+      <div className="my-3 border-t border-slate-100 dark:border-[#27272A]" />
 
       {/* Navigation Menu Grouped at Top */}
       <div className="overflow-y-auto no-scrollbar pr-0.5">
@@ -402,7 +403,7 @@ export function Sidebar() {
               <span>Back to Workspace</span>
             </button>
 
-            <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
               Settings &amp; Preferences
             </div>
 
@@ -418,7 +419,7 @@ export function Sidebar() {
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       active
                         ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 rounded-xl font-medium shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -430,7 +431,7 @@ export function Sidebar() {
           </div>
         ) : (
           <div>
-            <div className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <div className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
               {isCockpit ? "Cockpit Flight Deck" : "CRM Management"}
             </div>
 
@@ -449,7 +450,7 @@ export function Sidebar() {
                         className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                           active
                             ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
-                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                            : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -478,7 +479,7 @@ export function Sidebar() {
                           className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                             active
                               ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
-                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
                           }`}
                         >
                           <div className="flex items-center gap-3">
@@ -502,7 +503,7 @@ export function Sidebar() {
 
                         {/* Sub-menu of Smart Queues */}
                         {pipelineBoardExpanded && (
-                          <div className="ml-4 pl-2.5 border-l-2 border-slate-200 dark:border-slate-800 space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                          <div className="ml-4 pl-2.5 border-l-2 border-slate-200 dark:border-[#27272A] space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                             {[
                               { slug: "all_active", label: "All Active Pipeline", icon: LayoutGrid },
                               { slug: "review_tray", label: "Review Tray (Ready)", icon: CheckCircle2 },
@@ -525,7 +526,7 @@ export function Sidebar() {
                                   className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer relative group ${
                                     isSubActive
                                       ? "bg-slate-100 text-slate-900 font-medium dark:bg-white/[0.1] dark:text-white"
-                                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                                      : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/40"
                                   }`}
                                 >
                                   <div className="flex items-center gap-2 truncate">
@@ -559,7 +560,7 @@ export function Sidebar() {
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                         active
                           ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                          : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -576,7 +577,7 @@ export function Sidebar() {
       {/* Bottom Footer Block: Pushed to bottom via mt-auto */}
       <div
         ref={dropdownRef}
-        className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 shrink-0 relative"
+        className="mt-auto pt-3 border-t border-slate-100 dark:border-[#27272A] space-y-2.5 shrink-0"
       >
         {/* Compact Autopilot Status Card with crisp emerald dot */}
         <div className="bg-zinc-900 text-white dark:bg-zinc-800 rounded-xl p-2.5 flex items-center justify-between shadow-xs">
@@ -610,49 +611,51 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* User Profile Footer Row */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setProfileMenuOpen((prev) => !prev)}
-            className="flex items-center gap-2.5 min-w-0 cursor-pointer group text-left flex-1 py-1 px-1 rounded-xl hover:bg-slate-100/70 dark:hover:bg-slate-800/50 transition-colors"
-            title="Captain Profile & Settings"
-            aria-expanded={profileMenuOpen}
-          >
-            <div className="w-8 h-8 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs group-hover:ring-2 group-hover:ring-zinc-400 transition-all shrink-0">
-              {operatorProfile?.initials || "AT"}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
-                {operatorProfile?.name || "Ankur Tyagi"}
+        {/* User Profile Footer Row with relative popover wrapper */}
+        <div className="pt-2 border-t border-slate-100 dark:border-[#27272A]/80 relative">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setProfileMenuOpen((prev) => !prev)}
+              className="flex items-center gap-2.5 min-w-0 cursor-pointer group text-left flex-1 py-1 px-1 rounded-xl hover:bg-slate-100/70 dark:hover:bg-slate-800/50 transition-colors"
+              title="Captain Profile & Settings"
+              aria-expanded={profileMenuOpen}
+            >
+              <div className="w-8 h-8 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs group-hover:ring-2 group-hover:ring-zinc-400 transition-all shrink-0">
+                {operatorProfile?.initials || "AT"}
               </div>
-              <div className="text-[10px] text-slate-400 font-medium truncate">
-                {operatorProfile?.role || "CRM Architect"}
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
+                  {operatorProfile?.name || "Ankur Tyagi"}
+                </div>
+                <div className="text-[10px] text-slate-400 font-medium truncate">
+                  {operatorProfile?.role || "CRM Architect"}
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
 
-          {/* Chevron Arrow Button opening popover anchored cleanly above footer */}
-          <button
-            type="button"
-            onClick={() => setProfileMenuOpen((prev) => !prev)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            title="Toggle Profile Menu"
-            aria-label="Toggle Profile Menu"
-          >
-            <ChevronUp
-              className={`w-4 h-4 transition-transform duration-200 ${
-                profileMenuOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
+            {/* Chevron Arrow Button opening popover anchored cleanly above account button */}
+            <button
+              type="button"
+              onClick={() => setProfileMenuOpen((prev) => !prev)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Toggle Profile Menu"
+              aria-label="Toggle Profile Menu"
+            >
+              <ChevronUp
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  profileMenuOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Compact Profile Popover anchored right above account button aligned with sidebar edges */}
+          {profileMenuOpen &&
+            renderProfilePopover(
+              "absolute left-0 right-0 bottom-full mb-2 animate-in fade-in slide-in-from-bottom-2 duration-150"
+            )}
         </div>
-
-        {/* Compact Profile Popover anchored to the right side of the sidebar */}
-        {profileMenuOpen &&
-          renderProfilePopover(
-            "absolute left-full bottom-2 ml-3 animate-in fade-in slide-in-from-left-2 duration-150"
-          )}
       </div>
     </aside>
   );

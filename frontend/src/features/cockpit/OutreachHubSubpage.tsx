@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { Select } from "@/components/ui/Select";
 import {
   AlertTriangle,
   ArrowRight,
@@ -561,8 +562,8 @@ export function OutreachHubSubpage() {
           <div
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border shadow-xs ${
               dryRunMode
-                ? "bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-300 border-slate-200/90 dark:border-slate-800"
-                : "bg-white dark:bg-slate-900 text-rose-700 dark:text-rose-300 border-slate-200/90 dark:border-slate-800 font-bold"
+                ? "bg-white dark:bg-[#18181B] text-amber-700 dark:text-amber-300 border-slate-200/90 dark:border-[#27272A]"
+                : "bg-white dark:bg-[#18181B] text-rose-700 dark:text-rose-300 border-slate-200/90 dark:border-[#27272A] font-bold"
             }`}
             title="Outreach Safety Mode is configured in Settings > Quotas & Safety Caps"
           >
@@ -575,18 +576,18 @@ export function OutreachHubSubpage() {
           </div>
 
           {/* Batch Progress Telemetry Island */}
-          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
-            <span className="text-slate-400 dark:text-slate-500">Batch:</span>
+          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-600 dark:text-zinc-400 bg-white dark:bg-[#18181B] px-3 py-1.5 rounded-xl border border-slate-200/90 dark:border-[#27272A] shadow-xs">
+            <span className="text-slate-400 dark:text-zinc-500">Batch:</span>
             <span className="font-bold text-zinc-900 dark:text-white">{effectiveBatchId ?? "BATCH-01"}</span>
             <span className="text-slate-300 dark:text-slate-600">·</span>
-            <span className="text-slate-400 dark:text-slate-500">Sent:</span>
+            <span className="text-slate-400 dark:text-zinc-500">Sent:</span>
             <span className="font-bold text-emerald-600 dark:text-emerald-400">
               {activeBatchInfo?.sent ?? 0} / {activeBatchInfo?.total ?? batchClinics.length}
             </span>
           </div>
 
           {isOutreachRunning && (
-            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 px-2.5 py-1 rounded-xl border border-emerald-300/80 dark:border-emerald-500/30 shadow-xs">
+            <div className="flex items-center gap-1.5 bg-white dark:bg-[#18181B] px-2.5 py-1 rounded-xl border border-emerald-300/80 dark:border-emerald-500/30 shadow-xs">
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold animate-pulse">
                 Automation Running
               </span>
@@ -605,24 +606,27 @@ export function OutreachHubSubpage() {
         {/* Right Side: Batch Selector Dropdown, Reload Button, Re-batch Stock Floating Islands */}
         <div className="flex items-center gap-2">
           {/* Batch Selector Dropdown Island */}
-          <div className="relative">
-            <select
-              value={selectedBatchId ?? ""}
-              onChange={(e) => setSelectedBatchId(e.target.value || null)}
-              disabled={batchLoading || !batchMeta?.batches.length}
-              className="appearance-none pl-3 pr-7 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 text-xs font-mono font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-zinc-500 cursor-pointer disabled:opacity-50 transition-all min-w-[170px] shadow-xs"
-            >
-              {batchMeta?.batches.map((b) => (
-                <option key={b.batch_id} value={b.batch_id}>
-                  {b.batch_id} ({b.ready_unsent} unsent / {b.total})
-                </option>
-              ))}
-              {!batchMeta?.batches.length && (
-                <option value="">{batchLoading ? "Loading..." : "No batches"}</option>
-              )}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-          </div>
+          <Select
+            value={selectedBatchId ?? ""}
+            onChange={(val) => setSelectedBatchId(val || null)}
+            disabled={batchLoading || !batchMeta?.batches.length}
+            options={
+              batchMeta?.batches?.length
+                ? batchMeta.batches.map((b) => ({
+                    value: b.batch_id,
+                    label: `${b.batch_id} (${b.ready_unsent} unsent / ${b.total})`,
+                  }))
+                : [
+                    {
+                      value: "",
+                      label: batchLoading ? "Loading..." : "No batches",
+                      disabled: true,
+                    },
+                  ]
+            }
+            className="min-w-[170px]"
+            triggerClassName="!py-1.5 !px-3 font-mono font-medium"
+          />
 
           {/* Reload / Refresh Button Island */}
           <button
@@ -636,7 +640,7 @@ export function OutreachHubSubpage() {
             }}
             disabled={batchLoading}
             title="Reload Batch Data"
-            className="p-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+            className="p-1.5 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-[#27272A] text-slate-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer disabled:opacity-50 shadow-xs"
           >
             <RotateCw className={`w-3.5 h-3.5 ${batchLoading ? "animate-spin" : ""}`} />
           </button>
@@ -646,7 +650,7 @@ export function OutreachHubSubpage() {
             type="button"
             onClick={handleRebalance}
             disabled={rebalancing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#18181B] hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-[#27272A] text-xs font-semibold text-slate-700 dark:text-zinc-200 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${rebalancing ? "animate-spin" : ""}`} />
             <span>{rebalancing ? "Re-batching..." : "Re-Batch Stock"}</span>
@@ -682,7 +686,7 @@ export function OutreachHubSubpage() {
       {/* 3. Main Workspace: Left-Side Clinic Message Card + Right-Side Compact Queue */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Side (9/12 width): Selected Clinic Message & Video Workspace */}
-        <div className="lg:col-span-9 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="lg:col-span-9 p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#27272A] shadow-xs space-y-4">
           {!selectedClinic ? (
             <div className="text-xs text-slate-400 text-center py-16">
               {batchLoading ? "Loading batch..." : "Select a clinic from the queue to view its outreach workspace."}
@@ -697,7 +701,7 @@ export function OutreachHubSubpage() {
                     <span className="text-base font-bold text-zinc-900 dark:text-white truncate">
                       {selectedClinic.name}
                     </span>
-                    <span className="bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-white/[0.08] rounded-md px-2 py-0.5 text-[11px] font-mono shrink-0">
+                    <span className="bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-zinc-300 border border-slate-200/80 dark:border-white/[0.08] rounded-md px-2 py-0.5 text-[11px] font-mono shrink-0">
                       {selectedClinic.batch_id}
                     </span>
                   </div>
@@ -727,7 +731,7 @@ export function OutreachHubSubpage() {
                     <button
                       type="button"
                       onClick={() => setSelectedLeadId(selectedClinic.id)}
-                      className="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 border border-slate-200/80 dark:border-white/[0.1] text-zinc-800 dark:text-zinc-200 rounded-xl px-3 py-1.5 text-xs font-medium cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs"
+                      className="bg-white dark:bg-[#27272A] hover:bg-slate-50 dark:hover:bg-slate-700/60 border border-slate-200/80 dark:border-white/[0.1] text-zinc-800 dark:text-zinc-200 rounded-xl px-3 py-1.5 text-xs font-medium cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs"
                     >
                       <Link2 className="w-3.5 h-3.5 text-slate-400" />
                       <span>Lead Card</span>
@@ -741,7 +745,7 @@ export function OutreachHubSubpage() {
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer disabled:opacity-50 ${
                         selectedClinic.is_sent
                           ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200/70 dark:border-emerald-500/30"
-                          : "bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-white/[0.1]"
+                          : "bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 text-slate-700 dark:text-zinc-300 border-slate-200/80 dark:border-white/[0.1]"
                       }`}
                     >
                       {selectedClinic.is_sent ? "Sent ✓ · Undo" : "Mark as Sent"}
@@ -750,7 +754,7 @@ export function OutreachHubSubpage() {
                 </div>
 
                 {/* Row 2: Doctor/Locality on Left | Grouped 4-Template Segmented Pill Bar on Right */}
-                <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs text-slate-500 dark:text-slate-400">
+                <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs text-slate-500 dark:text-zinc-400">
                   <div className="truncate min-w-0">
                     {selectedClinic.doctor}
                     {selectedClinic.locality ? ` · ${selectedClinic.locality}` : ""}
@@ -774,7 +778,7 @@ export function OutreachHubSubpage() {
                           href={d.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:bg-white dark:hover:bg-slate-800 hover:shadow-2xs text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all flex items-center gap-1"
+                          className="hover:bg-white dark:hover:bg-slate-800 hover:shadow-2xs text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all flex items-center gap-1"
                         >
                           <ExternalLink className="w-3 h-3 text-slate-400" />
                           <span>{d.label}</span>
@@ -788,7 +792,7 @@ export function OutreachHubSubpage() {
               <div className="flex flex-col md:flex-row gap-5 items-start pt-1">
                 {/* Left Column (9:16 Vertical Video Player Column) */}
                 <div className="w-full md:w-[280px] lg:w-[300px] shrink-0 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
                     <span className="font-semibold flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200">
                       <Video className="w-3.5 h-3.5 text-zinc-500" />
                       Walkthrough Video
@@ -846,7 +850,7 @@ export function OutreachHubSubpage() {
                 <div className="w-full flex-1 min-w-0 space-y-3.5">
                   {/* Message 1: Text Hook */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
                       <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                         Message 1: Text Hook
                       </span>
@@ -872,7 +876,7 @@ export function OutreachHubSubpage() {
 
                   {/* Message 2: Video Caption & 3 Design Links */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
                       <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                         Message 2: Video Caption &amp; 3 Design Links
                       </span>
@@ -979,7 +983,7 @@ export function OutreachHubSubpage() {
         </div>
 
         {/* Right Side (3/12 width): Unified BATCH 1 QUEUE Panel */}
-        <div className="lg:col-span-3 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3.5">
+        <div className="lg:col-span-3 p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#27272A] shadow-xs space-y-3.5">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
@@ -1014,7 +1018,7 @@ export function OutreachHubSubpage() {
                 className={`flex-1 py-1 rounded-lg text-[10px] font-mono font-bold border transition-all cursor-pointer ${
                   queueFilter === f.key
                     ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white shadow-2xs"
-                    : "bg-slate-50 dark:bg-white/[0.03] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-white/[0.06] hover:text-zinc-900 dark:hover:text-white"
+                    : "bg-slate-50 dark:bg-white/[0.03] text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-white/[0.06] hover:text-zinc-900 dark:hover:text-white"
                 }`}
               >
                 {f.label}
@@ -1051,7 +1055,7 @@ export function OutreachHubSubpage() {
                         <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           {c.name}
                         </div>
-                        <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                        <div className="text-[10px] text-slate-500 dark:text-zinc-400 truncate">
                           {c.doctor}
                           {c.locality ? ` · ${c.locality}` : ""}
                         </div>

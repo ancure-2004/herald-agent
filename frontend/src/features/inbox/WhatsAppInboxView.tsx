@@ -274,19 +274,19 @@ export function WhatsAppInboxView() {
   };
 
   return (
-    <div className="h-full flex flex-col sm:flex-row gap-4 overflow-hidden text-slate-900 dark:text-slate-100">
+    <div className="h-full flex flex-col sm:flex-row gap-4 overflow-hidden text-slate-900 dark:text-zinc-100">
       {/* 1. MONOCHROME THREAD LIST (LEFT PANE) */}
-      <div className={`w-full sm:w-64 md:w-72 shrink-0 flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden ${mobileViewingThread ? "hidden sm:flex" : "flex"}`}>
+      <div className={`w-full sm:w-64 md:w-72 shrink-0 flex flex-col rounded-3xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#27272A] shadow-sm overflow-hidden ${mobileViewingThread ? "hidden sm:flex" : "flex"}`}>
         {/* Search & Header */}
-        <div className="p-3.5 border-b border-slate-100 dark:border-slate-800 space-y-2.5">
+        <div className="p-3.5 border-b border-slate-100 dark:border-[#27272A] space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-[#27272A] text-zinc-800 dark:text-zinc-200 flex items-center justify-center">
                 <MessageSquare className="w-3.5 h-3.5" />
               </div>
               <h1 className="text-xs font-bold tracking-tight text-zinc-900 dark:text-white">WhatsApp Inbox</h1>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 font-semibold">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#27272A] text-slate-500 font-semibold">
               {filteredLeads.length} leads
             </span>
           </div>
@@ -299,7 +299,7 @@ export function WhatsAppInboxView() {
               placeholder="Search clinic, doctor, phone..."
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 focus:outline-none focus:ring-2 focus:ring-slate-400 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-sans"
+              className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A]/80 border border-slate-200 dark:border-[#3F3F46]/80 focus:outline-none focus:ring-2 focus:ring-slate-400 text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 font-sans"
             />
           </div>
 
@@ -317,7 +317,7 @@ export function WhatsAppInboxView() {
                 className={`px-2 py-0.5 rounded-lg text-[10px] font-medium whitespace-nowrap transition-all cursor-pointer ${
                   statusFilter === chip.id
                     ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs font-semibold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                    : "bg-slate-100 dark:bg-[#27272A] text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
                 {chip.label}
@@ -355,7 +355,7 @@ export function WhatsAppInboxView() {
                   }}
                   className={`w-full text-left p-3 transition-all flex items-start gap-2.5 cursor-pointer ${
                     isSelected
-                      ? "bg-slate-50/90 dark:bg-slate-800/50 border-l-3 border-l-zinc-900 dark:border-l-zinc-100"
+                      ? "bg-slate-50/90 dark:bg-[#27272A]/50 border-l-3 border-l-zinc-900 dark:border-l-zinc-100"
                       : "hover:bg-slate-50 dark:hover:bg-slate-800/40 border-l-3 border-l-transparent"
                   }`}
                 >
@@ -365,7 +365,7 @@ export function WhatsAppInboxView() {
                       className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
                         isSelected
                           ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
-                          : "bg-slate-100 text-zinc-800 dark:bg-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700"
+                          : "bg-slate-100 text-zinc-800 dark:bg-[#27272A] dark:text-zinc-200 border border-slate-200/80 dark:border-[#3F3F46]"
                       }`}
                     >
                       {lead.name.slice(0, 2).toUpperCase()}
@@ -378,7 +378,7 @@ export function WhatsAppInboxView() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1 mb-0.5">
-                      <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                      <h2 className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
                         {lead.name}
                       </h2>
                       {lastMessage && (
@@ -391,14 +391,14 @@ export function WhatsAppInboxView() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate mb-1">
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-zinc-400 truncate mb-1">
                       <span>{lead.doctor_name || "Doctor"}</span>
                       <span>•</span>
                       <span>{lead.locality || "Delhi NCR"}</span>
                     </div>
 
                     {/* Snippet */}
-                    <p className="text-[11px] text-slate-600 dark:text-slate-300 truncate line-clamp-1">
+                    <p className="text-[11px] text-slate-600 dark:text-zinc-300 truncate line-clamp-1">
                       {lastMessage ? (
                         <>
                           {lastMessage.direction === "outbound" && (
@@ -434,11 +434,11 @@ export function WhatsAppInboxView() {
       </div>
 
       {/* 2. CENTER ACTIVE THREAD PANEL: WhatsApp Conversation */}
-      <div className={`flex-1 flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-w-0 ${mobileViewingThread ? "flex" : "hidden sm:flex"}`}>
+      <div className={`flex-1 flex flex-col rounded-3xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#27272A] shadow-sm overflow-hidden min-w-0 ${mobileViewingThread ? "flex" : "hidden sm:flex"}`}>
         {activeLead ? (
           <>
             {/* 2A. CLEAN MONOCHROME CHAT HEADER */}
-            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-800/20 shrink-0">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-[#27272A] flex items-center justify-between gap-3 bg-slate-50/50 dark:bg-[#27272A]/20 shrink-0">
               <div className="flex items-center gap-2.5 min-w-0">
                 <button
                   type="button"
@@ -464,8 +464,8 @@ export function WhatsAppInboxView() {
                       {activeLead.name}
                     </button>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                    <span className="font-medium text-slate-700 dark:text-slate-300">{activeLead.doctor_name || "Doctor"}</span>
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-zinc-400 truncate">
+                    <span className="font-medium text-slate-700 dark:text-zinc-300">{activeLead.doctor_name || "Doctor"}</span>
                     <span>•</span>
                     <span className="font-mono">{activeLead.primary_phone || "No phone"}</span>
                     <span>•</span>
@@ -482,7 +482,7 @@ export function WhatsAppInboxView() {
                   className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
                     isLeadCardDocked
                       ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-xs"
-                      : "bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-zinc-700 dark:text-zinc-200 border-slate-200/80 dark:border-slate-700"
+                      : "bg-white hover:bg-slate-50 dark:bg-[#27272A] dark:hover:bg-slate-750 text-zinc-700 dark:text-zinc-200 border-slate-200/80 dark:border-[#3F3F46]"
                   }`}
                   title={isLeadCardDocked ? "Close docked Lead Card" : "Open Lead Card docked side-by-side"}
                 >
@@ -494,7 +494,7 @@ export function WhatsAppInboxView() {
                 <button
                   type="button"
                   onClick={() => openLogReplyModal(activeLead.id)}
-                  className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 border border-slate-200/80 dark:border-slate-700 text-zinc-700 dark:text-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-slate-50 dark:bg-[#27272A] dark:hover:bg-slate-750 border border-slate-200/80 dark:border-[#3F3F46] text-zinc-700 dark:text-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
                   <span className="hidden md:inline">Log Customer Reply</span>
@@ -504,7 +504,7 @@ export function WhatsAppInboxView() {
                 <button
                   type="button"
                   onClick={() => openLogCallModal(activeLead.id)}
-                  className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 border border-slate-200/80 dark:border-slate-700 text-zinc-700 dark:text-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-slate-50 dark:bg-[#27272A] dark:hover:bg-slate-750 border border-slate-200/80 dark:border-[#3F3F46] text-zinc-700 dark:text-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <Phone className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Log Call</span>
@@ -515,11 +515,11 @@ export function WhatsAppInboxView() {
             {/* 3. CONVERSATION CANVAS & BUBBLES */}
             <div
               ref={chatScrollRef}
-              className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/20"
+              className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50 dark:bg-[#09090B]/20"
             >
               {/* Channel Invariant Notice */}
-              <div className="max-w-md mx-auto text-center p-2.5 rounded-2xl bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80 text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5">
-                <div className="font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5">
+              <div className="max-w-md mx-auto text-center p-2.5 rounded-2xl bg-slate-100/70 dark:bg-[#27272A]/50 border border-slate-200/80 dark:border-[#3F3F46]/80 text-[11px] text-slate-500 dark:text-zinc-400 space-y-0.5">
+                <div className="font-semibold text-slate-700 dark:text-zinc-300 flex items-center justify-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
                   <span>Channel Restricted: WhatsApp Only</span>
                 </div>
@@ -529,10 +529,10 @@ export function WhatsAppInboxView() {
               {/* Messages list */}
               {(!activeLead.messages || activeLead.messages.length === 0) ? (
                 <div className="text-center py-12 space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#27272A] flex items-center justify-center mx-auto text-slate-400">
                     <MessageSquare className="w-6 h-6" />
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
                     No messages logged yet. Use the composer or AI suggestions below to begin outreach!
                   </p>
                 </div>
@@ -563,7 +563,7 @@ export function WhatsAppInboxView() {
                         className={`max-w-[85%] sm:max-w-md rounded-2xl px-4 py-3 text-xs leading-relaxed space-y-1.5 ${
                           isOutbound
                             ? "bg-zinc-900 text-white rounded-tr-sm shadow-sm border border-zinc-800"
-                            : "bg-white dark:bg-slate-800 text-zinc-800 dark:text-zinc-100 border border-slate-200/80 dark:border-slate-700 rounded-tl-sm shadow-xs"
+                            : "bg-white dark:bg-[#27272A] text-zinc-800 dark:text-zinc-100 border border-slate-200/80 dark:border-[#3F3F46] rounded-tl-sm shadow-xs"
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{msg.text}</p>
@@ -605,7 +605,7 @@ export function WhatsAppInboxView() {
             </div>
 
             {/* 4. COMPOSER, ON-DEMAND AI REPLIES & SEND CTA */}
-            <div className="relative border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+            <div className="relative border-t border-slate-200 dark:border-[#27272A] bg-white dark:bg-[#18181B] shrink-0">
               {/* Dark Charcoal On-Demand AI Replies Button */}
               <div className="absolute -top-3 left-4 z-20">
                 <button
@@ -630,10 +630,10 @@ export function WhatsAppInboxView() {
               {showAiPopover && (
                 <div
                   ref={aiPopoverRef}
-                  className="absolute bottom-full left-4 mb-2 z-30 w-[calc(100%-2rem)] sm:w-[480px] max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xl p-3.5 space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
+                  className="absolute bottom-full left-4 mb-2 z-30 w-[calc(100%-2rem)] sm:w-[480px] max-w-lg rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-[#27272A] shadow-2xl p-3.5 space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
                 >
                   {/* Popover Header */}
-                  <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-[#27272A]">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-900 dark:text-white">
                       <Sparkles className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" />
                       <span>3 AI Reply Suggestions (Click to Populate)</span>
@@ -664,7 +664,7 @@ export function WhatsAppInboxView() {
 
                   {/* Popover Body */}
                   {loadingSuggestions ? (
-                    <div className="py-8 flex flex-col items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                    <div className="py-8 flex flex-col items-center justify-center gap-2 text-xs text-slate-500 dark:text-zinc-400">
                       <Loader2 className="w-5 h-5 animate-spin text-zinc-600 dark:text-zinc-400" />
                       <span>Crafting contextual suggestions for {activeLead.name}...</span>
                     </div>
@@ -690,10 +690,10 @@ export function WhatsAppInboxView() {
                             setComposerText(item.text);
                             setShowAiPopover(false);
                           }}
-                          className="w-full text-left p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-zinc-900/20 dark:hover:border-slate-500 transition-all cursor-pointer group"
+                          className="w-full text-left p-2.5 rounded-xl bg-slate-50 dark:bg-[#27272A]/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-[#3F3F46] hover:border-zinc-900/20 dark:hover:border-slate-500 transition-all cursor-pointer group"
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                               {item.category}
                             </span>
                             <span className="text-[9px] text-slate-400 font-medium capitalize">
@@ -715,7 +715,7 @@ export function WhatsAppInboxView() {
                 {/* Row 1: Dispatch Mode Toggle & Keyboard Hint */}
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
                       Dispatch Mode:
                     </span>
                     <button
@@ -726,12 +726,12 @@ export function WhatsAppInboxView() {
                       }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 shadow-lg ring-0 transition duration-200 ease-in-out ${
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-[#18181B] shadow-lg ring-0 transition duration-200 ease-in-out ${
                           localAutomation ? "translate-x-4" : "translate-x-0"
                         }`}
                       />
                     </button>
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    <span className="text-xs font-medium text-slate-600 dark:text-zinc-400">
                       {localAutomation ? (
                         <span className="text-zinc-900 dark:text-white font-semibold">
                           Automation ON (Queue for Playwright)
@@ -762,7 +762,7 @@ export function WhatsAppInboxView() {
                       }
                     }}
                     placeholder="Type a message or click AI Replies above..."
-                    className="flex-1 p-3 rounded-2xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none leading-relaxed font-sans"
+                    className="flex-1 p-3 rounded-2xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none leading-relaxed font-sans"
                   />
 
                   {/* Primary Dark Charcoal CTA with Micro-Emerald Icon Accent */}
@@ -798,7 +798,7 @@ export function WhatsAppInboxView() {
 
       {/* RIGHTMOST DOCKED PANEL: Side-by-Side Lead Card */}
       {isLeadCardDocked && activeLead && (
-        <div className="w-full sm:w-[420px] md:w-[450px] lg:w-[460px] shrink-0 h-full flex flex-col rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in slide-in-from-right duration-200">
+        <div className="w-full sm:w-[420px] md:w-[450px] lg:w-[460px] shrink-0 h-full flex flex-col rounded-3xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#27272A] shadow-sm overflow-hidden animate-in slide-in-from-right duration-200">
           <LeadDetailContent lead={activeLead} onClose={handleCloseDockedLeadCard} isDocked={true} />
         </div>
       )}

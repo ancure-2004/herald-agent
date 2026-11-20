@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { Select } from "@/components/ui/Select";
 import { DemoRun, RunStatus } from "../types";
 import { RunMatrixTable } from "./RunMatrixTable";
 import { MultiDevicePreviewDrawer } from "./MultiDevicePreviewDrawer";
@@ -669,54 +670,54 @@ export const DemoFactoryTab: React.FC = () => {
       {/* 1. Top Row: 4 Standalone Floating KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* Card 1: TOTAL GENERATED */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-medium">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-medium">
             Total Generated
           </div>
-          <div className="text-2xl font-bold font-mono text-zinc-900 tabular-nums mt-1">
+          <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white tabular-nums mt-1">
             {kpiMetrics.totalGenerated}
           </div>
-          <div className="text-xs text-slate-500 font-mono mt-1">
+          <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono mt-1">
             Delhi NCR Clinics
           </div>
         </div>
 
         {/* Card 2: LIVE & VERIFIED */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-700 font-medium flex items-center gap-1.5">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
             Live &amp; Verified
           </div>
-          <div className="text-2xl font-bold font-mono text-zinc-900 tabular-nums mt-1">
+          <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white tabular-nums mt-1">
             {kpiMetrics.liveReady}
           </div>
-          <div className="text-xs text-slate-500 font-mono mt-1">
+          <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono mt-1">
             Zero Dead Links
           </div>
         </div>
 
         {/* Card 3: ACTIVE / QUEUED */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-medium">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-medium">
             Active / Queued
           </div>
-          <div className="text-2xl font-bold font-mono text-zinc-900 tabular-nums mt-1">
+          <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white tabular-nums mt-1">
             {kpiMetrics.activeBuilds + kpiMetrics.queuedRuns}
           </div>
-          <div className="text-xs text-slate-500 font-mono mt-1">
+          <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono mt-1">
             {kpiMetrics.activeBuilds} building · {kpiMetrics.queuedRuns} queued
           </div>
         </div>
 
         {/* Card 4: QUALITY PASS RATE (Clamped at 100%) */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-medium">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-4 shadow-xs flex flex-col justify-between">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-medium">
             Quality Pass Rate
           </div>
-          <div className="text-2xl font-bold font-mono text-zinc-900 tabular-nums mt-1">
+          <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white tabular-nums mt-1">
             {kpiMetrics.passRate}
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+          <div className="w-full bg-slate-100 dark:bg-zinc-800 rounded-full h-1.5 mt-2 overflow-hidden">
             <div
               className="bg-emerald-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${passRateNum}%` }}
@@ -739,14 +740,14 @@ export const DemoFactoryTab: React.FC = () => {
       {/* 3. Bottom Row: Unified Action Toolbar & High-Density Demo Runs Table */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 mt-8 mb-6">
         {/* Status Filter Tabs inside segmented track */}
-        <div className="flex items-center gap-1 bg-white border border-slate-200/80 p-1 rounded-xl text-xs shadow-xs">
+        <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 p-1 rounded-xl text-xs shadow-xs">
           <button
             type="button"
             onClick={() => setFilter("ALL")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
               filter === "ALL"
-                ? "bg-zinc-900 text-white font-semibold shadow-xs"
-                : "text-slate-600 hover:text-zinc-900"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold shadow-xs"
+                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
             All Runs ({runs.length})
@@ -757,8 +758,8 @@ export const DemoFactoryTab: React.FC = () => {
             onClick={() => setFilter("BUILDING")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
               filter === "BUILDING"
-                ? "bg-zinc-900 text-white font-semibold shadow-xs"
-                : "text-slate-600 hover:text-zinc-900"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold shadow-xs"
+                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
@@ -770,8 +771,8 @@ export const DemoFactoryTab: React.FC = () => {
             onClick={() => setFilter("READY")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
               filter === "READY"
-                ? "bg-zinc-900 text-white font-semibold shadow-xs"
-                : "text-slate-600 hover:text-zinc-900"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold shadow-xs"
+                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
@@ -783,8 +784,8 @@ export const DemoFactoryTab: React.FC = () => {
             onClick={() => setFilter("FAILED")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
               filter === "FAILED"
-                ? "bg-zinc-900 text-white font-semibold shadow-xs"
-                : "text-slate-600 hover:text-zinc-900"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold shadow-xs"
+                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
             <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
@@ -795,33 +796,31 @@ export const DemoFactoryTab: React.FC = () => {
         {/* Action Controls: Batch Dropdown, Re-Batch Stock, and Launch/Stop */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Batch Selector Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedBatchId}
-              onChange={(e) => setSelectedBatchId(e.target.value)}
-              disabled={batchLoading}
-              className="appearance-none pl-3 pr-7 py-1.5 rounded-xl bg-white border border-slate-200/80 text-xs font-mono font-medium text-zinc-800 hover:bg-slate-50 focus:outline-none focus:border-zinc-500 cursor-pointer disabled:opacity-50 transition-all min-w-[190px]"
-            >
-              <option value="ALL">All Batches ({runs.length} runs)</option>
-              {batchMeta?.batches.map((b) => {
+          <Select
+            value={selectedBatchId}
+            onChange={(val) => setSelectedBatchId(val)}
+            disabled={batchLoading}
+            options={[
+              { value: "ALL", label: `All Batches (${runs.length} runs)` },
+              ...(batchMeta?.batches?.map((b) => {
                 const stagedCount = b.stage_counts?.staged ?? 0;
                 const builtCount = runs.filter((r) => r.batchId === b.batch_id).length;
-                return (
-                  <option key={b.batch_id} value={b.batch_id}>
-                    {b.batch_id} ({stagedCount} staged · {builtCount} built)
-                  </option>
-                );
-              })}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-          </div>
+                return {
+                  value: b.batch_id,
+                  label: `${b.batch_id} (${stagedCount} staged · ${builtCount} built)`,
+                };
+              }) || []),
+            ]}
+            className="min-w-[190px]"
+            triggerClassName="!py-1.5 !px-3 font-mono font-medium"
+          />
 
           {/* Re-Batch Stock button */}
           <button
             type="button"
             onClick={handleRebalance}
             disabled={rebalancing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-xs font-medium text-zinc-800 transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 border border-slate-200/80 dark:border-zinc-800 text-xs font-medium text-zinc-800 dark:text-zinc-200 transition-all cursor-pointer disabled:opacity-50"
             title="Re-batch staged leads cleanly"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${rebalancing ? "animate-spin" : ""}`} />
@@ -908,7 +907,7 @@ export const DemoFactoryTab: React.FC = () => {
               type="button"
               onClick={handleLaunchBatch}
               disabled={isActionActive}
-              className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-xs font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+              className="bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-950 text-white rounded-xl px-4 py-2 text-xs font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>

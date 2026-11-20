@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Select } from "@/components/ui/Select";
 import { DispatchEngineSettings } from "../types";
 import { Shield, Clock, Sliders, CheckCircle2, Pause, Play } from "lucide-react";
 
@@ -81,16 +82,18 @@ export const SafetyControlsCard: React.FC<SafetyControlsCardProps> = ({
           <label className="text-[11px] font-mono text-slate-400 block">
             Burst Release Batch Limiter
           </label>
-          <select
-            value={settings.batchSizeLimit}
-            onChange={(e) => onUpdateSettings({ batchSizeLimit: parseInt(e.target.value) })}
-            className="w-full px-2.5 py-1.5 bg-[#17181D] border border-white/[0.08] rounded-md text-xs font-mono text-white focus:outline-none focus:border-indigo-500"
-          >
-            <option value={10}>10 Leads per burst</option>
-            <option value={25}>25 Leads per burst</option>
-            <option value={50}>50 Leads per burst (Standard)</option>
-            <option value={100}>100 Leads per burst (High volume)</option>
-          </select>
+          <Select
+            value={String(settings.batchSizeLimit)}
+            onChange={(val) => onUpdateSettings({ batchSizeLimit: parseInt(val) })}
+            options={[
+              { value: "10", label: "10 Leads per burst" },
+              { value: "25", label: "25 Leads per burst" },
+              { value: "50", label: "50 Leads per burst (Standard)" },
+              { value: "100", label: "100 Leads per burst (High volume)" },
+            ]}
+            className="w-full"
+            triggerClassName="!py-1.5 !px-2.5 font-mono !text-xs !bg-[#17181D] !border-white/[0.08] !text-white"
+          />
           <div className="text-[10px] text-slate-500">
             Strict ceiling prevents sudden ESP spikes.
           </div>

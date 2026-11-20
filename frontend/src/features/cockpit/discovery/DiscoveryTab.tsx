@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { Select } from "@/components/ui/Select";
 import { DiscoveryLead, CockpitStateResponse } from "../types";
 import { LeadDataTable } from "./LeadDataTable";
 import { FloatingActionBar } from "./FloatingActionBar";
 import { DiscoveryConsole } from "./DiscoveryConsole";
+import { DiscoveryLeadDrawer } from "./DiscoveryLeadDrawer";
 import { apiFetch } from "@/lib/api/client";
 import {
   Sparkles,
@@ -113,8 +115,10 @@ export const DiscoveryTab: React.FC = () => {
   const [isLoadingLeads, setIsLoadingLeads] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterView>("all");
+  const [dateFilter, setDateFilter] = useState<string>("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
+  const [inspectedLead, setInspectedLead] = useState<DiscoveryLead | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
 
   // Locality & Runner Controls
@@ -306,9 +310,27 @@ export const DiscoveryTab: React.FC = () => {
     return leads.filter((l) => l.verification.status === "pending" || l.verification.status === "risky").length;
   }, [leads]);
 
+  // Available discovered dates (YYYY-MM-DD) sorted descending
+  const availableDates = useMemo(() => {
+    const counts = new Map<string, number>();
+    leads.forEach((lead) => {
+      const dateKey = (lead.createdAt || "").slice(0, 10);
+      if (dateKey) {
+        counts.set(dateKey, (counts.get(dateKey) || 0) + 1);
+      }
+    });
+    return Array.from(counts.entries())
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, count]) => ({ date, count }));
+  }, [leads]);
+
   // Filtered Leads
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
+      if (dateFilter !== "all" && (lead.createdAt || "").slice(0, 10) !== dateFilter) {
+        return false;
+      }
+
       const matchesSearch =
         lead.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -328,7 +350,7 @@ export const DiscoveryTab: React.FC = () => {
       }
       return true;
     });
-  }, [leads, searchQuery, activeFilter]);
+  }, [leads, searchQuery, activeFilter, dateFilter]);
 
   // Selection Logic with Shift-Click
   const handleToggleSelect = (id: string, shiftKey: boolean) => {
@@ -374,54 +396,18 @@ export const DiscoveryTab: React.FC = () => {
     setLastSelectedId(null);
   };
 
-  // Bulk Actions
-  const handleEnrichSelected = () => {
-    setLeads((prev) =>
-      prev.map((lead) =>
-        selectedIds.has(lead.id)
-          ? {
-              ...lead,
-              enrichment: {
-                ...lead.enrichment,
-                state: "success",
-                provider: "GeminiSerp",
-                decisionMakerTitle: "Clinical Director",
-                techStack: [...(lead.enrichment.techStack || []), "Next.js"],
-              },
-            }
-          : lead
-      )
-    );
-    showNotification(`Enriched ${selectedIds.size} selected leads with live credentials`);
-  };
-
-  const handleVerifyEmails = () => {
-    setLeads((prev) =>
-      prev.map((lead) =>
-        selectedIds.has(lead.id)
-          ? {
-              ...lead,
-              verification: {
-                ...lead.verification,
-                status: "deliverable",
-                confidenceScore: 99,
-                smtpCheck: "passed",
-              },
-            }
-          : lead
-      )
-    );
-    showNotification(`Verified SMTP for ${selectedIds.size} leads (100% Deliverable)`);
-  };
-
-  const handleGenerateDemos = () => {
-    showNotification(`Queued ${selectedIds.size} leads for Demo Factory generation`);
-    handleClearSelection();
-  };
-
-  const handlePushToOutreach = () => {
-    showNotification(`Pushed ${selectedIds.size} verified leads to WhatsApp outreach queue`);
-    handleClearSelection();
+  // Bulk Actions (only wired actions)
+  const handleCopyPhones = () => {
+    const phones = leads
+      .filter((l) => selectedIds.has(l.id) && l.phone)
+      .map((l) => l.phone!)
+      .join("\n");
+    if (!phones) {
+      showNotification("No phone numbers found on selected leads");
+      return;
+    }
+    navigator.clipboard.writeText(phones);
+    showNotification(`Copied ${phones.split("\n").length} phone numbers to clipboard`);
   };
 
   return (
@@ -641,26 +627,21 @@ export const DiscoveryTab: React.FC = () => {
           </div>
 
           {/* Quick Presets Dropdown */}
-          <div className="relative">
-            <select
-              value={DELHI_NCR_PRESETS.includes(discoveryLocality) ? discoveryLocality : "custom"}
-              onChange={(e) => {
-                if (e.target.value !== "custom") {
-                  setDiscoveryLocality(e.target.value.split(" (")[0]);
-                }
-              }}
-              className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl pl-3 pr-8 py-1.5 text-xs text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-zinc-500 cursor-pointer font-sans shadow-xs appearance-none"
-              title="Pick a Delhi NCR micro-locality preset"
-            >
-              <option value="custom" disabled hidden>Presets Dropdown...</option>
-              {DELHI_NCR_PRESETS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          </div>
+          <Select
+            value={DELHI_NCR_PRESETS.includes(discoveryLocality) ? discoveryLocality : "custom"}
+            onChange={(val) => {
+              if (val !== "custom") {
+                setDiscoveryLocality(val.split(" (")[0]);
+              }
+            }}
+            placeholder="Presets Dropdown..."
+            options={[
+              { value: "custom", label: "Presets Dropdown...", disabled: true },
+              ...DELHI_NCR_PRESETS.map((p) => ({ value: p, label: p })),
+            ]}
+            title="Pick a Delhi NCR micro-locality preset"
+            triggerClassName="!py-1.5 !px-3 font-sans"
+          />
 
           {/* Datalist for native autocomplete typing */}
           <datalist id="delhi-ncr-presets">
@@ -743,7 +724,7 @@ export const DiscoveryTab: React.FC = () => {
       ) : leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-zinc-900 border border-dashed border-slate-300 dark:border-zinc-700 text-center">
           <Database className="w-6 h-6 text-slate-400" />
-          <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">No leads yet</div>
+          <div className="text-sm font-semibold text-slate-700 dark:text-zinc-200">No leads yet</div>
           <div className="text-xs text-slate-500 dark:text-zinc-400">Run Lead Discovery to fill the staging buffer.</div>
         </div>
       ) : (
@@ -753,8 +734,12 @@ export const DiscoveryTab: React.FC = () => {
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}
           onSelectAll={handleSelectAll}
+          onRowClick={setInspectedLead}
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}
+          dateFilter={dateFilter}
+          onDateFilterChange={setDateFilter}
+          availableDates={availableDates}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onRefresh={() => {
@@ -770,10 +755,13 @@ export const DiscoveryTab: React.FC = () => {
       <FloatingActionBar
         selectedCount={selectedIds.size}
         onClearSelection={handleClearSelection}
-        onEnrichSelected={handleEnrichSelected}
-        onVerifyEmails={handleVerifyEmails}
-        onGenerateDemos={handleGenerateDemos}
-        onPushToOutreach={handlePushToOutreach}
+        onCopyPhones={handleCopyPhones}
+      />
+
+      {/* Structured Discovery Lead Drawer */}
+      <DiscoveryLeadDrawer
+        lead={inspectedLead}
+        onClose={() => setInspectedLead(null)}
       />
     </div>
   );

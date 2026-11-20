@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Select } from "@/components/ui/Select";
 import { PhoneCall, Clock, X, CheckCircle2, Sparkles, AlertCircle } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { apiFetch } from "@/lib/api/client";
@@ -60,16 +61,16 @@ export function LogCallModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="relative w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-5 text-slate-900 dark:text-slate-100">
+      <div className="relative w-full max-w-xl rounded-3xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#27272A] shadow-2xl p-6 space-y-5 text-slate-900 dark:text-zinc-100">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#27272A]/80 pb-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
               <PhoneCall className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-base font-bold">Log Call Conversation</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-zinc-400">
                 {activeLead.name} - {activeLead.doctor_name || "Doctor"} ({activeLead.primary_phone || "No phone"})
               </p>
             </div>
@@ -87,24 +88,26 @@ export function LogCallModal() {
           {/* Outcome & Duration */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
                 Call Outcome
               </label>
-              <select
+              <Select
                 value={outcome}
-                onChange={(e) => setOutcome(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="connected">Connected / Spoke to Doctor</option>
-                <option value="booked">Meeting / Demo Booked</option>
-                <option value="gatekeeper">Receptionist / Gatekeeper</option>
-                <option value="voicemail">Voicemail / No Answer</option>
-                <option value="not_interested">Not Interested</option>
-              </select>
+                onChange={(val) => setOutcome(val)}
+                options={[
+                  { value: "connected", label: "Connected / Spoke to Doctor" },
+                  { value: "booked", label: "Meeting / Demo Booked" },
+                  { value: "gatekeeper", label: "Receptionist / Gatekeeper" },
+                  { value: "voicemail", label: "Voicemail / No Answer" },
+                  { value: "not_interested", label: "Not Interested" },
+                ]}
+                className="w-full"
+                triggerClassName="!py-2.5 !px-3 font-semibold text-slate-900 dark:text-zinc-100"
+              />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
                 Call Duration (seconds)
               </label>
               <div className="flex items-center gap-2">
@@ -113,7 +116,7 @@ export function LogCallModal() {
                   min={0}
                   value={durationSeconds}
                   onChange={(e) => setDurationSeconds(Math.max(0, parseInt(e.target.value) || 0))}
-                  className="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <div className="flex gap-1">
                   {[60, 180, 300].map((sec) => (
@@ -121,7 +124,7 @@ export function LogCallModal() {
                       key={sec}
                       type="button"
                       onClick={() => setDurationSeconds(sec)}
-                      className="px-2 py-2 rounded-lg text-[10px] font-mono bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400"
+                      className="px-2 py-2 rounded-lg text-[10px] font-mono bg-slate-100 dark:bg-[#27272A] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-zinc-400"
                     >
                       {sec / 60}m
                     </button>
@@ -134,7 +137,7 @@ export function LogCallModal() {
           {/* Raw transcript */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
                 Raw Call Conversation Transcript or Notes
               </label>
               <span className="text-[10px] text-slate-400">
@@ -149,7 +152,7 @@ export function LogCallModal() {
 His main concern was how Google reviews would sync with his Practo page.
 He committed to reviewing the pricing package with his clinic partner by Thursday 5pm.
 Next step is to send the WhatsApp PDF brochure and call back Friday morning."
-              className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-mono bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100 resize-none leading-relaxed"
+              className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-mono bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-zinc-100 resize-none leading-relaxed"
             />
           </div>
 
@@ -173,7 +176,7 @@ Next step is to send the WhatsApp PDF brochure and call back Friday morning."
             <button
               type="button"
               onClick={() => setLogCallModalOpen(false)}
-              className="px-4 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="px-4 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               Cancel
             </button>
