@@ -753,18 +753,18 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
         {/* -------------------------------------------------------------------
             ROW 1, BOX 3: Pipeline Coverage (Pure White Card #FFFFFF, 3 cols) - LARGER 144px GAUGE
            ------------------------------------------------------------------- */}
-        <div className="lg:col-span-3 bg-white text-[#1C1D1F] rounded-[28px] p-4.5 sm:p-5 shadow-sm border border-[#EBECE8] flex flex-col justify-between space-y-3">
+        <div className="lg:col-span-3 bg-white dark:bg-zinc-900 text-[#1C1D1F] dark:text-white rounded-[28px] p-4.5 sm:p-5 shadow-sm border border-[#EBECE8] dark:border-zinc-800 flex flex-col justify-between space-y-3">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold tracking-tight text-[#1C1D1F]">
+              <h2 className="text-sm font-bold tracking-tight text-[#1C1D1F] dark:text-white">
                 Pipeline Coverage
               </h2>
-              <p className="text-[10px] text-[#6B7280] font-medium">
+              <p className="text-[10px] text-[#6B7280] dark:text-zinc-400 font-medium">
                 {totalClinics} total clinics indexed
               </p>
             </div>
-            <div className="w-7 h-7 rounded-full bg-[#F7F7F5] flex items-center justify-center text-[#1C1D1F]">
+            <div className="w-7 h-7 rounded-full bg-[#F7F7F5] dark:bg-zinc-800 flex items-center justify-center text-[#1C1D1F] dark:text-zinc-200">
               <Zap className="w-3 h-3" />
             </div>
           </div>
@@ -875,19 +875,19 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
         {/* -------------------------------------------------------------------
             ROW 2, LEFT: Compact Daily Tasks Checklist (Pure White Card #FFFFFF, 4 cols)
            ------------------------------------------------------------------- */}
-        <div className="lg:col-span-4 bg-white text-[#1C1D1F] rounded-[28px] p-4 shadow-sm border border-[#EBECE8] flex flex-col justify-between space-y-3">
+        <div className="lg:col-span-4 bg-white dark:bg-zinc-900 text-[#1C1D1F] dark:text-white rounded-[28px] p-4 shadow-sm border border-[#EBECE8] dark:border-zinc-800 flex flex-col justify-between space-y-3">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold tracking-tight text-[#1C1D1F]">
+              <h2 className="text-sm font-bold tracking-tight text-[#1C1D1F] dark:text-white">
                 Daily Tasks
               </h2>
-              <span className="px-2 py-0.5 rounded-full bg-[#1C1D1F] text-white text-[10px] font-extrabold shadow-2xs">
+              <span className="px-2 py-0.5 rounded-full bg-[#1C1D1F] dark:bg-white text-white dark:text-zinc-900 text-[10px] font-extrabold shadow-2xs">
                 {tasksDoneCount}/{tasks.length}
               </span>
             </div>
 
-            <span className="text-[10px] text-[#6B7280] font-semibold">
+            <span className="text-[10px] text-[#6B7280] dark:text-zinc-400 font-semibold">
               Today's checklist
             </span>
           </div>
@@ -898,18 +898,18 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
               <div
                 key={task.id}
                 onClick={() => handleToggleTask(task.id)}
-                className="flex items-center gap-2.5 p-1 rounded-lg hover:bg-[#F7F7F5] transition-colors cursor-pointer select-none group"
+                className="flex items-center gap-2.5 p-1 rounded-lg hover:bg-[#F7F7F5] dark:hover:bg-zinc-800/60 transition-colors cursor-pointer select-none group"
               >
                 <div
                   className={`w-4 h-4 rounded-md flex items-center justify-center transition-colors shrink-0 ${
-                    task.done ? "bg-[#1C1D1F] text-white" : "border-2 border-[#D1D5DB]"
+                    task.done ? "bg-[#1C1D1F] dark:bg-white text-white dark:text-zinc-900" : "border-2 border-[#D1D5DB] dark:border-zinc-700"
                   }`}
                 >
                   {task.done && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                 </div>
                 <span
                   className={`text-xs font-medium truncate ${
-                    task.done ? "line-through text-[#9CA3AF]" : "text-[#1C1D1F]"
+                    task.done ? "line-through text-[#9CA3AF] dark:text-zinc-500" : "text-[#1C1D1F] dark:text-zinc-100"
                   }`}
                 >
                   {task.text}
@@ -919,17 +919,17 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
           </div>
 
           {/* Compact Inline Form to Add a Task */}
-          <form onSubmit={handleAddTask} className="flex items-center gap-1.5 pt-1 border-t border-[#F3F4F0]">
+          <form onSubmit={handleAddTask} className="flex items-center gap-1.5 pt-1 border-t border-[#F3F4F0] dark:border-zinc-800">
             <input
               type="text"
               value={newTaskInput}
               onChange={(e) => setNewTaskInput(e.target.value)}
               placeholder="Add daily task..."
-              className="flex-1 text-xs px-2.5 py-1 rounded-lg bg-[#F7F7F5] border border-[#EBECE8] focus:outline-none focus:border-[#1C1D1F] text-[#1C1D1F]"
+              className="flex-1 text-xs px-2.5 py-1 rounded-lg bg-[#F7F7F5] dark:bg-zinc-800 border border-[#EBECE8] dark:border-zinc-700 focus:outline-none focus:border-[#1C1D1F] dark:focus:border-white text-[#1C1D1F] dark:text-white"
             />
             <button
               type="submit"
-              className="w-6 h-6 rounded-lg bg-[#1C1D1F] text-white hover:bg-black flex items-center justify-center cursor-pointer shrink-0 transition-colors"
+              className="w-6 h-6 rounded-lg bg-[#1C1D1F] dark:bg-white text-white dark:text-zinc-900 hover:bg-black dark:hover:bg-zinc-200 flex items-center justify-center cursor-pointer shrink-0 transition-colors"
               title="Add task"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -943,13 +943,13 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
         <div className="lg:col-span-8 flex flex-col space-y-2">
           {/* Header */}
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-sm font-bold tracking-tight text-[#1C1D1F]">
+            <h2 className="text-sm font-bold tracking-tight text-[#1C1D1F] dark:text-white">
               Attention & Action Queue ({priorityQueue.length})
             </h2>
             <button
               type="button"
               onClick={() => onNavigate("outreach")}
-              className="text-xs font-bold text-[#6B7280] hover:text-[#1C1D1F] flex items-center gap-1 cursor-pointer transition-colors"
+              className="text-xs font-bold text-[#6B7280] dark:text-zinc-400 hover:text-[#1C1D1F] dark:hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
             >
               <span>Open Outreach Hub</span>
               <span>&gt;</span>
@@ -959,18 +959,18 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
           {/* Queue Cards Grid - flex-1 with zero dead gap */}
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3.5 items-stretch">
             {priorityQueue.length === 0 ? (
-              <div className="sm:col-span-2 bg-white rounded-[28px] p-5 shadow-sm border border-[#EBECE8] flex flex-col items-center justify-center text-center space-y-1.5">
-                <CheckCircle2 className="w-7 h-7 text-emerald-600" />
-                <span className="text-xs font-bold text-[#1C1D1F]">
+              <div className="sm:col-span-2 bg-white dark:bg-zinc-900 rounded-[28px] p-5 shadow-sm border border-[#EBECE8] dark:border-zinc-800 flex flex-col items-center justify-center text-center space-y-1.5">
+                <CheckCircle2 className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-xs font-bold text-[#1C1D1F] dark:text-white">
                   All queue items caught up!
                 </span>
-                <p className="text-[10px] text-[#6B7280]">
+                <p className="text-[10px] text-[#6B7280] dark:text-zinc-400">
                   No unreplied messages or overdue follow-ups pending right now.
                 </p>
                 <button
                   type="button"
                   onClick={() => onNavigate("discovery")}
-                  className="px-3 py-1 rounded-full bg-[#1C1D1F] text-white text-xs font-bold hover:bg-black mt-1 cursor-pointer"
+                  className="px-3 py-1 rounded-full bg-[#1C1D1F] dark:bg-white text-white dark:text-zinc-900 text-xs font-bold hover:bg-black dark:hover:bg-zinc-200 mt-1 cursor-pointer"
                 >
                   Discover New Clinics
                 </button>
@@ -979,7 +979,7 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
               priorityQueue.slice(0, 2).map((item) => (
                 <div
                   key={item.leadId}
-                  className="bg-white rounded-[28px] p-4 shadow-sm border border-[#EBECE8] flex flex-col justify-between space-y-2"
+                  className="bg-white dark:bg-zinc-900 rounded-[28px] p-4 shadow-sm border border-[#EBECE8] dark:border-zinc-800 flex flex-col justify-between space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <span
@@ -1003,19 +1003,19 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
                   </div>
 
                   <div className="py-0.5">
-                    <h3 className="text-xs font-extrabold text-[#1C1D1F] leading-snug truncate">
+                    <h3 className="text-xs font-extrabold text-[#1C1D1F] dark:text-white leading-snug truncate">
                       {item.name}
                     </h3>
-                    <p className="text-[10px] text-[#6B7280] truncate mt-0.5">
+                    <p className="text-[10px] text-[#6B7280] dark:text-zinc-400 truncate mt-0.5">
                       {item.doctor} · {item.locality}
                     </p>
-                    <p className="text-[10px] text-[#1C1D1F] font-semibold mt-1 truncate bg-[#F7F7F5] px-2 py-0.5 rounded-lg">
+                    <p className="text-[10px] text-[#1C1D1F] dark:text-zinc-200 font-semibold mt-1 truncate bg-[#F7F7F5] dark:bg-zinc-800 px-2 py-0.5 rounded-lg">
                       {item.reason}
                     </p>
                   </div>
 
                   {/* 3 Real Action Buttons */}
-                  <div className="flex items-center gap-1.5 pt-1 border-t border-[#F3F4F0]">
+                  <div className="flex items-center gap-1.5 pt-1 border-t border-[#F3F4F0] dark:border-zinc-800">
                     <button
                       type="button"
                       onClick={() => {
@@ -1073,15 +1073,15 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
             ) : (
               <div
                 onClick={() => onNavigate("factory")}
-                className="border-2 border-dashed border-[#D1D5DB] rounded-[28px] p-4 flex flex-col items-center justify-center text-center hover:bg-white hover:border-[#1C1D1F] transition-all cursor-pointer group space-y-1"
+                className="border-2 border-dashed border-[#D1D5DB] dark:border-zinc-700 rounded-[28px] p-4 flex flex-col items-center justify-center text-center hover:bg-white dark:hover:bg-zinc-800 hover:border-[#1C1D1F] dark:hover:border-zinc-400 transition-all cursor-pointer group space-y-1"
               >
-                <div className="w-7 h-7 rounded-full bg-[#EBECE8] group-hover:bg-[#1C1D1F] group-hover:text-white text-[#1C1D1F] flex items-center justify-center transition-colors mb-1">
+                <div className="w-7 h-7 rounded-full bg-[#EBECE8] dark:bg-zinc-800 group-hover:bg-[#1C1D1F] dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-zinc-900 text-[#1C1D1F] dark:text-zinc-300 flex items-center justify-center transition-colors mb-1">
                   <Plus className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-xs font-extrabold text-[#1C1D1F]">
+                <span className="text-xs font-extrabold text-[#1C1D1F] dark:text-white">
                   + Open Demo Factory
                 </span>
-                <span className="text-[10px] text-[#8E8F94] font-medium">
+                <span className="text-[10px] text-[#8E8F94] dark:text-zinc-400 font-medium">
                   {demosBuiltCount < totalClinics
                     ? `${totalClinics - demosBuiltCount} clinics need demos`
                     : "All demos built"}

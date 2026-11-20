@@ -190,7 +190,7 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
               ))}
             </select>
           ) : (
-            <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center">
+            <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center">
               Stage
             </div>
           )}

@@ -177,7 +177,7 @@ export const RunMatrixTable: React.FC<RunMatrixTableProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenPreview(run)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-zinc-900 text-zinc-700 hover:text-white border border-slate-200/80 text-[11px] font-mono font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] hover:bg-zinc-900 dark:hover:bg-white text-zinc-700 dark:text-zinc-200 hover:text-white dark:hover:text-zinc-900 border border-slate-200/80 dark:border-white/[0.08] text-[11px] font-mono font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                       title="Open Unified Studio Workbench & Build Inspector"
                     >
                       <MonitorSmartphone className="w-3.5 h-3.5" />
