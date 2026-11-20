@@ -14,7 +14,14 @@ from sqlalchemy.pool import StaticPool
 
 from app.db.session import Base, get_db
 from app.main import app
-from app.seed import seed_initial_data
+import app.seed as production_seed
+from mock_seed import seed_initial_data as mock_seed_initial_data
+
+# In tests, monkeypatch app.seed.seed_initial_data to mock_seed_initial_data
+# so that any test calling seed_initial_data receives the full legacy fixture data
+# while production app/seed.py remains completely clean and unpolluted.
+production_seed.seed_initial_data = mock_seed_initial_data
+seed_initial_data = mock_seed_initial_data
 
 
 @pytest.fixture()
