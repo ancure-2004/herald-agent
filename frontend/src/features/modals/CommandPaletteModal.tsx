@@ -461,7 +461,7 @@ export function CommandPaletteModal() {
       aria-modal="true"
       aria-labelledby="cmd-palette-title"
       onClick={() => setCmdKOpen(false)}
-      className="fixed inset-0 top-0 left-0 w-screen h-screen z-[99999] bg-black/60 dark:bg-black/75 backdrop-blur-sm flex items-start justify-center pt-12 sm:pt-20 px-4 animate-in fade-in duration-150 overflow-hidden"
+      className="fixed inset-0 top-0 left-0 w-screen h-screen z-[99999] bg-black/60 dark:bg-black/75 backdrop-blur-sm flex items-start justify-center pt-[12vh] px-4 animate-in fade-in duration-150 overflow-hidden"
     >
       <div
         onClick={(e) => e.stopPropagation()}
