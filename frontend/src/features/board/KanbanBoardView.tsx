@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import { Select } from "@/components/ui/Select";
 import {
   Archive,
   ArrowRight,
@@ -369,27 +370,31 @@ export function KanbanBoardView() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-[#27272A]">
-                    <div className="text-slate-400 text-xs font-mono">::</div>
-                    <select
+                  <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-[#27272A]">
+                    <div className="text-slate-400 text-xs font-mono pl-1">::</div>
+                    <Select
                       value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as any)}
-                      className="flex-1 bg-transparent text-xs font-medium text-slate-800 dark:text-zinc-100 focus:outline-none cursor-pointer"
-                    >
-                      <option value="fit" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">AI Fit Score</option>
-                      <option value="intent" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Buyer Intent Score</option>
-                      <option value="deal" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Projected Deal Value</option>
-                      <option value="name" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Clinic / Lead Name</option>
-                      <option value="due" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Next Action Due Date</option>
-                    </select>
-                    <select
+                      onChange={(val) => setSortBy(val as any)}
+                      options={[
+                        { value: "fit", label: "AI Fit Score" },
+                        { value: "intent", label: "Buyer Intent Score" },
+                        { value: "deal", label: "Projected Deal Value" },
+                        { value: "name", label: "Clinic / Lead Name" },
+                        { value: "due", label: "Next Action Due Date" },
+                      ]}
+                      className="flex-1"
+                      triggerClassName="!py-1 !px-2 !text-xs !bg-transparent !border-none !shadow-none font-medium"
+                    />
+                    <Select
                       value={sortOrder}
-                      onChange={(e) => setSortOrder(e.target.value as any)}
-                      className="bg-transparent text-xs font-semibold text-indigo-600 dark:text-indigo-400 focus:outline-none cursor-pointer"
-                    >
-                      <option value="desc" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Descending ↓</option>
-                      <option value="asc" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Ascending ↑</option>
-                    </select>
+                      onChange={(val) => setSortOrder(val as any)}
+                      options={[
+                        { value: "desc", label: "Desc ↓" },
+                        { value: "asc", label: "Asc ↑" },
+                      ]}
+                      className="w-24 shrink-0"
+                      triggerClassName="!py-1 !px-2 !text-xs !bg-transparent !border-none !shadow-none font-semibold text-indigo-600 dark:text-indigo-400"
+                    />
                   </div>
                 </div>
               </div>

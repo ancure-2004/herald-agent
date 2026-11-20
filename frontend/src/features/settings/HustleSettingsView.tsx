@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Select } from "@/components/ui/Select";
 import {
   ArrowRight,
   Check,
@@ -506,18 +507,22 @@ export function HustleSettingsView() {
                 <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
                   Autonomy Mode (Copilot vs. Autopilot)
                 </label>
-                <select
+                <Select
                   value={settingsAutonomy}
-                  onChange={(e) => setSettingsAutonomy(e.target.value as "copilot" | "autopilot")}
-                  className="w-full bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-400 rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white transition-all cursor-pointer"
-                >
-                  <option value="copilot" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-white">
-                    Copilot (Human Review Tray before Send)
-                  </option>
-                  <option value="autopilot" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-white">
-                    Autopilot (Auto-Dispatch within Daily Caps)
-                  </option>
-                </select>
+                  onChange={(val) => setSettingsAutonomy(val as "copilot" | "autopilot")}
+                  options={[
+                    {
+                      value: "copilot",
+                      label: "Copilot (Human Review Tray before Send)",
+                    },
+                    {
+                      value: "autopilot",
+                      label: "Autopilot (Auto-Dispatch within Daily Caps)",
+                    },
+                  ]}
+                  className="w-full"
+                  triggerClassName="!py-2.5 !px-3 font-semibold text-slate-900 dark:text-white"
+                />
                 <p className="text-[11px] text-slate-400">
                   {settingsAutonomy === "copilot"
                     ? "Outbound messages wait in Kanban Review Tray for one-click approval before sending."

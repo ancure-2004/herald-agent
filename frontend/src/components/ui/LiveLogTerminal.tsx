@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { Select } from "@/components/ui/Select";
 import {
   ArrowDown,
   Check,
@@ -359,18 +360,17 @@ export function LiveLogTerminal({
 
           {/* Service Dropdown (if unlocked) */}
           {!lockService && (
-            <div className="relative">
-              <select
-                value={selectedService}
-                onChange={(e) => setSelectedService(e.target.value)}
-                className="bg-slate-800/80 border border-slate-700/80 rounded-md px-1.5 py-0.5 text-[10px] text-slate-300 focus:outline-none cursor-pointer"
-              >
-                <option value="all">Service: All</option>
-                <option value="discovery">Discovery</option>
-                <option value="building">Building</option>
-                <option value="outreach">Outreach</option>
-              </select>
-            </div>
+            <Select
+              value={selectedService}
+              onChange={(val) => setSelectedService(val)}
+              options={[
+                { value: "all", label: "Service: All" },
+                { value: "discovery", label: "Discovery" },
+                { value: "building", label: "Building" },
+                { value: "outreach", label: "Outreach" },
+              ]}
+              triggerClassName="!py-0.5 !px-2 !text-[10px] !rounded-md bg-slate-800/80 border-slate-700/80 text-slate-300"
+            />
           )}
 
           {/* Search Box */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Select } from "@/components/ui/Select";
 import { PhoneCall, Clock, X, CheckCircle2, Sparkles, AlertCircle } from "lucide-react";
 import { useCRM } from "@/context/CRMContext";
 import { apiFetch } from "@/lib/api/client";
@@ -90,17 +91,19 @@ export function LogCallModal() {
               <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
                 Call Outcome
               </label>
-              <select
+              <Select
                 value={outcome}
-                onChange={(e) => setOutcome(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="connected">Connected / Spoke to Doctor</option>
-                <option value="booked">Meeting / Demo Booked</option>
-                <option value="gatekeeper">Receptionist / Gatekeeper</option>
-                <option value="voicemail">Voicemail / No Answer</option>
-                <option value="not_interested">Not Interested</option>
-              </select>
+                onChange={(val) => setOutcome(val)}
+                options={[
+                  { value: "connected", label: "Connected / Spoke to Doctor" },
+                  { value: "booked", label: "Meeting / Demo Booked" },
+                  { value: "gatekeeper", label: "Receptionist / Gatekeeper" },
+                  { value: "voicemail", label: "Voicemail / No Answer" },
+                  { value: "not_interested", label: "Not Interested" },
+                ]}
+                className="w-full"
+                triggerClassName="!py-2.5 !px-3 font-semibold text-slate-900 dark:text-zinc-100"
+              />
             </div>
 
             <div>

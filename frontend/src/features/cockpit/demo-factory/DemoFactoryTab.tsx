@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { Select } from "@/components/ui/Select";
 import { DemoRun, RunStatus } from "../types";
 import { RunMatrixTable } from "./RunMatrixTable";
 import { MultiDevicePreviewDrawer } from "./MultiDevicePreviewDrawer";
@@ -795,26 +796,24 @@ export const DemoFactoryTab: React.FC = () => {
         {/* Action Controls: Batch Dropdown, Re-Batch Stock, and Launch/Stop */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Batch Selector Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedBatchId}
-              onChange={(e) => setSelectedBatchId(e.target.value)}
-              disabled={batchLoading}
-              className="appearance-none pl-3 pr-7 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-xs font-mono font-medium text-zinc-800 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 focus:outline-none focus:border-zinc-500 cursor-pointer disabled:opacity-50 transition-all min-w-[190px]"
-            >
-              <option value="ALL">All Batches ({runs.length} runs)</option>
-              {batchMeta?.batches.map((b) => {
+          <Select
+            value={selectedBatchId}
+            onChange={(val) => setSelectedBatchId(val)}
+            disabled={batchLoading}
+            options={[
+              { value: "ALL", label: `All Batches (${runs.length} runs)` },
+              ...(batchMeta?.batches?.map((b) => {
                 const stagedCount = b.stage_counts?.staged ?? 0;
                 const builtCount = runs.filter((r) => r.batchId === b.batch_id).length;
-                return (
-                  <option key={b.batch_id} value={b.batch_id}>
-                    {b.batch_id} ({stagedCount} staged · {builtCount} built)
-                  </option>
-                );
-              })}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-          </div>
+                return {
+                  value: b.batch_id,
+                  label: `${b.batch_id} (${stagedCount} staged · ${builtCount} built)`,
+                };
+              }) || []),
+            ]}
+            className="min-w-[190px]"
+            triggerClassName="!py-1.5 !px-3 font-mono font-medium"
+          />
 
           {/* Re-Batch Stock button */}
           <button

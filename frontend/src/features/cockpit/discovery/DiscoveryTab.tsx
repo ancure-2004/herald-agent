@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { Select } from "@/components/ui/Select";
 import { DiscoveryLead, CockpitStateResponse } from "../types";
 import { LeadDataTable } from "./LeadDataTable";
 import { FloatingActionBar } from "./FloatingActionBar";
@@ -626,26 +627,21 @@ export const DiscoveryTab: React.FC = () => {
           </div>
 
           {/* Quick Presets Dropdown */}
-          <div className="relative">
-            <select
-              value={DELHI_NCR_PRESETS.includes(discoveryLocality) ? discoveryLocality : "custom"}
-              onChange={(e) => {
-                if (e.target.value !== "custom") {
-                  setDiscoveryLocality(e.target.value.split(" (")[0]);
-                }
-              }}
-              className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl pl-3 pr-8 py-1.5 text-xs text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-zinc-500 cursor-pointer font-sans shadow-xs appearance-none"
-              title="Pick a Delhi NCR micro-locality preset"
-            >
-              <option value="custom" disabled hidden>Presets Dropdown...</option>
-              {DELHI_NCR_PRESETS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          </div>
+          <Select
+            value={DELHI_NCR_PRESETS.includes(discoveryLocality) ? discoveryLocality : "custom"}
+            onChange={(val) => {
+              if (val !== "custom") {
+                setDiscoveryLocality(val.split(" (")[0]);
+              }
+            }}
+            placeholder="Presets Dropdown..."
+            options={[
+              { value: "custom", label: "Presets Dropdown...", disabled: true },
+              ...DELHI_NCR_PRESETS.map((p) => ({ value: p, label: p })),
+            ]}
+            title="Pick a Delhi NCR micro-locality preset"
+            triggerClassName="!py-1.5 !px-3 font-sans"
+          />
 
           {/* Datalist for native autocomplete typing */}
           <datalist id="delhi-ncr-presets">

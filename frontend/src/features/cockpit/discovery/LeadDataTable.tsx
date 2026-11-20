@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { Select } from "@/components/ui/Select";
 import { DiscoveryLead } from "../types";
 import { VerificationBadge } from "./VerificationBadge";
 import { ConfidencePill } from "./ConfidencePill";
@@ -233,23 +234,20 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
 
           {/* Date Filter Dropdown */}
           {onDateFilterChange && (
-            <div className="relative flex items-center">
-              <Calendar className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
-              <select
-                value={dateFilter}
-                onChange={(e) => onDateFilterChange(e.target.value)}
-                className="h-9 pl-8 pr-7 rounded-xl border border-slate-200/80 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/80 text-xs font-medium text-slate-700 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer appearance-none"
-                title="Filter by discovered date"
-              >
-                <option value="all">All Dates ({countDisplay})</option>
-                {availableDates.map(({ date, count }) => (
-                  <option key={date} value={date}>
-                    {formatGroupDate(date)} ({count})
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 pointer-events-none" />
-            </div>
+            <Select
+              value={dateFilter}
+              onChange={(val) => onDateFilterChange(val)}
+              icon={Calendar}
+              options={[
+                { value: "all", label: `All Dates (${countDisplay})` },
+                ...availableDates.map(({ date, count }) => ({
+                  value: date,
+                  label: `${formatGroupDate(date)} (${count})`,
+                })),
+              ]}
+              title="Filter by discovered date"
+              triggerClassName="!h-9 !py-1.5 !px-3 font-medium"
+            />
           )}
 
           {/* Circular Refresh Button */}

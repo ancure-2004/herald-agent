@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { Select } from "@/components/ui/Select";
 import {
   AlertTriangle,
   ArrowRight,
@@ -605,24 +606,27 @@ export function OutreachHubSubpage() {
         {/* Right Side: Batch Selector Dropdown, Reload Button, Re-batch Stock Floating Islands */}
         <div className="flex items-center gap-2">
           {/* Batch Selector Dropdown Island */}
-          <div className="relative">
-            <select
-              value={selectedBatchId ?? ""}
-              onChange={(e) => setSelectedBatchId(e.target.value || null)}
-              disabled={batchLoading || !batchMeta?.batches.length}
-              className="appearance-none pl-3 pr-7 py-1.5 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-[#27272A] text-xs font-mono font-medium text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-zinc-500 cursor-pointer disabled:opacity-50 transition-all min-w-[170px] shadow-xs"
-            >
-              {batchMeta?.batches.map((b) => (
-                <option key={b.batch_id} value={b.batch_id}>
-                  {b.batch_id} ({b.ready_unsent} unsent / {b.total})
-                </option>
-              ))}
-              {!batchMeta?.batches.length && (
-                <option value="">{batchLoading ? "Loading..." : "No batches"}</option>
-              )}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-          </div>
+          <Select
+            value={selectedBatchId ?? ""}
+            onChange={(val) => setSelectedBatchId(val || null)}
+            disabled={batchLoading || !batchMeta?.batches.length}
+            options={
+              batchMeta?.batches?.length
+                ? batchMeta.batches.map((b) => ({
+                    value: b.batch_id,
+                    label: `${b.batch_id} (${b.ready_unsent} unsent / ${b.total})`,
+                  }))
+                : [
+                    {
+                      value: "",
+                      label: batchLoading ? "Loading..." : "No batches",
+                      disabled: true,
+                    },
+                  ]
+            }
+            className="min-w-[170px]"
+            triggerClassName="!py-1.5 !px-3 font-mono font-medium"
+          />
 
           {/* Reload / Refresh Button Island */}
           <button

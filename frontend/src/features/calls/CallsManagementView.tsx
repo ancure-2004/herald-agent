@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { Select } from "@/components/ui/Select";
 import {
   PhoneCall,
   Sparkles,
@@ -551,18 +552,17 @@ export function CallsManagementView() {
           {/* Inline Stage Selector Dropdown */}
           {activeLead && activeHustle?.stages && (
             <div className="flex items-center gap-1.5 shrink-0">
-              <select
-                value={activeLead.stage_id}
-                onChange={(e) => handleStageChange(activeLead, Number(e.target.value))}
-                className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#18181B] border border-slate-200/80 dark:border-[#3F3F46]/80 text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer shadow-xs"
+              <Select
+                value={String(activeLead.stage_id)}
+                onChange={(val) => handleStageChange(activeLead, Number(val))}
+                options={activeHustle.stages.map((st) => ({
+                  value: String(st.id),
+                  label: st.name,
+                }))}
                 title="Update Lead Stage directly"
-              >
-                {activeHustle.stages.map((st) => (
-                  <option key={st.id} value={st.id}>
-                    {st.name}
-                  </option>
-                ))}
-              </select>
+                className="w-44"
+                triggerClassName="!py-2 !px-3 font-semibold text-zinc-800 dark:text-zinc-200"
+              />
             </div>
           )}
         </div>
@@ -864,17 +864,19 @@ export function CallsManagementView() {
                       <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
                         Call Outcome
                       </label>
-                      <select
+                      <Select
                         value={outcome}
-                        onChange={(e) => setOutcome(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer"
-                      >
-                        <option value="connected">Connected / Spoke to Doctor</option>
-                        <option value="booked">Meeting / Demo Booked</option>
-                        <option value="gatekeeper">Receptionist / Gatekeeper</option>
-                        <option value="voicemail">Voicemail / No Answer</option>
-                        <option value="not_interested">Not Interested</option>
-                      </select>
+                        onChange={(val) => setOutcome(val)}
+                        options={[
+                          { value: "connected", label: "Connected / Spoke to Doctor" },
+                          { value: "booked", label: "Meeting / Demo Booked" },
+                          { value: "gatekeeper", label: "Receptionist / Gatekeeper" },
+                          { value: "voicemail", label: "Voicemail / No Answer" },
+                          { value: "not_interested", label: "Not Interested" },
+                        ]}
+                        className="w-full"
+                        triggerClassName="!py-2 !px-3 font-semibold text-slate-900 dark:text-zinc-100"
+                      />
                     </div>
 
                     <div>

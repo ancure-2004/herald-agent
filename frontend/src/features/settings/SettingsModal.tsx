@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { Select } from "@/components/ui/Select";
 import {
   X,
   Sparkles,
@@ -584,14 +585,16 @@ export function SettingsModal() {
                         Copilot requires human confirmation; Autopilot auto-dispatches within safety limits
                       </div>
                     </div>
-                    <select
+                    <Select
                       value={settingsAutonomy}
-                      onChange={(e) => setSettingsAutonomy(e.target.value as "copilot" | "autopilot")}
-                      className="bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none cursor-pointer"
-                    >
-                      <option value="copilot">Copilot (Review Tray)</option>
-                      <option value="autopilot">Autopilot (Auto-Dispatch)</option>
-                    </select>
+                      onChange={(val) => setSettingsAutonomy(val as "copilot" | "autopilot")}
+                      options={[
+                        { value: "copilot", label: "Copilot (Review Tray)" },
+                        { value: "autopilot", label: "Autopilot (Auto-Dispatch)" },
+                      ]}
+                      className="w-56"
+                      triggerClassName="!py-1.5 !px-3 font-semibold text-slate-900 dark:text-white"
+                    />
                   </div>
 
                   {/* Row: Minimum Stock Buffer Days */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Select } from "@/components/ui/Select";
 import {
   X,
   Phone,
@@ -178,17 +179,16 @@ export function LeadDetailContent({ lead, onClose, isDocked = false }: LeadDetai
           )}
 
           {activeHustle?.stages ? (
-            <select
-              value={lead.stage_id}
-              onChange={(e) => handleStageChange(lead, Number(e.target.value))}
-              className="bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-[#3F3F46] rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-800 dark:text-zinc-200 w-full focus:outline-none cursor-pointer"
-            >
-              {activeHustle.stages.map((st) => (
-                <option key={st.id} value={st.id}>
-                  {st.name}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={String(lead.stage_id)}
+              onChange={(val) => handleStageChange(lead, Number(val))}
+              options={activeHustle.stages.map((st) => ({
+                value: String(st.id),
+                label: st.name,
+              }))}
+              className="w-full"
+              triggerClassName="!py-1.5 !px-3 font-semibold text-zinc-800 dark:text-zinc-200"
+            />
           ) : (
             <div className="bg-slate-50 dark:bg-[#27272A]/60 border border-slate-200/60 dark:border-[#3F3F46]/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center">
               Stage

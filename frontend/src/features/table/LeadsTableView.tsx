@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useRef, useEffect } from "react";
+import { Select } from "@/components/ui/Select";
 import {
   Check,
   ChevronDown,
@@ -437,21 +438,18 @@ export function LeadsTableView() {
           {/* Right Side: Month Dropdown + Filters Popover Button + Reset */}
           <div className="flex items-center gap-2">
             {/* Month Filter Dropdown */}
-            <div className="relative">
-              <select
-                value={monthFilter}
-                onChange={(e) => setMonthFilter(e.target.value)}
-                className="appearance-none bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-zinc-200 border border-slate-200/80 dark:border-white/[0.08] rounded-xl pl-3 pr-7 py-1.5 text-xs font-medium transition-colors cursor-pointer focus:outline-none"
-              >
-                <option value="">All Months</option>
-                {availableMonths.map((m) => (
-                  <option key={m} value={m}>
-                    {formatMonth(m + "-01")}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            </div>
+            <Select
+              value={monthFilter}
+              onChange={(val) => setMonthFilter(val)}
+              options={[
+                { value: "", label: "All Months" },
+                ...availableMonths.map((m) => ({
+                  value: m,
+                  label: formatMonth(m + "-01"),
+                })),
+              ]}
+              triggerClassName="!py-1.5 !px-3 font-medium"
+            />
 
             {/* Filters Popover Button */}
             <div className="relative">
@@ -498,18 +496,19 @@ export function LeadsTableView() {
                       <label className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                         Month
                       </label>
-                      <select
+                      <Select
                         value={monthFilter}
-                        onChange={(e) => setMonthFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                      >
-                        <option value="">All Months</option>
-                        {availableMonths.map((m) => (
-                          <option key={m} value={m}>
-                            {formatMonth(m + "-01")}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(val) => setMonthFilter(val)}
+                        options={[
+                          { value: "", label: "All Months" },
+                          ...availableMonths.map((m) => ({
+                            value: m,
+                            label: formatMonth(m + "-01"),
+                          })),
+                        ]}
+                        className="w-full"
+                        triggerClassName="!py-1.5 !px-2.5 font-medium"
+                      />
                     </div>
 
                     {/* Stage / Status Filter */}
@@ -517,22 +516,23 @@ export function LeadsTableView() {
                       <label className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                         Stage / Status
                       </label>
-                      <select
+                      <Select
                         value={stageFilter}
-                        onChange={(e) => setStageFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                      >
-                        <option value="">All Stages</option>
-                        <option value="won">Won Leads</option>
-                        <option value="lost">Lost / Closed / DNC</option>
-                        <option value="sent">Outreach Sent</option>
-                        <option value="unsent">Outreach Unsent</option>
-                        {stages.map((st) => (
-                          <option key={st.slug} value={st.slug}>
-                            {st.name}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(val) => setStageFilter(val)}
+                        options={[
+                          { value: "", label: "All Stages" },
+                          { value: "won", label: "Won Leads" },
+                          { value: "lost", label: "Lost / Closed / DNC" },
+                          { value: "sent", label: "Outreach Sent" },
+                          { value: "unsent", label: "Outreach Unsent" },
+                          ...stages.map((st) => ({
+                            value: st.slug,
+                            label: st.name,
+                          })),
+                        ]}
+                        className="w-full"
+                        triggerClassName="!py-1.5 !px-2.5 font-medium"
+                      />
                     </div>
 
                     {/* Outreach Status Filter */}
@@ -540,15 +540,17 @@ export function LeadsTableView() {
                       <label className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                         Outreach
                       </label>
-                      <select
+                      <Select
                         value={outreachFilter}
-                        onChange={(e) => setOutreachFilter(e.target.value as any)}
-                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                      >
-                        <option value="ALL">All</option>
-                        <option value="SENT">Sent</option>
-                        <option value="UNSENT">Unsent</option>
-                      </select>
+                        onChange={(val) => setOutreachFilter(val as any)}
+                        options={[
+                          { value: "ALL", label: "All" },
+                          { value: "SENT", label: "Sent" },
+                          { value: "UNSENT", label: "Unsent" },
+                        ]}
+                        className="w-full"
+                        triggerClassName="!py-1.5 !px-2.5 font-medium"
+                      />
                     </div>
 
                     {/* Batch Filter */}
@@ -556,18 +558,19 @@ export function LeadsTableView() {
                       <label className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                         Batch
                       </label>
-                      <select
+                      <Select
                         value={batchFilter}
-                        onChange={(e) => setBatchFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                      >
-                        <option value="">All Batches</option>
-                        {batchIds.map((b) => (
-                          <option key={b} value={b}>
-                            {b}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(val) => setBatchFilter(val)}
+                        options={[
+                          { value: "", label: "All Batches" },
+                          ...batchIds.map((b) => ({
+                            value: b,
+                            label: b,
+                          })),
+                        ]}
+                        className="w-full"
+                        triggerClassName="!py-1.5 !px-2.5 font-medium"
+                      />
                     </div>
 
                     {/* Specific Date Picker */}
