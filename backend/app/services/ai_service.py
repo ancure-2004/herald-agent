@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import subprocess
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -217,42 +218,94 @@ class GeminiProvider(LLMProvider):
             "generationConfig": gen_config,
         }
 
-        try:
-            with httpx.Client(timeout=timeout_seconds) as client:
-                resp = client.post(url, json=payload)
-                if resp.status_code != 200:
-                    err_body = resp.text
-                    raise AIProviderError(
-                        f"Gemini API error (status {resp.status_code}): {err_body}",
-                        details={"provider": "gemini", "status_code": resp.status_code, "body": err_body[:500]},
+        # Explicit timeout configuration with connect/read bounds
+        explicit_timeout = httpx.Timeout(
+            timeout=timeout_seconds,
+            connect=10.0,
+            read=timeout_seconds,
+            write=10.0,
+        )
+
+        max_attempts = 3
+        backoffs = [1.0, 2.0, 4.0]
+        last_error: Optional[Exception] = None
+
+        for attempt in range(max_attempts):
+            try:
+                with httpx.Client(timeout=explicit_timeout) as client:
+                    resp = client.post(url, json=payload)
+
+                    # Handle transient rate limits (429) and server errors (5xx) with bounded backoff
+                    if resp.status_code in (429, 500, 502, 503, 504) and attempt < max_attempts - 1:
+                        retry_after_str = resp.headers.get("Retry-After")
+                        delay = float(retry_after_str) if retry_after_str and retry_after_str.isdigit() else backoffs[attempt]
+                        logger.warning(
+                            "Gemini API returned status %d. Backing off for %.1fs (attempt %d/%d)...",
+                            resp.status_code,
+                            delay,
+                            attempt + 1,
+                            max_attempts,
+                        )
+                        time.sleep(delay)
+                        continue
+
+                    if resp.status_code != 200:
+                        err_body = resp.text
+                        raise AIProviderError(
+                            f"Gemini API error (status {resp.status_code}): {err_body}",
+                            details={"provider": "gemini", "status_code": resp.status_code, "body": err_body[:500]},
+                        )
+
+                    data = resp.json()
+                    candidates = data.get("candidates") or []
+                    if not candidates:
+                        raise AIProviderError(
+                            "Gemini returned empty candidates.",
+                            details={"provider": "gemini", "response": data},
+                        )
+                    parts = candidates[0].get("content", {}).get("parts") or []
+                    if not parts:
+                        raise AIProviderError(
+                            "Gemini returned no parts in response.",
+                            details={"provider": "gemini", "response": data},
+                        )
+                    text = parts[0].get("text", "").strip()
+                    return json.loads(text)
+            except (AINotConfiguredError, AIProviderError):
+                raise
+            except json.JSONDecodeError as e:
+                raise AIProviderError(
+                    f"Failed to parse Gemini response as JSON: {e}",
+                    details={"provider": "gemini"},
+                ) from e
+            except (httpx.TimeoutException, httpx.NetworkError) as e:
+                last_error = e
+                if attempt < max_attempts - 1:
+                    delay = backoffs[attempt]
+                    logger.warning(
+                        "Gemini API network/timeout failure (%s). Retrying in %.1fs (attempt %d/%d)...",
+                        e,
+                        delay,
+                        attempt + 1,
+                        max_attempts,
                     )
-                data = resp.json()
-                candidates = data.get("candidates") or []
-                if not candidates:
-                    raise AIProviderError(
-                        "Gemini returned empty candidates.",
-                        details={"provider": "gemini", "response": data},
-                    )
-                parts = candidates[0].get("content", {}).get("parts") or []
-                if not parts:
-                    raise AIProviderError(
-                        "Gemini returned no parts in response.",
-                        details={"provider": "gemini", "response": data},
-                    )
-                text = parts[0].get("text", "").strip()
-                return json.loads(text)
-        except (AINotConfiguredError, AIProviderError):
-            raise
-        except json.JSONDecodeError as e:
+                    time.sleep(delay)
+                    continue
+                raise AIProviderError(
+                    f"Gemini API request timed out or network failed after {max_attempts} attempts: {e}",
+                    details={"provider": "gemini", "error": str(e)},
+                ) from e
+            except Exception as e:
+                raise AIProviderError(
+                    f"Gemini API request failed: {e}",
+                    details={"provider": "gemini", "error": str(e)},
+                ) from e
+
+        if last_error:
             raise AIProviderError(
-                f"Failed to parse Gemini response as JSON: {e}",
-                details={"provider": "gemini"},
-            ) from e
-        except Exception as e:
-            raise AIProviderError(
-                f"Gemini API request failed: {e}",
-                details={"provider": "gemini", "error": str(e)},
-            ) from e
+                f"Gemini API request failed after {max_attempts} attempts: {last_error}",
+                details={"provider": "gemini", "error": str(last_error)},
+            ) from last_error
 
     def test_connection(self) -> Dict[str, Any]:
         if not self.api_key:
@@ -311,33 +364,80 @@ class GroqProvider(LLMProvider):
             "temperature": 0.2,
         }
 
-        try:
-            with httpx.Client(timeout=timeout_seconds) as client:
-                resp = client.post(self.BASE_URL, headers=headers, json=payload)
-                if resp.status_code != 200:
-                    err_body = resp.text
-                    raise AIProviderError(
-                        f"Groq API error (status {resp.status_code}): {err_body}",
-                        details={"provider": "groq", "status_code": resp.status_code, "body": err_body[:500]},
+        explicit_timeout = httpx.Timeout(
+            timeout=timeout_seconds,
+            connect=10.0,
+            read=timeout_seconds,
+            write=10.0,
+        )
+        max_attempts = 3
+        backoffs = [1.0, 2.0, 4.0]
+        last_error: Optional[Exception] = None
+
+        for attempt in range(max_attempts):
+            try:
+                with httpx.Client(timeout=explicit_timeout) as client:
+                    resp = client.post(self.BASE_URL, headers=headers, json=payload)
+                    if resp.status_code in (429, 500, 502, 503, 504) and attempt < max_attempts - 1:
+                        retry_after_str = resp.headers.get("Retry-After")
+                        delay = float(retry_after_str) if retry_after_str and retry_after_str.isdigit() else backoffs[attempt]
+                        logger.warning(
+                            "Groq API returned status %d. Backing off for %.1fs (attempt %d/%d)...",
+                            resp.status_code,
+                            delay,
+                            attempt + 1,
+                            max_attempts,
+                        )
+                        time.sleep(delay)
+                        continue
+
+                    if resp.status_code != 200:
+                        err_body = resp.text
+                        raise AIProviderError(
+                            f"Groq API error (status {resp.status_code}): {err_body}",
+                            details={"provider": "groq", "status_code": resp.status_code, "body": err_body[:500]},
+                        )
+                    data = resp.json()
+                    choices = data.get("choices") or []
+                    if not choices:
+                        raise AIProviderError("Groq returned empty choices.", details={"provider": "groq"})
+                    content = choices[0].get("message", {}).get("content", "").strip()
+                    return json.loads(content)
+            except (AINotConfiguredError, AIProviderError):
+                raise
+            except json.JSONDecodeError as e:
+                raise AIProviderError(
+                    f"Failed to parse Groq response as JSON: {e}",
+                    details={"provider": "groq"},
+                ) from e
+            except (httpx.TimeoutException, httpx.NetworkError) as e:
+                last_error = e
+                if attempt < max_attempts - 1:
+                    delay = backoffs[attempt]
+                    logger.warning(
+                        "Groq API network/timeout failure (%s). Retrying in %.1fs (attempt %d/%d)...",
+                        e,
+                        delay,
+                        attempt + 1,
+                        max_attempts,
                     )
-                data = resp.json()
-                choices = data.get("choices") or []
-                if not choices:
-                    raise AIProviderError("Groq returned empty choices.", details={"provider": "groq"})
-                content = choices[0].get("message", {}).get("content", "").strip()
-                return json.loads(content)
-        except (AINotConfiguredError, AIProviderError):
-            raise
-        except json.JSONDecodeError as e:
+                    time.sleep(delay)
+                    continue
+                raise AIProviderError(
+                    f"Groq API request timed out or network failed after {max_attempts} attempts: {e}",
+                    details={"provider": "groq", "error": str(e)},
+                ) from e
+            except Exception as e:
+                raise AIProviderError(
+                    f"Groq API request failed: {e}",
+                    details={"provider": "groq", "error": str(e)},
+                ) from e
+
+        if last_error:
             raise AIProviderError(
-                f"Failed to parse Groq response as JSON: {e}",
-                details={"provider": "groq"},
-            ) from e
-        except Exception as e:
-            raise AIProviderError(
-                f"Groq API request failed: {e}",
-                details={"provider": "groq", "error": str(e)},
-            ) from e
+                f"Groq API request failed after {max_attempts} attempts: {last_error}",
+                details={"provider": "groq", "error": str(last_error)},
+            ) from last_error
 
     def test_connection(self) -> Dict[str, Any]:
         if not self.api_key:

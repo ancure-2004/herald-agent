@@ -16,9 +16,10 @@ def get_default_headers() -> Dict[str, str]:
 
 def create_http_client(timeout: float = 15.0) -> httpx.Client:
     """Creates a shared synchronous httpx client with timeouts and custom user agent."""
+    explicit_timeout = httpx.Timeout(timeout=timeout, connect=5.0) if isinstance(timeout, (int, float)) else timeout
     return httpx.Client(
         headers=get_default_headers(),
-        timeout=timeout,
+        timeout=explicit_timeout,
         follow_redirects=True,
     )
 
@@ -35,7 +36,8 @@ def safe_request_with_retry(
 ) -> Optional[httpx.Response]:
     """Executes an HTTP request with exponential backoff on transient errors."""
     req_headers = {**get_default_headers(), **(headers or {})}
-    with httpx.Client(timeout=timeout, follow_redirects=True) as client:
+    explicit_timeout = httpx.Timeout(timeout=timeout, connect=5.0) if isinstance(timeout, (int, float)) else timeout
+    with httpx.Client(timeout=explicit_timeout, follow_redirects=True) as client:
         for attempt in range(max_retries + 1):
             try:
                 resp = client.request(

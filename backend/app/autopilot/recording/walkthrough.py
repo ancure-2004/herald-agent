@@ -1,3 +1,5 @@
+import asyncio
+import contextlib
 import json
 import logging
 import os
@@ -18,6 +20,25 @@ from app.services.event_bus import broadcast_sse, emit_pipeline_step
 from app.services.lead_service import LeadService
 
 logger = logging.getLogger("personal_os.autopilot.recording.walkthrough")
+
+# Strict asyncio.Semaphore(1) single-concurrency lock around Playwright browser launch/recording
+# to prevent OOM / CPU thrashing.
+PLAYWRIGHT_SEMAPHORE = asyncio.Semaphore(1)
+_PLAYWRIGHT_THREAD_LOCK = threading.Lock()
+
+
+@contextlib.asynccontextmanager
+async def acquire_playwright_recording_semaphore():
+    """Async context manager enforcing strict single-concurrency for Playwright recording."""
+    async with PLAYWRIGHT_SEMAPHORE:
+        yield
+
+
+@contextlib.contextmanager
+def acquire_playwright_recording_lock():
+    """Sync context manager enforcing strict single-concurrency for Playwright recording."""
+    with _PLAYWRIGHT_THREAD_LOCK:
+        yield
 
 
 def record_walkthrough_batch(
@@ -146,33 +167,35 @@ def record_walkthrough_batch(
 
             was_cancelled = False
             try:
-                with managed_recorder_process(cmd, cwd=DENTAL_RECORDER_DIR, timeout_seconds=timeout_per_clinic) as proc:
-                    JobManager.register_process("recorder", proc, task_type="demo_factory_recorder")
+                # Enforce strict single-concurrency lock around browser launch to prevent OOM
+                with acquire_playwright_recording_lock():
+                    with managed_recorder_process(cmd, cwd=DENTAL_RECORDER_DIR, timeout_seconds=timeout_per_clinic) as proc:
+                        JobManager.register_process("recorder", proc, task_type="demo_factory_recorder")
 
-                    def _reader():
-                        if proc.stdout:
-                            for line in iter(proc.stdout.readline, ""):
-                                clean_l = line.strip()
-                                if clean_l:
-                                    _emit(f"{TAG_VIDEO} {clean_l}")
+                        def _reader():
+                            if proc.stdout:
+                                for line in iter(proc.stdout.readline, ""):
+                                    clean_l = line.strip()
+                                    if clean_l:
+                                        _emit(f"{TAG_VIDEO} {clean_l}")
 
-                    t = threading.Thread(target=_reader, daemon=True)
-                    t.start()
+                        t = threading.Thread(target=_reader, daemon=True)
+                        t.start()
 
-                    deadline = time.time() + timeout_per_clinic
-                    while proc.poll() is None:
-                        if cancel_check and cancel_check():
-                            was_cancelled = True
-                            _emit(f"{TAG_VIDEO} Walkthrough recording stopped by cancellation signal during '{lead.name}'.")
-                            proc.terminate()
-                            break
-                        if time.time() > deadline:
-                            _emit(f"{TAG_ERROR} Recorder subprocess timed out for '{lead.name}'! Terminating...")
-                            proc.terminate()
-                            break
-                        time.sleep(0.3)
+                        deadline = time.time() + timeout_per_clinic
+                        while proc.poll() is None:
+                            if cancel_check and cancel_check():
+                                was_cancelled = True
+                                _emit(f"{TAG_VIDEO} Walkthrough recording stopped by cancellation signal during '{lead.name}'.")
+                                proc.terminate()
+                                break
+                            if time.time() > deadline:
+                                _emit(f"{TAG_ERROR} Recorder subprocess timed out for '{lead.name}'! Terminating...")
+                                proc.terminate()
+                                break
+                            time.sleep(0.3)
 
-                    t.join(timeout=2.0)
+                        t.join(timeout=2.0)
             except Exception as e:
                 _emit(f"{TAG_ERROR} Recorder process error for '{lead.name}': {e}")
             finally:
@@ -271,3 +294,29 @@ def record_walkthrough_batch(
         "total_count": len(leads),
         "items": items_summary,
     }
+
+
+async def record_walkthrough_batch_async(
+    db: Session,
+    leads: List[Lead],
+    base_url: str,
+    log_cb: Optional[Callable[[str], None]] = None,
+    testing_mode: bool = False,
+    cancel_check: Optional[Callable[[], bool]] = None,
+    promote_to_ready: bool = False,
+) -> Dict[str, Any]:
+    """Async wrapper enforcing strict PLAYWRIGHT_SEMAPHORE single-concurrency before launching."""
+    async with PLAYWRIGHT_SEMAPHORE:
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None,
+            lambda: record_walkthrough_batch(
+                db=db,
+                leads=leads,
+                base_url=base_url,
+                log_cb=log_cb,
+                testing_mode=testing_mode,
+                cancel_check=cancel_check,
+                promote_to_ready=promote_to_ready,
+            ),
+        )
