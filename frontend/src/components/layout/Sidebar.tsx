@@ -236,7 +236,7 @@ export function Sidebar() {
           {/* Top: Logo + Expand Toggle */}
           <div className="flex flex-col items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs">
-              FM
+              H
             </div>
 
             <button

@@ -242,22 +242,23 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     role: string;
     initials: string;
     signoff: string;
-  }>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("personal_os_operator_profile");
-        if (saved) return JSON.parse(saved);
-      } catch {
-        // fallback
-      }
-    }
-    return {
-      name: "Ankur Tyagi",
-      role: "CRM Architect",
-      initials: "AT",
-      signoff: "Ankur",
-    };
+  }>({
+    name: "Ankur Tyagi",
+    role: "CRM Architect",
+    initials: "AT",
+    signoff: "Ankur",
   });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("personal_os_operator_profile");
+      if (saved) {
+        setOperatorProfile(JSON.parse(saved));
+      }
+    } catch {
+      // fallback
+    }
+  }, []);
 
   const updateOperatorProfile = useCallback(
     (updates: Partial<{ name: string; role: string; initials: string; signoff: string }>) => {
@@ -290,14 +291,31 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const [globalAutomationEnabled, setGlobalAutomationEnabledState] = useState<boolean>(true);
   const [activeSmartView, setActiveSmartView] = useState<string>("all_active");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [sidebarCollapsed, setSidebarCollapsedState] = useState<boolean>(false);
   const [pipelineBoardExpanded, setPipelineBoardExpanded] = useState<boolean>(true);
 
-  // Auto-collapse sidebar on phone viewports on mount
+  // Defer any responsive / localStorage collapse check until after mount to guarantee deterministic SSR
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem("crm_sidebar_collapsed");
+      if (saved !== null) {
+        setSidebarCollapsedState(saved === "true");
+        return;
+      }
+    } catch {}
     if (typeof window !== "undefined" && window.innerWidth < 768) {
-      setSidebarCollapsed(true);
+      setSidebarCollapsedState(true);
     }
+  }, []);
+
+  const setSidebarCollapsed = useCallback<React.Dispatch<React.SetStateAction<boolean>>>((action) => {
+    setSidebarCollapsedState((prev) => {
+      const next = typeof action === "function" ? action(prev) : action;
+      try {
+        localStorage.setItem("crm_sidebar_collapsed", String(next));
+      } catch {}
+      return next;
+    });
   }, []);
 
   // Data state

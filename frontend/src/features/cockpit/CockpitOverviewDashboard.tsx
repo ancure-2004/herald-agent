@@ -581,13 +581,13 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
             <button
               type="button"
               onClick={() => onNavigate("discovery")}
-              className="bg-[#EBECE8] text-[#1C1D1F] hover:bg-white rounded-2xl p-2.5 flex flex-col items-center justify-between text-center min-h-[82px] shadow-xs transition-colors cursor-pointer group"
+              className="bg-[#EBECE8] dark:bg-[#222226] border border-transparent dark:border-zinc-800 text-[#1C1D1F] dark:text-zinc-100 hover:bg-white dark:hover:bg-zinc-800 rounded-2xl p-2.5 flex flex-col items-center justify-between text-center min-h-[82px] shadow-xs transition-colors cursor-pointer group"
             >
-              <div className="w-4 h-4 rounded-full border border-[#1C1D1F]/40 flex items-center justify-center">
-                <span className="w-1 h-1 rounded-full bg-[#1C1D1F]" />
+              <div className="w-4 h-4 rounded-full border border-[#1C1D1F]/40 dark:border-zinc-600 flex items-center justify-center">
+                <span className="w-1 h-1 rounded-full bg-[#1C1D1F] dark:bg-zinc-200" />
               </div>
-              <span className="text-lg font-black tracking-tight">{phoneReadyCount}</span>
-              <span className="text-[9px] font-bold text-[#6B7280] group-hover:text-[#1C1D1F]">
+              <span className="text-lg font-black tracking-tight dark:text-zinc-100">{phoneReadyCount}</span>
+              <span className="text-[9px] font-bold text-[#6B7280] dark:text-zinc-400 group-hover:text-[#1C1D1F] dark:group-hover:text-zinc-200">
                 Phone Ready →
               </span>
             </button>
@@ -596,13 +596,13 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
             <button
               type="button"
               onClick={() => onNavigate("factory")}
-              className="bg-[#EBECE8] text-[#1C1D1F] hover:bg-white rounded-2xl p-2.5 flex flex-col items-center justify-between text-center min-h-[82px] shadow-xs transition-colors cursor-pointer group"
+              className="bg-[#EBECE8] dark:bg-[#222226] border border-transparent dark:border-zinc-800 text-[#1C1D1F] dark:text-zinc-100 hover:bg-white dark:hover:bg-zinc-800 rounded-2xl p-2.5 flex flex-col items-center justify-between text-center min-h-[82px] shadow-xs transition-colors cursor-pointer group"
             >
-              <div className="w-4 h-4 rounded-full border border-dashed border-[#1C1D1F]/60 flex items-center justify-center">
-                <span className="w-1 h-1 rounded-full bg-[#1C1D1F]" />
+              <div className="w-4 h-4 rounded-full border border-dashed border-[#1C1D1F]/60 dark:border-zinc-500 flex items-center justify-center">
+                <span className="w-1 h-1 rounded-full bg-[#1C1D1F] dark:bg-zinc-200" />
               </div>
-              <span className="text-lg font-black tracking-tight">{demosBuiltCount}</span>
-              <span className="text-[9px] font-bold text-[#6B7280] group-hover:text-[#1C1D1F]">
+              <span className="text-lg font-black tracking-tight dark:text-zinc-100">{demosBuiltCount}</span>
+              <span className="text-[9px] font-bold text-[#6B7280] dark:text-zinc-400 group-hover:text-[#1C1D1F] dark:group-hover:text-zinc-200">
                 Demos Built →
               </span>
             </button>
@@ -611,13 +611,13 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
             <button
               type="button"
               onClick={() => onNavigate("outreach")}
-              className="bg-[#EBECE8] text-[#1C1D1F] hover:bg-white rounded-2xl p-2.5 flex flex-col items-center justify-between text-center min-h-[82px] shadow-xs transition-colors cursor-pointer group"
+              className="bg-[#EBECE8] dark:bg-[#222226] border border-transparent dark:border-zinc-800 text-[#1C1D1F] dark:text-zinc-100 hover:bg-white dark:hover:bg-zinc-800 rounded-2xl p-2.5 flex flex-col items-center justify-between text-center min-h-[82px] shadow-xs transition-colors cursor-pointer group"
             >
-              <div className="w-4 h-4 rounded-full border border-[#1C1D1F] flex items-center justify-center">
-                <Check className="w-2 h-2 text-[#1C1D1F] stroke-[3]" />
+              <div className="w-4 h-4 rounded-full border border-[#1C1D1F] dark:border-zinc-500 flex items-center justify-center">
+                <Check className="w-2 h-2 text-[#1C1D1F] dark:text-zinc-200 stroke-[3]" />
               </div>
-              <span className="text-lg font-black tracking-tight">{dispatchedCount}</span>
-              <span className="text-[9px] font-bold text-[#6B7280] group-hover:text-[#1C1D1F]">
+              <span className="text-lg font-black tracking-tight dark:text-zinc-100">{dispatchedCount}</span>
+              <span className="text-[9px] font-bold text-[#6B7280] dark:text-zinc-400 group-hover:text-[#1C1D1F] dark:group-hover:text-zinc-200">
                 Outreach Sent →
               </span>
             </button>
@@ -627,13 +627,13 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
         {/* -------------------------------------------------------------------
             ROW 1, BOX 2: 7-Day Activity (Soft Grey Card #EBECE8, 4 cols)
            ------------------------------------------------------------------- */}
-        <div className="lg:col-span-4 bg-[#EBECE8] text-[#1C1D1F] rounded-[28px] p-4.5 sm:p-5 shadow-sm flex flex-col justify-between space-y-3">
+        <div className="lg:col-span-4 bg-[#EBECE8] dark:bg-[#18181B] border border-transparent dark:border-zinc-800 text-[#1C1D1F] dark:text-zinc-100 rounded-[28px] p-4.5 sm:p-5 shadow-sm flex flex-col justify-between space-y-3">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold tracking-tight text-[#1C1D1F]">
+            <h2 className="text-sm font-bold tracking-tight text-[#1C1D1F] dark:text-zinc-100">
               7-Day Activity
             </h2>
-            <div className="w-7 h-7 rounded-full bg-white/70 flex items-center justify-center text-[#1C1D1F]">
+            <div className="w-7 h-7 rounded-full bg-white/70 dark:bg-zinc-800 flex items-center justify-center text-[#1C1D1F] dark:text-zinc-300">
               <Activity className="w-3 h-3" />
             </div>
           </div>
@@ -641,12 +641,12 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
           {/* Legend Dots */}
           <div className="flex items-center gap-3 text-xs font-semibold">
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#1C1D1F]" />
-              <span className="text-[#1C1D1F] text-[11px]">Demos / Runs</span>
+              <span className="w-2 h-2 rounded-full bg-[#1C1D1F] dark:bg-zinc-100" />
+              <span className="text-[#1C1D1F] dark:text-zinc-100 text-[11px]">Demos / Runs</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#9CA3AF]" />
-              <span className="text-[#6B7280] text-[11px]">Outbound Sent</span>
+              <span className="w-2 h-2 rounded-full bg-[#9CA3AF] dark:bg-zinc-400" />
+              <span className="text-[#6B7280] dark:text-zinc-400 text-[11px]">Outbound Sent</span>
             </div>
           </div>
 
@@ -664,25 +664,28 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
                 y1="82"
                 x2="270"
                 y2="82"
-                stroke="#D1D5DB"
+                stroke="currentColor"
                 strokeWidth="1"
                 strokeDasharray="2 2"
+                className="text-[#D1D5DB] dark:text-zinc-800"
               />
 
               {/* Secondary Grey Curve (Outbound Sent) */}
               <path
                 d={chartMetrics.sentPath}
-                stroke="#9CA3AF"
+                stroke="currentColor"
                 strokeWidth="2.2"
                 strokeLinecap="round"
+                className="text-[#9CA3AF] dark:text-zinc-400"
               />
 
               {/* Primary Dark Curve (Demos / Runs) */}
               <path
                 d={chartMetrics.demoPath}
-                stroke="#1C1D1F"
+                stroke="currentColor"
                 strokeWidth="2.6"
                 strokeLinecap="round"
+                className="text-[#1C1D1F] dark:text-zinc-100"
               />
 
               {/* Active Day Vertical Guideline */}
@@ -691,10 +694,11 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
                 y1="18"
                 x2={activeMarkerX}
                 y2="85"
-                stroke="#1C1D1F"
+                stroke="currentColor"
                 strokeWidth="1.2"
                 strokeDasharray="2 2"
                 strokeOpacity="0.5"
+                className="text-[#1C1D1F] dark:text-zinc-300"
               />
 
               {/* Active Marker Circles */}
@@ -702,19 +706,21 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
                 cx={activeMarkerX}
                 cy={chartMetrics.demoPoints[activeDayIndex]?.y ?? 50}
                 r="3.5"
-                fill="#1C1D1F"
+                fill="currentColor"
+                className="text-[#1C1D1F] dark:text-zinc-100"
               />
               <circle
                 cx={activeMarkerX}
                 cy={chartMetrics.sentPoints[activeDayIndex]?.y ?? 70}
                 r="3"
-                fill="#9CA3AF"
+                fill="currentColor"
+                className="text-[#9CA3AF] dark:text-zinc-400"
               />
             </svg>
 
             {/* Floating Dark Pill showing active day's counts */}
             <div
-              className="absolute top-0 bg-[#1C1D1F] text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md pointer-events-none whitespace-nowrap"
+              className="absolute top-0 bg-[#1C1D1F] dark:bg-zinc-800 dark:border dark:border-zinc-700 text-white dark:text-zinc-100 text-[9px] font-black px-2 py-0.5 rounded-full shadow-md pointer-events-none whitespace-nowrap"
               style={{
                 left: `${Math.min(75, Math.max(8, (activeMarkerX / 280) * 100 - 15))}%`,
                 transform: "translateY(-6px)",
@@ -725,7 +731,7 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
           </div>
 
           {/* Weekday Pickers: Ending today */}
-          <div className="flex items-center justify-between text-xs font-bold text-[#6B7280] px-1 pt-0.5 gap-1">
+          <div className="flex items-center justify-between text-xs font-bold text-[#6B7280] dark:text-zinc-400 px-1 pt-0.5 gap-1">
             {weeklyData.map((d, idx) => {
               const isActive = idx === activeDayIndex;
               const isToday = d.label === "Today";
@@ -738,8 +744,8 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
                     isToday ? "px-3 min-w-[54px]" : "w-7 min-w-[28px]"
                   } ${
                     isActive
-                      ? "bg-[#1C1D1F] text-white font-extrabold shadow-2xs"
-                      : "text-[#6B7280] hover:text-[#1C1D1F] hover:bg-black/5"
+                      ? "bg-[#1C1D1F] text-white dark:bg-zinc-100 dark:text-zinc-900 font-extrabold shadow-2xs"
+                      : "text-[#6B7280] dark:text-zinc-400 hover:text-[#1C1D1F] dark:hover:text-zinc-100 hover:bg-black/5 dark:hover:bg-zinc-800"
                   }`}
                   title={d.date.toDateString()}
                 >
