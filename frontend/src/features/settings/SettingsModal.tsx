@@ -1253,7 +1253,7 @@ export function SettingsModal() {
                     <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08]">
                       <button
                         type="button"
-                        onClick={() => setThemeMode("light")}
+                        onClick={(e) => setThemeMode("light", e)}
                         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                           themeMode === "light"
                             ? "bg-white text-zinc-900 shadow-xs"
@@ -1265,7 +1265,7 @@ export function SettingsModal() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setThemeMode("dark")}
+                        onClick={(e) => setThemeMode("dark", e)}
                         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                           themeMode === "dark"
                             ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
@@ -1277,7 +1277,7 @@ export function SettingsModal() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setThemeMode("system")}
+                        onClick={(e) => setThemeMode("system", e)}
                         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                           themeMode === "system"
                             ? "bg-white text-zinc-900 dark:bg-white dark:text-zinc-900 shadow-xs"

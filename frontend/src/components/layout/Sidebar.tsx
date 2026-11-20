@@ -199,8 +199,8 @@ export function Sidebar() {
         {/* Light / Dark Mode Toggle Row */}
         <button
           type="button"
-          onClick={() => {
-            toggleDarkMode();
+          onClick={(e) => {
+            toggleDarkMode(e);
           }}
           className="w-full flex items-center justify-between py-2 px-2.5 rounded-xl text-xs font-medium text-zinc-200 hover:text-white hover:bg-zinc-700/60 transition-colors cursor-pointer group"
         >

@@ -89,9 +89,9 @@ interface CRMContextType {
   pipelineBoardExpanded: boolean;
   setPipelineBoardExpanded: React.Dispatch<React.SetStateAction<boolean>>;
   isDarkMode: boolean;
-  toggleDarkMode: () => void;
+  toggleDarkMode: (event?: React.MouseEvent | MouseEvent) => void;
   themeMode: "light" | "dark" | "system";
-  setThemeMode: (mode: "light" | "dark" | "system") => void;
+  setThemeMode: (mode: "light" | "dark" | "system", event?: React.MouseEvent | MouseEvent) => void;
 
   // Settings Center & Profile
   settingsTab: string;

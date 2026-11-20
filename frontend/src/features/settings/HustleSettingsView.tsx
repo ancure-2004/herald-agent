@@ -1214,7 +1214,7 @@ export function HustleSettingsView() {
               {/* Light Mode Card */}
               <button
                 type="button"
-                onClick={() => setThemeMode("light")}
+                onClick={(e) => setThemeMode("light", e)}
                 className={`p-4 rounded-xl border text-left transition-all cursor-pointer space-y-2.5 ${
                   themeMode === "light"
                     ? "ring-2 ring-zinc-900 dark:ring-zinc-100 border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800/80"
@@ -1238,7 +1238,7 @@ export function HustleSettingsView() {
               {/* Dark Mode Card */}
               <button
                 type="button"
-                onClick={() => setThemeMode("dark")}
+                onClick={(e) => setThemeMode("dark", e)}
                 className={`p-4 rounded-xl border text-left transition-all cursor-pointer space-y-2.5 ${
                   themeMode === "dark"
                     ? "ring-2 ring-zinc-900 dark:ring-zinc-100 border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800/80"
@@ -1262,7 +1262,7 @@ export function HustleSettingsView() {
               {/* System Sync Card */}
               <button
                 type="button"
-                onClick={() => setThemeMode("system")}
+                onClick={(e) => setThemeMode("system", e)}
                 className={`p-4 rounded-xl border text-left transition-all cursor-pointer space-y-2.5 ${
                   themeMode === "system"
                     ? "ring-2 ring-zinc-900 dark:ring-zinc-100 border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800/80"
