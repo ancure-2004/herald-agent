@@ -3,6 +3,7 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { Select } from "@/components/ui/Select";
 import {
+  Archive,
   Check,
   ChevronDown,
   ChevronRight,
@@ -98,7 +99,16 @@ function formatDate(isoDate: string): string {
 // ---------------------------------------------------------------------------
 
 export function LeadsTableView() {
-  const { leads, setSelectedLeadId, activeHustle } = useCRM();
+  const {
+    leads,
+    setSelectedLeadId,
+    activeHustle,
+    handleBatchStageChange,
+    handleBatchArchive,
+  } = useCRM();
+
+  // --- Selection state for batch actions ---
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   // --- Search ---
   const [searchQuery, setSearchQuery] = useState("");
@@ -278,6 +288,46 @@ export function LeadsTableView() {
     setFoundDateFilter("");
     setSearchQuery("");
     setSearchExpanded(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleToggleSelect = (id: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === filteredLeads.length && filteredLeads.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredLeads.map((l: any) => l.id)));
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleBatchMoveStage = async (stageId: number) => {
+    if (selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+    setSelectedIds(new Set());
+    await handleBatchStageChange(ids, stageId);
+  };
+
+  const handleBatchArchiveSelected = async () => {
+    if (selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+    setSelectedIds(new Set());
+    await handleBatchArchive(ids, true);
   };
 
   return (
@@ -609,6 +659,15 @@ export function LeadsTableView() {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-slate-200/70 dark:border-white/[0.06] bg-slate-50/70 dark:bg-white/[0.02] text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
+                <th className="py-2.5 px-3 w-8">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all leads"
+                    checked={filteredLeads.length > 0 && selectedIds.size === filteredLeads.length}
+                    onChange={handleSelectAll}
+                    className="rounded border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"
+                  />
+                </th>
                 <th className="py-2.5 px-3 w-[190px] max-w-[190px]">Clinic &amp; Doctor</th>
                 <th className="py-2.5 px-2.5 w-[110px]">Locality</th>
                 <th className="py-2.5 px-2.5 w-[115px]">Contacts</th>
@@ -623,7 +682,7 @@ export function LeadsTableView() {
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-10 text-center text-sm text-slate-400 dark:text-zinc-500">
+                  <td colSpan={10} className="py-10 text-center text-sm text-slate-400 dark:text-zinc-500">
                     No leads match the current filters.
                   </td>
                 </tr>
@@ -643,8 +702,21 @@ export function LeadsTableView() {
                     <tr
                       key={lead.id}
                       onClick={() => setSelectedLeadId(lead.id)}
-                      className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] cursor-pointer transition-colors group"
+                      className={`hover:bg-slate-50/80 dark:hover:bg-white/[0.03] cursor-pointer transition-colors group ${
+                        selectedIds.has(lead.id) ? "bg-indigo-50/40 dark:bg-indigo-950/20" : ""
+                      }`}
                     >
+                      {/* Checkbox */}
+                      <td className="py-2.5 px-3 w-8" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${lead.name}`}
+                          checked={selectedIds.has(lead.id)}
+                          onChange={() => handleToggleSelect(lead.id)}
+                          className="rounded border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"
+                        />
+                      </td>
+
                       {/* Clinic & Doctor */}
                       <td className="py-2.5 px-3 w-[190px] max-w-[190px]">
                         <div className="flex items-center gap-2.5 min-w-0">
@@ -770,6 +842,59 @@ export function LeadsTableView() {
           </table>
         </div>
       </div>
+
+      {/* Floating Batch Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900/95 dark:bg-zinc-800/95 backdrop-blur-md text-white px-5 py-3 rounded-2xl shadow-2xl border border-zinc-700/80 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="flex items-center gap-2 pr-3 border-r border-zinc-700 text-xs font-semibold text-zinc-300">
+            <span className="w-5 h-5 rounded-full bg-indigo-500 text-white flex items-center justify-center text-[11px] font-bold">
+              {selectedIds.size}
+            </span>
+            <span>selected</span>
+          </div>
+
+          {/* Move to Stage */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-zinc-400 font-medium">Stage:</span>
+            <select
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                if (val) handleBatchMoveStage(val);
+              }}
+              defaultValue=""
+              aria-label="Move selected leads to stage"
+              className="bg-zinc-800 hover:bg-zinc-700 text-xs text-white border border-zinc-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 cursor-pointer"
+            >
+              <option value="" disabled>Move to Stage...</option>
+              {stages.map((st: any) => (
+                <option key={st.id} value={st.id}>
+                  {st.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Archive */}
+          <button
+            type="button"
+            onClick={handleBatchArchiveSelected}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-medium transition-colors cursor-pointer"
+          >
+            <Archive className="w-3.5 h-3.5" />
+            <span>Archive</span>
+          </button>
+
+          {/* Clear */}
+          <button
+            type="button"
+            onClick={handleClearSelection}
+            className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer ml-1"
+            title="Deselect all"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

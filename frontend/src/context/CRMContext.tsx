@@ -205,6 +205,9 @@ interface CRMContextType {
   // Handlers
   loadAll: () => Promise<void>;
   handleStageChange: (lead: Lead, newStageId: number) => Promise<void>;
+  handleUpdateLead: (leadId: number, updates: Partial<Lead>) => Promise<void>;
+  handleBatchStageChange: (leadIds: number[], newStageId: number) => Promise<void>;
+  handleBatchArchive: (leadIds: number[], archive?: boolean) => Promise<void>;
   handleApproveAndSend: (lead: Lead) => Promise<void>;
   handleTriggerRefill: (batchSize?: number, testingMode?: boolean, locality?: string) => Promise<void>;
   handleDayModeChange: (mode: "normal" | "away" | "off") => Promise<void>;
@@ -662,7 +665,13 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   }, [activeHustleId]);
 
   // Action Handlers
-  const { handleStageChange, handleApproveAndSend } = useLeadMutations({
+  const {
+    handleStageChange,
+    handleUpdateLead,
+    handleBatchStageChange,
+    handleBatchArchive,
+    handleApproveAndSend,
+  } = useLeadMutations({
     setLeads,
     loadAll,
     notify,
@@ -1082,6 +1091,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     handleAssistantUndo,
     loadAll,
     handleStageChange,
+    handleUpdateLead,
+    handleBatchStageChange,
+    handleBatchArchive,
     handleApproveAndSend,
     handleTriggerRefill,
     handleDayModeChange,
@@ -1170,6 +1182,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     handleAssistantUndo,
     loadAll,
     handleStageChange,
+    handleUpdateLead,
+    handleBatchStageChange,
+    handleBatchArchive,
     handleApproveAndSend,
     handleTriggerRefill,
     handleDayModeChange,
