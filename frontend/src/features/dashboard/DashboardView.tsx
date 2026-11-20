@@ -190,10 +190,38 @@ export function DashboardView() {
     const p4 = Math.max(0, 100 - (p1 + p2 + p3));
 
     return [
-      { label: "New / Scraped", count: s1, pct: p1, color: "#111827" },
-      { label: "Contacted", count: s2, pct: p2, color: "#4B5563" },
-      { label: "Demo Viewed", count: s3, pct: p3, color: "#9CA3AF" },
-      { label: "Won / Closed", count: s4, pct: p4, color: "#D1D5DB" },
+      {
+        label: "New / Scraped",
+        count: s1,
+        pct: p1,
+        color: "#111827",
+        strokeClass: "stroke-slate-900 dark:stroke-indigo-400",
+        dotClass: "bg-slate-900 dark:bg-indigo-400",
+      },
+      {
+        label: "Contacted",
+        count: s2,
+        pct: p2,
+        color: "#4B5563",
+        strokeClass: "stroke-slate-600 dark:stroke-purple-400",
+        dotClass: "bg-slate-600 dark:bg-purple-400",
+      },
+      {
+        label: "Demo Viewed",
+        count: s3,
+        pct: p3,
+        color: "#9CA3AF",
+        strokeClass: "stroke-slate-400 dark:stroke-amber-400",
+        dotClass: "bg-slate-400 dark:bg-amber-400",
+      },
+      {
+        label: "Won / Closed",
+        count: s4,
+        pct: p4,
+        color: "#D1D5DB",
+        strokeClass: "stroke-slate-300 dark:stroke-emerald-400",
+        dotClass: "bg-slate-300 dark:bg-emerald-400",
+      },
     ];
   }, [leads]);
 
@@ -691,7 +719,7 @@ export function DashboardView() {
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={9}
-                  className="text-slate-100 dark:text-slate-800"
+                  className="text-slate-100 dark:text-zinc-800"
                 />
                 {(() => {
                   let accumulated = 0;
@@ -705,12 +733,11 @@ export function DashboardView() {
                         cy={70}
                         r={donutR}
                         fill="none"
-                        stroke={st.color}
                         strokeWidth={9}
                         strokeDasharray={`${strokeLen} ${donutCircumference}`}
                         strokeDashoffset={-accumulated + strokeLen}
                         strokeLinecap="butt"
-                        className="transition-all duration-500"
+                        className={`transition-all duration-500 ${st.strokeClass}`}
                       />
                     );
                   });
@@ -734,8 +761,7 @@ export function DashboardView() {
                 <div key={i} className="flex items-center justify-between text-[10px]">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span
-                      className="w-1.5 h-1.5 rounded-full shrink-0"
-                      style={{ backgroundColor: st.color }}
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${st.dotClass}`}
                     />
                     <span className="text-slate-600 dark:text-zinc-300 font-medium truncate">
                       {st.label}
