@@ -15,9 +15,10 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1.router import api_v1_router
 from app.core.config import get_settings
@@ -25,15 +26,19 @@ from app.core.exceptions import (
     AppException,
     app_exception_handler,
     generic_exception_handler,
+    http_exception_handler,
+    rate_limit_exceeded_handler,
     validation_exception_handler,
 )
 from app.core.logging import logger
 from app.db.schema_migrations import ensure_schema_columns
 from app.db.session import Base, SessionLocal, engine
 from app.middleware.body_size import RequestSizeLimitMiddleware
+from app.middleware.etag import ETagMiddleware
 from app.middleware.rate_limit import limiter
 from app.middleware.request_id import RequestIdMiddleware
 from app.middleware.security import SecurityHeadersMiddleware
+from app.middleware.timing import TimingMiddleware
 from app.seed import seed_initial_data
 from app.services.event_bus import emit_terminal_log, set_main_event_loop
 
@@ -130,30 +135,40 @@ def create_app() -> FastAPI:
 
     # Attach slowapi rate limiter to app state
     app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     # Centralized exception handlers
     app.add_exception_handler(AppException, app_exception_handler)
+    app.add_exception_handler(StarletteHTTPException, http_exception_handler)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
     app.add_exception_handler(Exception, generic_exception_handler)
 
     # Middleware Pipeline (evaluated in reverse order of addition)
     # 1. Request ID Middleware (attaches correlation ID first)
     app.add_middleware(RequestIdMiddleware)
 
-    # 2. Security Headers
+    # 2. Timing Middleware (measures full response latency and logs slow requests >100ms)
+    app.add_middleware(TimingMiddleware)
+
+    # 3. Security Headers
     app.add_middleware(SecurityHeadersMiddleware)
 
-    # 3. Request Body Size Limit (10MB)
+    # 4. ETag Middleware (computes ETag for cacheable GETs and returns 304 Not Modified)
+    app.add_middleware(ETagMiddleware)
+
+    # 5. GZip Compression Middleware (compresses responses >= 500 bytes)
+    app.add_middleware(GZipMiddleware, minimum_size=500)
+
+    # 6. Request Body Size Limit (10MB)
     app.add_middleware(RequestSizeLimitMiddleware)
 
-    # 4. Trusted Host Middleware
+    # 7. Trusted Host Middleware
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=settings.allowed_hosts_list,
     )
 
-    # 5. Strict CORS Middleware
+    # 8. Strict CORS Middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins_list,
