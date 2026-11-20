@@ -864,6 +864,9 @@ class HistoricalLeadScanner:
                     slug = f"{base_slug}-{counter}"
                     counter += 1
 
+                next_action = "Outreach via WhatsApp" if lead["final_status"] == "STAGED" else None
+                custom_fields = {"outreach_sent": False} if lead["final_status"] == "STAGED" else {}
+
                 existing = Lead(
                     hustle_id=hustle_id,
                     slug=slug,
@@ -878,6 +881,8 @@ class HistoricalLeadScanner:
                     preferred_channel="whatsapp",
                     stage_id=lead["final_stage_id"],
                     status=lead["final_status"],
+                    next_action=next_action,
+                    custom_fields=custom_fields,
                     fit_score=lead.get("lead_score", 85) or 85,
                     intent_score=90 if lead["final_status"] == "REPLIED" else 65,
                     deal_value_inr=15000,
@@ -895,6 +900,12 @@ class HistoricalLeadScanner:
             else:
                 existing.status = lead["final_status"]
                 existing.stage_id = lead["final_stage_id"]
+                existing.preferred_channel = "whatsapp"
+                if lead["final_status"] == "STAGED":
+                    existing.next_action = "Outreach via WhatsApp"
+                    cf = dict(existing.custom_fields or {})
+                    cf["outreach_sent"] = False
+                    existing.custom_fields = cf
                 if not existing.doctor_name and lead.get("doctor_name"):
                     existing.doctor_name = lead["doctor_name"]
                 if not existing.locality and lead.get("locality"):
