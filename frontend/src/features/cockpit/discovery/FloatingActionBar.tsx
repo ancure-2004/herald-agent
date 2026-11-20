@@ -1,24 +1,18 @@
 "use client";
 
 import React from "react";
-import { Sparkles, ShieldCheck, Layers, Send, X } from "lucide-react";
+import { Copy, X } from "lucide-react";
 
 interface FloatingActionBarProps {
   selectedCount: number;
   onClearSelection: () => void;
-  onEnrichSelected?: () => void;
-  onVerifyEmails?: () => void;
-  onGenerateDemos?: () => void;
-  onPushToOutreach?: () => void;
+  onCopyPhones?: () => void;
 }
 
 export const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
   selectedCount,
   onClearSelection,
-  onEnrichSelected,
-  onVerifyEmails,
-  onGenerateDemos,
-  onPushToOutreach,
+  onCopyPhones,
 }) => {
   if (selectedCount === 0) return null;
 
@@ -34,42 +28,22 @@ export const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5">
-        <button
-          onClick={onEnrichSelected}
-          className="px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-xs font-medium text-slate-200 hover:text-white flex items-center gap-1.5 transition-colors"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Enrich Lead</span>
-        </button>
-
-        <button
-          onClick={onVerifyEmails}
-          className="px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-xs font-medium text-slate-200 hover:text-white flex items-center gap-1.5 transition-colors"
-        >
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Verify SMTP</span>
-        </button>
-
-        <button
-          onClick={onGenerateDemos}
-          className="px-3 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white flex items-center gap-1.5 shadow-sm transition-colors"
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span>Generate Demos</span>
-        </button>
-
-        <button
-          onClick={onPushToOutreach}
-          className="px-3 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-xs font-medium text-white flex items-center gap-1.5 shadow-sm transition-colors"
-        >
-          <Send className="w-3.5 h-3.5" />
-          <span>Push to Queue</span>
-        </button>
+        {onCopyPhones && (
+          <button
+            type="button"
+            onClick={onCopyPhones}
+            className="px-3 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] text-xs font-medium text-slate-200 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Copy className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Copy Phones</span>
+          </button>
+        )}
       </div>
 
       <button
+        type="button"
         onClick={onClearSelection}
-        className="ml-1 p-1 rounded-full hover:bg-white/[0.1] text-slate-400 hover:text-white transition-colors"
+        className="ml-1 p-1 rounded-full hover:bg-white/[0.1] text-slate-400 hover:text-white transition-colors cursor-pointer"
         title="Deselect (Esc)"
       >
         <X className="w-4 h-4" />

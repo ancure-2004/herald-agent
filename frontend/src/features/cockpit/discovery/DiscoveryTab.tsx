@@ -113,6 +113,7 @@ export const DiscoveryTab: React.FC = () => {
   const [isLoadingLeads, setIsLoadingLeads] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterView>("all");
+  const [dateFilter, setDateFilter] = useState<string>("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
@@ -306,9 +307,27 @@ export const DiscoveryTab: React.FC = () => {
     return leads.filter((l) => l.verification.status === "pending" || l.verification.status === "risky").length;
   }, [leads]);
 
+  // Available discovered dates (YYYY-MM-DD) sorted descending
+  const availableDates = useMemo(() => {
+    const counts = new Map<string, number>();
+    leads.forEach((lead) => {
+      const dateKey = (lead.createdAt || "").slice(0, 10);
+      if (dateKey) {
+        counts.set(dateKey, (counts.get(dateKey) || 0) + 1);
+      }
+    });
+    return Array.from(counts.entries())
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, count]) => ({ date, count }));
+  }, [leads]);
+
   // Filtered Leads
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
+      if (dateFilter !== "all" && (lead.createdAt || "").slice(0, 10) !== dateFilter) {
+        return false;
+      }
+
       const matchesSearch =
         lead.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -328,7 +347,7 @@ export const DiscoveryTab: React.FC = () => {
       }
       return true;
     });
-  }, [leads, searchQuery, activeFilter]);
+  }, [leads, searchQuery, activeFilter, dateFilter]);
 
   // Selection Logic with Shift-Click
   const handleToggleSelect = (id: string, shiftKey: boolean) => {
@@ -374,54 +393,18 @@ export const DiscoveryTab: React.FC = () => {
     setLastSelectedId(null);
   };
 
-  // Bulk Actions
-  const handleEnrichSelected = () => {
-    setLeads((prev) =>
-      prev.map((lead) =>
-        selectedIds.has(lead.id)
-          ? {
-              ...lead,
-              enrichment: {
-                ...lead.enrichment,
-                state: "success",
-                provider: "GeminiSerp",
-                decisionMakerTitle: "Clinical Director",
-                techStack: [...(lead.enrichment.techStack || []), "Next.js"],
-              },
-            }
-          : lead
-      )
-    );
-    showNotification(`Enriched ${selectedIds.size} selected leads with live credentials`);
-  };
-
-  const handleVerifyEmails = () => {
-    setLeads((prev) =>
-      prev.map((lead) =>
-        selectedIds.has(lead.id)
-          ? {
-              ...lead,
-              verification: {
-                ...lead.verification,
-                status: "deliverable",
-                confidenceScore: 99,
-                smtpCheck: "passed",
-              },
-            }
-          : lead
-      )
-    );
-    showNotification(`Verified SMTP for ${selectedIds.size} leads (100% Deliverable)`);
-  };
-
-  const handleGenerateDemos = () => {
-    showNotification(`Queued ${selectedIds.size} leads for Demo Factory generation`);
-    handleClearSelection();
-  };
-
-  const handlePushToOutreach = () => {
-    showNotification(`Pushed ${selectedIds.size} verified leads to WhatsApp outreach queue`);
-    handleClearSelection();
+  // Bulk Actions (only wired actions)
+  const handleCopyPhones = () => {
+    const phones = leads
+      .filter((l) => selectedIds.has(l.id) && l.phone)
+      .map((l) => l.phone!)
+      .join("\n");
+    if (!phones) {
+      showNotification("No phone numbers found on selected leads");
+      return;
+    }
+    navigator.clipboard.writeText(phones);
+    showNotification(`Copied ${phones.split("\n").length} phone numbers to clipboard`);
   };
 
   return (
@@ -755,6 +738,9 @@ export const DiscoveryTab: React.FC = () => {
           onSelectAll={handleSelectAll}
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}
+          dateFilter={dateFilter}
+          onDateFilterChange={setDateFilter}
+          availableDates={availableDates}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onRefresh={() => {
@@ -770,10 +756,7 @@ export const DiscoveryTab: React.FC = () => {
       <FloatingActionBar
         selectedCount={selectedIds.size}
         onClearSelection={handleClearSelection}
-        onEnrichSelected={handleEnrichSelected}
-        onVerifyEmails={handleVerifyEmails}
-        onGenerateDemos={handleGenerateDemos}
-        onPushToOutreach={handlePushToOutreach}
+        onCopyPhones={handleCopyPhones}
       />
     </div>
   );

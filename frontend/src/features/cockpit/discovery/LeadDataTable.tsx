@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { DiscoveryLead } from "../types";
 import { VerificationBadge } from "./VerificationBadge";
 import { ConfidencePill } from "./ConfidencePill";
@@ -9,7 +9,6 @@ import {
   Mail,
   ShieldCheck,
   Gauge,
-  Tags,
   ExternalLink,
   Copy,
   Check,
@@ -19,6 +18,9 @@ import {
   X,
   Loader2,
   Database,
+  Calendar,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 
 export type FilterView = "all" | "needs-verification" | "high-intent" | "ready-for-demo";
@@ -32,6 +34,9 @@ interface LeadDataTableProps {
   onRowClick?: (lead: DiscoveryLead) => void;
   activeFilter?: FilterView;
   onFilterChange?: (filter: FilterView) => void;
+  dateFilter?: string;
+  onDateFilterChange?: (date: string) => void;
+  availableDates?: { date: string; count: number }[];
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
   onRefresh?: () => void;
@@ -47,6 +52,9 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
   onRowClick,
   activeFilter = "all",
   onFilterChange,
+  dateFilter = "all",
+  onDateFilterChange,
+  availableDates = [],
   searchQuery = "",
   onSearchChange,
   onRefresh,
@@ -54,7 +62,39 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
+  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  const groupedLeads = useMemo(() => {
+    const groups = new Map<string, DiscoveryLead[]>();
+    leads.forEach((lead) => {
+      const dateKey = (lead.createdAt || "").slice(0, 10) || "Unknown Date";
+      if (!groups.has(dateKey)) groups.set(dateKey, []);
+      groups.get(dateKey)!.push(lead);
+    });
+    return Array.from(groups.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+  }, [leads]);
+
+  const toggleDateGroup = (dateKey: string) => {
+    setCollapsedDates((prev) => {
+      const next = new Set(prev);
+      if (next.has(dateKey)) next.delete(dateKey);
+      else next.add(dateKey);
+      return next;
+    });
+  };
+
+  const formatGroupDate = (dateKey: string) => {
+    if (dateKey === "Unknown Date") return dateKey;
+    const d = new Date(`${dateKey}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return dateKey;
+    return d.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   // Global keydown listener for "/" shortcut to focus search
   useEffect(() => {
@@ -191,6 +231,27 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
             </div>
           )}
 
+          {/* Date Filter Dropdown */}
+          {onDateFilterChange && (
+            <div className="relative flex items-center">
+              <Calendar className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
+              <select
+                value={dateFilter}
+                onChange={(e) => onDateFilterChange(e.target.value)}
+                className="h-9 pl-8 pr-7 rounded-xl border border-slate-200/80 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/80 text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer appearance-none"
+                title="Filter by discovered date"
+              >
+                <option value="all">All Dates ({countDisplay})</option>
+                {availableDates.map(({ date, count }) => (
+                  <option key={date} value={date}>
+                    {formatGroupDate(date)} ({count})
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 pointer-events-none" />
+            </div>
+          )}
+
           {/* Circular Refresh Button */}
           {onRefresh && (
             <button
@@ -268,46 +329,59 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
                 </th>
 
                 {/* Locality */}
-                <th className="min-w-[120px] max-w-[140px] py-2.5 px-3">
+                <th className="min-w-[120px] max-w-[160px] py-2.5 px-3 pr-4">
                   <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
                     <Globe className="w-3.5 h-3.5 text-slate-400" />
                     <span>Locality</span>
                   </div>
                 </th>
-
-                {/* Channel & Status */}
-                <th className="min-w-[135px] py-2.5 px-3 pr-4">
-                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
-                    <Tags className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Channel &amp; Status</span>
-                  </div>
-                </th>
               </tr>
             </thead>
 
-            {/* Table Body: Horizontal hairline dividers, no vertical grid lines */}
+            {/* Table Body: Grouped by Discovered Date */}
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-              {leads.map((lead, idx) => {
-                const isSelected = selectedIds.has(lead.id);
-
-                // Extract primary status badge (e.g. STAGED, REPLIED, etc.) excluding high/standard fit
-                const stageStatus =
-                  lead.tags.find((t) =>
-                    ["STAGED", "REPLIED", "INTERESTED", "CONTACTED", "LOST", "IN_PIPELINE"].includes(
-                      t.toUpperCase()
-                    )
-                  ) || "STAGED";
-
+              {groupedLeads.map(([dateKey, dateLeads]) => {
+                const isCollapsed = collapsedDates.has(dateKey);
                 return (
-                  <tr
-                    key={lead.id}
-                    onClick={() => onRowClick?.(lead)}
-                    className={`transition-colors cursor-pointer group ${
-                      isSelected
-                        ? "bg-slate-100/70 dark:bg-zinc-800/40"
-                        : "hover:bg-slate-50/80 dark:hover:bg-white/[0.03]"
-                    }`}
-                  >
+                  <React.Fragment key={dateKey}>
+                    <tr
+                      onClick={() => toggleDateGroup(dateKey)}
+                      className="bg-slate-50/90 dark:bg-white/[0.03] hover:bg-slate-100/80 dark:hover:bg-white/[0.06] cursor-pointer select-none transition-colors"
+                    >
+                      <td colSpan={6} className="py-2 px-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                            {isCollapsed ? (
+                              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                            ) : (
+                              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                            )}
+                            <Calendar className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+                            <span>{formatGroupDate(dateKey)}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-white/[0.08] text-[10px] font-mono text-slate-600 dark:text-slate-300">
+                              {dateLeads.length}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                            {isCollapsed ? "Click to expand" : "Click to collapse"}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                    {!isCollapsed &&
+                      dateLeads.map((lead, idx) => {
+                        const isSelected = selectedIds.has(lead.id);
+
+                        return (
+                          <tr
+                            key={lead.id}
+                            onClick={() => onRowClick?.(lead)}
+                            className={`transition-colors cursor-pointer group ${
+                              isSelected
+                                ? "bg-slate-100/70 dark:bg-zinc-800/40"
+                                : "hover:bg-slate-50/80 dark:hover:bg-white/[0.03]"
+                            }`}
+                          >
                     {/* Sticky Checkbox */}
                     <td
                       className="sticky left-0 z-10 w-9 py-2.5 px-3 bg-white dark:bg-[#141721] group-hover:bg-slate-50/80 dark:group-hover:bg-[#191C28]"
@@ -393,29 +467,15 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
                     </td>
 
                     {/* Locality */}
-                    <td className="py-2.5 px-3 min-w-[120px] max-w-[140px] text-xs text-slate-600 dark:text-slate-400 font-medium">
-                      <span className="truncate block max-w-[125px]" title={lead.location}>
+                    <td className="py-2.5 px-3 pr-4 min-w-[120px] max-w-[160px] text-xs text-slate-600 dark:text-slate-400 font-medium">
+                      <span className="truncate block max-w-[145px]" title={lead.location}>
                         {lead.location}
                       </span>
                     </td>
-
-                    {/* Channel & Status: Non-clipping single-line or compact 2-pill layout with pr-4 */}
-                    <td className="py-2.5 px-3 pr-4 min-w-[135px]">
-                      <div className="flex items-center gap-1.5 flex-nowrap shrink-0">
-                        {/* Primary Stage Status Pill */}
-                        <span className="bg-slate-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700/60 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider shrink-0 whitespace-nowrap">
-                          {stageStatus}
-                        </span>
-
-                        {/* Demo Status Pill */}
-                        {lead.demoReady && (
-                          <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/50 rounded px-1.5 py-0.5 text-[10px] font-medium shrink-0 whitespace-nowrap">
-                            Demo Ready
-                          </span>
-                        )}
-                      </div>
-                    </td>
                   </tr>
+                        );
+                      })}
+                  </React.Fragment>
                 );
               })}
             </tbody>

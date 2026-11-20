@@ -602,19 +602,19 @@ export function LeadsTableView() {
         </div>
 
         {/* Table Content */}
-        <div className="overflow-x-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <table className="w-full text-left border-collapse text-xs min-w-[880px]">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-slate-200/70 dark:border-white/[0.06] bg-slate-50/70 dark:bg-white/[0.02] text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
-                <th className="py-2.5 px-4">Clinic &amp; Doctor</th>
-                <th className="py-2.5 px-3">Locality &amp; City</th>
-                <th className="py-2.5 px-3">Contacts</th>
-                <th className="py-2.5 px-3">Batch</th>
-                <th className="py-2.5 px-3">Outreach</th>
-                <th className="py-2.5 px-3">Found</th>
-                <th className="py-2.5 px-3">Fit &amp; Intent</th>
-                <th className="py-2.5 px-3">Next Step</th>
-                <th className="py-2.5 px-4 text-right">Action</th>
+                <th className="py-2.5 px-3">Clinic &amp; Doctor</th>
+                <th className="py-2.5 px-2.5">Locality</th>
+                <th className="py-2.5 px-2.5">Contacts</th>
+                <th className="py-2.5 px-2.5">Batch</th>
+                <th className="py-2.5 px-2.5">Outreach</th>
+                <th className="py-2.5 px-2.5">Found</th>
+                <th className="py-2.5 px-2.5">Fit &amp; Intent</th>
+                <th className="py-2.5 px-2.5">Next Step</th>
+                <th className="py-2.5 px-3 text-right w-[92px]">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
@@ -735,7 +735,7 @@ export function LeadsTableView() {
                       </td>
 
                       {/* Next Step */}
-                      <td className="py-3 px-3 min-w-[200px] max-w-[260px]">
+                      <td className="py-2.5 px-2.5 max-w-[160px]">
                         <div
                           className="text-slate-600 dark:text-slate-300 truncate text-xs"
                           title={lead.next_action || "None scheduled"}
@@ -745,18 +745,18 @@ export function LeadsTableView() {
                       </td>
 
                       {/* Action */}
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="py-2.5 px-3 text-right w-[92px] whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedLeadId(lead.id);
                             }}
-                            className="opacity-0 group-hover:opacity-100 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-200 text-xs font-medium transition-all cursor-pointer"
+                            className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.12] text-slate-700 dark:text-slate-200 text-xs font-medium transition-colors cursor-pointer"
                           >
                             Inspect
                           </button>
-                          <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-zinc-900 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-zinc-900 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
                         </div>
                       </td>
                     </tr>
