@@ -1208,3 +1208,68 @@ export function useCRM() {
   }
   return context;
 }
+
+/**
+ * Generic selector hook to select derived state from CRMContext.
+ */
+export function useCRMSelector<T>(selector: (state: CRMContextType) => T): T {
+  const context = useCRM();
+  return selector(context);
+}
+
+/**
+ * Specialized hook for lead data and active hustle to avoid re-renders on unrelated telemetry.
+ */
+export function useCRMLeads() {
+  const { leads, activeHustle, selectedLeadId, selectedLead, loading } = useCRM();
+  return useMemo(
+    () => ({ leads, activeHustle, selectedLeadId, selectedLead, loading }),
+    [leads, activeHustle, selectedLeadId, selectedLead, loading]
+  );
+}
+
+/**
+ * Specialized hook for lead mutation actions with stable references.
+ */
+export function useCRMMutations() {
+  const {
+    handleStageChange,
+    handleUpdateLead,
+    handleBatchStageChange,
+    handleBatchArchive,
+    handleApproveAndSend,
+    loadAll,
+    notify,
+  } = useCRM();
+  return useMemo(
+    () => ({
+      handleStageChange,
+      handleUpdateLead,
+      handleBatchStageChange,
+      handleBatchArchive,
+      handleApproveAndSend,
+      loadAll,
+      notify,
+    }),
+    [
+      handleStageChange,
+      handleUpdateLead,
+      handleBatchStageChange,
+      handleBatchArchive,
+      handleApproveAndSend,
+      loadAll,
+      notify,
+    ]
+  );
+}
+
+/**
+ * Specialized hook for navigation and layout states.
+ */
+export function useCRMNavigation() {
+  const { activeTab, setActiveTab, surface, cockpitTab, sidebarCollapsed } = useCRM();
+  return useMemo(
+    () => ({ activeTab, setActiveTab, surface, cockpitTab, sidebarCollapsed }),
+    [activeTab, setActiveTab, surface, cockpitTab, sidebarCollapsed]
+  );
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { Select } from "@/components/ui/Select";
 import {
   Archive,
@@ -102,6 +102,45 @@ export function KanbanBoardView() {
       setSyncingBatches(false);
     }
   };
+
+  const handleDragOverColumn = useCallback((e: React.DragEvent, stageId: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverStageId !== stageId) {
+      setDragOverStageId(stageId);
+    }
+  }, [dragOverStageId, setDragOverStageId]);
+
+  const handleDragLeaveColumn = useCallback((e: React.DragEvent) => {
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setDragOverStageId(null);
+  }, [setDragOverStageId]);
+
+  const handleDropOnColumn = useCallback((e: React.DragEvent, stageId: number) => {
+    e.preventDefault();
+    setDragOverStageId(null);
+    const leadIdStr = e.dataTransfer.getData("text/plain");
+    if (leadIdStr) {
+      const leadId = Number(leadIdStr);
+      const l = leads.find((x) => x.id === leadId);
+      if (l && l.stage_id !== stageId) {
+        handleStageChange(l, stageId);
+      }
+    }
+    setDraggingLeadId(null);
+  }, [leads, handleStageChange, setDragOverStageId, setDraggingLeadId]);
+
+  const handleOpenAddLead = useCallback(() => {
+    setNewLeadModalOpen(true);
+  }, [setNewLeadModalOpen]);
+
+  const handleSelectLead = useCallback((id: number) => {
+    setSelectedLeadId(id);
+  }, [setSelectedLeadId]);
+
+  const handleAdvanceStage = useCallback((lead: any, stageId: number) => {
+    handleStageChange(lead, stageId);
+  }, [handleStageChange]);
 
   const isAllActive = activeSmartView === "all_active";
 
@@ -509,34 +548,13 @@ export function KanbanBoardView() {
                 hideEmpty={hideEmptyStages}
                 batchGroupingEnabled={batchGroupingEnabled}
                 stageColorClass={dotColor}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.dataTransfer.dropEffect = "move";
-                  if (dragOverStageId !== stage.id) {
-                    setDragOverStageId(stage.id);
-                  }
-                }}
-                onDragLeave={(e) => {
-                  if (e.currentTarget.contains(e.relatedTarget as Node)) return;
-                  setDragOverStageId(null);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragOverStageId(null);
-                  const leadIdStr = e.dataTransfer.getData("text/plain");
-                  if (leadIdStr) {
-                    const leadId = Number(leadIdStr);
-                    const l = leads.find((x) => x.id === leadId);
-                    if (l && l.stage_id !== stage.id) {
-                      handleStageChange(l, stage.id);
-                    }
-                  }
-                  setDraggingLeadId(null);
-                }}
-                onLeadSelect={(id) => setSelectedLeadId(id)}
-                onAdvanceLeadStage={(lead, stageId) => handleStageChange(lead, stageId)}
+                onDragOver={(e) => handleDragOverColumn(e, stage.id)}
+                onDragLeave={handleDragLeaveColumn}
+                onDrop={(e) => handleDropOnColumn(e, stage.id)}
+                onLeadSelect={handleSelectLead}
+                onAdvanceLeadStage={handleAdvanceStage}
                 onApproveAndSend={handleApproveAndSend}
-                onAddLead={() => setNewLeadModalOpen(true)}
+                onAddLead={handleOpenAddLead}
               />
             );
           })}

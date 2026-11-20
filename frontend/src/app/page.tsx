@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { CRMProvider, useCRM } from "@/context/CRMContext";
 import { Header } from "@/components/layout/Header";
@@ -11,18 +12,55 @@ import { CallsManagementView } from "@/features/calls/CallsManagementView";
 import { KanbanBoardView } from "@/features/board/KanbanBoardView";
 import { LeadsTableView } from "@/features/table/LeadsTableView";
 import { EveningSprintView } from "@/features/sprint/EveningSprintView";
-import { AutopilotCockpitView } from "@/features/cockpit/AutopilotCockpitView";
 import { HustleSettingsView } from "@/features/settings/HustleSettingsView";
-import { LeadDetailModal } from "@/features/modals/LeadDetailModal";
-import { AddLeadModal } from "@/features/modals/AddLeadModal";
-import { ProblemReportModal } from "@/features/modals/ProblemReportModal";
-import { AssistantDrawer } from "@/features/modals/AssistantDrawer";
-import { LogCallModal } from "@/features/modals/LogCallModal";
-import { LogReplyModal } from "@/features/modals/LogReplyModal";
-import { CommandPaletteModal } from "@/features/modals/CommandPaletteModal";
-import { SettingsModal } from "@/features/settings/SettingsModal";
 import { Toast } from "@/components/ui/Toast";
 import { KanbanSkeleton, TableSkeleton } from "@/components/ui/Skeleton";
+
+// Dynamic imports with ssr: false for heavy views, modals, and drawers
+const AutopilotCockpitView = dynamic(
+  () => import("@/features/cockpit/AutopilotCockpitView").then((mod) => mod.AutopilotCockpitView),
+  { ssr: false, loading: () => <TableSkeleton rows={8} columns={6} /> }
+);
+
+const CommandPaletteModal = dynamic(
+  () => import("@/features/modals/CommandPaletteModal").then((mod) => mod.CommandPaletteModal),
+  { ssr: false }
+);
+
+const SettingsModal = dynamic(
+  () => import("@/features/settings/SettingsModal").then((mod) => mod.SettingsModal),
+  { ssr: false }
+);
+
+const AssistantDrawer = dynamic(
+  () => import("@/features/modals/AssistantDrawer").then((mod) => mod.AssistantDrawer),
+  { ssr: false }
+);
+
+const LeadDetailModal = dynamic(
+  () => import("@/features/modals/LeadDetailModal").then((mod) => mod.LeadDetailModal),
+  { ssr: false }
+);
+
+const AddLeadModal = dynamic(
+  () => import("@/features/modals/AddLeadModal").then((mod) => mod.AddLeadModal),
+  { ssr: false }
+);
+
+const ProblemReportModal = dynamic(
+  () => import("@/features/modals/ProblemReportModal").then((mod) => mod.ProblemReportModal),
+  { ssr: false }
+);
+
+const LogCallModal = dynamic(
+  () => import("@/features/modals/LogCallModal").then((mod) => mod.LogCallModal),
+  { ssr: false }
+);
+
+const LogReplyModal = dynamic(
+  () => import("@/features/modals/LogReplyModal").then((mod) => mod.LogReplyModal),
+  { ssr: false }
+);
 
 function CRMContent() {
   const { activeTab, loading, toast, closeToast } = useCRM();

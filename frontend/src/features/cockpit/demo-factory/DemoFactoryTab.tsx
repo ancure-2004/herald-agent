@@ -1,11 +1,16 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { Select } from "@/components/ui/Select";
 import { DemoRun, RunStatus } from "../types";
 import { RunMatrixTable } from "./RunMatrixTable";
-import { MultiDevicePreviewDrawer } from "./MultiDevicePreviewDrawer";
 import { DemoFactoryConsole } from "./DemoFactoryConsole";
+
+const MultiDevicePreviewDrawer = dynamic(
+  () => import("./MultiDevicePreviewDrawer").then((mod) => mod.MultiDevicePreviewDrawer),
+  { ssr: false }
+);
 import { apiFetch } from "@/lib/api/client";
 import { getPollingInterval } from "@/lib/utils/polling";
 import { env } from "@/config/env";

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { Select } from "@/components/ui/Select";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { TableSkeleton } from "@/components/ui/Skeleton";
@@ -100,7 +100,7 @@ function formatDate(isoDate: string): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function LeadsTableView() {
+export const LeadsTableView = React.memo(function LeadsTableView() {
   const {
     leads,
     loading,
@@ -285,7 +285,7 @@ export function LeadsTableView() {
     !!foundDateFilter,
   ].filter(Boolean).length;
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setMonthFilter("");
     setStageFilter("");
     setOutreachFilter("ALL");
@@ -294,9 +294,9 @@ export function LeadsTableView() {
     setSearchQuery("");
     setSearchExpanded(false);
     setSelectedIds(new Set());
-  };
+  }, []);
 
-  const handleToggleSelect = (id: number, e?: React.MouseEvent) => {
+  const handleToggleSelect = useCallback((id: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -307,33 +307,33 @@ export function LeadsTableView() {
       }
       return next;
     });
-  };
+  }, []);
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     if (selectedIds.size === filteredLeads.length && filteredLeads.length > 0) {
       setSelectedIds(new Set());
     } else {
       setSelectedIds(new Set(filteredLeads.map((l: any) => l.id)));
     }
-  };
+  }, [filteredLeads, selectedIds.size]);
 
-  const handleClearSelection = () => {
+  const handleClearSelection = useCallback(() => {
     setSelectedIds(new Set());
-  };
+  }, []);
 
-  const handleBatchMoveStage = async (stageId: number) => {
+  const handleBatchMoveStage = useCallback(async (stageId: number) => {
     if (selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
     setSelectedIds(new Set());
     await handleBatchStageChange(ids, stageId);
-  };
+  }, [selectedIds, handleBatchStageChange]);
 
-  const handleBatchArchiveSelected = async () => {
+  const handleBatchArchiveSelected = useCallback(async () => {
     if (selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
     setSelectedIds(new Set());
     await handleBatchArchive(ids, true);
-  };
+  }, [selectedIds, handleBatchArchive]);
 
   const rowVirtualizer = useVirtualizer({
     count: filteredLeads.length,
@@ -936,4 +936,4 @@ export function LeadsTableView() {
       )}
     </div>
   );
-}
+});
