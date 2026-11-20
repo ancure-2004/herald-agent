@@ -745,7 +745,7 @@ export const DemoFactoryTab: React.FC = () => {
             onClick={() => setFilter("ALL")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
               filter === "ALL"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-semibold shadow-xs"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold shadow-xs"
                 : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
@@ -757,7 +757,7 @@ export const DemoFactoryTab: React.FC = () => {
             onClick={() => setFilter("BUILDING")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
               filter === "BUILDING"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-semibold shadow-xs"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold shadow-xs"
                 : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
@@ -770,7 +770,7 @@ export const DemoFactoryTab: React.FC = () => {
             onClick={() => setFilter("READY")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
               filter === "READY"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-semibold shadow-xs"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold shadow-xs"
                 : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
@@ -783,7 +783,7 @@ export const DemoFactoryTab: React.FC = () => {
             onClick={() => setFilter("FAILED")}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
               filter === "FAILED"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-semibold shadow-xs"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold shadow-xs"
                 : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
@@ -908,7 +908,7 @@ export const DemoFactoryTab: React.FC = () => {
               type="button"
               onClick={handleLaunchBatch}
               disabled={isActionActive}
-              className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-xs font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+              className="bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-950 text-white rounded-xl px-4 py-2 text-xs font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>
