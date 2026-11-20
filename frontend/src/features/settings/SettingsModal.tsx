@@ -433,7 +433,7 @@ export function SettingsModal() {
         className="w-full max-w-6xl w-[92vw] h-[88vh] bg-white dark:bg-[#141721] rounded-2xl border border-slate-200/90 dark:border-white/[0.1] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
       >
         {/* Top Minimal Header */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between shrink-0 bg-white dark:bg-[#161925]">
+        <div className="px-6 py-3 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between shrink-0 bg-white dark:bg-[#161925]">
           <h2 id="settings-modal-title" className="text-base font-bold text-slate-900 dark:text-white">
             Settings
           </h2>
@@ -1419,7 +1419,7 @@ export function SettingsModal() {
         </div>
 
         {/* Modal Clean Footer with Save Settings Button */}
-        <div className="px-6 py-3.5 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#161925] flex items-center justify-between shrink-0">
+        <div className="px-6 py-2.5 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#161925] flex items-center justify-between shrink-0">
           <div className="text-xs text-slate-400 font-medium">
             Press <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] font-mono text-[10px]">ESC</kbd> to dismiss
           </div>

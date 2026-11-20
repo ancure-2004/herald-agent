@@ -577,7 +577,7 @@ export function Sidebar() {
       {/* Bottom Footer Block: Pushed to bottom via mt-auto */}
       <div
         ref={dropdownRef}
-        className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 shrink-0 relative"
+        className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 shrink-0"
       >
         {/* Compact Autopilot Status Card with crisp emerald dot */}
         <div className="bg-zinc-900 text-white dark:bg-zinc-800 rounded-xl p-2.5 flex items-center justify-between shadow-xs">
@@ -611,49 +611,51 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* User Profile Footer Row */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setProfileMenuOpen((prev) => !prev)}
-            className="flex items-center gap-2.5 min-w-0 cursor-pointer group text-left flex-1 py-1 px-1 rounded-xl hover:bg-slate-100/70 dark:hover:bg-slate-800/50 transition-colors"
-            title="Captain Profile & Settings"
-            aria-expanded={profileMenuOpen}
-          >
-            <div className="w-8 h-8 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs group-hover:ring-2 group-hover:ring-zinc-400 transition-all shrink-0">
-              {operatorProfile?.initials || "AT"}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
-                {operatorProfile?.name || "Ankur Tyagi"}
+        {/* User Profile Footer Row with relative popover wrapper */}
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 relative">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setProfileMenuOpen((prev) => !prev)}
+              className="flex items-center gap-2.5 min-w-0 cursor-pointer group text-left flex-1 py-1 px-1 rounded-xl hover:bg-slate-100/70 dark:hover:bg-slate-800/50 transition-colors"
+              title="Captain Profile & Settings"
+              aria-expanded={profileMenuOpen}
+            >
+              <div className="w-8 h-8 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs group-hover:ring-2 group-hover:ring-zinc-400 transition-all shrink-0">
+                {operatorProfile?.initials || "AT"}
               </div>
-              <div className="text-[10px] text-slate-400 font-medium truncate">
-                {operatorProfile?.role || "CRM Architect"}
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
+                  {operatorProfile?.name || "Ankur Tyagi"}
+                </div>
+                <div className="text-[10px] text-slate-400 font-medium truncate">
+                  {operatorProfile?.role || "CRM Architect"}
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
 
-          {/* Chevron Arrow Button opening popover anchored cleanly above footer */}
-          <button
-            type="button"
-            onClick={() => setProfileMenuOpen((prev) => !prev)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            title="Toggle Profile Menu"
-            aria-label="Toggle Profile Menu"
-          >
-            <ChevronUp
-              className={`w-4 h-4 transition-transform duration-200 ${
-                profileMenuOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
+            {/* Chevron Arrow Button opening popover anchored cleanly above account button */}
+            <button
+              type="button"
+              onClick={() => setProfileMenuOpen((prev) => !prev)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Toggle Profile Menu"
+              aria-label="Toggle Profile Menu"
+            >
+              <ChevronUp
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  profileMenuOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Compact Profile Popover anchored right above account button aligned with sidebar edges */}
+          {profileMenuOpen &&
+            renderProfilePopover(
+              "absolute left-0 right-0 bottom-full mb-2 animate-in fade-in slide-in-from-bottom-2 duration-150"
+            )}
         </div>
-
-        {/* Compact Profile Popover anchored right above footer aligned with sidebar edges */}
-        {profileMenuOpen &&
-          renderProfilePopover(
-            "absolute left-0 right-0 bottom-full mb-2 animate-in fade-in slide-in-from-bottom-2 duration-150"
-          )}
       </div>
     </aside>
   );
