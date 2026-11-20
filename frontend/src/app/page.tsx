@@ -19,6 +19,7 @@ import { ProblemReportModal } from "@/features/modals/ProblemReportModal";
 import { AssistantDrawer } from "@/features/modals/AssistantDrawer";
 import { LogCallModal } from "@/features/modals/LogCallModal";
 import { LogReplyModal } from "@/features/modals/LogReplyModal";
+import { CommandPaletteModal } from "@/features/modals/CommandPaletteModal";
 
 function CRMContent() {
   const { activeTab, loading, toast } = useCRM();
@@ -83,7 +84,8 @@ function CRMContent() {
         </main>
       </div>
 
-      {/* Modals & Drawers (No detached full-screen blurred command modal) */}
+      {/* Modals & Drawers */}
+      <CommandPaletteModal />
       <LeadDetailModal />
       <AddLeadModal />
       <ProblemReportModal />
