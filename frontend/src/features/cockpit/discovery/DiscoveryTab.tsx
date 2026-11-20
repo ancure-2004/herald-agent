@@ -5,6 +5,7 @@ import { DiscoveryLead, CockpitStateResponse } from "../types";
 import { LeadDataTable } from "./LeadDataTable";
 import { FloatingActionBar } from "./FloatingActionBar";
 import { DiscoveryConsole } from "./DiscoveryConsole";
+import { DiscoveryLeadDrawer } from "./DiscoveryLeadDrawer";
 import { apiFetch } from "@/lib/api/client";
 import {
   Sparkles,
@@ -116,6 +117,7 @@ export const DiscoveryTab: React.FC = () => {
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
+  const [inspectedLead, setInspectedLead] = useState<DiscoveryLead | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
 
   // Locality & Runner Controls
@@ -736,6 +738,7 @@ export const DiscoveryTab: React.FC = () => {
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}
           onSelectAll={handleSelectAll}
+          onRowClick={setInspectedLead}
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}
           dateFilter={dateFilter}
@@ -757,6 +760,12 @@ export const DiscoveryTab: React.FC = () => {
         selectedCount={selectedIds.size}
         onClearSelection={handleClearSelection}
         onCopyPhones={handleCopyPhones}
+      />
+
+      {/* Structured Discovery Lead Drawer */}
+      <DiscoveryLeadDrawer
+        lead={inspectedLead}
+        onClose={() => setInspectedLead(null)}
       />
     </div>
   );
