@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { DiscoveryLead } from "../types";
 import { VerificationBadge } from "./VerificationBadge";
 import {
@@ -31,6 +32,12 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
 }) => {
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!lead) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -40,7 +47,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lead, onClose]);
 
-  if (!lead) return null;
+  if (!lead || !mounted || typeof document === "undefined") return null;
 
   const handleCopy = (value: string, field: string) => {
     navigator.clipboard.writeText(value);
@@ -81,13 +88,13 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
       : `Dr. ${lead.contactName}`
     : "Doctor In-Charge";
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="discovery-drawer-title"
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end animate-in fade-in duration-200"
+      className="fixed inset-0 top-0 left-0 w-screen h-screen z-50 bg-black/40 backdrop-blur-xs flex justify-end animate-in fade-in duration-200"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -273,7 +280,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
               {/* Website */}
               <div className="px-3 py-2 flex items-center justify-between gap-2">
                 <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <Globe className="w-3 h-3 text-slate-400" /> Website
+                  <Globe className="w-3.5 h-3.5" /> Website
                 </span>
                 {lead.companyWebsite && lead.companyWebsite !== "#" ? (
                   <a
@@ -459,6 +466,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
