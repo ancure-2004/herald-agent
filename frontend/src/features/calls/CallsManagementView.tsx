@@ -446,9 +446,9 @@ export function CallsManagementView() {
   // Render
   // ---------------------------------------------------------------------------
   return (
-    <div className="h-full flex flex-col overflow-hidden gap-3 text-slate-900 dark:text-slate-100">
+    <div className="h-full flex flex-col overflow-hidden gap-3 text-slate-900 dark:text-zinc-100">
       {/* 1. POLISHED TOP LEAD CONTEXT BAR */}
-      <div className="bg-white dark:bg-[#141721] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] px-4 py-2.5 shadow-xs flex items-center justify-between gap-3 flex-wrap shrink-0">
+      <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] px-4 py-2.5 shadow-xs flex items-center justify-between gap-3 flex-wrap shrink-0">
         {/* Left: Clinic Selector (min-w-[240px]) + Neutral Monogram + Inline Stage Selector */}
         <div className="flex flex-wrap items-center gap-2.5 min-w-0 flex-1">
           {/* Clinic Selector Combobox */}
@@ -461,17 +461,17 @@ export function CallsManagementView() {
                   setTimeout(() => comboInputRef.current?.focus(), 50);
                 }
               }}
-              className="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer text-left"
+              className="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#18181B] border border-slate-200/80 dark:border-[#3F3F46]/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer text-left"
             >
               {activeLead ? (
                 <div className="flex items-center gap-2.5 min-w-0">
                   {/* Neutral slate/charcoal monogram */}
-                  <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center font-semibold text-[11px] shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-[#27272A] text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-[#3F3F46] flex items-center justify-center font-semibold text-[11px] shrink-0">
                     {activeLead.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0">
                     <div className="text-xs font-semibold text-zinc-900 dark:text-white truncate">{activeLead.name}</div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    <div className="text-[10px] text-slate-500 dark:text-zinc-400 truncate">
                       {formatDoctorName(activeLead.doctor_name)} · {activeLead.locality || "Delhi NCR"}
                     </div>
                   </div>
@@ -486,8 +486,8 @@ export function CallsManagementView() {
             </button>
 
             {comboOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
-                <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-2xl shadow-2xl border border-slate-200 dark:border-[#3F3F46] bg-white dark:bg-[#18181B] overflow-hidden">
+                <div className="p-2 border-b border-slate-100 dark:border-[#27272A]">
                   <div className="relative">
                     <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     <input
@@ -505,7 +505,7 @@ export function CallsManagementView() {
                         }
                       }}
                       placeholder="Search clinic, doctor, locality..."
-                      className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400"
+                      className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-[#27272A] rounded-xl border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400"
                     />
                   </div>
                 </div>
@@ -525,16 +525,16 @@ export function CallsManagementView() {
                           onClick={() => handleSelectClinic(l.id)}
                           className={`w-full flex items-center gap-3 px-3.5 py-2 text-left transition-colors cursor-pointer ${
                             isActive
-                              ? "bg-slate-100 dark:bg-slate-800 font-semibold"
+                              ? "bg-slate-100 dark:bg-[#27272A] font-semibold"
                               : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
                           }`}
                         >
-                          <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-zinc-800 dark:text-zinc-200 flex items-center justify-center font-semibold text-[10px] shrink-0">
+                          <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-[#27272A] border border-slate-200/80 dark:border-[#3F3F46] text-zinc-800 dark:text-zinc-200 flex items-center justify-center font-semibold text-[10px] shrink-0">
                             {l.name.slice(0, 2).toUpperCase()}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="text-xs font-semibold text-slate-900 dark:text-white truncate">{l.name}</div>
-                            <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            <div className="text-[10px] text-slate-500 dark:text-zinc-400 truncate">
                               {formatDoctorName(l.doctor_name)} · {l.locality || "Delhi NCR"}
                             </div>
                           </div>
@@ -554,7 +554,7 @@ export function CallsManagementView() {
               <select
                 value={activeLead.stage_id}
                 onChange={(e) => handleStageChange(activeLead, Number(e.target.value))}
-                className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer shadow-xs"
+                className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#18181B] border border-slate-200/80 dark:border-[#3F3F46]/80 text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer shadow-xs"
                 title="Update Lead Stage directly"
               >
                 {activeHustle.stages.map((st) => (
@@ -571,7 +571,7 @@ export function CallsManagementView() {
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Sleek High-Contrast Telemetry Badge with subtle emerald dot */}
           {activeLead && demoEngagement && (
-            <div className="bg-slate-100 dark:bg-slate-800 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700 font-medium px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-[11px] shrink-0">
+            <div className="bg-slate-100 dark:bg-[#27272A] text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-[#3F3F46] font-medium px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-[11px] shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
               <span>{demoEngagement}</span>
             </div>
@@ -579,7 +579,7 @@ export function CallsManagementView() {
 
           {/* Track Switcher for Modern | Premium | Warm */}
           {activeLead && (
-            <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
+            <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-[#27272A]/80 p-0.5 rounded-xl border border-slate-200/80 dark:border-[#3F3F46]/80">
               {[
                 { id: "modern", label: "Modern", path: `/modern/${activeLead.slug}` },
                 { id: "premium", label: "Premium", path: `/premium/${activeLead.slug}` },
@@ -594,8 +594,8 @@ export function CallsManagementView() {
                     rel="noreferrer"
                     className={`px-2.5 py-1 text-xs transition-all flex items-center gap-1 ${
                       isTop
-                        ? "bg-white dark:bg-slate-900 shadow-xs rounded-lg text-zinc-900 dark:text-white font-medium"
-                        : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg font-normal"
+                        ? "bg-white dark:bg-[#18181B] shadow-xs rounded-lg text-zinc-900 dark:text-white font-medium"
+                        : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg font-normal"
                     }`}
                     title={`Open ${theme.label} demo (${theme.path})${isTop ? " - Top doctor interaction" : ""}`}
                   >
@@ -612,7 +612,7 @@ export function CallsManagementView() {
             <button
               type="button"
               onClick={() => setSelectedLeadId(activeLead.id)}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer shrink-0 bg-white dark:bg-[#141721] border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/60 shadow-xs"
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer shrink-0 bg-white dark:bg-[#18181B] border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-zinc-200 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/60 shadow-xs"
               title="Open universal Lead Card drawer"
             >
               <PanelRightOpen className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" />
@@ -629,7 +629,7 @@ export function CallsManagementView() {
             {/* LEFT COLS: Pre-Call Prep Brief Battlecard + Log Call Form */}
             <div className="lg:col-span-7 space-y-5">
               {/* 2A. UNIFIED PRE-CALL PREP BATTLECARD */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-4">
+              <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200/80 dark:border-[#27272A] p-5 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     {/* Neutral Charcoal Icon Badge */}
@@ -637,13 +637,13 @@ export function CallsManagementView() {
                       <Sparkles className="w-4 h-4" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                         <span>Pre-Call Prep Brief: "What to Talk About"</span>
-                        <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 text-[11px] font-medium px-2 py-0.5 rounded-md">
+                        <span className="bg-slate-100 dark:bg-[#27272A] text-slate-700 dark:text-zinc-300 border border-slate-200/80 dark:border-[#3F3F46] text-[11px] font-medium px-2 py-0.5 rounded-md">
                           Live Battlecard
                         </span>
                       </h2>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                         Doctor: {formatDoctorName(activeLead.doctor_name)} • Phone: {activeLead.primary_phone || "Not set"}
                       </p>
                     </div>
@@ -652,7 +652,7 @@ export function CallsManagementView() {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={handleCopyBrief}
-                      className="p-2 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
+                      className="p-2 rounded-xl text-xs font-medium bg-white dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
                       title="Copy brief"
                     >
                       {copiedBrief ? (
@@ -671,7 +671,7 @@ export function CallsManagementView() {
                     <button
                       onClick={() => fetchCallBrief(activeLead.id, true)}
                       disabled={loadingBrief}
-                      className="p-2 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
+                      className="p-2 rounded-xl text-xs font-medium bg-white dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
                       title="Force regenerate brief"
                     >
                       <RefreshCw className={`w-3.5 h-3.5 ${loadingBrief ? "animate-spin" : ""}`} />
@@ -682,7 +682,7 @@ export function CallsManagementView() {
 
                 {/* Refined Split Alert Card: Unresolved from Last Call */}
                 {hasUnresolvedFromLastCall && latestCall && (
-                  <div className="bg-slate-50/90 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700 p-3.5 space-y-2.5">
+                  <div className="bg-slate-50/90 dark:bg-[#27272A]/60 rounded-xl border border-slate-200/80 dark:border-[#3F3F46] p-3.5 space-y-2.5">
                     {/* Header Row */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
@@ -698,13 +698,13 @@ export function CallsManagementView() {
                     <div className="space-y-2 text-xs">
                       {latestCall.commitments && latestCall.commitments.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mr-1">
                             Commitments:
                           </span>
                           {latestCall.commitments.map((c: any, i: number) => (
                             <span
                               key={i}
-                              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-zinc-800 dark:text-zinc-200 rounded-lg px-2.5 py-1 text-xs flex items-center gap-1.5 shadow-2xs"
+                              className="bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#3F3F46] text-zinc-800 dark:text-zinc-200 rounded-lg px-2.5 py-1 text-xs flex items-center gap-1.5 shadow-2xs"
                             >
                               <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                               <span>{typeof c === "string" ? c : c.what || c.raw_phrase || "Follow-up"}</span>
@@ -715,13 +715,13 @@ export function CallsManagementView() {
 
                       {latestCall.objections && latestCall.objections.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mr-1">
                             Objections:
                           </span>
                           {latestCall.objections.map((obj: string, i: number) => (
                             <span
                               key={i}
-                              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-zinc-800 dark:text-zinc-200 rounded-lg px-2.5 py-1 text-xs flex items-center gap-1.5 shadow-2xs"
+                              className="bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#3F3F46] text-zinc-800 dark:text-zinc-200 rounded-lg px-2.5 py-1 text-xs flex items-center gap-1.5 shadow-2xs"
                             >
                               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
                               <span>{obj}</span>
@@ -772,8 +772,8 @@ export function CallsManagementView() {
                           onClick={() => toggleBriefItem(idx)}
                           className={`rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer flex items-start gap-2.5 ${
                             isChecked
-                              ? "bg-slate-50/50 dark:bg-slate-900/40 text-slate-400 dark:text-slate-500 line-through border border-transparent"
-                              : "bg-slate-50/70 hover:bg-slate-100/80 dark:bg-slate-800/50 dark:hover:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/70 shadow-2xs"
+                              ? "bg-slate-50/50 dark:bg-[#18181B]/40 text-slate-400 dark:text-zinc-500 line-through border border-transparent"
+                              : "bg-slate-50/70 hover:bg-slate-100/80 dark:bg-[#27272A]/50 dark:hover:bg-slate-800/80 border border-slate-200/70 dark:border-[#3F3F46]/70 shadow-2xs"
                           }`}
                         >
                           <div className="mt-0.5 shrink-0">
@@ -791,8 +791,8 @@ export function CallsManagementView() {
                 </div>
 
                 {/* Instant Objection Rebuttals */}
-                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-[#27272A]">
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
                     <span className="font-semibold uppercase tracking-wider">Instant Objection Rebuttals</span>
                     <span className="text-[10px]">Click pill to view talking points</span>
                   </div>
@@ -808,7 +808,7 @@ export function CallsManagementView() {
                           className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-2 ${
                             isOpen
                               ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
-                              : "bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 border border-slate-200/90 dark:border-slate-700 hover:border-zinc-900/30 dark:hover:border-slate-500 text-zinc-800 dark:text-zinc-200 shadow-2xs"
+                              : "bg-white hover:bg-slate-50 dark:bg-[#27272A] dark:hover:bg-slate-750 border border-slate-200/90 dark:border-[#3F3F46] hover:border-zinc-900/30 dark:hover:border-slate-500 text-zinc-800 dark:text-zinc-200 shadow-2xs"
                           }`}
                         >
                           <span>{reb.title}</span>
@@ -816,7 +816,7 @@ export function CallsManagementView() {
                             className={`text-[10px] px-1.5 py-0.5 rounded ${
                               isOpen
                                 ? "bg-white/20 text-white dark:bg-zinc-900/20 dark:text-zinc-900"
-                                : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                                : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-zinc-300"
                             }`}
                           >
                             {reb.badge}
@@ -827,7 +827,7 @@ export function CallsManagementView() {
                   </div>
 
                   {activeRebuttalId && (
-                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 space-y-2 animate-in fade-in duration-150">
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#27272A]/80 border border-slate-200/80 dark:border-[#3F3F46] space-y-2 animate-in fade-in duration-150">
                       {REBUTTAL_CARDS.find((r) => r.id === activeRebuttalId)?.points.map((pt, i) => (
                         <div key={i} className="flex items-start gap-2 text-xs text-zinc-800 dark:text-zinc-200">
                           <span className="text-zinc-400 font-bold shrink-0">•</span>
@@ -840,17 +840,17 @@ export function CallsManagementView() {
               </div>
 
               {/* 2B. SPEEDY CALL LOGGING FORM */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-4">
+              <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200/80 dark:border-[#27272A] p-5 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#27272A] text-zinc-700 dark:text-zinc-300 flex items-center justify-center">
                       <PhoneCall className="w-4 h-4" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                         Log Raw Call Transcript
                       </h2>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                         AI will automatically extract Summary, Interests, Objections, Commitments, and Next Steps in &lt;10s.
                       </p>
                     </div>
@@ -861,13 +861,13 @@ export function CallsManagementView() {
                   {/* Outcome and Duration with Live Timer */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
                         Call Outcome
                       </label>
                       <select
                         value={outcome}
                         onChange={(e) => setOutcome(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer"
+                        className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer"
                       >
                         <option value="connected">Connected / Spoke to Doctor</option>
                         <option value="booked">Meeting / Demo Booked</option>
@@ -878,7 +878,7 @@ export function CallsManagementView() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
                         Duration (seconds)
                       </label>
                       <div className="flex items-center gap-1.5">
@@ -887,7 +887,7 @@ export function CallsManagementView() {
                           min={0}
                           value={durationSeconds}
                           onChange={(e) => setDurationSeconds(Math.max(0, parseInt(e.target.value) || 0))}
-                          className="w-20 px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400"
+                          className="w-20 px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-slate-400"
                         />
 
                         {/* Presets */}
@@ -897,7 +897,7 @@ export function CallsManagementView() {
                               key={s}
                               type="button"
                               onClick={() => setDurationSeconds(s)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] font-mono bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 cursor-pointer"
+                              className="px-2 py-1.5 rounded-lg text-[10px] font-mono bg-slate-100 dark:bg-[#27272A] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-zinc-400 cursor-pointer"
                             >
                               {s / 60}m
                             </button>
@@ -933,7 +933,7 @@ export function CallsManagementView() {
 
                   {/* 1-Click Quick Note Chips */}
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
                       <span className="font-semibold">1-Click Quick Note Inserts</span>
                       <span className="text-[10px]">Appends directly to transcript</span>
                     </div>
@@ -943,7 +943,7 @@ export function CallsManagementView() {
                           key={chip}
                           type="button"
                           onClick={() => handleInsertQuickNote(chip.replace(/^\+\s*/, ""))}
-                          className="bg-slate-50 hover:bg-zinc-900 hover:text-white dark:bg-slate-800 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors cursor-pointer"
+                          className="bg-slate-50 hover:bg-zinc-900 hover:text-white dark:bg-[#27272A] dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-slate-700 dark:text-zinc-300 border border-slate-200/80 dark:border-[#3F3F46] rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors cursor-pointer"
                         >
                           {chip}
                         </button>
@@ -962,14 +962,14 @@ export function CallsManagementView() {
 Hesitant on Rs. 15,000 package.
 Agreed to partner follow-up on Thursday 5pm.
 Send Practo comparison PDF on WhatsApp."
-                      className="w-full p-3 rounded-2xl text-xs font-mono bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-y min-h-[72px] leading-relaxed"
+                      className="w-full p-3 rounded-2xl text-xs font-mono bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 resize-y min-h-[72px] leading-relaxed"
                     />
                   </div>
 
                   {/* Next Follow-up Scheduler Strip */}
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 space-y-2">
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#27272A]/60 border border-slate-200/70 dark:border-[#3F3F46]/70 space-y-2">
                     <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300">
+                      <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-zinc-300">
                         <Calendar className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
                         <span>Schedule Next Follow-up (Optional)</span>
                       </div>
@@ -992,21 +992,21 @@ Send Practo comparison PDF on WhatsApp."
                         <button
                           type="button"
                           onClick={() => handleQuickFollowUp(1, 11)}
-                          className="px-2 py-1 rounded-lg text-[10px] font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-400 cursor-pointer"
+                          className="px-2 py-1 rounded-lg text-[10px] font-medium bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#3F3F46] text-slate-600 dark:text-zinc-300 hover:border-slate-400 cursor-pointer"
                         >
                           Tomorrow 11am
                         </button>
                         <button
                           type="button"
                           onClick={() => handleQuickFollowUp(2, 17)}
-                          className="px-2 py-1 rounded-lg text-[10px] font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-400 cursor-pointer"
+                          className="px-2 py-1 rounded-lg text-[10px] font-medium bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#3F3F46] text-slate-600 dark:text-zinc-300 hover:border-slate-400 cursor-pointer"
                         >
                           In 2 Days 5pm
                         </button>
                         <button
                           type="button"
                           onClick={() => handleQuickFollowUp(4, 17)}
-                          className="px-2 py-1 rounded-lg text-[10px] font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-400 cursor-pointer"
+                          className="px-2 py-1 rounded-lg text-[10px] font-medium bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#3F3F46] text-slate-600 dark:text-zinc-300 hover:border-slate-400 cursor-pointer"
                         >
                           Thursday 5pm
                         </button>
@@ -1016,13 +1016,13 @@ Send Practo comparison PDF on WhatsApp."
                         type="datetime-local"
                         value={followUpDate}
                         onChange={(e) => setFollowUpDate(e.target.value)}
-                        className="px-2.5 py-1 rounded-lg text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none"
+                        className="px-2.5 py-1 rounded-lg text-xs font-mono bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#3F3F46] text-slate-800 dark:text-zinc-200 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   {/* Sticky Footer Action Bar with Polished Primary Submit Button */}
-                  <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">
+                  <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-[#27272A]">
                     <span className="text-[11px] text-slate-400">
                       Parses structured notes & updates timeline
                     </span>
@@ -1054,7 +1054,7 @@ Send Practo comparison PDF on WhatsApp."
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                     Previous Call Logs
                   </h2>
                 </div>
@@ -1064,14 +1064,14 @@ Send Practo comparison PDF on WhatsApp."
               </div>
 
               {callsList.length === 0 ? (
-                <div className="p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-center space-y-3 shadow-xs">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-zinc-600 dark:text-zinc-400 flex items-center justify-center mx-auto">
+                <div className="p-8 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#27272A] text-center space-y-3 shadow-xs">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-[#27272A] text-zinc-600 dark:text-zinc-400 flex items-center justify-center mx-auto">
                     <Sparkles className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <h3 className="text-xs font-bold text-slate-700 dark:text-zinc-300">
                     No Call Logs for {activeLead.name}
                   </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-xs mx-auto leading-relaxed">
                     Log a raw call transcript on the left to see instant AI extraction of Summary, Interests, Objections, Commitments, and Next Steps.
                   </p>
                 </div>
@@ -1082,7 +1082,7 @@ Send Practo comparison PDF on WhatsApp."
                   return (
                     <div
                       key={call.id}
-                      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden transition-all"
+                      className="bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200/80 dark:border-[#27272A] shadow-xs overflow-hidden transition-all"
                     >
                       {/* Call Card Header */}
                       <div
@@ -1090,15 +1090,15 @@ Send Practo comparison PDF on WhatsApp."
                         className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center font-bold text-xs shrink-0">
+                          <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#27272A] text-zinc-800 dark:text-zinc-200 flex items-center justify-center font-bold text-xs shrink-0">
                             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-slate-900 dark:text-slate-100 capitalize">
+                              <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 capitalize">
                                 {call.outcome.replace("_", " ")}
                               </span>
-                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
+                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#27272A] text-slate-500">
                                 {call.duration_seconds}s
                               </span>
                             </div>
@@ -1122,15 +1122,15 @@ Send Practo comparison PDF on WhatsApp."
 
                       {/* Collapsed 1-Line Preview + Actionable Next Steps Badge */}
                       {!isExpanded && (
-                        <div className="px-4 pb-3.5 pt-1 border-t border-slate-100/80 dark:border-slate-800/80 flex flex-col gap-1.5 text-xs bg-slate-50/40 dark:bg-slate-950/20">
-                          <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 leading-relaxed">
-                            <span className="font-semibold text-slate-700 dark:text-slate-200">Summary: </span>
+                        <div className="px-4 pb-3.5 pt-1 border-t border-slate-100/80 dark:border-[#27272A]/80 flex flex-col gap-1.5 text-xs bg-slate-50/40 dark:bg-[#09090B]/20">
+                          <p className="text-[11px] text-slate-600 dark:text-zinc-300 line-clamp-1 leading-relaxed">
+                            <span className="font-semibold text-slate-700 dark:text-zinc-200">Summary: </span>
                             {call.summary || call.raw_text || "No summary recorded."}
                           </p>
 
                           {call.next_steps && call.next_steps.length > 0 && (
                             <div className="flex items-center gap-1.5">
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-zinc-700 dark:text-zinc-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1 truncate max-w-full">
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 dark:bg-[#27272A] text-zinc-700 dark:text-zinc-300 border border-slate-200 dark:border-[#3F3F46] flex items-center gap-1 truncate max-w-full">
                                 <ArrowRight className="w-2.5 h-2.5 shrink-0 text-slate-400" />
                                 <span className="truncate">Next: {call.next_steps[0]}</span>
                               </span>
@@ -1146,25 +1146,25 @@ Send Practo comparison PDF on WhatsApp."
 
                       {/* Expanded 4-Part AI Breakdown Body */}
                       {isExpanded && (
-                        <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-3.5 text-xs bg-slate-50/40 dark:bg-slate-950/20">
+                        <div className="p-4 border-t border-slate-100 dark:border-[#27272A] space-y-3.5 text-xs bg-slate-50/40 dark:bg-[#09090B]/20">
                           {/* 1. Executive Summary */}
                           <div>
-                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5 mb-2">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 flex items-center gap-1.5 mb-2">
                               <FileText className="w-3.5 h-3.5" />
                               <span>1. Executive Summary</span>
                             </div>
-                            <p className="p-2.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 text-zinc-800 dark:text-zinc-200 leading-relaxed shadow-2xs">
+                            <p className="p-2.5 rounded-xl bg-white dark:bg-[#27272A]/90 border border-slate-200/70 dark:border-[#3F3F46]/70 text-zinc-800 dark:text-zinc-200 leading-relaxed shadow-2xs">
                               {call.summary || "No summary generated."}
                             </p>
                           </div>
 
                           {/* 2. Lead Interests & Motivations */}
-                          <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-3">
-                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5 mb-2">
+                          <div className="border-t border-slate-100 dark:border-[#27272A]/80 pt-3 mt-3">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 flex items-center gap-1.5 mb-2">
                               <Target className="w-3.5 h-3.5" />
                               <span>2. Lead Interests &amp; Motivations</span>
                             </div>
-                            <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 space-y-1 shadow-2xs">
+                            <div className="p-2.5 rounded-xl bg-white dark:bg-[#27272A]/90 border border-slate-200/70 dark:border-[#3F3F46]/70 space-y-1 shadow-2xs">
                               {call.interests && call.interests.length > 0 ? (
                                 call.interests.map((interest, idx) => (
                                   <div key={idx} className="flex items-start gap-1.5 text-zinc-800 dark:text-zinc-200">
@@ -1179,12 +1179,12 @@ Send Practo comparison PDF on WhatsApp."
                           </div>
 
                           {/* 3. Objections Raised */}
-                          <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-3">
-                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5 mb-2">
+                          <div className="border-t border-slate-100 dark:border-[#27272A]/80 pt-3 mt-3">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 flex items-center gap-1.5 mb-2">
                               <ShieldAlert className="w-3.5 h-3.5" />
                               <span>3. Objections Raised</span>
                             </div>
-                            <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 space-y-1 shadow-2xs">
+                            <div className="p-2.5 rounded-xl bg-white dark:bg-[#27272A]/90 border border-slate-200/70 dark:border-[#3F3F46]/70 space-y-1 shadow-2xs">
                               {call.objections && call.objections.length > 0 ? (
                                 call.objections.map((obj, idx) => (
                                   <div key={idx} className="flex items-start gap-1.5 text-zinc-800 dark:text-zinc-200">
@@ -1199,8 +1199,8 @@ Send Practo comparison PDF on WhatsApp."
                           </div>
 
                           {/* 4. Commitments Made (Structured Rows with You vs Doctor Badges) */}
-                          <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-3">
-                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5 mb-2">
+                          <div className="border-t border-slate-100 dark:border-[#27272A]/80 pt-3 mt-3">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 flex items-center gap-1.5 mb-2">
                               <CalendarCheck className="w-3.5 h-3.5" />
                               <span>4. Commitments Made</span>
                             </div>
@@ -1215,7 +1215,7 @@ Send Practo comparison PDF on WhatsApp."
                                   return (
                                     <div
                                       key={idx}
-                                      className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 rounded-lg px-2.5 py-1.5 text-xs text-zinc-800 dark:text-zinc-200 flex items-start gap-2 shadow-2xs"
+                                      className="bg-slate-50 dark:bg-[#27272A]/60 border border-slate-200/70 dark:border-[#3F3F46]/70 rounded-lg px-2.5 py-1.5 text-xs text-zinc-800 dark:text-zinc-200 flex items-start gap-2 shadow-2xs"
                                     >
                                       {isYou ? (
                                         <span className="bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0">
@@ -1233,7 +1233,7 @@ Send Practo comparison PDF on WhatsApp."
                                   );
                                 })
                               ) : (
-                                <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 text-slate-400 italic shadow-2xs">
+                                <div className="p-2.5 rounded-xl bg-white dark:bg-[#27272A]/90 border border-slate-200/70 dark:border-[#3F3F46]/70 text-slate-400 italic shadow-2xs">
                                   No formal commitments registered.
                                 </div>
                               )}
@@ -1242,12 +1242,12 @@ Send Practo comparison PDF on WhatsApp."
 
                           {/* 5. Actionable Next Steps (if present) */}
                           {call.next_steps && call.next_steps.length > 0 && (
-                            <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-3">
-                              <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5 mb-2">
+                            <div className="border-t border-slate-100 dark:border-[#27272A]/80 pt-3 mt-3">
+                              <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 flex items-center gap-1.5 mb-2">
                                 <ArrowRight className="w-3.5 h-3.5" />
                                 <span>5. Actionable Next Steps</span>
                               </div>
-                              <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 space-y-1 shadow-2xs">
+                              <div className="p-2.5 rounded-xl bg-white dark:bg-[#27272A]/90 border border-slate-200/70 dark:border-[#3F3F46]/70 space-y-1 shadow-2xs">
                                 {call.next_steps.map((step, idx) => (
                                   <div key={idx} className="text-zinc-800 dark:text-zinc-200 flex items-start gap-1.5">
                                     <span className="text-purple-500 font-bold">→</span>

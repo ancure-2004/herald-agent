@@ -23,7 +23,7 @@ export const ConfidencePill: React.FC<ConfidencePillProps> = ({ score }) => {
           style={{ width: `${Math.min(100, Math.max(0, score))}%` }}
         />
       </div>
-      <span className="text-[11px] text-slate-400 dark:text-slate-500 font-sans">{getLabel()}</span>
+      <span className="text-[11px] text-slate-400 dark:text-zinc-500 font-sans">{getLabel()}</span>
     </div>
   );
 };

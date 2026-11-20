@@ -670,13 +670,13 @@ export const DemoFactoryTab: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* Card 1: TOTAL GENERATED */}
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-medium">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-medium">
             Total Generated
           </div>
           <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white tabular-nums mt-1">
             {kpiMetrics.totalGenerated}
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">
+          <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono mt-1">
             Delhi NCR Clinics
           </div>
         </div>
@@ -690,27 +690,27 @@ export const DemoFactoryTab: React.FC = () => {
           <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white tabular-nums mt-1">
             {kpiMetrics.liveReady}
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">
+          <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono mt-1">
             Zero Dead Links
           </div>
         </div>
 
         {/* Card 3: ACTIVE / QUEUED */}
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-medium">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-medium">
             Active / Queued
           </div>
           <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white tabular-nums mt-1">
             {kpiMetrics.activeBuilds + kpiMetrics.queuedRuns}
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">
+          <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono mt-1">
             {kpiMetrics.activeBuilds} building · {kpiMetrics.queuedRuns} queued
           </div>
         </div>
 
         {/* Card 4: QUALITY PASS RATE (Clamped at 100%) */}
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-4 shadow-xs flex flex-col justify-between">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-medium">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-medium">
             Quality Pass Rate
           </div>
           <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white tabular-nums mt-1">
@@ -746,7 +746,7 @@ export const DemoFactoryTab: React.FC = () => {
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
               filter === "ALL"
                 ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-semibold shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
+                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
             All Runs ({runs.length})
@@ -758,7 +758,7 @@ export const DemoFactoryTab: React.FC = () => {
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
               filter === "BUILDING"
                 ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-semibold shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
+                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
@@ -771,7 +771,7 @@ export const DemoFactoryTab: React.FC = () => {
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
               filter === "READY"
                 ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-semibold shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
+                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
@@ -784,7 +784,7 @@ export const DemoFactoryTab: React.FC = () => {
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
               filter === "FAILED"
                 ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-semibold shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
+                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
             <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />

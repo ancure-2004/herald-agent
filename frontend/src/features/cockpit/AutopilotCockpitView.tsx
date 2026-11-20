@@ -45,7 +45,7 @@ export const AutopilotCockpitView: React.FC = () => {
   }, [activeTab, setCockpitTab]);
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#F1F3F6] dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-y-auto selection:bg-[#3B63FB] selection:text-white transition-colors duration-200">
+    <div className="h-full w-full flex flex-col bg-[#F1F3F6] dark:bg-[#09090B] text-slate-900 dark:text-zinc-100 overflow-y-auto selection:bg-[#3B63FB] selection:text-white transition-colors duration-200">
       {/* Main Workspace Body */}
       <div className="max-w-[1480px] mx-auto w-full p-3 sm:p-4 flex-1 min-w-0">
         {activeTab === "attention" && (

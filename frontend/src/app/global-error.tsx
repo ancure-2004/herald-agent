@@ -15,13 +15,13 @@ export default function GlobalError({
 
   return (
     <html lang="en">
-      <body className="h-screen w-screen flex items-center justify-center bg-[#FAF9F6] dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans p-6">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.1] shadow-2xl text-center space-y-4">
+      <body className="h-screen w-screen flex items-center justify-center bg-[#FAF9F6] dark:bg-[#09090B] text-slate-900 dark:text-zinc-100 font-sans p-6">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.1] shadow-2xl text-center space-y-4">
           <div className="w-12 h-12 mx-auto rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-600 dark:text-rose-400 font-bold text-xl">
             !
           </div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Application Error</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
             A critical error halted application initialization.
           </p>
           <button

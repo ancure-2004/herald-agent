@@ -227,7 +227,7 @@ export function Sidebar() {
     const collapsedItems = isSettings ? settingsNav : isCockpit ? cockpitNav : managementNav;
 
     return (
-      <aside className="w-18 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-2.5 flex flex-col justify-start items-center transition-all duration-200 z-20 relative">
+      <aside className="w-18 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm p-2.5 flex flex-col justify-start items-center transition-all duration-200 z-20 relative">
         {/* Top: Logo + Expand Toggle */}
         <div className="flex flex-col items-center gap-2">
           <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs">
@@ -246,7 +246,7 @@ export function Sidebar() {
         </div>
 
         {/* Compact Divider */}
-        <div className="w-8 my-3 border-t border-slate-100 dark:border-slate-800" />
+        <div className="w-8 my-3 border-t border-slate-100 dark:border-[#27272A]" />
 
         {/* If Settings is active, show crisp Back to Workspace button */}
         {isSettings && (
@@ -288,7 +288,7 @@ export function Sidebar() {
                 className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer relative group ${
                   active
                     ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900 scale-105"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+                    : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
                 title={item.label}
                 aria-label={item.label}
@@ -305,7 +305,7 @@ export function Sidebar() {
         {/* Bottom Footer Block: Pushed to bottom via mt-auto */}
         <div
           ref={dropdownRef}
-          className="mt-auto flex flex-col items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 w-full relative"
+          className="mt-auto flex flex-col items-center gap-2 pt-2 border-t border-slate-100 dark:border-[#27272A] w-full relative"
         >
           {/* Autopilot Indicator Button with crisp emerald dot */}
           <button
@@ -358,7 +358,7 @@ export function Sidebar() {
   // OPEN SIDEBAR
   // -------------------------------------------------------------
   return (
-    <aside className="w-64 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-3.5 flex flex-col justify-start transition-all duration-200 z-20 relative">
+    <aside className="w-64 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm p-3.5 flex flex-col justify-start transition-all duration-200 z-20 relative">
       {/* Top Header: Brand Logo + Workspace Name + Collapse Toggle */}
       <div className="flex items-center justify-between pb-2">
         <div className="flex items-center gap-2.5">
@@ -387,7 +387,7 @@ export function Sidebar() {
       </div>
 
       {/* Compact Divider */}
-      <div className="my-3 border-t border-slate-100 dark:border-slate-800" />
+      <div className="my-3 border-t border-slate-100 dark:border-[#27272A]" />
 
       {/* Navigation Menu Grouped at Top */}
       <div className="overflow-y-auto no-scrollbar pr-0.5">
@@ -403,7 +403,7 @@ export function Sidebar() {
               <span>Back to Workspace</span>
             </button>
 
-            <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
               Settings &amp; Preferences
             </div>
 
@@ -419,7 +419,7 @@ export function Sidebar() {
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       active
                         ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 rounded-xl font-medium shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -431,7 +431,7 @@ export function Sidebar() {
           </div>
         ) : (
           <div>
-            <div className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <div className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
               {isCockpit ? "Cockpit Flight Deck" : "CRM Management"}
             </div>
 
@@ -450,7 +450,7 @@ export function Sidebar() {
                         className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                           active
                             ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
-                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                            : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -479,7 +479,7 @@ export function Sidebar() {
                           className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                             active
                               ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
-                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
                           }`}
                         >
                           <div className="flex items-center gap-3">
@@ -503,7 +503,7 @@ export function Sidebar() {
 
                         {/* Sub-menu of Smart Queues */}
                         {pipelineBoardExpanded && (
-                          <div className="ml-4 pl-2.5 border-l-2 border-slate-200 dark:border-slate-800 space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                          <div className="ml-4 pl-2.5 border-l-2 border-slate-200 dark:border-[#27272A] space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                             {[
                               { slug: "all_active", label: "All Active Pipeline", icon: LayoutGrid },
                               { slug: "review_tray", label: "Review Tray (Ready)", icon: CheckCircle2 },
@@ -526,7 +526,7 @@ export function Sidebar() {
                                   className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer relative group ${
                                     isSubActive
                                       ? "bg-slate-100 text-slate-900 font-medium dark:bg-white/[0.1] dark:text-white"
-                                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                                      : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/40"
                                   }`}
                                 >
                                   <div className="flex items-center gap-2 truncate">
@@ -560,7 +560,7 @@ export function Sidebar() {
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                         active
                           ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                          : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -577,7 +577,7 @@ export function Sidebar() {
       {/* Bottom Footer Block: Pushed to bottom via mt-auto */}
       <div
         ref={dropdownRef}
-        className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 shrink-0"
+        className="mt-auto pt-3 border-t border-slate-100 dark:border-[#27272A] space-y-2.5 shrink-0"
       >
         {/* Compact Autopilot Status Card with crisp emerald dot */}
         <div className="bg-zinc-900 text-white dark:bg-zinc-800 rounded-xl p-2.5 flex items-center justify-between shadow-xs">
@@ -612,7 +612,7 @@ export function Sidebar() {
         </div>
 
         {/* User Profile Footer Row with relative popover wrapper */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 relative">
+        <div className="pt-2 border-t border-slate-100 dark:border-[#27272A]/80 relative">
           <div className="flex items-center justify-between">
             <button
               type="button"

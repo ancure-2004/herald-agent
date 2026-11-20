@@ -73,7 +73,7 @@ export function AddLeadModal() {
     >
       <form onSubmit={handleCreateLead} className="space-y-3.5 text-xs">
         <div>
-          <label className="text-slate-600 dark:text-slate-400 font-medium">Clinic Name *</label>
+          <label className="text-slate-600 dark:text-zinc-400 font-medium">Clinic Name *</label>
           <input
             type="text"
             required
@@ -86,7 +86,7 @@ export function AddLeadModal() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
-            <label className="text-slate-600 dark:text-slate-400 font-medium">Doctor Name</label>
+            <label className="text-slate-600 dark:text-zinc-400 font-medium">Doctor Name</label>
             <input
               type="text"
               value={newLeadDoctor}
@@ -96,7 +96,7 @@ export function AddLeadModal() {
             />
           </div>
           <div>
-            <label className="text-slate-600 dark:text-slate-400 font-medium">Locality / City</label>
+            <label className="text-slate-600 dark:text-zinc-400 font-medium">Locality / City</label>
             <input
               type="text"
               value={newLeadLocality}
@@ -109,7 +109,7 @@ export function AddLeadModal() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
-            <label className="text-slate-600 dark:text-slate-400 font-medium">Primary Phone</label>
+            <label className="text-slate-600 dark:text-zinc-400 font-medium">Primary Phone</label>
             <input
               type="text"
               value={newLeadPhone}
@@ -119,7 +119,7 @@ export function AddLeadModal() {
             />
           </div>
           <div>
-            <label className="text-slate-600 dark:text-slate-400 font-medium">Instagram Handle</label>
+            <label className="text-slate-600 dark:text-zinc-400 font-medium">Instagram Handle</label>
             <input
               type="text"
               value={newLeadIg}
@@ -131,7 +131,7 @@ export function AddLeadModal() {
         </div>
 
         <div>
-          <label className="text-slate-600 dark:text-slate-400 font-medium">Initial Mandatory Next Step</label>
+          <label className="text-slate-600 dark:text-zinc-400 font-medium">Initial Mandatory Next Step</label>
           <input
             type="text"
             value={newLeadNextAction}
@@ -144,7 +144,7 @@ export function AddLeadModal() {
           <button
             type="button"
             onClick={() => setNewLeadModalOpen(false)}
-            className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-300 font-medium cursor-pointer transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-slate-700 dark:text-zinc-300 font-medium cursor-pointer transition-colors"
           >
             Cancel
           </button>

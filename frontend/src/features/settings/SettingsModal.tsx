@@ -430,10 +430,10 @@ export function SettingsModal() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-6xl w-[92vw] h-[88vh] bg-white dark:bg-[#141721] rounded-2xl border border-slate-200/90 dark:border-white/[0.1] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
+        className="w-full max-w-6xl w-[92vw] h-[88vh] bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200/90 dark:border-white/[0.1] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
       >
         {/* Top Minimal Header */}
-        <div className="px-6 py-3 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between shrink-0 bg-white dark:bg-[#161925]">
+        <div className="px-6 py-3 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between shrink-0 bg-white dark:bg-[#1C1C1F]">
           <h2 id="settings-modal-title" className="text-base font-bold text-slate-900 dark:text-white">
             Settings
           </h2>
@@ -457,7 +457,7 @@ export function SettingsModal() {
           <div className="w-60 sm:w-68 border-r border-slate-100 dark:border-white/[0.08] p-3 space-y-4 bg-slate-50/50 dark:bg-white/[0.01] overflow-y-auto shrink-0">
             {/* Group 1: Operations */}
             <div className="space-y-1">
-              <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                 Operations
               </div>
               {operationsCategories.map((cat) => {
@@ -474,7 +474,7 @@ export function SettingsModal() {
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left ${
                       isActive
                         ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05]"
+                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05]"
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
@@ -489,7 +489,7 @@ export function SettingsModal() {
 
             {/* Group 2: Platform & System */}
             <div className="space-y-1">
-              <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                 Platform &amp; System
               </div>
               {systemCategories.map((cat) => {
@@ -506,7 +506,7 @@ export function SettingsModal() {
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left ${
                       isActive
                         ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05]"
+                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05]"
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
@@ -554,7 +554,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Active Hustle Engine</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         {activeHustle?.name || "Dental Clinic Growth"}
                       </div>
                     </div>
@@ -567,7 +567,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Target Package Value</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Average deal value assigned to qualified prospects
                       </div>
                     </div>
@@ -580,14 +580,14 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Autonomy Mode</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Copilot requires human confirmation; Autopilot auto-dispatches within safety limits
                       </div>
                     </div>
                     <select
                       value={settingsAutonomy}
                       onChange={(e) => setSettingsAutonomy(e.target.value as "copilot" | "autopilot")}
-                      className="bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none cursor-pointer"
+                      className="bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none cursor-pointer"
                     >
                       <option value="copilot">Copilot (Review Tray)</option>
                       <option value="autopilot">Autopilot (Auto-Dispatch)</option>
@@ -598,7 +598,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Minimum Stock Days</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Days of verified inventory buffer before Autopilot triggers replenishment
                       </div>
                     </div>
@@ -609,7 +609,7 @@ export function SettingsModal() {
                         max={14}
                         value={settingsMinDays}
                         onChange={(e) => setSettingsMinDays(Number(e.target.value))}
-                        className="w-20 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
+                        className="w-20 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
                       />
                       <span className="text-slate-400 font-mono">days</span>
                     </div>
@@ -671,7 +671,7 @@ export function SettingsModal() {
                         <div className="font-bold text-slate-900 dark:text-white mt-2">
                           Google Places API
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                        <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
                           Official Maps Search + No-Website Filter across Delhi NCR.
                         </div>
                       </div>
@@ -692,7 +692,7 @@ export function SettingsModal() {
                         <div className="font-bold text-slate-900 dark:text-white mt-2">
                           Serper Maps API
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                        <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
                           High-volume Google Maps search fallback if Places quota exhausts.
                         </div>
                       </div>
@@ -713,7 +713,7 @@ export function SettingsModal() {
                         <div className="font-bold text-slate-900 dark:text-white mt-2">
                           Brave Search API
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                        <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
                           Directory, Practo, and Justdial cross-check for contact details.
                         </div>
                       </div>
@@ -731,7 +731,7 @@ export function SettingsModal() {
                         <div className="font-bold text-slate-900 dark:text-white mt-2">
                           Playwright Maps
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                        <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
                           Direct headless Maps scraper for deep local verification pools.
                         </div>
                       </div>
@@ -748,7 +748,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Discovery Query Seed</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Base search query dispatched to Google Places &amp; Serper
                       </div>
                     </div>
@@ -757,7 +757,7 @@ export function SettingsModal() {
                       value={settingsQuery}
                       onChange={(e) => setSettingsQuery(e.target.value)}
                       placeholder="e.g. dental clinic in South Delhi"
-                      className="w-64 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      className="w-64 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
 
@@ -772,7 +772,7 @@ export function SettingsModal() {
                           </span>
                         )}
                       </div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         {isDentalHustle
                           ? "Disabled for Dental Clinics (Maps & Practo deliver higher conversion)."
                           : "Scrape Instagram business profiles as secondary contact channel"}
@@ -853,7 +853,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Safety Mode</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         {settingsDryRun
                           ? "DRY-RUN: Simulates message transmission safely without sending real messages"
                           : "LIVE SEND: Dispatches real outbound messages to WhatsApp/IG"}
@@ -876,7 +876,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4 flex-wrap">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Batch Size Limit</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Maximum prospects processed per automated refill batch
                       </div>
                     </div>
@@ -890,7 +890,7 @@ export function SettingsModal() {
                             className={`px-2 py-1 rounded-md text-[11px] font-mono font-bold border transition-colors cursor-pointer ${
                               settingsBatchSize === preset
                                 ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100"
-                                : "bg-slate-50 dark:bg-zinc-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-zinc-700 hover:border-slate-400"
+                                : "bg-slate-50 dark:bg-zinc-800/60 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-slate-400"
                             }`}
                           >
                             {preset}
@@ -904,7 +904,7 @@ export function SettingsModal() {
                         step={5}
                         value={settingsBatchSize}
                         onChange={(e) => setSettingsBatchSize(Number(e.target.value))}
-                        className="w-16 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-2.5 py-1 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
+                        className="w-16 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-2.5 py-1 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
                       />
                       <span className="text-slate-400 font-mono">leads</span>
                     </div>
@@ -914,7 +914,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">WhatsApp Daily Cap</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Maximum outbound WhatsApp messages per day
                       </div>
                     </div>
@@ -925,7 +925,7 @@ export function SettingsModal() {
                         max={100}
                         value={settingsWaLimit}
                         onChange={(e) => setSettingsWaLimit(Number(e.target.value))}
-                        className="w-20 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
+                        className="w-20 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
                       />
                       <span className="text-slate-400 font-mono">msgs/day</span>
                     </div>
@@ -935,7 +935,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Instagram Daily Cap</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Maximum outbound direct messages on Instagram per day
                       </div>
                     </div>
@@ -946,7 +946,7 @@ export function SettingsModal() {
                         max={100}
                         value={settingsIgLimit}
                         onChange={(e) => setSettingsIgLimit(Number(e.target.value))}
-                        className="w-20 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
+                        className="w-20 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
                       />
                       <span className="text-slate-400 font-mono">dms/day</span>
                     </div>
@@ -956,7 +956,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Email Daily Cap</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Maximum outbound cold email pitches per day
                       </div>
                     </div>
@@ -967,7 +967,7 @@ export function SettingsModal() {
                         max={200}
                         value={settingsEmailLimit}
                         onChange={(e) => setSettingsEmailLimit(Number(e.target.value))}
-                        className="w-20 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
+                        className="w-20 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none text-right"
                       />
                       <span className="text-slate-400 font-mono">emails/day</span>
                     </div>
@@ -989,7 +989,7 @@ export function SettingsModal() {
                       type="button"
                       disabled={testingConnection}
                       onClick={() => handleTestAIConnection()}
-                      className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-white/[0.12] bg-slate-50 dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] font-semibold text-[11px] text-slate-800 dark:text-slate-200 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                      className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-white/[0.12] bg-slate-50 dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] font-semibold text-[11px] text-slate-800 dark:text-zinc-200 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                     >
                       {testingConnection ? (
                         <>
@@ -1081,11 +1081,11 @@ export function SettingsModal() {
                                 {p.badge}
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                            <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-snug">
                               {p.desc}
                             </p>
                           </div>
-                          <div className="pt-2 flex items-center justify-between text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                          <div className="pt-2 flex items-center justify-between text-[11px] font-medium text-slate-600 dark:text-zinc-300">
                             <span>{isSelected ? "Active Provider" : "Click to select"}</span>
                             {isSelected && <Check className="w-3.5 h-3.5 text-emerald-500" />}
                           </div>
@@ -1101,7 +1101,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Gemini API Key (BYOK)</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         {hasGeminiKey ? "Key configured in environment" : "Free key at aistudio.google.com"}
                       </div>
                     </div>
@@ -1110,7 +1110,7 @@ export function SettingsModal() {
                       value={geminiKeyInput}
                       onChange={(e) => setGeminiKeyInput(e.target.value)}
                       placeholder={hasGeminiKey ? "••••••••••••••••" : "Paste AIzaSy... key"}
-                      className="w-64 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none"
+                      className="w-64 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
 
@@ -1118,7 +1118,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Groq API Key (BYOK)</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         {hasGroqKey ? "Key configured in environment" : "Free key at console.groq.com"}
                       </div>
                     </div>
@@ -1127,7 +1127,7 @@ export function SettingsModal() {
                       value={groqKeyInput}
                       onChange={(e) => setGroqKeyInput(e.target.value)}
                       placeholder={hasGroqKey ? "••••••••••••••••" : "Paste gsk_... key"}
-                      className="w-64 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none"
+                      className="w-64 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
                 </div>
@@ -1153,23 +1153,23 @@ export function SettingsModal() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1 border-t border-slate-200/60 dark:border-white/[0.06]">
                     <div>
                       <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Transport</span>
-                      <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">JSON-RPC stdio</div>
+                      <div className="font-semibold text-slate-800 dark:text-zinc-200 text-[11px]">JSON-RPC stdio</div>
                     </div>
                     <div>
                       <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Protocol</span>
-                      <div className="font-semibold text-slate-800 dark:text-slate-200 font-mono text-[11px]">
+                      <div className="font-semibold text-slate-800 dark:text-zinc-200 font-mono text-[11px]">
                         v2.0.0 (2024-11-05)
                       </div>
                     </div>
                     <div>
                       <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Entry Point</span>
-                      <div className="font-semibold text-slate-800 dark:text-slate-200 font-mono text-[11px] truncate">
+                      <div className="font-semibold text-slate-800 dark:text-zinc-200 font-mono text-[11px] truncate">
                         backend/mcp_server.py
                       </div>
                     </div>
                     <div>
                       <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Harnesses</span>
-                      <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] truncate">
+                      <div className="font-semibold text-slate-800 dark:text-zinc-200 text-[11px] truncate">
                         Antigravity · Claude · Cursor
                       </div>
                     </div>
@@ -1195,11 +1195,11 @@ export function SettingsModal() {
                           <span className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
                             {tool.name}
                           </span>
-                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-700/60 text-slate-700 dark:text-slate-300 break-all max-w-full">
+                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-700/60 text-slate-700 dark:text-zinc-300 break-all max-w-full">
                             {tool.schema}
                           </span>
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                        <div className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
                           {tool.description}
                         </div>
                       </div>
@@ -1246,7 +1246,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Interface Theme</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Select light, dark, or system matching theme
                       </div>
                     </div>
@@ -1257,7 +1257,7 @@ export function SettingsModal() {
                         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                           themeMode === "light"
                             ? "bg-white text-zinc-900 shadow-xs"
-                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
                         <Sun className="w-3.5 h-3.5" />
@@ -1269,7 +1269,7 @@ export function SettingsModal() {
                         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                           themeMode === "dark"
                             ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
-                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
                         <Moon className="w-3.5 h-3.5" />
@@ -1281,7 +1281,7 @@ export function SettingsModal() {
                         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                           themeMode === "system"
                             ? "bg-white text-zinc-900 dark:bg-white dark:text-zinc-900 shadow-xs"
-                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
                         <Monitor className="w-3.5 h-3.5" />
@@ -1294,7 +1294,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Smooth Animations</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Enable smooth modal entrances, tab transitions, and pulsing status rings
                       </div>
                     </div>
@@ -1322,7 +1322,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Compact Table Density</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Reduce vertical padding on lead rows to fit more data on screen
                       </div>
                     </div>
@@ -1352,7 +1352,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Operator Name</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Display name shown in user menu and logged action trails
                       </div>
                     </div>
@@ -1360,7 +1360,7 @@ export function SettingsModal() {
                       type="text"
                       value={profileName}
                       onChange={(e) => setProfileName(e.target.value)}
-                      className="w-56 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      className="w-56 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
 
@@ -1368,7 +1368,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Role Designation</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Operational title (e.g. CRM Architect, Growth Lead)
                       </div>
                     </div>
@@ -1376,7 +1376,7 @@ export function SettingsModal() {
                       type="text"
                       value={profileRole}
                       onChange={(e) => setProfileRole(e.target.value)}
-                      className="w-56 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      className="w-56 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
 
@@ -1384,7 +1384,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Badge Initials</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         2-character monogram badge shown in the sidebar avatar
                       </div>
                     </div>
@@ -1393,7 +1393,7 @@ export function SettingsModal() {
                       maxLength={3}
                       value={profileInitials}
                       onChange={(e) => setProfileInitials(e.target.value.toUpperCase())}
-                      className="w-20 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-center text-slate-900 dark:text-white focus:outline-none"
+                      className="w-20 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-center text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
 
@@ -1401,7 +1401,7 @@ export function SettingsModal() {
                   <div className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-0.5 max-w-sm">
                       <div className="font-semibold text-slate-900 dark:text-white">Outreach Sign-Off</div>
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-slate-500 dark:text-zinc-400">
                         Closing signature appended to outbound cold WhatsApp &amp; Email pitches
                       </div>
                     </div>
@@ -1409,7 +1409,7 @@ export function SettingsModal() {
                       type="text"
                       value={profileSignoff}
                       onChange={(e) => setProfileSignoff(e.target.value)}
-                      className="w-56 bg-slate-50 dark:bg-[#1C2030] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      className="w-56 bg-slate-50 dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
                 </div>
@@ -1419,7 +1419,7 @@ export function SettingsModal() {
         </div>
 
         {/* Modal Clean Footer with Save Settings Button */}
-        <div className="px-6 py-2.5 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#161925] flex items-center justify-between shrink-0">
+        <div className="px-6 py-2.5 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#1C1C1F] flex items-center justify-between shrink-0">
           <div className="text-xs text-slate-400 font-medium">
             Press <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] font-mono text-[10px]">ESC</kbd> to dismiss
           </div>
@@ -1428,7 +1428,7 @@ export function SettingsModal() {
             <button
               type="button"
               onClick={() => setSettingsModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-zinc-300 hover:bg-slate-200/60 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
             >
               Cancel
             </button>

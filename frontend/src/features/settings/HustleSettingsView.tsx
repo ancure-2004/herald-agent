@@ -423,7 +423,7 @@ export function HustleSettingsView() {
           <h2 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
             {currentTab.title}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             {currentTab.subtitle}
           </p>
         </div>
@@ -453,8 +453,8 @@ export function HustleSettingsView() {
                     Primary Engine
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Target Region: <span className="font-semibold text-slate-800 dark:text-slate-200">Delhi NCR</span> (South Delhi, Gurugram, Noida, West Delhi)
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
+                  Target Region: <span className="font-semibold text-slate-800 dark:text-zinc-200">Delhi NCR</span> (South Delhi, Gurugram, Noida, West Delhi)
                 </p>
               </div>
 
@@ -503,7 +503,7 @@ export function HustleSettingsView() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
                   Autonomy Mode (Copilot vs. Autopilot)
                 </label>
                 <select
@@ -526,7 +526,7 @@ export function HustleSettingsView() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
                   Default Discovery Search Query
                 </label>
                 <input
@@ -604,7 +604,7 @@ export function HustleSettingsView() {
                   <div className="font-bold text-slate-900 dark:text-white mt-2">
                     Google Places API
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
                     Official Maps Search + No-Website Filter across Delhi NCR.
                   </div>
                 </div>
@@ -625,7 +625,7 @@ export function HustleSettingsView() {
                   <div className="font-bold text-slate-900 dark:text-white mt-2">
                     Serper Maps API
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
                     High-volume Google Maps search fallback if Places quota exhausts.
                   </div>
                 </div>
@@ -646,7 +646,7 @@ export function HustleSettingsView() {
                   <div className="font-bold text-slate-900 dark:text-white mt-2">
                     Brave Search API
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
                     Directory, Practo, and Justdial cross-check for contact details.
                   </div>
                 </div>
@@ -664,7 +664,7 @@ export function HustleSettingsView() {
                   <div className="font-bold text-slate-900 dark:text-white mt-2">
                     Playwright Maps
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
                     Direct headless Maps scraper for deep local verification pools.
                   </div>
                 </div>
@@ -686,7 +686,7 @@ export function HustleSettingsView() {
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
                 Instagram discovery is maintained in Herald for other agency hustles, but is strictly turned OFF for Dental Clinics (which find higher conversion from verified Google Maps &amp; Practo records).
               </p>
             </div>
@@ -738,7 +738,7 @@ export function HustleSettingsView() {
                 <span>{settingsDryRun ? "Mode: DRY-RUN (Safe Simulation)" : "Mode: LIVE SEND (Real Dispatch)"}</span>
               </button>
             </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+            <div className="text-[11px] text-slate-500 dark:text-zinc-400">
               {settingsDryRun
                 ? "Safe Mode active: All closer agent runs will preview and validate outreach without sending real WhatsApp messages, DMs, or emails."
                 : "Live Mode active: Real external communications will be dispatched through connected accounts."}
@@ -767,7 +767,7 @@ export function HustleSettingsView() {
                     className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors cursor-pointer ${
                       settingsBatchSize === preset
                         ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100"
-                        : "bg-slate-50 dark:bg-zinc-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-zinc-700 hover:border-slate-400"
+                        : "bg-slate-50 dark:bg-zinc-800/60 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-slate-400"
                     }`}
                   >
                     {preset}
@@ -925,7 +925,7 @@ export function HustleSettingsView() {
                     AI Provider &amp; Model Engine
                   </h3>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
                   Choose how AI features (Ask &amp; Do, AI Reply Suggestions, AI Call Briefs) are powered.
                   Zero silent fallbacks: real AI is used across all suggestions.
                 </p>
@@ -936,7 +936,7 @@ export function HustleSettingsView() {
                   type="button"
                   onClick={() => handleTestAIConnection()}
                   disabled={testingConnection}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors disabled:opacity-50 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 text-xs font-semibold text-slate-700 dark:text-zinc-300 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   <Zap className={`w-3.5 h-3.5 ${testingConnection ? "animate-spin text-amber-500" : "text-emerald-500"}`} />
                   <span>{testingConnection ? "Testing..." : "Test Connection"}</span>
@@ -1028,11 +1028,11 @@ export function HustleSettingsView() {
                           {p.badge}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-snug">
                         {p.desc}
                       </p>
                     </div>
-                    <div className="pt-2 flex items-center justify-between text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                    <div className="pt-2 flex items-center justify-between text-[11px] font-medium text-slate-600 dark:text-zinc-300">
                       <span>{isSelected ? "Active Provider" : "Click to select"}</span>
                       {isSelected && <Check className="w-3.5 h-3.5 text-emerald-500" />}
                     </div>
@@ -1092,7 +1092,7 @@ export function HustleSettingsView() {
                     v2.0.0
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
                   JSON-RPC 2.0 stdio server exposing production CRM intelligence, lead ingestion, communications, and batch autopilot execution to Antigravity, Claude Code, and Cursor.
                 </p>
               </div>
@@ -1106,23 +1106,23 @@ export function HustleSettingsView() {
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100 dark:border-zinc-800/80 text-xs">
               <div>
                 <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Transport</span>
-                <div className="font-semibold text-slate-800 dark:text-slate-200">JSON-RPC 2.0 over stdio</div>
+                <div className="font-semibold text-slate-800 dark:text-zinc-200">JSON-RPC 2.0 over stdio</div>
               </div>
               <div>
                 <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Protocol &amp; Version</span>
-                <div className="font-semibold text-slate-800 dark:text-slate-200 font-mono text-[11px]">
+                <div className="font-semibold text-slate-800 dark:text-zinc-200 font-mono text-[11px]">
                   v2.0.0 (2024-11-05)
                 </div>
               </div>
               <div>
                 <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Entry Point</span>
-                <div className="font-semibold text-slate-800 dark:text-slate-200 font-mono text-[11px] truncate">
+                <div className="font-semibold text-slate-800 dark:text-zinc-200 font-mono text-[11px] truncate">
                   backend/mcp_server.py
                 </div>
               </div>
               <div>
                 <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Supported Harnesses</span>
-                <div className="font-semibold text-slate-800 dark:text-slate-200">Antigravity · Claude Code · Cursor</div>
+                <div className="font-semibold text-slate-800 dark:text-zinc-200">Antigravity · Claude Code · Cursor</div>
               </div>
             </div>
           </div>
@@ -1146,11 +1146,11 @@ export function HustleSettingsView() {
                     <span className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
                       {tool.name}
                     </span>
-                    <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-700/60 text-slate-700 dark:text-slate-300 break-all max-w-full">
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-700/60 text-slate-700 dark:text-zinc-300 break-all max-w-full">
                       {tool.schema}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
                     {tool.description}
                   </div>
                 </div>
@@ -1173,7 +1173,7 @@ export function HustleSettingsView() {
               <button
                 type="button"
                 onClick={handleCopyMcp}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-zinc-800 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-xs font-medium text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-zinc-800 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-xs font-medium text-slate-700 dark:text-zinc-300 transition-colors cursor-pointer"
               >
                 {mcpCopied ? (
                   <>
@@ -1270,7 +1270,7 @@ export function HustleSettingsView() {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 flex items-center justify-center">
                     <Monitor className="w-4 h-4" />
                   </div>
                   {themeMode === "system" && (
@@ -1372,7 +1372,7 @@ export function HustleSettingsView() {
                 <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
                   {profileName || "Ankur Tyagi"}
                 </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                <div className="text-xs text-slate-500 dark:text-zinc-400 truncate">
                   {profileRole || "CRM Architect"}
                 </div>
                 <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
@@ -1384,7 +1384,7 @@ export function HustleSettingsView() {
             {/* Input Form */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-700 dark:text-slate-300">
+                <label className="font-semibold text-slate-700 dark:text-zinc-300">
                   Operator Full Name
                 </label>
                 <input
@@ -1403,7 +1403,7 @@ export function HustleSettingsView() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-700 dark:text-slate-300">
+                <label className="font-semibold text-slate-700 dark:text-zinc-300">
                   Operator Role / Title
                 </label>
                 <input
@@ -1422,7 +1422,7 @@ export function HustleSettingsView() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-700 dark:text-slate-300">
+                <label className="font-semibold text-slate-700 dark:text-zinc-300">
                   Avatar Monogram Initials (2 Letters)
                 </label>
                 <input
@@ -1443,7 +1443,7 @@ export function HustleSettingsView() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-700 dark:text-slate-300">
+                <label className="font-semibold text-slate-700 dark:text-zinc-300">
                   Default WhatsApp / Pitch Sign-Off Name
                 </label>
                 <input

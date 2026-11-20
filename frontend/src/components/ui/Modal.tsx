@@ -56,7 +56,7 @@ export function Modal({
         {/* Dialog panel */}
         <div
           className={cn(
-            "relative transform overflow-hidden rounded-3xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.12] text-left shadow-2xl transition-all my-6 w-full max-h-[90vh] flex flex-col p-5 sm:p-6 animate-in zoom-in-95 duration-200",
+            "relative transform overflow-hidden rounded-3xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.12] text-left shadow-2xl transition-all my-6 w-full max-h-[90vh] flex flex-col p-5 sm:p-6 animate-in zoom-in-95 duration-200",
             maxWidthStyles[maxWidth],
             className
           )}

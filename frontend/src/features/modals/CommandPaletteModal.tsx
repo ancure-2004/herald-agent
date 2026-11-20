@@ -469,8 +469,8 @@ export function CommandPaletteModal() {
         className="w-full max-w-2xl bg-white dark:bg-[#12151E] rounded-2xl border border-slate-200/90 dark:border-white/[0.1] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
       >
         {/* Top Input Header Bar */}
-        <div className="p-4 border-b border-slate-100 dark:border-white/[0.08] flex items-center gap-3 bg-white dark:bg-[#161925]">
-          <Search className="w-5 h-5 text-slate-400 dark:text-slate-500 shrink-0" />
+        <div className="p-4 border-b border-slate-100 dark:border-white/[0.08] flex items-center gap-3 bg-white dark:bg-[#1C1C1F]">
+          <Search className="w-5 h-5 text-slate-400 dark:text-zinc-500 shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -510,7 +510,7 @@ export function CommandPaletteModal() {
               </button>
             ) : null}
 
-            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold bg-slate-100 dark:bg-white/[0.08] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/[0.08]">
+            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold bg-slate-100 dark:bg-white/[0.08] text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-white/[0.08]">
               <span>ESC</span>
             </kbd>
           </div>
@@ -518,7 +518,7 @@ export function CommandPaletteModal() {
 
         {/* Searching For Filter Chips Bar */}
         <div className="px-4 py-2.5 border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/70 dark:bg-white/[0.02] flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 mr-1 shrink-0">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500 mr-1 shrink-0">
             Filter:
           </span>
           {FILTER_CHIPS.map((chip) => {
@@ -536,7 +536,7 @@ export function CommandPaletteModal() {
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer shrink-0 ${
                   isActive
                     ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
-                    : "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-white/[0.08] hover:bg-slate-100 dark:hover:bg-white/[0.08]"
+                    : "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-white/[0.08] hover:bg-slate-100 dark:hover:bg-white/[0.08]"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -554,7 +554,7 @@ export function CommandPaletteModal() {
           {/* 1. Recent Searches (when query is empty and filter is all) */}
           {!cmdSearchQuery.trim() && activeFilter === "all" && recentSearches.length > 0 && (
             <div className="space-y-1.5">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1.5 flex items-center gap-1.5">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1.5 flex items-center gap-1.5">
                 <Clock className="w-3 h-3 text-slate-400" />
                 <span>Recent Searches</span>
               </div>
@@ -566,7 +566,7 @@ export function CommandPaletteModal() {
                       setCmdSearchQuery(item);
                       setSelectedIndex(0);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-xs font-medium text-slate-700 dark:text-slate-200 cursor-pointer transition-colors border border-slate-200/60 dark:border-white/[0.06] group"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-xs font-medium text-slate-700 dark:text-zinc-200 cursor-pointer transition-colors border border-slate-200/60 dark:border-white/[0.06] group"
                   >
                     <span>{item}</span>
                     <button
@@ -586,7 +586,7 @@ export function CommandPaletteModal() {
           {/* 2. Clinics & Leads Section */}
           {filteredLeads.length > 0 && (
             <div className="space-y-1.5">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1.5 flex items-center justify-between">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1.5 flex items-center justify-between">
                 <span>Clinics &amp; Leads</span>
                 <span className="font-mono text-slate-500">{filteredLeads.length} matches</span>
               </div>
@@ -613,8 +613,8 @@ export function CommandPaletteModal() {
                           <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                             {lead.name}
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 truncate">
-                            <span className="font-medium text-slate-700 dark:text-slate-300">
+                          <div className="text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-1.5 truncate">
+                            <span className="font-medium text-slate-700 dark:text-zinc-300">
                               {lead.doctor_name || "Doctor"}
                             </span>
                             <span>•</span>
@@ -630,10 +630,10 @@ export function CommandPaletteModal() {
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 font-bold">
                           ₹{(lead.deal_value_inr || 25000).toLocaleString()}
                         </span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.08] text-slate-700 dark:text-slate-300 font-semibold">
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.08] text-slate-700 dark:text-zinc-300 font-semibold">
                           Fit {lead.fit_score || 0}%
                         </span>
-                        <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                        <ChevronRight className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
                       </div>
                     </div>
                   );
@@ -645,7 +645,7 @@ export function CommandPaletteModal() {
           {/* 3. Settings Sections Search */}
           {filteredSettings.length > 0 && (
             <div className="space-y-1.5">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1.5 flex items-center justify-between">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1.5 flex items-center justify-between">
                 <span>Settings Sections &amp; Controls</span>
                 <span className="font-mono text-slate-500">{filteredSettings.length} sections</span>
               </div>
@@ -672,11 +672,11 @@ export function CommandPaletteModal() {
                         <div className="min-w-0">
                           <div className="text-xs font-bold text-slate-900 dark:text-white truncate flex items-center gap-2">
                             <span>{set.title}</span>
-                            <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-slate-100 dark:bg-white/[0.08] text-slate-600 dark:text-slate-300 font-mono">
+                            <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-slate-100 dark:bg-white/[0.08] text-slate-600 dark:text-zinc-300 font-mono">
                               {set.tabLabel}
                             </span>
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                          <div className="text-[11px] text-slate-500 dark:text-zinc-400 truncate mt-0.5">
                             {set.subtitle}
                           </div>
                         </div>
@@ -695,7 +695,7 @@ export function CommandPaletteModal() {
           {/* 4. Quick Actions Grid */}
           {filteredActions.length > 0 && (
             <div className="space-y-1.5">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1.5 flex items-center justify-between">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1.5 flex items-center justify-between">
                 <span>Quick Actions &amp; Navigation</span>
                 <span className="font-mono text-slate-500">{filteredActions.length} actions</span>
               </div>
@@ -723,7 +723,7 @@ export function CommandPaletteModal() {
                           <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                             {action.title}
                           </div>
-                          <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                          <div className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
                             {action.subtitle}
                           </div>
                         </div>
@@ -731,7 +731,7 @@ export function CommandPaletteModal() {
 
                       <div className="flex items-center gap-1.5 shrink-0">
                         {action.shortcut && (
-                          <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/[0.08] font-mono text-[10px] font-bold">
+                          <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] text-slate-500 dark:text-zinc-400 border border-slate-200 dark:border-white/[0.08] font-mono text-[10px] font-bold">
                             {action.shortcut}
                           </kbd>
                         )}
@@ -748,46 +748,46 @@ export function CommandPaletteModal() {
           {selectableItems.length === 0 && (
             <div className="py-12 text-center space-y-2">
               <Search className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
-              <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              <div className="text-sm font-semibold text-slate-700 dark:text-zinc-300">
                 No matches found
               </div>
               <div className="text-xs text-slate-400 max-w-sm mx-auto">
                 No results for "{cmdSearchQuery}" in{" "}
-                <span className="font-semibold text-slate-600 dark:text-slate-300">{activeFilter}</span>. Try switching filter chips or searching settings terms like "quotas" or "mcp".
+                <span className="font-semibold text-slate-600 dark:text-zinc-300">{activeFilter}</span>. Try switching filter chips or searching settings terms like "quotas" or "mcp".
               </div>
             </div>
           )}
         </div>
 
         {/* Bottom Keyboard Navigation Footer */}
-        <div className="px-4 py-3 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/90 dark:bg-[#161925] flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+        <div className="px-4 py-3 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/90 dark:bg-[#1C1C1F] flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] font-mono text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] font-mono text-[10px] font-semibold text-slate-600 dark:text-zinc-300">
                 ↑
               </kbd>
-              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] font-mono text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] font-mono text-[10px] font-semibold text-slate-600 dark:text-zinc-300">
                 ↓
               </kbd>
               <span className="ml-1">Move</span>
             </span>
 
             <span className="inline-flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] font-mono text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] font-mono text-[10px] font-semibold text-slate-600 dark:text-zinc-300">
                 ↵
               </kbd>
               <span className="ml-1">Select</span>
             </span>
 
             <span className="inline-flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] font-mono text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] font-mono text-[10px] font-semibold text-slate-600 dark:text-zinc-300">
                 ESC
               </kbd>
               <span className="ml-1">Quit</span>
             </span>
           </div>
 
-          <div className="font-mono text-[10px] text-slate-400 dark:text-slate-500 font-semibold tracking-wide">
+          <div className="font-mono text-[10px] text-slate-400 dark:text-zinc-500 font-semibold tracking-wide">
             Herald Command Palette
           </div>
         </div>

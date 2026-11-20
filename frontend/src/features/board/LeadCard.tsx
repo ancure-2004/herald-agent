@@ -81,7 +81,7 @@ export function LeadCard({
   return (
     <div
       onClick={onSelect}
-      className={`rounded-xl border transition-all duration-150 select-none relative group bg-white dark:bg-[#141721] ${
+      className={`rounded-xl border transition-all duration-150 select-none relative group bg-white dark:bg-[#18181B] ${
         isNestedInBatch ? "p-3 space-y-2.5" : "p-3.5 space-y-2.5"
       } ${
         isDragging ? "opacity-30 scale-95" : "opacity-100"
@@ -92,11 +92,11 @@ export function LeadCard({
       }`}
     >
       {/* 1. Top Eyebrow Row: Locality & Batch + Clean Deal Value */}
-      <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800/80">
+      <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-[#27272A]/80">
         <span className="text-[11px] text-slate-400 font-medium truncate">
           {eyebrowLabel}
         </span>
-        <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 font-mono shrink-0">
+        <span className="text-[11px] font-semibold text-slate-600 dark:text-zinc-300 font-mono shrink-0">
           ₹{(lead.deal_value_inr || 25000).toLocaleString()}
         </span>
       </div>
@@ -110,7 +110,7 @@ export function LeadCard({
 
         {/* Doctor & Pastel Badges Row */}
         <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-          <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300 font-medium truncate">
+          <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-zinc-300 font-medium truncate">
             <User className="w-3 h-3 text-slate-400 shrink-0" />
             <span className="truncate">{formatDoctorName(lead.doctor_name)}</span>
           </div>
@@ -134,7 +134,7 @@ export function LeadCard({
             <span>✓ Client Onboarded</span>
           </div>
         ) : isLost ? null : nextActionText ? (
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50/90 dark:bg-white/[0.03] rounded-lg px-2.5 py-1.5 truncate border border-slate-200/50 dark:border-white/[0.04]">
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-zinc-400 bg-slate-50/90 dark:bg-white/[0.03] rounded-lg px-2.5 py-1.5 truncate border border-slate-200/50 dark:border-white/[0.04]">
             <span
               className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                 isOverdue ? "bg-rose-500" : "bg-slate-400"
@@ -147,7 +147,7 @@ export function LeadCard({
 
       {/* 3. Bottom Footer Row: Telemetry + Clean Monochrome Action Controls */}
       <div
-        className="pt-2 mt-1 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2"
+        className="pt-2 mt-1 border-t border-slate-100 dark:border-[#27272A]/80 flex items-center justify-between gap-2"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Left: Compact Muted Telemetry & Date */}
@@ -173,7 +173,7 @@ export function LeadCard({
           <button
             type="button"
             onClick={() => openInboxForLead(lead.id)}
-            className="bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 hover:text-zinc-900 dark:text-slate-300 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08] rounded-lg px-2 py-1 text-[11px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            className="bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08] rounded-lg px-2 py-1 text-[11px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
             title="Chat on WhatsApp"
           >
             Chat
@@ -182,7 +182,7 @@ export function LeadCard({
           <button
             type="button"
             onClick={() => openLogCallModal(lead.id)}
-            className="bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 hover:text-zinc-900 dark:text-slate-300 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08] rounded-lg px-2 py-1 text-[11px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            className="bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08] rounded-lg px-2 py-1 text-[11px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
             title="Log Call"
           >
             Call
@@ -201,8 +201,8 @@ export function LeadCard({
             </button>
 
             {advanceDropdownOpen && (
-              <div className="absolute right-0 bottom-full mb-1.5 w-44 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-1.5 z-40 space-y-0.5 text-xs animate-in fade-in zoom-in-95">
-                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-700 mb-1">
+              <div className="absolute right-0 bottom-full mb-1.5 w-44 rounded-2xl bg-white dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] shadow-xl p-1.5 z-40 space-y-0.5 text-xs animate-in fade-in zoom-in-95">
+                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-[#3F3F46] mb-1">
                   Move to Stage:
                 </div>
                 {allStages.map((s) => (
@@ -217,7 +217,7 @@ export function LeadCard({
                     className={`w-full text-left px-2 py-1.5 rounded-lg text-[11px] transition-colors flex items-center justify-between ${
                       s.id === lead.stage_id
                         ? "opacity-40 font-bold bg-slate-100 dark:bg-slate-700/50 cursor-default"
-                        : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
+                        : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
                     }`}
                   >
                     <span className="truncate">{s.name}</span>

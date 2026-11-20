@@ -125,9 +125,9 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
   const countDisplay = totalCount !== undefined ? totalCount : leads.length;
 
   return (
-    <div className="w-full rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] shadow-xs overflow-hidden">
+    <div className="w-full rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#18181B] shadow-xs overflow-hidden">
       {/* 1. Integrated Table Header Bar: Filter Tabs on Left + Expandable Search Pill & Refresh on Right */}
-      <div className="px-4 sm:px-5 py-3 border-b border-slate-100 dark:border-white/[0.06] flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#141721]">
+      <div className="px-4 sm:px-5 py-3 border-b border-slate-100 dark:border-white/[0.06] flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#18181B]">
         {/* Left Side: Segmented Filter Tabs */}
         {onFilterChange && (
           <div className="bg-slate-100/80 dark:bg-zinc-800/80 p-1 rounded-xl flex flex-wrap items-center gap-1 select-none">
@@ -137,7 +137,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
               className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeFilter === "all"
                   ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
               All Leads ({countDisplay})
@@ -149,7 +149,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
               className={`px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
                 activeFilter === "needs-verification"
                   ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs font-semibold"
-                  : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white font-medium"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium"
               }`}
             >
               Needs Verification
@@ -161,7 +161,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
               className={`px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
                 activeFilter === "high-intent"
                   ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs font-semibold"
-                  : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white font-medium"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium"
               }`}
             >
               High Intent
@@ -173,7 +173,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
               className={`px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
                 activeFilter === "ready-for-demo"
                   ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs font-semibold"
-                  : "text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white font-medium"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium"
               }`}
             >
               Ready for Demo
@@ -238,7 +238,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
               <select
                 value={dateFilter}
                 onChange={(e) => onDateFilterChange(e.target.value)}
-                className="h-9 pl-8 pr-7 rounded-xl border border-slate-200/80 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/80 text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer appearance-none"
+                className="h-9 pl-8 pr-7 rounded-xl border border-slate-200/80 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/80 text-xs font-medium text-slate-700 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer appearance-none"
                 title="Filter by discovered date"
               >
                 <option value="all">All Dates ({countDisplay})</option>
@@ -257,7 +257,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
             <button
               type="button"
               onClick={onRefresh}
-              className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer shrink-0"
+              className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer shrink-0"
               title="Refresh Leads from Database"
             >
               <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
@@ -282,7 +282,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
           <table className="w-full text-left text-xs border-collapse font-sans">
             {/* Table Header: Clean horizontal border, no vertical divider lines, subtle monochrome icons */}
             <thead>
-              <tr className="border-b border-slate-200/70 dark:border-white/[0.08] bg-slate-50/70 dark:bg-[#191C28]/95 text-slate-400 dark:text-slate-500 font-semibold text-[11px] tracking-wider uppercase select-none">
+              <tr className="border-b border-slate-200/70 dark:border-white/[0.08] bg-slate-50/70 dark:bg-[#191C28]/95 text-slate-400 dark:text-zinc-500 font-semibold text-[11px] tracking-wider uppercase select-none">
                 {/* Sticky Checkbox */}
                 <th className="sticky left-0 z-20 w-9 py-2.5 px-3 bg-slate-50/70 dark:bg-[#191C28]">
                   <input
@@ -298,7 +298,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
 
                 {/* Sticky Clinic & Domain */}
                 <th className="sticky left-9 z-20 min-w-[170px] max-w-[200px] py-2.5 px-3 bg-slate-50/70 dark:bg-[#191C28]">
-                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 font-semibold">
                     <Type className="w-3.5 h-3.5 text-slate-400" />
                     <span>Clinic &amp; Website</span>
                   </div>
@@ -306,7 +306,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
 
                 {/* Doctor & Phone */}
                 <th className="min-w-[145px] max-w-[170px] py-2.5 px-3">
-                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 font-semibold">
                     <Mail className="w-3.5 h-3.5 text-slate-400" />
                     <span>Doctor &amp; Phone</span>
                   </div>
@@ -314,7 +314,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
 
                 {/* Website Verification */}
                 <th className="min-w-[125px] py-2.5 px-3">
-                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 font-semibold">
                     <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
                     <span>Website Verification</span>
                   </div>
@@ -322,7 +322,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
 
                 {/* Fit Score */}
                 <th className="min-w-[110px] py-2.5 px-3">
-                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 font-semibold">
                     <Gauge className="w-3.5 h-3.5 text-slate-400" />
                     <span>Fit Score</span>
                   </div>
@@ -330,7 +330,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
 
                 {/* Locality */}
                 <th className="min-w-[120px] max-w-[160px] py-2.5 px-3 pr-4">
-                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 font-semibold">
                     <Globe className="w-3.5 h-3.5 text-slate-400" />
                     <span>Locality</span>
                   </div>
@@ -358,11 +358,11 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
                             )}
                             <Calendar className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
                             <span>{formatGroupDate(dateKey)}</span>
-                            <span className="px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-white/[0.08] text-[10px] font-mono text-slate-600 dark:text-slate-300">
+                            <span className="px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-white/[0.08] text-[10px] font-mono text-slate-600 dark:text-zinc-300">
                               {dateLeads.length}
                             </span>
                           </div>
-                          <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                          <span className="text-[11px] text-slate-400 dark:text-zinc-500">
                             {isCollapsed ? "Click to expand" : "Click to collapse"}
                           </span>
                         </div>
@@ -384,7 +384,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
                           >
                     {/* Sticky Checkbox */}
                     <td
-                      className="sticky left-0 z-10 w-9 py-2.5 px-3 bg-white dark:bg-[#141721] group-hover:bg-slate-50/80 dark:group-hover:bg-[#191C28]"
+                      className="sticky left-0 z-10 w-9 py-2.5 px-3 bg-white dark:bg-[#18181B] group-hover:bg-slate-50/80 dark:group-hover:bg-[#191C28]"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <input
@@ -399,13 +399,13 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
                     </td>
 
                     {/* Sticky Clinic Name & Domain */}
-                    <td className="sticky left-9 z-10 py-2.5 px-3 min-w-[170px] max-w-[200px] bg-white dark:bg-[#141721] group-hover:bg-slate-50/80 dark:group-hover:bg-[#191C28]">
+                    <td className="sticky left-9 z-10 py-2.5 px-3 min-w-[170px] max-w-[200px] bg-white dark:bg-[#18181B] group-hover:bg-slate-50/80 dark:group-hover:bg-[#191C28]">
                       <div className="flex items-center justify-between gap-1.5">
                         <div className="truncate">
                           <div className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white transition-colors truncate max-w-[160px]">
                             {lead.companyName}
                           </div>
-                          <div className="text-[11px] font-mono text-slate-400 dark:text-slate-500 truncate max-w-[160px] mt-0.5">
+                          <div className="text-[11px] font-mono text-slate-400 dark:text-zinc-500 truncate max-w-[160px] mt-0.5">
                             {lead.companyDomain || "No active website"}
                           </div>
                         </div>
@@ -431,7 +431,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
                         <div className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate max-w-[140px]">
                           {lead.contactName.startsWith("Dr.") ? lead.contactName : `Dr. ${lead.contactName}`}
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 dark:text-zinc-400 mt-0.5">
                           <span className="truncate max-w-[120px]">{lead.phone || lead.contactEmail}</span>
                           {lead.phone && (
                             <button
@@ -467,7 +467,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
                     </td>
 
                     {/* Locality */}
-                    <td className="py-2.5 px-3 pr-4 min-w-[120px] max-w-[160px] text-xs text-slate-600 dark:text-slate-400 font-medium">
+                    <td className="py-2.5 px-3 pr-4 min-w-[120px] max-w-[160px] text-xs text-slate-600 dark:text-zinc-400 font-medium">
                       <span className="truncate block max-w-[145px]" title={lead.location}>
                         {lead.location}
                       </span>

@@ -27,7 +27,7 @@ function CRMContent() {
   const isCockpit = activeTab === "autopilot";
 
   return (
-    <div className="h-[100dvh] w-full overflow-hidden flex bg-[#F1F3F6] dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div className="h-[100dvh] w-full overflow-hidden flex bg-[#F1F3F6] dark:bg-[#09090B] text-slate-900 dark:text-zinc-100 transition-colors duration-200">
       {/* Toast Notification Banner */}
       {toast && (
         <div
@@ -58,16 +58,16 @@ function CRMContent() {
         <main
           className={`flex-1 min-h-0 min-w-0 ${
             isCockpit
-              ? "p-0 overflow-hidden bg-[#F1F3F6] dark:bg-slate-950"
+              ? "p-0 overflow-hidden bg-[#F1F3F6] dark:bg-[#09090B]"
               : activeTab === "inbox" || activeTab === "calls"
-              ? "p-3 sm:p-4 overflow-hidden h-full bg-[#F1F3F6] dark:bg-slate-950"
+              ? "p-3 sm:p-4 overflow-hidden h-full bg-[#F1F3F6] dark:bg-[#09090B]"
               : activeTab === "dashboard"
               ? "overflow-y-auto no-scrollbar p-3 sm:p-3.5 sm:px-6 h-full bg-[#F1F3F6] dark:bg-[#0B0F17]"
-              : "overflow-y-auto p-4 sm:p-6 space-y-6 bg-[#F1F3F6] dark:bg-slate-950"
+              : "overflow-y-auto p-4 sm:p-6 space-y-6 bg-[#F1F3F6] dark:bg-[#09090B]"
           }`}
         >
           {loading ? (
-            <div className="p-8 sm:p-16 text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="p-8 sm:p-16 text-center text-sm text-slate-500 dark:text-zinc-400">
               Loading Herald Operations Engine...
             </div>
           ) : (

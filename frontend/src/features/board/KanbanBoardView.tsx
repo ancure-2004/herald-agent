@@ -249,7 +249,7 @@ export function KanbanBoardView() {
                   }
                 }}
                 placeholder="Filter current board..."
-                className="pl-8 pr-7 py-1.5 rounded-xl text-xs bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white text-slate-900 dark:text-slate-100 placeholder:text-slate-400 w-52 sm:w-60 transition-all"
+                className="pl-8 pr-7 py-1.5 rounded-xl text-xs bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xs focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 w-52 sm:w-60 transition-all"
               />
               <button
                 type="button"
@@ -270,7 +270,7 @@ export function KanbanBoardView() {
                 setSearchExpanded(true);
                 setTimeout(() => searchInputRef.current?.focus(), 50);
               }}
-              className="h-8 w-8 rounded-xl bg-white hover:bg-slate-50 dark:bg-[#141721] dark:hover:bg-slate-800 border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white cursor-pointer transition-all"
+              className="h-8 w-8 rounded-xl bg-white hover:bg-slate-50 dark:bg-[#18181B] dark:hover:bg-slate-800 border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex items-center justify-center text-slate-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white cursor-pointer transition-all"
               title="Filter current board (/)"
               aria-label="Filter board"
             >
@@ -288,7 +288,7 @@ export function KanbanBoardView() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium shadow-xs transition-all cursor-pointer ${
                 filterPopoverOpen || filterMinFit > 0 || filterVerifiedOnly
                   ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900"
-                  : "bg-white hover:bg-slate-50 dark:bg-[#141721] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200"
+                  : "bg-white hover:bg-slate-50 dark:bg-[#18181B] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-zinc-200"
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -299,9 +299,9 @@ export function KanbanBoardView() {
             </button>
 
             {filterPopoverOpen && (
-              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-xs font-bold text-slate-900 dark:text-slate-100">Quick Filters</span>
+              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#3F3F46] shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#27272A]">
+                  <span className="text-xs font-bold text-slate-900 dark:text-zinc-100">Quick Filters</span>
                   <button
                     onClick={() => {
                       setFilterMinFit(0);
@@ -313,7 +313,7 @@ export function KanbanBoardView() {
                   </button>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                  <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400">
                     Minimum AI Fit Score: {filterMinFit}%
                   </label>
                   <input
@@ -326,7 +326,7 @@ export function KanbanBoardView() {
                     className="w-full accent-indigo-600 cursor-pointer"
                   />
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700 dark:text-slate-300">
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700 dark:text-zinc-300">
                   <input
                     type="checkbox"
                     checked={filterVerifiedOnly}
@@ -349,7 +349,7 @@ export function KanbanBoardView() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium shadow-xs transition-all cursor-pointer ${
                 sortPopoverOpen
                   ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900"
-                  : "bg-white hover:bg-slate-50 dark:bg-[#141721] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200"
+                  : "bg-white hover:bg-slate-50 dark:bg-[#18181B] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-zinc-200"
               }`}
             >
               <ArrowUpDown className="w-3.5 h-3.5" />
@@ -357,9 +357,9 @@ export function KanbanBoardView() {
             </button>
 
             {sortPopoverOpen && (
-              <div className="absolute left-0 mt-2 w-80 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <div className="absolute left-0 mt-2 w-80 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#3F3F46] shadow-2xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#27272A]">
+                  <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                     <span>Sort Options</span>
                     <span className="text-[10px] font-normal text-slate-400">(CustomerGo style)</span>
                   </div>
@@ -369,26 +369,26 @@ export function KanbanBoardView() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-slate-800">
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-[#27272A]">
                     <div className="text-slate-400 text-xs font-mono">::</div>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as any)}
-                      className="flex-1 bg-transparent text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer"
+                      className="flex-1 bg-transparent text-xs font-medium text-slate-800 dark:text-zinc-100 focus:outline-none cursor-pointer"
                     >
-                      <option value="fit" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">AI Fit Score</option>
-                      <option value="intent" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Buyer Intent Score</option>
-                      <option value="deal" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Projected Deal Value</option>
-                      <option value="name" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Clinic / Lead Name</option>
-                      <option value="due" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Next Action Due Date</option>
+                      <option value="fit" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">AI Fit Score</option>
+                      <option value="intent" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Buyer Intent Score</option>
+                      <option value="deal" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Projected Deal Value</option>
+                      <option value="name" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Clinic / Lead Name</option>
+                      <option value="due" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Next Action Due Date</option>
                     </select>
                     <select
                       value={sortOrder}
                       onChange={(e) => setSortOrder(e.target.value as any)}
                       className="bg-transparent text-xs font-semibold text-indigo-600 dark:text-indigo-400 focus:outline-none cursor-pointer"
                     >
-                      <option value="desc" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Descending ↓</option>
-                      <option value="asc" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">Ascending ↑</option>
+                      <option value="desc" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Descending ↓</option>
+                      <option value="asc" className="bg-white dark:bg-[#18181B] text-slate-800 dark:text-zinc-100">Ascending ↑</option>
                     </select>
                   </div>
                 </div>
@@ -406,7 +406,7 @@ export function KanbanBoardView() {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium shadow-xs transition-all cursor-pointer ${
                   batchGroupingEnabled
                     ? "bg-zinc-900 text-white border-zinc-900 shadow-sm dark:bg-white dark:text-zinc-900"
-                    : "bg-white hover:bg-slate-50 dark:bg-[#141721] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200"
+                    : "bg-white hover:bg-slate-50 dark:bg-[#18181B] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-zinc-200"
                 }`}
                 title="Toggle batch grouping for early volume stages"
               >
@@ -417,7 +417,7 @@ export function KanbanBoardView() {
               <button
                 onClick={handleSyncBatches}
                 disabled={syncingBatches}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium shadow-xs transition-all cursor-pointer bg-white hover:bg-slate-50 dark:bg-[#141721] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 disabled:opacity-50 disabled:cursor-wait"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium shadow-xs transition-all cursor-pointer bg-white hover:bg-slate-50 dark:bg-[#18181B] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-zinc-200 disabled:opacity-50 disabled:cursor-wait"
                 title="Assign unbatched leads into batches"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${syncingBatches ? "animate-spin" : ""}`} />
@@ -432,7 +432,7 @@ export function KanbanBoardView() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium shadow-xs transition-all cursor-pointer ${
                 hideEmptyStages
                   ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 shadow-xs"
-                  : "bg-white hover:bg-slate-50 dark:bg-[#141721] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-slate-200"
+                  : "bg-white hover:bg-slate-50 dark:bg-[#18181B] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-zinc-200"
               }`}
               title={hideEmptyStages ? "Empty stages collapsed. Click to show all." : "Showing all stages. Click to hide empty."}
             >
@@ -441,7 +441,7 @@ export function KanbanBoardView() {
             </button>
           )}
 
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400 pl-1">
+          <span className="text-xs font-medium text-slate-500 dark:text-zinc-400 pl-1">
             {totalCount} clinics
           </span>
         </div>
@@ -537,14 +537,14 @@ export function KanbanBoardView() {
         <div className="space-y-3 pb-6">
           {/* Focused List Rows / Empty State */}
           {focusedLeads.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-3">
+            <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center mx-auto text-slate-400">
                 <CurrentViewIcon className="w-6 h-6" />
               </div>
               <div className="text-sm font-semibold text-zinc-900 dark:text-white">
                 No leads found in &quot;{currentViewInfo.label}&quot;
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+              <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
                 There are currently no active leads matching this smart view filter or search criteria.
               </p>
               <button
@@ -569,7 +569,7 @@ export function KanbanBoardView() {
                   <div
                     key={lead.id}
                     onClick={() => setSelectedLeadId(lead.id)}
-                    className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-white/[0.15] transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                    className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-white/[0.15] transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group"
                   >
                     {/* Left: Clinic / Doctor info */}
                     <div className="flex items-start gap-3 min-w-0 md:w-1/3">
@@ -580,9 +580,9 @@ export function KanbanBoardView() {
                         <div className="text-sm font-semibold text-zinc-900 dark:text-white truncate">
                           {lead.name}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
+                        <div className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-1.5 mt-0.5 truncate">
                           {lead.doctor_name && (
-                            <span className="font-medium text-slate-700 dark:text-slate-300">
+                            <span className="font-medium text-slate-700 dark:text-zinc-300">
                               {formatDoctorName(lead.doctor_name)} &bull;
                             </span>
                           )}
@@ -595,7 +595,7 @@ export function KanbanBoardView() {
                     {/* Middle: Stage & Scores & Next Action */}
                     <div className="flex flex-wrap items-center gap-2 md:gap-4 flex-1">
                       {/* Current Stage Badge */}
-                      <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.08]">
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-zinc-300 border border-slate-200/70 dark:border-white/[0.08]">
                         {stage?.name || "Pipeline Lead"}
                       </span>
 
@@ -604,7 +604,7 @@ export function KanbanBoardView() {
                         <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-medium bg-slate-100 dark:bg-white/[0.06] text-zinc-800 dark:text-zinc-200 border border-slate-200/60 dark:border-white/[0.06]">
                           Fit {lead.fit_score}%
                         </span>
-                        <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-medium bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/[0.06] flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-medium bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-zinc-300 border border-slate-200/60 dark:border-white/[0.06] flex items-center gap-1">
                           <span className={`w-1.5 h-1.5 rounded-full ${intentDot} shrink-0`} />
                           Intent {lead.intent_score}
                         </span>
@@ -612,10 +612,10 @@ export function KanbanBoardView() {
 
                       {/* Next Action & Due Date */}
                       {lead.next_action && (
-                        <div className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1.5 max-w-xs truncate">
+                        <div className="text-xs text-slate-600 dark:text-zinc-300 flex items-center gap-1.5 max-w-xs truncate">
                           <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span className="truncate">
-                            <strong className="text-slate-800 dark:text-slate-200">Next: </strong>
+                            <strong className="text-slate-800 dark:text-zinc-200">Next: </strong>
                             {lead.next_action}
                           </span>
                           {lead.next_action_due_at && (
@@ -630,7 +630,7 @@ export function KanbanBoardView() {
                     {/* Right: Deal Value & Quick Actions */}
                     <div className="flex items-center justify-between md:justify-end gap-2.5 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-white/[0.08]">
                       <div className="text-right mr-1">
-                        <div className="text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
+                        <div className="text-xs font-mono font-semibold text-slate-700 dark:text-zinc-300 tabular-nums">
                           ₹{(lead.deal_value_inr || 25000).toLocaleString()}
                         </div>
                       </div>
@@ -641,7 +641,7 @@ export function KanbanBoardView() {
                           e.stopPropagation();
                           openInboxForLead(lead.id);
                         }}
-                        className="py-1.5 px-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 hover:text-zinc-900 dark:text-slate-300 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08] text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                        className="py-1.5 px-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08] text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
                         title="Open WhatsApp chat"
                       >
                         <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
@@ -654,7 +654,7 @@ export function KanbanBoardView() {
                           e.stopPropagation();
                           openLogCallModal(lead.id);
                         }}
-                        className="py-1.5 px-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 hover:text-zinc-900 dark:text-slate-300 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08] text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                        className="py-1.5 px-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08] text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
                         title="Log raw call & generate AI notes"
                       >
                         <Phone className="w-3.5 h-3.5 text-slate-400" />

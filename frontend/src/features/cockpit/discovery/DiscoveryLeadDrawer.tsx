@@ -98,7 +98,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="my-2 mr-2 h-[calc(100vh-16px)] w-full max-w-[480px] sm:w-[480px] rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-2xl overflow-hidden flex flex-col z-50 animate-in slide-in-from-right duration-300"
+        className="my-2 mr-2 h-[calc(100vh-16px)] w-full max-w-[480px] sm:w-[480px] rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-2xl overflow-hidden flex flex-col z-50 animate-in slide-in-from-right duration-300"
       >
         {/* 1. COMPACT HEADER */}
         <div className="px-5 pt-5 pb-4 border-b border-slate-100 dark:border-white/[0.06] shrink-0">
@@ -127,9 +127,9 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
           </div>
 
           {/* Row 2: Doctor & Locality + Fit Score & Verification Inline */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex flex-wrap items-center justify-between gap-2 mt-1.5 text-xs text-slate-500 dark:text-zinc-400">
             <div className="flex items-center gap-1.5 min-w-0 truncate">
-              <span className="font-semibold text-slate-700 dark:text-slate-200 truncate">
+              <span className="font-semibold text-slate-700 dark:text-zinc-200 truncate">
                 {doctorFormatted}
               </span>
               <span>•</span>
@@ -139,7 +139,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="bg-slate-100 dark:bg-slate-800 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700 rounded-md px-1.5 py-0.5 text-[11px] font-medium font-mono">
+              <span className="bg-slate-100 dark:bg-[#27272A] text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-[#3F3F46] rounded-md px-1.5 py-0.5 text-[11px] font-medium font-mono">
                 Fit {lead.verification.confidenceScore || 0}%
               </span>
               <VerificationBadge
@@ -158,13 +158,13 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
                 href={`https://wa.me/${phoneDigits}?text=Hi%20${encodeURIComponent(doctorFormatted)},`}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-slate-800 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                className="bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-[#27272A] dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-[#3F3F46] rounded-xl px-3 py-1.5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
               >
                 <Phone className="w-3 h-3 fill-current shrink-0" />
                 <span className="truncate">{lead.phone}</span>
               </a>
             ) : (
-              <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center italic">
+              <div className="bg-slate-50 dark:bg-[#27272A]/60 border border-slate-200/60 dark:border-[#3F3F46]/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center italic">
                 No phone registered
               </div>
             )}
@@ -174,14 +174,14 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
                 href={lead.companyWebsite}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-800 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors truncate"
+                className="bg-white hover:bg-slate-50 dark:bg-[#18181B] dark:hover:bg-slate-800 border border-slate-200/90 dark:border-[#3F3F46] rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-800 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors truncate"
               >
                 <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <span className="truncate">Visit Website</span>
                 <ExternalLink className="w-3 h-3 shrink-0 text-slate-400" />
               </a>
             ) : (
-              <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center italic">
+              <div className="bg-slate-50 dark:bg-[#27272A]/60 border border-slate-200/60 dark:border-[#3F3F46]/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center italic">
                 No existing site
               </div>
             )}
@@ -191,7 +191,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
         {/* SCROLLABLE BODY */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
           {/* Executive Strategy & Discovery Summary Callout Box */}
-          <div className="bg-slate-50/90 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2">
+          <div className="bg-slate-50/90 dark:bg-[#18181B]/60 border border-slate-200/80 dark:border-[#27272A] rounded-xl p-3.5 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-1.5 font-semibold text-zinc-900 dark:text-white min-w-0 truncate">
                 <Sparkles className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300 shrink-0" />
@@ -201,7 +201,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
                 {formatTimestamp(lead.createdAt)}
               </span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed break-words font-sans">
+            <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed break-words font-sans">
               {lead.companyWebsite && lead.companyWebsite !== "#"
                 ? `Clinic discovered via ${lead.enrichment.provider || "automated pipeline"} with an active web domain (${lead.companyDomain}). Evaluated for modern redesign and mobile responsiveness.`
                 : `Clinic discovered via ${lead.enrichment.provider || "automated pipeline"} with no active website detected. Prime high-intent candidate for 3 bespoke website previews and direct WhatsApp outreach.`}
@@ -209,9 +209,9 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
           </div>
 
           {/* Card 1: Contact & Links */}
-          <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2.5">
+          <div className="bg-white dark:bg-[#18181B]/40 border border-slate-200/80 dark:border-[#27272A] rounded-xl p-3.5 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5" />
                 <span>Contact &amp; Links</span>
               </span>
@@ -221,7 +221,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
             <div className="rounded-lg border border-slate-100 dark:border-white/[0.06] divide-y divide-slate-100 dark:divide-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]">
               {/* Doctor */}
               <div className="px-3 py-2 flex items-center justify-between gap-2">
-                <span className="text-slate-500 dark:text-slate-400">Doctor In-Charge</span>
+                <span className="text-slate-500 dark:text-zinc-400">Doctor In-Charge</span>
                 <span className="font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                   {doctorFormatted}
                 </span>
@@ -229,7 +229,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
 
               {/* Phone */}
               <div className="px-3 py-2 flex items-center justify-between gap-2">
-                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                   <Phone className="w-3 h-3 text-slate-400" /> Phone
                 </span>
                 <div className="flex items-center gap-1.5 font-mono text-zinc-900 dark:text-zinc-100">
@@ -253,7 +253,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
 
               {/* Email */}
               <div className="px-3 py-2 flex items-center justify-between gap-2">
-                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                   <Mail className="w-3 h-3 text-slate-400" /> Email
                 </span>
                 {hasRealEmail ? (
@@ -279,7 +279,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
 
               {/* Website */}
               <div className="px-3 py-2 flex items-center justify-between gap-2">
-                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5" /> Website
                 </span>
                 {lead.companyWebsite && lead.companyWebsite !== "#" ? (
@@ -300,9 +300,9 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
           </div>
 
           {/* Card 2: Discovery Source & Location */}
-          <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2.5">
+          <div className="bg-white dark:bg-[#18181B]/40 border border-slate-200/80 dark:border-[#27272A] rounded-xl p-3.5 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5" />
                 <span>Discovery Source &amp; Location</span>
               </span>
@@ -311,19 +311,19 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
 
             <div className="rounded-lg border border-slate-100 dark:border-white/[0.06] divide-y divide-slate-100 dark:divide-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]">
               <div className="px-3 py-2 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Locality &amp; City</span>
+                <span className="text-slate-500 dark:text-zinc-400">Locality &amp; City</span>
                 <span className="font-medium text-zinc-900 dark:text-zinc-100">{lead.location}</span>
               </div>
               <div className="px-3 py-2 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Source Provider</span>
+                <span className="text-slate-500 dark:text-zinc-400">Source Provider</span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200">{lead.enrichment.provider}</span>
               </div>
               <div className="px-3 py-2 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Industry Sector</span>
+                <span className="text-slate-500 dark:text-zinc-400">Industry Sector</span>
                 <span className="text-zinc-800 dark:text-zinc-200">{lead.industry || "Dental Healthcare"}</span>
               </div>
               <div className="px-3 py-2 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Enrichment State</span>
+                <span className="text-slate-500 dark:text-zinc-400">Enrichment State</span>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/50 text-[10px] font-mono uppercase">
                   {lead.enrichment.state}
                 </span>
@@ -332,9 +332,9 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
           </div>
 
           {/* Card 3: Website Verification & Signals */}
-          <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2.5">
+          <div className="bg-white dark:bg-[#18181B]/40 border border-slate-200/80 dark:border-[#27272A] rounded-xl p-3.5 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Website Verification &amp; Signals</span>
               </span>
@@ -345,7 +345,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
 
             <div className="rounded-lg border border-slate-100 dark:border-white/[0.06] divide-y divide-slate-100 dark:divide-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]">
               <div className="px-3 py-2 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Verification Status</span>
+                <span className="text-slate-500 dark:text-zinc-400">Verification Status</span>
                 <VerificationBadge
                   status={lead.verification.status}
                   details={lead.verification}
@@ -354,21 +354,21 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
                 />
               </div>
               <div className="px-3 py-2 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Confidence / Fit</span>
-                <span className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-zinc-800 dark:text-zinc-200 text-[11px] px-2 py-0.5 rounded font-mono font-medium">
+                <span className="text-slate-500 dark:text-zinc-400">Confidence / Fit</span>
+                <span className="bg-white dark:bg-[#27272A] border border-slate-200/80 dark:border-[#3F3F46] text-zinc-800 dark:text-zinc-200 text-[11px] px-2 py-0.5 rounded font-mono font-medium">
                   {lead.verification.confidenceScore}%
                 </span>
               </div>
               {hasRealMxHost && (
                 <div className="px-3 py-2 flex items-center justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">MX Host</span>
+                  <span className="text-slate-500 dark:text-zinc-400">MX Host</span>
                   <span className="font-mono text-zinc-800 dark:text-zinc-200 truncate max-w-[200px]">
                     {lead.verification.mxHost}
                   </span>
                 </div>
               )}
               <div className="px-3 py-2 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Detected Stack</span>
+                <span className="text-slate-500 dark:text-zinc-400">Detected Stack</span>
                 <div className="flex flex-wrap gap-1 justify-end">
                   {(lead.enrichment.techStack || []).length > 0 ? (
                     lead.enrichment.techStack!.map((tech) => (
@@ -389,9 +389,9 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
           </div>
 
           {/* Card 4: Discovered Details & Timestamps */}
-          <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2.5">
+          <div className="bg-white dark:bg-[#18181B]/40 border border-slate-200/80 dark:border-[#27272A] rounded-xl p-3.5 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                 <Building2 className="w-3.5 h-3.5" />
                 <span>Discovered Details</span>
               </span>
@@ -400,7 +400,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
 
             <div className="rounded-lg border border-slate-100 dark:border-white/[0.06] divide-y divide-slate-100 dark:divide-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]">
               <div className="px-3 py-2 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                   <Clock className="w-3 h-3 text-slate-400" /> Discovered
                 </span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200">
@@ -408,7 +408,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
                 </span>
               </div>
               <div className="px-3 py-2 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                   <Calendar className="w-3 h-3 text-slate-400" /> Verified
                 </span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200">
@@ -417,12 +417,12 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
               </div>
               {lead.tags && lead.tags.length > 0 && (
                 <div className="px-3 py-2 flex items-center justify-between gap-2">
-                  <span className="text-slate-500 dark:text-slate-400">Tags</span>
+                  <span className="text-slate-500 dark:text-zinc-400">Tags</span>
                   <div className="flex flex-wrap gap-1 justify-end">
                     {lead.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.08] text-[10px] font-mono"
+                        className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-zinc-300 border border-slate-200/70 dark:border-white/[0.08] text-[10px] font-mono"
                       >
                         {tag}
                       </span>
@@ -435,7 +435,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
         </div>
 
         {/* 5. CLEAN ACTION FOOTER */}
-        <div className="px-5 py-3.5 border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#141721] grid grid-cols-2 gap-2.5 shrink-0">
+        <div className="px-5 py-3.5 border-t border-slate-100 dark:border-[#27272A]/80 bg-white dark:bg-[#18181B] grid grid-cols-2 gap-2.5 shrink-0">
           {phoneDigits ? (
             <a
               href={`https://wa.me/${phoneDigits}?text=Hi%20${encodeURIComponent(doctorFormatted)},`}
@@ -450,7 +450,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
             <button
               type="button"
               disabled
-              className="bg-slate-100 dark:bg-slate-800/60 text-slate-400 border border-slate-200/60 dark:border-slate-700/60 rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed"
+              className="bg-slate-100 dark:bg-[#27272A]/60 text-slate-400 border border-slate-200/60 dark:border-[#3F3F46]/60 rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed"
             >
               <Phone className="w-4 h-4" />
               <span>No Phone</span>
@@ -460,7 +460,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-900 dark:text-zinc-100 border border-slate-200/80 dark:border-slate-700 rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            className="bg-slate-100 hover:bg-slate-200 dark:bg-[#27272A] dark:hover:bg-slate-700 text-zinc-900 dark:text-zinc-100 border border-slate-200/80 dark:border-[#3F3F46] rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
             <span>Close</span>
           </button>

@@ -49,7 +49,7 @@ export function ProblemReportModal() {
       <div className="space-y-4">
         {!problemBriefResult ? (
           <form onSubmit={handleReportProblem} className="space-y-3.5 text-xs">
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="text-slate-600 dark:text-zinc-400">
               Describe what went wrong. The CRM will bundle recent run logs, failed gates, and telemetry into a structured Markdown brief ready for Antigravity IDE.
             </p>
             <textarea
@@ -64,7 +64,7 @@ export function ProblemReportModal() {
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-300 font-medium cursor-pointer transition-colors"
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-slate-700 dark:text-zinc-300 font-medium cursor-pointer transition-colors"
               >
                 Cancel
               </button>

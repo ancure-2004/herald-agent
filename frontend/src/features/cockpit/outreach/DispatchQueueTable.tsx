@@ -106,7 +106,7 @@ export const DispatchQueueTable: React.FC<DispatchQueueTableProps> = ({
     <div className="w-full overflow-x-auto rounded-md border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#111215] shadow-sm">
       <table className="w-full text-left text-xs border-collapse font-sans">
         <thead>
-          <tr className="h-10 bg-slate-50 dark:bg-[#17181D] border-b border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-400 font-medium select-none text-[11px]">
+          <tr className="h-10 bg-slate-50 dark:bg-[#17181D] border-b border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-zinc-400 font-medium select-none text-[11px]">
             <th className="px-4 py-2 min-w-[200px]">Lead &amp; Company</th>
             <th className="px-3 py-2 min-w-[150px]">Sequence Step</th>
             <th className="px-3 py-2 min-w-[160px]">Time-to-Send</th>
@@ -128,10 +128,10 @@ export const DispatchQueueTable: React.FC<DispatchQueueTableProps> = ({
               >
                 {/* Lead Name & Company */}
                 <td className="px-4 py-2">
-                  <div className="font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[180px]">
+                  <div className="font-semibold text-slate-900 dark:text-zinc-100 truncate max-w-[180px]">
                     {item.leadName}
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono truncate">
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono truncate">
                     {item.companyName}
                   </div>
                 </td>

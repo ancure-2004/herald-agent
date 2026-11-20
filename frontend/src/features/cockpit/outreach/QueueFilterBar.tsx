@@ -31,13 +31,13 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
 }) => {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs">
+      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#27272A]/80 p-1 rounded-xl border border-slate-200 dark:border-[#3F3F46]/60 text-xs">
         <button
           onClick={() => setFilter("ALL")}
           className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
             filter === "ALL"
-              ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              ? "bg-white dark:bg-[#18181B] text-slate-900 dark:text-white shadow-xs font-bold"
+              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-200"
           }`}
         >
           All Items ({counts.all})
@@ -47,8 +47,8 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
           onClick={() => setFilter("scheduled")}
           className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
             filter === "scheduled"
-              ? "bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-xs font-bold"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              ? "bg-white dark:bg-[#18181B] text-sky-600 dark:text-sky-400 shadow-xs font-bold"
+              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-200"
           }`}
         >
           Scheduled ({counts.scheduled})
@@ -58,8 +58,8 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
           onClick={() => setFilter("sending")}
           className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
             filter === "sending"
-              ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              ? "bg-white dark:bg-[#18181B] text-indigo-600 dark:text-indigo-400 shadow-xs font-bold"
+              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-200"
           }`}
         >
           Sending ({counts.sending})
@@ -69,8 +69,8 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
           onClick={() => setFilter("throttled")}
           className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
             filter === "throttled"
-              ? "bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs font-bold"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              ? "bg-white dark:bg-[#18181B] text-amber-600 dark:text-amber-400 shadow-xs font-bold"
+              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-200"
           }`}
         >
           Throttled ({counts.throttled})
@@ -80,8 +80,8 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
           onClick={() => setFilter("sent")}
           className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
             filter === "sent"
-              ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs font-bold"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              ? "bg-white dark:bg-[#18181B] text-emerald-600 dark:text-emerald-400 shadow-xs font-bold"
+              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-200"
           }`}
         >
           Sent ({counts.sent})
@@ -91,7 +91,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
       <div className="flex items-center gap-3">
         <button
           onClick={onRefresh}
-          className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+          className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#27272A] text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
           title="Refresh Queue from Database"
         >
           <RotateCcw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />

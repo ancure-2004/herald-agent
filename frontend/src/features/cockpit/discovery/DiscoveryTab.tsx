@@ -728,7 +728,7 @@ export const DiscoveryTab: React.FC = () => {
       ) : leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-zinc-900 border border-dashed border-slate-300 dark:border-zinc-700 text-center">
           <Database className="w-6 h-6 text-slate-400" />
-          <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">No leads yet</div>
+          <div className="text-sm font-semibold text-slate-700 dark:text-zinc-200">No leads yet</div>
           <div className="text-xs text-slate-500 dark:text-zinc-400">Run Lead Discovery to fill the staging buffer.</div>
         </div>
       ) : (

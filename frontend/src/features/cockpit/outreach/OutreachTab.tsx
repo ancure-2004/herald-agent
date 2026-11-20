@@ -255,7 +255,7 @@ export const OutreachTab: React.FC = () => {
       {/* Safety Header Strip */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Radial Quota Gauge (4 cols) */}
-        <div className="lg:col-span-4 p-4 rounded-xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-center">
+        <div className="lg:col-span-4 p-4 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.08] shadow-xs flex items-center justify-center">
           <RadialQuotaGauge
             sent={metrics.totalSentToday}
             total={metrics.totalDailyCap}
@@ -263,14 +263,14 @@ export const OutreachTab: React.FC = () => {
         </div>
 
         {/* Stacked Linear Capacity Bar (5 cols) */}
-        <div className="lg:col-span-5 p-4 rounded-xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-center">
+        <div className="lg:col-span-5 p-4 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-center">
           <StackedCapacityBar metrics={metrics} />
         </div>
 
         {/* Mailbox Fleet Health (3 cols) */}
-        <div className="lg:col-span-3 p-4 rounded-xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-3 p-4 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+            <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
               <span>Mailbox Fleet</span>
               <span className="text-emerald-600 dark:text-emerald-400 font-bold">100% Online</span>
             </div>
@@ -280,7 +280,7 @@ export const OutreachTab: React.FC = () => {
           </div>
 
           <div className="pt-2 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-[11px] font-mono">
-            <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
+            <span className="text-slate-500 dark:text-zinc-400 flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
               Reputation:
             </span>
@@ -319,15 +319,15 @@ export const OutreachTab: React.FC = () => {
 
       {/* Dispatch Queue Table: loader on first load, empty state if the DB has 0 items */}
       {!hasLoaded ? (
-        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-xl bg-white dark:bg-[#141721] border border-slate-200 dark:border-white/[0.08] text-xs font-mono text-slate-500 dark:text-slate-400">
+        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-white/[0.08] text-xs font-mono text-slate-500 dark:text-zinc-400">
           <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
           <span>Loading outreach queue from database...</span>
         </div>
       ) : queue.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-xl bg-white dark:bg-[#141721] border border-dashed border-slate-300 dark:border-white/[0.12] text-center">
+        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-xl bg-white dark:bg-[#18181B] border border-dashed border-slate-300 dark:border-white/[0.12] text-center">
           <ShieldCheck className="w-6 h-6 text-slate-400" />
-          <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">Outreach queue is empty</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">Push verified leads from Discovery or Demo Factory to queue messages.</div>
+          <div className="text-sm font-semibold text-slate-700 dark:text-zinc-200">Outreach queue is empty</div>
+          <div className="text-xs text-slate-500 dark:text-zinc-400">Push verified leads from Discovery or Demo Factory to queue messages.</div>
         </div>
       ) : (
         <DispatchQueueTable

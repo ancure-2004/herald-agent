@@ -30,7 +30,7 @@ function BarcodeMeter({ percentage, totalBars = 9 }: { percentage: number; total
           <span
             key={i}
             className={`w-[2px] h-2.5 rounded-full transition-colors ${
-              isFilled ? "bg-[#111827] dark:bg-white" : "bg-slate-200 dark:bg-slate-800"
+              isFilled ? "bg-[#111827] dark:bg-white" : "bg-slate-200 dark:bg-[#27272A]"
             }`}
           />
         );
@@ -379,7 +379,7 @@ export function DashboardView() {
 
         {/* Right Header Controls */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] text-[10px] font-semibold text-slate-700 dark:text-slate-200 shadow-xs cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] text-[10px] font-semibold text-slate-700 dark:text-zinc-200 shadow-xs cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
             <Calendar className="w-3 h-3 text-slate-400" />
             <span>{dateRange}</span>
             <ChevronDown className="w-2.5 h-2.5 text-slate-400" />
@@ -399,10 +399,10 @@ export function DashboardView() {
       {/* 2. Row 1: The 4 Top KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 shrink-0">
         {/* KPI 1: Total Clinics */}
-        <div className="p-3 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="p-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
             <span className="font-medium text-[10px]">Total Clinics</span>
-            <div className="w-4.5 h-4.5 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300">
+            <div className="w-4.5 h-4.5 rounded-md bg-slate-100 dark:bg-[#27272A] flex items-center justify-center text-slate-700 dark:text-zinc-300">
               <Building2 className="w-2.5 h-2.5" />
             </div>
           </div>
@@ -412,17 +412,17 @@ export function DashboardView() {
           <div className="flex items-center justify-between pt-0.5 text-xs">
             <span className="flex items-center gap-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
               <span>↑ 12%</span>
-              <span className="text-slate-400 dark:text-slate-500 font-normal">vs last month</span>
+              <span className="text-slate-400 dark:text-zinc-500 font-normal">vs last month</span>
             </span>
             <BarcodeMeter percentage={totalPct} />
           </div>
         </div>
 
         {/* KPI 2: Walkthroughs Ready */}
-        <div className="p-3 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="p-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
             <span className="font-medium text-[10px]">Walkthroughs Ready</span>
-            <div className="w-4.5 h-4.5 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300">
+            <div className="w-4.5 h-4.5 rounded-md bg-slate-100 dark:bg-[#27272A] flex items-center justify-center text-slate-700 dark:text-zinc-300">
               <Video className="w-2.5 h-2.5" />
             </div>
           </div>
@@ -432,17 +432,17 @@ export function DashboardView() {
           <div className="flex items-center justify-between pt-0.5 text-xs">
             <span className="flex items-center gap-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
               <span>↑ 27%</span>
-              <span className="text-slate-400 dark:text-slate-500 font-normal">vs last month</span>
+              <span className="text-slate-400 dark:text-zinc-500 font-normal">vs last month</span>
             </span>
             <BarcodeMeter percentage={walkthroughsPct} />
           </div>
         </div>
 
         {/* KPI 3: In Outreach */}
-        <div className="p-3 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="p-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
             <span className="font-medium text-[10px]">In Outreach</span>
-            <div className="w-4.5 h-4.5 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300">
+            <div className="w-4.5 h-4.5 rounded-md bg-slate-100 dark:bg-[#27272A] flex items-center justify-center text-slate-700 dark:text-zinc-300">
               <Send className="w-2.5 h-2.5" />
             </div>
           </div>
@@ -452,17 +452,17 @@ export function DashboardView() {
           <div className="flex items-center justify-between pt-0.5 text-xs">
             <span className="flex items-center gap-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
               <span>↑ 8%</span>
-              <span className="text-slate-400 dark:text-slate-500 font-normal">vs last month</span>
+              <span className="text-slate-400 dark:text-zinc-500 font-normal">vs last month</span>
             </span>
             <BarcodeMeter percentage={outreachPct} />
           </div>
         </div>
 
         {/* KPI 4: Needs Follow-Up */}
-        <div className="p-3 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="p-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
             <span className="font-medium text-[10px]">Needs Follow-Up</span>
-            <div className="w-4.5 h-4.5 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300">
+            <div className="w-4.5 h-4.5 rounded-md bg-slate-100 dark:bg-[#27272A] flex items-center justify-center text-slate-700 dark:text-zinc-300">
               <Clock className="w-2.5 h-2.5" />
             </div>
           </div>
@@ -472,7 +472,7 @@ export function DashboardView() {
           <div className="flex items-center justify-between pt-0.5 text-xs">
             <span className="flex items-center gap-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
               <span>↑ 25%</span>
-              <span className="text-slate-400 dark:text-slate-500 font-normal">vs last month</span>
+              <span className="text-slate-400 dark:text-zinc-500 font-normal">vs last month</span>
             </span>
             <BarcodeMeter percentage={followUpPct} />
           </div>
@@ -654,17 +654,17 @@ export function DashboardView() {
         </div>
 
         {/* Right Donut Chart: Clinics by Stage (4 Cols) */}
-        <div className="lg:col-span-4 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-2">
+        <div className="lg:col-span-4 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-2">
           {/* Header with View full board in top right */}
           <div className="flex items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
+                <Layers className="w-3.5 h-3.5 text-slate-700 dark:text-zinc-300" />
                 <h2 className="text-xs font-bold text-[#111827] dark:text-white">
                   Clinics by Stage
                 </h2>
               </div>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500">
+              <p className="text-[10px] text-slate-400 dark:text-zinc-500">
                 Overview of dental clinics across pipeline stages.
               </p>
             </div>
@@ -672,7 +672,7 @@ export function DashboardView() {
             <button
               type="button"
               onClick={() => setActiveTab("board")}
-              className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 hover:text-[#111827] dark:hover:text-white hover:underline flex items-center gap-0.5 cursor-pointer shrink-0"
+              className="text-[10px] font-semibold text-slate-600 dark:text-zinc-300 hover:text-[#111827] dark:hover:text-white hover:underline flex items-center gap-0.5 cursor-pointer shrink-0"
             >
               <span>View full board</span>
               <ArrowRight className="w-2.5 h-2.5" />
@@ -737,7 +737,7 @@ export function DashboardView() {
                       className="w-1.5 h-1.5 rounded-full shrink-0"
                       style={{ backgroundColor: st.color }}
                     />
-                    <span className="text-slate-600 dark:text-slate-300 font-medium truncate">
+                    <span className="text-slate-600 dark:text-zinc-300 font-medium truncate">
                       {st.label}
                     </span>
                   </div>
@@ -755,29 +755,29 @@ export function DashboardView() {
       {/* 4. Row 3: Priority Clinic Pipeline (8 Cols) + Right Stacked Cards (4 Cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
         {/* Priority Clinic Pipeline (8 Cols) */}
-        <div className="lg:col-span-8 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col gap-2.5">
+        <div className="lg:col-span-8 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col gap-2.5">
           {/* Header */}
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
+                <TrendingUp className="w-3.5 h-3.5 text-slate-700 dark:text-zinc-300" />
                 <h2 className="text-xs font-bold text-[#111827] dark:text-white">
                   Priority Clinic Pipeline
                 </h2>
               </div>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500">
+              <p className="text-[10px] text-slate-400 dark:text-zinc-500">
                 Track outreach milestones and demo engagement across top clinics.
               </p>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+              <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500">
                 Top {pipelineRows.length} by Fit/Intent
               </span>
               <button
                 type="button"
                 onClick={() => setActiveTab("table")}
-                className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 hover:text-[#111827] dark:hover:text-white hover:underline cursor-pointer"
+                className="text-[10px] font-semibold text-slate-600 dark:text-zinc-300 hover:text-[#111827] dark:hover:text-white hover:underline cursor-pointer"
               >
                 View all
               </button>
@@ -785,7 +785,7 @@ export function DashboardView() {
           </div>
 
           {/* Priority Clinics Stage-Progress List */}
-          <div className="flex-1 flex flex-col justify-between divide-y divide-slate-100 dark:divide-white/[0.06] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden bg-slate-50/30 dark:bg-slate-900/20">
+          <div className="flex-1 flex flex-col justify-between divide-y divide-slate-100 dark:divide-white/[0.06] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden bg-slate-50/30 dark:bg-[#18181B]/20">
             {pipelineRows.length === 0 ? (
               <div className="flex-1 flex items-center justify-center py-10 text-xs text-slate-400">
                 No clinics in pipeline yet.
@@ -800,11 +800,11 @@ export function DashboardView() {
                 >
                   {/* Clinic + Locality */}
                   <div className="flex items-center gap-2.5 min-w-0 w-48 sm:w-56 shrink-0">
-                    <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center font-bold text-[10px] text-slate-700 dark:text-slate-200 shrink-0">
+                    <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-[#27272A] border border-slate-200/80 dark:border-[#3F3F46] flex items-center justify-center font-bold text-[10px] text-slate-700 dark:text-zinc-200 shrink-0">
                       {row.avatar}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-slate-600 dark:group-hover:text-white transition-colors">
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate group-hover:text-slate-600 dark:group-hover:text-white transition-colors">
                         {row.name}
                       </div>
                       <div className="text-[10px] text-slate-400 truncate">
@@ -816,11 +816,11 @@ export function DashboardView() {
                   {/* 7-Step Stage Progress Bar + Stage Pill */}
                   <div className="flex-1 min-w-[140px] flex flex-col gap-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-[10px] font-semibold text-slate-700 dark:text-slate-200">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#27272A] border border-slate-200/80 dark:border-[#3F3F46] text-[10px] font-semibold text-slate-700 dark:text-zinc-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-900 dark:bg-white shrink-0" />
                         {row.milestone}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                      <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500">
                         Step {row.stageStep}/7
                       </span>
                     </div>
@@ -843,7 +843,7 @@ export function DashboardView() {
                     <span className="text-xs font-bold font-mono text-slate-900 dark:text-white tabular-nums">
                       {row.fitScore}% Fit
                     </span>
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-full">
+                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 truncate max-w-full">
                       {row.nextAction}
                     </span>
                   </div>
@@ -856,10 +856,10 @@ export function DashboardView() {
         {/* Right Stacked Cards (4 Cols) */}
         <div className="lg:col-span-4 flex flex-col gap-2.5">
           {/* Card 1: Upcoming Follow-Ups from Real Leads */}
-          <div className="p-3 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs space-y-1.5">
+          <div className="p-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-3 h-3 text-slate-700 dark:text-slate-300" />
+                <Calendar className="w-3 h-3 text-slate-700 dark:text-zinc-300" />
                 <h3 className="font-bold text-[#111827] dark:text-white text-[11px]">Upcoming Follow-Ups</h3>
               </div>
               <button
@@ -893,7 +893,7 @@ export function DashboardView() {
 
                   {/* Middle Action Title & Clinic */}
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                    <div className="text-[10px] font-semibold text-slate-800 dark:text-zinc-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                       {item.title}
                     </div>
                     <div className="text-[9px] text-slate-400 truncate">
@@ -903,7 +903,7 @@ export function DashboardView() {
 
                   {/* Right Avatar + Menu */}
                   <div className="flex items-center gap-1 shrink-0">
-                    <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-[8px] text-slate-700 dark:text-slate-300 flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] font-bold text-[8px] text-slate-700 dark:text-zinc-300 flex items-center justify-center shrink-0">
                       {item.avatar}
                     </div>
                     <MoreVertical className="w-3 h-3 text-slate-400" />
@@ -914,10 +914,10 @@ export function DashboardView() {
           </div>
 
           {/* Card 2: Recent Activity (Live SSE Feed & Lead Events) */}
-          <div className="p-3 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/90 dark:border-white/[0.08] shadow-xs space-y-1.5">
+          <div className="p-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-1.5">
-                <Clock className="w-3 h-3 text-slate-700 dark:text-slate-300" />
+                <Clock className="w-3 h-3 text-slate-700 dark:text-zinc-300" />
                 <h3 className="font-bold text-[#111827] dark:text-white text-[11px]">Recent Activity</h3>
               </div>
               <button
@@ -937,7 +937,7 @@ export function DashboardView() {
                     {act.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] text-slate-700 dark:text-slate-300 leading-snug">
+                    <div className="text-[10px] text-slate-700 dark:text-zinc-300 leading-snug">
                       <span className="font-bold text-slate-900 dark:text-white">{act.actor}</span>{" "}
                       {act.action}{" "}
                       {act.target && (

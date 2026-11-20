@@ -41,7 +41,7 @@ export function Header() {
   return (
     <header className="px-4 sm:px-6 pt-3 pb-1 shrink-0 bg-transparent border-none shadow-none flex items-center justify-between gap-4 z-30 transition-colors">
       {/* 1. Left: Management | Cockpit Floating Pill Switcher */}
-      <div className="flex items-center p-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-md shadow-slate-900/5 shrink-0">
+      <div className="flex items-center p-1 rounded-full bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-[#27272A] shadow-md shadow-slate-900/5 shrink-0">
         <button
           type="button"
           onClick={() => {
@@ -53,7 +53,7 @@ export function Header() {
           className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer ${
             isCommandActive && surface !== "cockpit"
               ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.04]"
           }`}
           title="Switch to Management"
         >
@@ -70,7 +70,7 @@ export function Header() {
           className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer ${
             isCockpitActive || surface === "cockpit"
               ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.04]"
           }`}
           title="Switch to Cockpit"
         >
@@ -88,14 +88,14 @@ export function Header() {
           title="Open Command Palette (Cmd+K)"
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <Search className="w-4 h-4 text-slate-500 group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-white transition-colors shrink-0" />
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
+            <Search className="w-4 h-4 text-slate-500 group-hover:text-slate-700 dark:text-zinc-400 dark:group-hover:text-white transition-colors shrink-0" />
+            <span className="text-xs font-medium text-slate-500 dark:text-zinc-400 truncate">
               Search clinics, doctors, settings, actions...
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0 ml-2">
-            <kbd className="bg-white text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200/90 dark:border-slate-700 shadow-sm rounded-md px-1.5 py-0.5 text-[11px] font-mono font-semibold flex items-center gap-0.5">
+            <kbd className="bg-white text-slate-600 dark:bg-[#27272A] dark:text-zinc-300 border border-slate-200/90 dark:border-[#3F3F46] shadow-sm rounded-md px-1.5 py-0.5 text-[11px] font-mono font-semibold flex items-center gap-0.5">
               <span>⌘</span>
               <span>K</span>
             </kbd>
@@ -108,7 +108,7 @@ export function Header() {
         <button
           type="button"
           onClick={() => notify("All systems operational. No unhandled alerts.")}
-          className="relative h-10 w-10 rounded-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
+          className="relative h-10 w-10 rounded-full bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#27272A] shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center justify-center text-slate-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
           title="Notifications"
           aria-label="Notifications"
         >

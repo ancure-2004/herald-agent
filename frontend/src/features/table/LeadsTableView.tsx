@@ -280,15 +280,15 @@ export function LeadsTableView() {
   };
 
   return (
-    <div className="space-y-4 text-slate-900 dark:text-slate-100">
+    <div className="space-y-4 text-slate-900 dark:text-zinc-100">
       {/* ------------------------------------------------------------------ */}
       {/* 1. Four KPI Summary Cards Strip (Scoped to Active Filters)         */}
       {/* ------------------------------------------------------------------ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         {/* KPI 1: Total Leads Sent */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">
               Total Leads Sent
             </span>
             <Send className="w-4 h-4 text-slate-400" />
@@ -296,7 +296,7 @@ export function LeadsTableView() {
           <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
             {totalSent}
           </div>
-          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+          <div className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium flex items-center gap-1.5 mt-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
             <span>
               {totalInTable > 0
@@ -307,9 +307,9 @@ export function LeadsTableView() {
         </div>
 
         {/* KPI 2: Total Leads in Table */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">
               Total Leads in Table
             </span>
             <Users className="w-4 h-4 text-slate-400" />
@@ -317,7 +317,7 @@ export function LeadsTableView() {
           <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
             {totalInTable}
           </div>
-          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+          <div className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium flex items-center gap-1.5 mt-2">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
             <span>
               {monthFilter
@@ -328,9 +328,9 @@ export function LeadsTableView() {
         </div>
 
         {/* KPI 3: Total Lost Leads */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">
               Total Lost Leads
             </span>
             <XCircle className="w-4 h-4 text-slate-400" />
@@ -338,16 +338,16 @@ export function LeadsTableView() {
           <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
             {totalLost}
           </div>
-          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+          <div className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium flex items-center gap-1.5 mt-2">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
             <span>Lost, DNC or archived</span>
           </div>
         </div>
 
         {/* KPI 4: Total Won Leads */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col justify-between transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">
               Total Won Leads
             </span>
             <Trophy className="w-4 h-4 text-slate-400" />
@@ -355,7 +355,7 @@ export function LeadsTableView() {
           <div className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight tabular-nums mt-2">
             {totalWon}
           </div>
-          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1.5 mt-2">
+          <div className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium flex items-center gap-1.5 mt-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
             <span>Closed-won clients</span>
           </div>
@@ -365,14 +365,14 @@ export function LeadsTableView() {
       {/* ------------------------------------------------------------------ */}
       {/* 2. Unified Leads Table Container with Attached Header Bar          */}
       {/* ------------------------------------------------------------------ */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#141721] shadow-xs overflow-hidden">
+      <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#18181B] shadow-xs overflow-hidden">
         {/* Unified Table Header Bar */}
-        <div className="border-b border-slate-100 dark:border-white/[0.08] px-5 py-3 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#141721]">
+        <div className="border-b border-slate-100 dark:border-white/[0.08] px-5 py-3 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#18181B]">
           {/* Left Side: Section title, count badge, expandable [🔍] search */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">All Leads</h3>
-              <span className="bg-slate-100 dark:bg-white/[0.08] text-slate-700 dark:text-slate-200 rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums">
+              <span className="bg-slate-100 dark:bg-white/[0.08] text-slate-700 dark:text-zinc-200 rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums">
                 {totalInTable}
               </span>
             </div>
@@ -391,7 +391,7 @@ export function LeadsTableView() {
                       if (!searchQuery.trim()) setSearchExpanded(false);
                     }}
                     placeholder="Filter table... (Esc to clear)"
-                    className="w-full pl-8 pr-7 py-1.5 rounded-full text-xs bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                    className="w-full pl-8 pr-7 py-1.5 rounded-full text-xs bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                   />
                   {searchQuery ? (
                     <button
@@ -422,10 +422,10 @@ export function LeadsTableView() {
                     setTimeout(() => searchInputRef.current?.focus(), 50);
                   }}
                   title="Filter table (/)"
-                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-full text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200/80 dark:border-white/[0.08] transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-full text-xs font-medium text-slate-600 dark:text-zinc-300 bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200/80 dark:border-white/[0.08] transition-colors cursor-pointer"
                 >
                   <Search className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="hidden sm:inline text-[11px] text-slate-500 dark:text-slate-400">Filter table</span>
+                  <span className="hidden sm:inline text-[11px] text-slate-500 dark:text-zinc-400">Filter table</span>
                   <kbd className="hidden sm:inline text-[9px] text-slate-400 font-mono bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08] rounded px-1">
                     /
                   </kbd>
@@ -441,7 +441,7 @@ export function LeadsTableView() {
               <select
                 value={monthFilter}
                 onChange={(e) => setMonthFilter(e.target.value)}
-                className="appearance-none bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-white/[0.08] rounded-xl pl-3 pr-7 py-1.5 text-xs font-medium transition-colors cursor-pointer focus:outline-none"
+                className="appearance-none bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-zinc-200 border border-slate-200/80 dark:border-white/[0.08] rounded-xl pl-3 pr-7 py-1.5 text-xs font-medium transition-colors cursor-pointer focus:outline-none"
               >
                 <option value="">All Months</option>
                 {availableMonths.map((m) => (
@@ -459,7 +459,7 @@ export function LeadsTableView() {
                 ref={filterButtonRef}
                 type="button"
                 onClick={() => setFiltersOpen((prev) => !prev)}
-                className={`flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-white/[0.08] rounded-xl px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                className={`flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-zinc-200 border border-slate-200/80 dark:border-white/[0.08] rounded-xl px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
                   filtersOpen ? "ring-2 ring-indigo-500/30" : ""
                 }`}
               >
@@ -476,9 +476,9 @@ export function LeadsTableView() {
               {filtersOpen && (
                 <div
                   ref={filterPopoverRef}
-                  className="absolute right-0 top-full mt-2 w-72 p-4 rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-xl z-50 space-y-3.5 animate-in fade-in zoom-in-95 text-xs text-slate-900 dark:text-slate-100"
+                  className="absolute right-0 top-full mt-2 w-72 p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xl z-50 space-y-3.5 animate-in fade-in zoom-in-95 text-xs text-slate-900 dark:text-zinc-100"
                 >
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#27272A]">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
                       Filter Leads
                     </span>
@@ -495,13 +495,13 @@ export function LeadsTableView() {
                   <div className="space-y-3">
                     {/* Month Filter inside Popover */}
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                         Month
                       </label>
                       <select
                         value={monthFilter}
                         onChange={(e) => setMonthFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                       >
                         <option value="">All Months</option>
                         {availableMonths.map((m) => (
@@ -514,13 +514,13 @@ export function LeadsTableView() {
 
                     {/* Stage / Status Filter */}
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                         Stage / Status
                       </label>
                       <select
                         value={stageFilter}
                         onChange={(e) => setStageFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                       >
                         <option value="">All Stages</option>
                         <option value="won">Won Leads</option>
@@ -537,13 +537,13 @@ export function LeadsTableView() {
 
                     {/* Outreach Status Filter */}
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                         Outreach
                       </label>
                       <select
                         value={outreachFilter}
                         onChange={(e) => setOutreachFilter(e.target.value as any)}
-                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                       >
                         <option value="ALL">All</option>
                         <option value="SENT">Sent</option>
@@ -553,13 +553,13 @@ export function LeadsTableView() {
 
                     {/* Batch Filter */}
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                         Batch
                       </label>
                       <select
                         value={batchFilter}
                         onChange={(e) => setBatchFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                       >
                         <option value="">All Batches</option>
                         {batchIds.map((b) => (
@@ -572,14 +572,14 @@ export function LeadsTableView() {
 
                     {/* Specific Date Picker */}
                     <div className="flex flex-col gap-1 pt-1">
-                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                         Specific Date
                       </label>
                       <input
                         type="date"
                         value={foundDateFilter}
                         onChange={(e) => setFoundDateFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                        className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                       />
                     </div>
                   </div>
@@ -620,7 +620,7 @@ export function LeadsTableView() {
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+                  <td colSpan={9} className="py-10 text-center text-sm text-slate-400 dark:text-zinc-500">
                     No leads match the current filters.
                   </td>
                 </tr>
@@ -652,7 +652,7 @@ export function LeadsTableView() {
                             <div className="text-xs font-semibold text-zinc-900 dark:text-white truncate" title={lead.name}>
                               {lead.name}
                             </div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate" title={formatDoctorName(lead.doctor_name)}>
+                            <div className="text-[11px] text-slate-500 dark:text-zinc-400 truncate" title={formatDoctorName(lead.doctor_name)}>
                               {formatDoctorName(lead.doctor_name)}
                             </div>
                           </div>
@@ -660,7 +660,7 @@ export function LeadsTableView() {
                       </td>
 
                       {/* Locality & City */}
-                      <td className="py-2.5 px-2.5 text-slate-600 dark:text-slate-300 max-w-[110px]">
+                      <td className="py-2.5 px-2.5 text-slate-600 dark:text-zinc-300 max-w-[110px]">
                         <div className="flex items-center gap-1 min-w-0">
                           <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
                           <span className="truncate">{lead.locality || lead.city || "-"}</span>
@@ -687,7 +687,7 @@ export function LeadsTableView() {
                       {/* Batch Badge */}
                       <td className="py-2.5 px-2.5 whitespace-nowrap">
                         {batchId ? (
-                          <span className="bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.08] rounded-md px-1.5 py-0.5 text-[10px] font-mono font-medium whitespace-nowrap">
+                          <span className="bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-zinc-300 border border-slate-200/70 dark:border-white/[0.08] rounded-md px-1.5 py-0.5 text-[10px] font-mono font-medium whitespace-nowrap">
                             {batchId}
                           </span>
                         ) : (
@@ -710,14 +710,14 @@ export function LeadsTableView() {
                             )}
                           </div>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-400 border border-slate-200/70 dark:border-white/[0.08] text-[10px] font-medium whitespace-nowrap">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-zinc-400 border border-slate-200/70 dark:border-white/[0.08] text-[10px] font-medium whitespace-nowrap">
                             Unsent
                           </span>
                         )}
                       </td>
 
                       {/* Found Date */}
-                      <td className="py-2.5 px-2.5 text-[11px] text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
+                      <td className="py-2.5 px-2.5 text-[11px] text-slate-500 dark:text-zinc-400 font-mono whitespace-nowrap">
                         {lead.created_at ? formatDate(lead.created_at) : "-"}
                       </td>
 
@@ -727,7 +727,7 @@ export function LeadsTableView() {
                           <span className="bg-slate-100 dark:bg-white/[0.06] text-zinc-800 dark:text-zinc-200 font-mono font-medium px-1.5 py-0.5 rounded text-[10px] border border-slate-200/60 dark:border-white/[0.06] whitespace-nowrap">
                             Fit {lead.fit_score}%
                           </span>
-                          <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1 whitespace-nowrap">
+                          <span className="text-[11px] font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1 whitespace-nowrap">
                             <span className={`w-1.5 h-1.5 rounded-full ${intentDot} shrink-0`} />
                             <span>{lead.intent_score}</span>
                           </span>
@@ -737,7 +737,7 @@ export function LeadsTableView() {
                       {/* Next Step */}
                       <td className="py-2.5 px-2.5 max-w-[140px]">
                         <div
-                          className="text-slate-600 dark:text-slate-300 truncate text-xs"
+                          className="text-slate-600 dark:text-zinc-300 truncate text-xs"
                           title={lead.next_action || "None scheduled"}
                         >
                           {lead.next_action || "None scheduled"}
@@ -752,11 +752,11 @@ export function LeadsTableView() {
                               e.stopPropagation();
                               setSelectedLeadId(lead.id);
                             }}
-                            className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.12] text-slate-700 dark:text-slate-200 text-xs font-medium transition-colors cursor-pointer"
+                            className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.12] text-slate-700 dark:text-zinc-200 text-xs font-medium transition-colors cursor-pointer"
                           >
                             Inspect
                           </button>
-                          <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-zinc-900 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
                         </div>
                       </td>
                     </tr>
