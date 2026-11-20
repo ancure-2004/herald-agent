@@ -22,6 +22,7 @@ import { LogReplyModal } from "@/features/modals/LogReplyModal";
 import { CommandPaletteModal } from "@/features/modals/CommandPaletteModal";
 import { SettingsModal } from "@/features/settings/SettingsModal";
 import { Toast } from "@/components/ui/Toast";
+import { KanbanSkeleton, TableSkeleton } from "@/components/ui/Skeleton";
 
 function CRMContent() {
   const { activeTab, loading, toast, closeToast } = useCRM();
@@ -68,9 +69,11 @@ function CRMContent() {
           }`}
         >
           {loading ? (
-            <div className="p-8 sm:p-16 text-center text-sm text-slate-500 dark:text-zinc-400">
-              Loading Herald Operations Engine...
-            </div>
+            activeTab === "board" ? (
+              <KanbanSkeleton />
+            ) : (
+              <TableSkeleton rows={8} columns={8} />
+            )
           ) : (
             <>
               {activeTab === "dashboard" && <DashboardView />}

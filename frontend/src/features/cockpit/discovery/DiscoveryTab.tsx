@@ -7,6 +7,7 @@ import { LeadDataTable } from "./LeadDataTable";
 import { FloatingActionBar } from "./FloatingActionBar";
 import { DiscoveryConsole } from "./DiscoveryConsole";
 import { DiscoveryLeadDrawer } from "./DiscoveryLeadDrawer";
+import { TableSkeleton } from "@/components/ui/Skeleton";
 import { apiFetch } from "@/lib/api/client";
 import { getPollingInterval } from "@/lib/utils/polling";
 import {
@@ -735,10 +736,7 @@ export const DiscoveryTab: React.FC = () => {
 
       {/* 4. Overhauled Staged Leads Table with Integrated Filter Header Bar */}
       {!hasLoaded ? (
-        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-mono text-slate-500 dark:text-zinc-400">
-          <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
-          <span>Loading leads from database...</span>
-        </div>
+        <TableSkeleton rows={8} columns={6} />
       ) : leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-zinc-900 border border-dashed border-slate-300 dark:border-zinc-700 text-center">
           <Database className="w-6 h-6 text-slate-400" />

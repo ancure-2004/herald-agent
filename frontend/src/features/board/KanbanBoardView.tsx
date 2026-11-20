@@ -29,11 +29,13 @@ import { useCRM } from "@/context/CRMContext";
 import { KanbanColumn } from "./KanbanColumn";
 import { formatDoctorName } from "./LeadCard";
 import { autopilotApi } from "@/api/autopilotApi";
+import { KanbanSkeleton } from "@/components/ui/Skeleton";
 
 export function KanbanBoardView() {
   const {
     activeHustle,
     leads,
+    loading,
     activeSmartView,
     setActiveSmartView,
     filterPopoverOpen,
@@ -228,7 +230,9 @@ export function KanbanBoardView() {
     }).length;
   }, [leads, isAllActive, focusedLeads.length, filterMinFit, filterVerifiedOnly, searchQuery]);
 
-  if (!activeHustle) return null;
+  if (loading || !activeHustle) {
+    return <KanbanSkeleton />;
+  }
 
   return (
     <div className="space-y-4">

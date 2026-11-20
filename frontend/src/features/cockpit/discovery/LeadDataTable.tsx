@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Select } from "@/components/ui/Select";
+import { TableSkeleton } from "@/components/ui/Skeleton";
 import { DiscoveryLead } from "../types";
 import { VerificationBadge } from "./VerificationBadge";
 import { ConfidencePill } from "./ConfidencePill";
@@ -124,6 +126,44 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
   const isPartiallySelected = selectedIds.size > 0 && selectedIds.size < leads.length;
 
   const countDisplay = totalCount !== undefined ? totalCount : leads.length;
+
+  type FlatLeadRow =
+    | { type: "group"; dateKey: string; count: number; isCollapsed: boolean }
+    | { type: "lead"; lead: DiscoveryLead; idx: number };
+
+  const flatRows = useMemo<FlatLeadRow[]>(() => {
+    const list: FlatLeadRow[] = [];
+    groupedLeads.forEach(([dateKey, dateLeads]) => {
+      const isCollapsed = collapsedDates.has(dateKey);
+      list.push({ type: "group", dateKey, count: dateLeads.length, isCollapsed });
+      if (!isCollapsed) {
+        dateLeads.forEach((lead, idx) => {
+          list.push({ type: "lead", lead, idx });
+        });
+      }
+    });
+    return list;
+  }, [groupedLeads, collapsedDates]);
+
+  const tableContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: flatRows.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: (index) => (flatRows[index]?.type === "group" ? 40 : 54),
+    overscan: 10,
+  });
+
+  const virtualRows = rowVirtualizer.getVirtualItems();
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0]?.start || 0 : 0;
+  const paddingBottom =
+    virtualRows.length > 0
+      ? rowVirtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end || 0)
+      : 0;
+
+  if (isLoading && leads.length === 0) {
+    return <TableSkeleton rows={8} columns={6} />;
+  }
 
   return (
     <div className="w-full rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#18181B] shadow-xs overflow-hidden">
@@ -276,13 +316,13 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
           </div>
         </div>
       ) : (
-        <div className="w-full overflow-x-auto relative">
+        <div ref={tableContainerRef} className="w-full overflow-x-auto max-h-[calc(100vh-320px)] overflow-y-auto relative rounded-b-2xl">
           <table className="w-full text-left text-xs border-collapse font-sans">
             {/* Table Header: Clean horizontal border, no vertical divider lines, subtle monochrome icons */}
-            <thead>
-              <tr className="border-b border-slate-200/70 dark:border-white/[0.08] bg-slate-50/70 dark:bg-[#191C28]/95 text-slate-400 dark:text-zinc-500 font-semibold text-[11px] tracking-wider uppercase select-none">
+            <thead className="sticky top-0 z-20 bg-slate-50 dark:bg-[#191C28] backdrop-blur-sm shadow-xs">
+              <tr className="border-b border-slate-200/70 dark:border-white/[0.08] text-slate-400 dark:text-zinc-500 font-semibold text-[11px] tracking-wider uppercase select-none">
                 {/* Sticky Checkbox */}
-                <th className="sticky left-0 z-20 w-9 py-2.5 px-3 bg-slate-50/70 dark:bg-[#191C28]">
+                <th className="sticky left-0 z-20 w-9 py-2.5 px-3 bg-slate-50 dark:bg-[#191C28]">
                   <input
                     type="checkbox"
                     checked={isAllSelected}
@@ -295,7 +335,7 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
                 </th>
 
                 {/* Sticky Clinic & Domain */}
-                <th className="sticky left-9 z-20 min-w-[170px] max-w-[200px] py-2.5 px-3 bg-slate-50/70 dark:bg-[#191C28]">
+                <th className="sticky left-9 z-20 min-w-[170px] max-w-[200px] py-2.5 px-3 bg-slate-50 dark:bg-[#191C28]">
                   <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 font-semibold">
                     <Type className="w-3.5 h-3.5 text-slate-400" />
                     <span>Clinic &amp; Website</span>
@@ -336,50 +376,65 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
               </tr>
             </thead>
 
-            {/* Table Body: Grouped by Discovered Date */}
+            {/* Table Body: Virtualized Rows */}
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-              {groupedLeads.map(([dateKey, dateLeads]) => {
-                const isCollapsed = collapsedDates.has(dateKey);
-                return (
-                  <React.Fragment key={dateKey}>
+              {paddingTop > 0 && (
+                <tr>
+                  <td colSpan={6} style={{ height: `${paddingTop}px` }} />
+                </tr>
+              )}
+              {virtualRows.map((virtualRow) => {
+                const item = flatRows[virtualRow.index];
+                if (!item) return null;
+
+                if (item.type === "group") {
+                  return (
                     <tr
-                      onClick={() => toggleDateGroup(dateKey)}
+                      key={`group-${item.dateKey}`}
+                      data-index={virtualRow.index}
+                      ref={rowVirtualizer.measureElement}
+                      onClick={() => toggleDateGroup(item.dateKey)}
                       className="bg-slate-50/90 dark:bg-white/[0.03] hover:bg-slate-100/80 dark:hover:bg-white/[0.06] cursor-pointer select-none transition-colors"
                     >
                       <td colSpan={6} className="py-2 px-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                            {isCollapsed ? (
+                            {item.isCollapsed ? (
                               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                             ) : (
                               <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                             )}
                             <Calendar className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-                            <span>{formatGroupDate(dateKey)}</span>
+                            <span>{formatGroupDate(item.dateKey)}</span>
                             <span className="px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-white/[0.08] text-[10px] font-mono text-slate-600 dark:text-zinc-300">
-                              {dateLeads.length}
+                              {item.count}
                             </span>
                           </div>
                           <span className="text-[11px] text-slate-400 dark:text-zinc-500">
-                            {isCollapsed ? "Click to expand" : "Click to collapse"}
+                            {item.isCollapsed ? "Click to expand" : "Click to collapse"}
                           </span>
                         </div>
                       </td>
                     </tr>
-                    {!isCollapsed &&
-                      dateLeads.map((lead, idx) => {
-                        const isSelected = selectedIds.has(lead.id);
+                  );
+                }
 
-                        return (
-                          <tr
-                            key={lead.id}
-                            onClick={() => onRowClick?.(lead)}
-                            className={`transition-colors cursor-pointer group ${
-                              isSelected
-                                ? "bg-slate-100/70 dark:bg-zinc-800/40"
-                                : "hover:bg-slate-50/80 dark:hover:bg-white/[0.03]"
-                            }`}
-                          >
+                const lead = item.lead;
+                const idx = item.idx;
+                const isSelected = selectedIds.has(lead.id);
+
+                return (
+                  <tr
+                    key={lead.id}
+                    data-index={virtualRow.index}
+                    ref={rowVirtualizer.measureElement}
+                    onClick={() => onRowClick?.(lead)}
+                    className={`transition-colors cursor-pointer group ${
+                      isSelected
+                        ? "bg-slate-100/70 dark:bg-zinc-800/40"
+                        : "hover:bg-slate-50/80 dark:hover:bg-white/[0.03]"
+                    }`}
+                  >
                     {/* Sticky Checkbox */}
                     <td
                       className="sticky left-0 z-10 w-9 py-2.5 px-3 bg-white dark:bg-[#18181B] group-hover:bg-slate-50/80 dark:group-hover:bg-[#191C28]"
@@ -471,11 +526,13 @@ export const LeadDataTable: React.FC<LeadDataTableProps> = ({
                       </span>
                     </td>
                   </tr>
-                        );
-                      })}
-                  </React.Fragment>
                 );
               })}
+              {paddingBottom > 0 && (
+                <tr>
+                  <td colSpan={6} style={{ height: `${paddingBottom}px` }} />
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
