@@ -2,7 +2,7 @@ import json
 import logging
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 from sqlalchemy.orm import Session, joinedload
 
@@ -569,3 +569,45 @@ class AssistantService:
                 return {"status": "undone", "message": f"Reverted changes on '{l.name}'."}
 
         return {"status": "undone", "message": "Action reverted."}
+
+    @staticmethod
+    def stream_ask_or_do(db: Session, payload: Dict[str, Any]) -> Iterator[str]:
+        """Streams assistant ask-or-do responses token-by-token formatted as SSE events."""
+        def _sse_event(event_type: str, data: Dict[str, Any]) -> str:
+            return f"event: {event_type}\ndata: {json.dumps(data)}\n\n"
+
+        prompt = str(payload.get("prompt") or "").strip()
+        if not prompt:
+            yield _sse_event("error", {"type": "error", "message": "prompt is required."})
+            return
+
+        try:
+            result = AssistantService.ask_or_do(db, payload)
+            reply_text = result.get("reply", "")
+
+            # Stream tokens (words and whitespace preserving exact original text)
+            tokens = re.findall(r"\S+|\s+", reply_text)
+            if not tokens and reply_text:
+                tokens = [reply_text]
+
+            for tok in tokens:
+                yield _sse_event("token", {"type": "token", "token": tok, "text": tok})
+
+            # Final done event
+            yield _sse_event(
+                "done",
+                {
+                    "type": "done",
+                    "mode": result.get("mode", "ask"),
+                    "reply": reply_text,
+                    "citations": result.get("citations", []),
+                    "executed_actions": result.get("executed_actions", []),
+                    "pending_confirmation": result.get("pending_confirmation", []),
+                    "matched_leads": result.get("matched_leads", []),
+                    "undo_available": result.get("undo_available", False),
+                    "undo_id": result.get("undo_id"),
+                },
+            )
+        except Exception as ex:
+            logger.exception("Error in stream_ask_or_do: %s", ex)
+            yield _sse_event("error", {"type": "error", "message": str(ex)})
