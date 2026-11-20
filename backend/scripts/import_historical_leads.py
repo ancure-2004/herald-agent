@@ -65,6 +65,37 @@ DENTAL_ENGINE_DIR = os.path.join(PROJECTS_ROOT, "dental-clinic-engine")
 CLIENTS_DIR = os.path.join(PROJECTS_ROOT, "Dental-Clinic-Clients")
 
 
+def sanitize_instagram_handle(val: Any) -> Optional[str]:
+    """Extracts and validates a clean Instagram handle, rejecting emails and domains."""
+    if not val:
+        return None
+    s = str(val).strip()
+    if not s or s.lower() in ("none", "null", "nan", "-"):
+        return None
+    # If it's an email address, reject
+    if re.search(r"@[\w\.-]+\.(com|in|org|net|edu|io|co)", s, re.IGNORECASE):
+        return None
+    if "@" in s:
+        m = re.search(r"@([A-Za-z0-9_\.]+)", s)
+        if m:
+            s = m.group(1)
+        else:
+            return None
+    s = s.strip("/").strip()
+    # If it's a URL like instagram.com/handle
+    if "instagram.com" in s:
+        parts = s.split("instagram.com/")
+        if len(parts) > 1:
+            s = parts[1].split("/")[0].split("?")[0]
+    s = s.replace("@", "").strip()
+    # Reject common non-handles
+    if s.lower() in ("gmail.com", "yahoo.com", "outlook.com", "instagram", "facebook", "website"):
+        return None
+    if re.match(r"^[A-Za-z0-9_\.]{2,30}$", s) and not s.endswith(".com") and not s.endswith(".in"):
+        return s.lower()
+    return None
+
+
 def normalize_phone(phone_str: Any) -> Optional[str]:
     """Normalizes phone numbers to standard 10-digit format for India."""
     if not phone_str:
@@ -385,11 +416,7 @@ class HistoricalLeadScanner:
                         notes_val = ws.cell(row, header_map.get("notes", 15)).value
                         json_val = ws.cell(row, header_map.get("full details (json)", 16)).value
 
-                        ig_handle = None
-                        if ig_web_val and "@" in str(ig_web_val):
-                            m = re.search(r"@([\w\.]+)", str(ig_web_val))
-                            if m:
-                                ig_handle = m.group(1).lower()
+                        ig_handle = sanitize_instagram_handle(ig_web_val)
 
                         facts = {}
                         rating = 0.0
@@ -552,7 +579,7 @@ class HistoricalLeadScanner:
                 if os.path.exists(research_path):
                     try:
                         with open(research_path, "r", encoding="utf-8", errors="ignore") as f:
-                            r_text = f.read()
+                            r_text = f.read().replace("\x00", "")
                             p_match = re.search(r"Phone:\s*([^\n|]+)", r_text)
                             if p_match:
                                 phone = normalize_phone(p_match.group(1))
@@ -618,7 +645,7 @@ class HistoricalLeadScanner:
                                     "slug": slugify(name),
                                     "phone": normalize_phone(item.get("phone")),
                                     "email": item.get("email"),
-                                    "instagram_handle": item.get("ig_handle", "").replace("@", ""),
+                                    "instagram_handle": sanitize_instagram_handle(item.get("ig_handle")),
                                     "locality": item.get("area", ""),
                                     "source": "scrapes_enriched_ig",
                                 })
@@ -802,20 +829,53 @@ class HistoricalLeadScanner:
         applied_facts = 0
         applied_packages = 0
 
+        # Query existing slugs, phones, and instagram handles from DB to avoid uniqueness violations
+        existing_db_records = db.query(Lead.id, Lead.slug, Lead.primary_phone, Lead.instagram_handle).all()
+        used_slugs: Dict[str, int] = {r.slug: r.id for r in existing_db_records if r.slug}
+        used_phones: Dict[str, int] = {r.primary_phone: r.id for r in existing_db_records if r.primary_phone}
+        used_ig_handles: Dict[str, int] = {r.instagram_handle.lower(): r.id for r in existing_db_records if r.instagram_handle}
+
         for lead in self.canonical_leads:
             slug = lead["slug"]
             phone_10 = lead.get("phone")
             e164_phone = format_e164(phone_10)
+            target_phone = e164_phone or phone_10
+            raw_ig = lead.get("instagram_handle")
+            ig_handle = sanitize_instagram_handle(raw_ig)
 
-            existing = None
-            if e164_phone:
-                existing = db.query(Lead).filter(
-                    (Lead.slug == slug) | (Lead.primary_phone == e164_phone) | (Lead.primary_phone == phone_10)
-                ).first()
-            if not existing:
-                existing = db.query(Lead).filter(Lead.slug == slug).first()
+            # Determine existing lead by slug or primary_phone
+            existing_lead_id = None
+            if target_phone and target_phone in used_phones:
+                existing_lead_id = used_phones[target_phone]
+            elif e164_phone and e164_phone in used_phones:
+                existing_lead_id = used_phones[e164_phone]
+            elif phone_10 and phone_10 in used_phones:
+                existing_lead_id = used_phones[phone_10]
+            elif slug in used_slugs:
+                existing_lead_id = used_slugs[slug]
+            elif ig_handle and ig_handle.lower() in used_ig_handles:
+                existing_lead_id = used_ig_handles[ig_handle.lower()]
+
+            existing = db.query(Lead).filter(Lead.id == existing_lead_id).first() if existing_lead_id else None
+
+            # Check if target_phone is already taken by a different lead
+            assigned_phone = target_phone
+            if assigned_phone and assigned_phone in used_phones and used_phones[assigned_phone] != existing_lead_id:
+                assigned_phone = None  # Don't violate phone unique constraint
+
+            # Check if ig_handle is already taken by a different lead
+            assigned_ig = ig_handle
+            if assigned_ig and assigned_ig.lower() in used_ig_handles and used_ig_handles[assigned_ig.lower()] != existing_lead_id:
+                assigned_ig = None  # Don't violate IG unique constraint
 
             if not existing:
+                # Ensure unique slug
+                base_slug = slug
+                counter = 1
+                while slug in used_slugs:
+                    slug = f"{base_slug}-{counter}"
+                    counter += 1
+
                 existing = Lead(
                     hustle_id=hustle_id,
                     slug=slug,
@@ -823,10 +883,10 @@ class HistoricalLeadScanner:
                     doctor_name=lead.get("doctor_name", ""),
                     locality=lead.get("locality", ""),
                     address=lead.get("address", ""),
-                    primary_phone=e164_phone or phone_10,
+                    primary_phone=assigned_phone,
                     phones=[e164_phone] if e164_phone else ([phone_10] if phone_10 else []),
                     email=lead.get("email"),
-                    instagram_handle=lead.get("instagram_handle"),
+                    instagram_handle=assigned_ig,
                     preferred_channel="whatsapp",
                     stage_id=lead["final_stage_id"],
                     status=lead["final_status"],
@@ -839,6 +899,11 @@ class HistoricalLeadScanner:
                 db.add(existing)
                 db.flush()
                 applied_leads += 1
+                used_slugs[slug] = existing.id
+                if assigned_phone:
+                    used_phones[assigned_phone] = existing.id
+                if assigned_ig:
+                    used_ig_handles[assigned_ig.lower()] = existing.id
             else:
                 existing.status = lead["final_status"]
                 existing.stage_id = lead["final_stage_id"]
@@ -848,12 +913,14 @@ class HistoricalLeadScanner:
                     existing.locality = lead["locality"]
                 if not existing.address and lead.get("address"):
                     existing.address = lead["address"]
-                if not existing.primary_phone and (e164_phone or phone_10):
-                    existing.primary_phone = e164_phone or phone_10
+                if not existing.primary_phone and assigned_phone:
+                    existing.primary_phone = assigned_phone
+                    used_phones[assigned_phone] = existing.id
                 if lead.get("email") and not existing.email:
                     existing.email = lead["email"]
-                if lead.get("instagram_handle") and not existing.instagram_handle:
-                    existing.instagram_handle = lead["instagram_handle"]
+                if not existing.instagram_handle and assigned_ig:
+                    existing.instagram_handle = assigned_ig
+                    used_ig_handles[assigned_ig.lower()] = existing.id
                 existing.updated_at = now
                 db.flush()
 
@@ -863,6 +930,7 @@ class HistoricalLeadScanner:
                 if not f_val:
                     continue
                 val_str = json.dumps(f_val) if isinstance(f_val, (dict, list)) else str(f_val)
+                val_str = val_str.replace("\x00", "")
                 fact_exists = db.query(LeadFact).filter(
                     LeadFact.lead_id == existing.id, LeadFact.field == f_key
                 ).first()
