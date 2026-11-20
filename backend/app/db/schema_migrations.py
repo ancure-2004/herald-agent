@@ -27,10 +27,17 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
                 CREATE INDEX IF NOT EXISTS ix_leads_status ON leads (status);
                 CREATE INDEX IF NOT EXISTS ix_leads_automation_enabled ON leads (automation_enabled);
                 CREATE INDEX IF NOT EXISTS ix_leads_needs_followup ON leads (needs_followup);
+                CREATE INDEX IF NOT EXISTS ix_leads_stage_id_updated_at ON leads (stage_id, updated_at);
+                CREATE INDEX IF NOT EXISTS ix_leads_status_updated_at ON leads (status, updated_at);
+                CREATE INDEX IF NOT EXISTS ix_leads_created_at ON leads (created_at);
+                CREATE INDEX IF NOT EXISTS ix_leads_city ON leads (city);
+                CREATE INDEX IF NOT EXISTS ix_leads_city_locality ON leads (city, locality);
+                CREATE INDEX IF NOT EXISTS ix_leads_hustle_id_city ON leads (hustle_id, city);
                 ALTER TABLE messages ADD COLUMN IF NOT EXISTS delivery_status VARCHAR(30) DEFAULT 'sent';
                 ALTER TABLE messages ADD COLUMN IF NOT EXISTS outbox_id INTEGER;
                 CREATE INDEX IF NOT EXISTS ix_messages_delivery_status ON messages (delivery_status);
                 CREATE INDEX IF NOT EXISTS ix_messages_outbox_id ON messages (outbox_id);
+                CREATE INDEX IF NOT EXISTS ix_messages_lead_id_created_at ON messages (lead_id, created_at);
                 CREATE TABLE IF NOT EXISTS calls (
                     id SERIAL PRIMARY KEY,
                     lead_id INTEGER NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
@@ -48,6 +55,7 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
                 CREATE INDEX IF NOT EXISTS ix_calls_id ON calls (id);
                 CREATE INDEX IF NOT EXISTS ix_calls_lead_id ON calls (lead_id);
                 CREATE INDEX IF NOT EXISTS ix_calls_created_at ON calls (created_at);
+                CREATE INDEX IF NOT EXISTS ix_calls_lead_id_created_at ON calls (lead_id, created_at);
                 CREATE TABLE IF NOT EXISTS terminal_logs (
                     id SERIAL PRIMARY KEY,
                     service VARCHAR(50) NOT NULL,
@@ -64,6 +72,9 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
                 CREATE INDEX IF NOT EXISTS ix_terminal_logs_lead_id ON terminal_logs (lead_id);
                 CREATE INDEX IF NOT EXISTS ix_terminal_logs_hustle_id ON terminal_logs (hustle_id);
                 CREATE INDEX IF NOT EXISTS ix_terminal_logs_created_at ON terminal_logs (created_at);
+                CREATE INDEX IF NOT EXISTS ix_runs_hustle_id_job_type ON runs (hustle_id, job_type);
+                CREATE INDEX IF NOT EXISTS ix_runs_job_type_started_at ON runs (job_type, started_at);
+                CREATE INDEX IF NOT EXISTS ix_runs_started_at ON runs (started_at);
                 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP WITH TIME ZONE;
                 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS error_message TEXT DEFAULT '';
                 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP WITH TIME ZONE;
@@ -124,6 +135,18 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
                     )
                 )
             conn.execute(text("UPDATE leads SET status = 'STAGED' WHERE status IS NULL OR status = ''"))
+            if "created_at" in lead_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_leads_created_at ON leads (created_at)"))
+            if "city" in lead_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_leads_city ON leads (city)"))
+            if "stage_id" in lead_cols and "updated_at" in lead_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_leads_stage_id_updated_at ON leads (stage_id, updated_at)"))
+            if "status" in lead_cols and "updated_at" in lead_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_leads_status_updated_at ON leads (status, updated_at)"))
+            if "city" in lead_cols and "locality" in lead_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_leads_city_locality ON leads (city, locality)"))
+            if "hustle_id" in lead_cols and "city" in lead_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_leads_hustle_id_city ON leads (hustle_id, city)"))
         if insp.has_table("jobs"):
             job_cols = {c["name"] for c in insp.get_columns("jobs")}
             if "locked_until" not in job_cols:
@@ -138,6 +161,12 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
                 conn.execute(text("ALTER TABLE messages ADD COLUMN delivery_status VARCHAR(30) DEFAULT 'sent'"))
             if "outbox_id" not in msg_cols:
                 conn.execute(text("ALTER TABLE messages ADD COLUMN outbox_id INTEGER"))
+            if "lead_id" in msg_cols and "created_at" in msg_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_messages_lead_id_created_at ON messages (lead_id, created_at)"))
+        if insp.has_table("calls"):
+            call_cols = {c["name"] for c in insp.get_columns("calls")}
+            if "lead_id" in call_cols and "created_at" in call_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_calls_lead_id_created_at ON calls (lead_id, created_at)"))
         if not insp.has_table("calls"):
             conn.execute(
                 text(
@@ -163,6 +192,7 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_calls_id ON calls (id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_calls_lead_id ON calls (lead_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_calls_created_at ON calls (created_at)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_calls_lead_id_created_at ON calls (lead_id, created_at)"))
         if not insp.has_table("app_settings"):
             conn.execute(
                 text(
@@ -200,6 +230,14 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_terminal_logs_lead_id ON terminal_logs (lead_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_terminal_logs_hustle_id ON terminal_logs (hustle_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_terminal_logs_created_at ON terminal_logs (created_at)"))
+        if insp.has_table("runs"):
+            run_cols = {c["name"] for c in insp.get_columns("runs")}
+            if "hustle_id" in run_cols and "job_type" in run_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_runs_hustle_id_job_type ON runs (hustle_id, job_type)"))
+            if "job_type" in run_cols and "started_at" in run_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_runs_job_type_started_at ON runs (job_type, started_at)"))
+            if "started_at" in run_cols:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_runs_started_at ON runs (started_at)"))
 
 
 def ensure_schema_columns(target: Union[Engine, Connection, Session, Any]) -> None:

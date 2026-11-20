@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -131,6 +132,15 @@ class Lead(Base):
     )
     terminal_logs = relationship("TerminalLog", back_populates="lead")
 
+    __table_args__ = (
+        Index("ix_leads_stage_id_updated_at", "stage_id", "updated_at"),
+        Index("ix_leads_status_updated_at", "status", "updated_at"),
+        Index("ix_leads_created_at", "created_at"),
+        Index("ix_leads_city", "city"),
+        Index("ix_leads_city_locality", "city", "locality"),
+        Index("ix_leads_hustle_id_city", "hustle_id", "city"),
+    )
+
 
 class LeadFact(Base):
     """Table 4: lead_facts - Every researched detail with source & confidence."""
@@ -193,6 +203,10 @@ class Message(Base):
 
     lead = relationship("Lead", back_populates="messages")
     outbox_item = relationship("OutboxItem", foreign_keys=[outbox_id])
+
+    __table_args__ = (
+        Index("ix_messages_lead_id_created_at", "lead_id", "created_at"),
+    )
 
 
 class TrackingEvent(Base):
@@ -327,6 +341,12 @@ class RunLog(Base):
     started_at = Column(DateTime(timezone=True), default=utcnow)
     finished_at = Column(DateTime(timezone=True), nullable=True)
 
+    __table_args__ = (
+        Index("ix_runs_hustle_id_job_type", "hustle_id", "job_type"),
+        Index("ix_runs_job_type_started_at", "job_type", "started_at"),
+        Index("ix_runs_started_at", "started_at"),
+    )
+
 
 class AvailabilityDay(Base):
     """Table 12: availability - The mode of each day (normal, away, off)."""
@@ -376,6 +396,10 @@ class Call(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow, index=True)
 
     lead = relationship("Lead", back_populates="calls")
+
+    __table_args__ = (
+        Index("ix_calls_lead_id_created_at", "lead_id", "created_at"),
+    )
 
 
 class TerminalLog(Base):
