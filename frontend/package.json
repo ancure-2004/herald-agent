@@ -9,7 +9,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.105.3",
     "@tanstack/react-virtual": "^3.14.26",
     "clsx": "^2.1.1",
     "framer-motion": "^13.4.4",
