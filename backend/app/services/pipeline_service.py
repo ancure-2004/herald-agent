@@ -301,12 +301,24 @@ class PipelineService:
                         JobManager.release_single_flight(run_log.id)
                         set_autopilot_running(False, run_id=run_log.id)
 
-            t = threading.Thread(target=_bg_worker, daemon=True)
-            t.start()
+            from app.services.job_queue import get_job_queue
+
+            job_info = get_job_queue().submit_job(
+                job_type="autopilot_discovery",
+                func=_bg_worker,
+                hustle_id=hustle_id,
+                input_payload={
+                    "target_count": target_count,
+                    "locality": locality,
+                    "testing_mode": testing_mode,
+                    "run_id": run_log.id,
+                },
+            )
             return {
-                "status": "running",
+                "job_id": job_info["job_id"],
+                "status": "queued",
                 "async": True,
-                "message": "Autopilot lead discovery started in background thread",
+                "message": "Autopilot lead discovery started in background job queue",
                 "run_id": run_log.id,
             }
 
@@ -353,12 +365,23 @@ class PipelineService:
                     except Exception as ex:
                         logger.error("Async demo factory build batch failed: %s", ex)
 
-            t = threading.Thread(target=_bg_worker, daemon=True)
-            t.start()
+            from app.services.job_queue import get_job_queue
+
+            job_info = get_job_queue().submit_job(
+                job_type="demo_build_batch",
+                func=_bg_worker,
+                hustle_id=hustle_id,
+                input_payload={
+                    "batch_id": batch_id,
+                    "batch_size": batch_size,
+                    "testing_mode": testing_mode,
+                },
+            )
             return {
-                "status": "running",
+                "job_id": job_info["job_id"],
+                "status": "queued",
                 "async": True,
-                "message": "Autopilot demo factory batch build started in background thread",
+                "message": "Autopilot demo factory batch build started in background job queue",
             }
 
         return DemoFactoryService.build_batch(
@@ -442,13 +465,30 @@ class PipelineService:
                 raise HTTPException(status_code=409, detail=f"Run #{active_id} already in progress")
             _db_assert_no_active_run(db)
 
-            t = threading.Thread(
-                target=_worker,
-                args=(hustle_id, batch_size, testing_mode, locality, stop_after),
-                daemon=True,
+            from app.services.job_queue import get_job_queue
+
+            job_info = get_job_queue().submit_job(
+                "autopilot_refill",
+                _worker,
+                hustle_id,
+                batch_size,
+                testing_mode,
+                locality,
+                stop_after,
+                hustle_id=hustle_id,
+                input_payload={
+                    "batch_size": batch_size,
+                    "locality": locality,
+                    "testing_mode": testing_mode,
+                    "stop_after": stop_after,
+                },
             )
-            t.start()
-            return {"status": "running", "async": True, "message": "Autopilot refill started in background thread"}
+            return {
+                "job_id": job_info["job_id"],
+                "status": "queued",
+                "async": True,
+                "message": "Autopilot refill started in background job queue",
+            }
 
         emit_terminal_log(
             "REFILL-BATCH", f"Starting 7-Step Autopilot Refill Batch (target_count={batch_size}){mode_tag}..."
@@ -575,12 +615,19 @@ class PipelineService:
                     except Exception as ex:
                         logger.error("Async retry recordings failed: %s", ex)
 
-            t = threading.Thread(target=_bg_worker, daemon=True)
-            t.start()
+            from app.services.job_queue import get_job_queue
+
+            job_info = get_job_queue().submit_job(
+                job_type="retry_recordings",
+                func=_bg_worker,
+                hustle_id=hustle_id,
+                input_payload={"batch_id": batch_id, "testing_mode": testing_mode},
+            )
             return {
-                "status": "running",
+                "job_id": job_info["job_id"],
+                "status": "queued",
                 "async": True,
-                "message": "Retry recordings started in background thread",
+                "message": "Retry recordings started in background job queue",
             }
 
         return DemoFactoryService.retry_recordings(
