@@ -3,11 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { DiscoveryLead } from "../types";
 import { VerificationBadge } from "./VerificationBadge";
-import { ConfidencePill } from "./ConfidencePill";
 import {
   X,
-  Building2,
-  UserCheck,
   Phone,
   Mail,
   Globe,
@@ -19,6 +16,8 @@ import {
   Check,
   ExternalLink,
   Layers,
+  Building2,
+  Calendar,
 } from "lucide-react";
 
 interface DiscoveryLeadDrawerProps {
@@ -62,52 +61,80 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
     });
   };
 
+  const rawPhone = lead.phone || "";
+  const phoneDigits = rawPhone.replace(/[^0-9]/g, "");
+
+  // Real email check: ignore synthetic/fallback emails like *@wa.me or contact@clinic.in
+  const hasRealEmail =
+    Boolean(lead.contactEmail) &&
+    !lead.contactEmail.includes("@wa.me") &&
+    !lead.contactEmail.endsWith("@clinic.in");
+
+  // Real MX host check: ignore placeholder smtp.clinic.in
+  const hasRealMxHost =
+    Boolean(lead.verification.mxHost) &&
+    lead.verification.mxHost !== "smtp.clinic.in";
+
+  const doctorFormatted = lead.contactName
+    ? /^dr\.?\s+/i.test(lead.contactName)
+      ? lead.contactName
+      : `Dr. ${lead.contactName}`
+    : "Doctor In-Charge";
+
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-150"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="discovery-drawer-title"
       onClick={onClose}
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end animate-in fade-in duration-200"
     >
-      <aside
-        className="w-full max-w-lg h-full bg-white dark:bg-[#11131C] border-l border-slate-200 dark:border-white/[0.08] shadow-2xl flex flex-col overflow-hidden"
+      <div
         onClick={(e) => e.stopPropagation()}
+        className="my-2 mr-2 h-[calc(100vh-16px)] w-full max-w-[480px] sm:w-[480px] rounded-2xl bg-white dark:bg-[#141721] border border-slate-200/80 dark:border-white/[0.08] shadow-2xl overflow-hidden flex flex-col z-50 animate-in slide-in-from-right duration-300"
       >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200/80 dark:border-white/[0.08] flex items-start justify-between gap-4 bg-slate-50/70 dark:bg-[#161925]">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-indigo-500 shrink-0" />
-              <h2 className="text-base font-semibold text-zinc-900 dark:text-white truncate">
+        {/* 1. COMPACT HEADER */}
+        <div className="px-5 pt-5 pb-4 border-b border-slate-100 dark:border-white/[0.06] shrink-0">
+          {/* Row 1: Status Dot + Clinic Name + Close Button */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+              <h2
+                id="discovery-drawer-title"
+                className="text-base font-bold text-zinc-900 dark:text-white truncate"
+                title={lead.companyName}
+              >
                 {lead.companyName}
               </h2>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono truncate">
-              {lead.companyDomain || "no-website.clinic"} · {lead.industry}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
-            title="Close (Esc)"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
-          {/* Top Metrics Row */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-3.5 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-slate-50/60 dark:bg-white/[0.02]">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
-                Fit Score
-              </div>
-              <ConfidencePill score={lead.verification.confidenceScore} />
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg p-1 transition-colors cursor-pointer shrink-0"
+              title="Close drawer (Esc)"
+              aria-label="Close drawer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Row 2: Doctor & Locality + Fit Score & Verification Inline */}
+          <div className="flex flex-wrap items-center justify-between gap-2 mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-1.5 min-w-0 truncate">
+              <span className="font-semibold text-slate-700 dark:text-slate-200 truncate">
+                {doctorFormatted}
+              </span>
+              <span>•</span>
+              <span className="text-[11px]">{lead.contactTitle || "Clinical Director"}</span>
+              <span>•</span>
+              <span className="truncate">{lead.location || "Delhi NCR"}</span>
             </div>
-            <div className="p-3.5 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-slate-50/60 dark:bg-white/[0.02]">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
-                Website Verification
-              </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="bg-slate-100 dark:bg-slate-800 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700 rounded-md px-1.5 py-0.5 text-[11px] font-medium font-mono">
+                Fit {lead.verification.confidenceScore || 0}%
+              </span>
               <VerificationBadge
                 status={lead.verification.status}
                 details={lead.verification}
@@ -117,26 +144,86 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
             </div>
           </div>
 
-          {/* Doctor & Contact */}
-          <section className="space-y-2.5">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>Doctor &amp; Contact</span>
-            </h3>
-            <div className="rounded-xl border border-slate-200/80 dark:border-white/[0.08] divide-y divide-slate-100 dark:divide-white/[0.06]">
-              <div className="px-3.5 py-2.5 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Doctor</span>
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                  {lead.contactName.startsWith("Dr.") ? lead.contactName : `Dr. ${lead.contactName}`}
+          {/* Row 3: Action Buttons / Quick Link Bar */}
+          <div className="grid grid-cols-2 gap-2.5 mt-3">
+            {phoneDigits ? (
+              <a
+                href={`https://wa.me/${phoneDigits}?text=Hi%20${encodeURIComponent(doctorFormatted)},`}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-slate-800 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 text-zinc-800 dark:text-zinc-200 border border-slate-200/80 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <Phone className="w-3 h-3 fill-current shrink-0" />
+                <span className="truncate">{lead.phone}</span>
+              </a>
+            ) : (
+              <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center italic">
+                No phone registered
+              </div>
+            )}
+
+            {lead.companyWebsite && lead.companyWebsite !== "#" ? (
+              <a
+                href={lead.companyWebsite}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-800 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors truncate"
+              >
+                <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="truncate">Visit Website</span>
+                <ExternalLink className="w-3 h-3 shrink-0 text-slate-400" />
+              </a>
+            ) : (
+              <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-400 text-xs rounded-xl px-3 py-1.5 flex items-center justify-center italic">
+                No existing site
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* SCROLLABLE BODY */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+          {/* Executive Strategy & Discovery Summary Callout Box */}
+          <div className="bg-slate-50/90 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5 font-semibold text-zinc-900 dark:text-white min-w-0 truncate">
+                <Sparkles className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300 shrink-0" />
+                <span className="truncate">Discovery Assessment</span>
+              </div>
+              <span className="text-[11px] text-slate-400 font-mono shrink-0">
+                {formatTimestamp(lead.createdAt)}
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed break-words font-sans">
+              {lead.companyWebsite && lead.companyWebsite !== "#"
+                ? `Clinic discovered via ${lead.enrichment.provider || "automated pipeline"} with an active web domain (${lead.companyDomain}). Evaluated for modern redesign and mobile responsiveness.`
+                : `Clinic discovered via ${lead.enrichment.provider || "automated pipeline"} with no active website detected. Prime high-intent candidate for 3 bespoke website previews and direct WhatsApp outreach.`}
+            </p>
+          </div>
+
+          {/* Card 1: Contact & Links */}
+          <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5" />
+                <span>Contact &amp; Links</span>
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">Direct Channels</span>
+            </div>
+
+            <div className="rounded-lg border border-slate-100 dark:border-white/[0.06] divide-y divide-slate-100 dark:divide-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]">
+              {/* Doctor */}
+              <div className="px-3 py-2 flex items-center justify-between gap-2">
+                <span className="text-slate-500 dark:text-slate-400">Doctor In-Charge</span>
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                  {doctorFormatted}
                 </span>
               </div>
-              <div className="px-3.5 py-2.5 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Role</span>
-                <span className="text-zinc-800 dark:text-zinc-200">{lead.contactTitle || "Clinical Director"}</span>
-              </div>
-              <div className="px-3.5 py-2.5 flex items-center justify-between gap-2">
+
+              {/* Phone */}
+              <div className="px-3 py-2 flex items-center justify-between gap-2">
                 <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5" /> Phone
+                  <Phone className="w-3 h-3 text-slate-400" /> Phone
                 </span>
                 <div className="flex items-center gap-1.5 font-mono text-zinc-900 dark:text-zinc-100">
                   <span>{lead.phone || "-"}</span>
@@ -144,7 +231,7 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
                     <button
                       type="button"
                       onClick={() => handleCopy(lead.phone!, "phone")}
-                      className="p-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
+                      className="p-1 rounded hover:bg-slate-200/60 dark:hover:bg-white/[0.08] text-slate-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer transition-colors"
                       title="Copy phone"
                     >
                       {copiedField === "phone" ? (
@@ -156,140 +243,222 @@ export const DiscoveryLeadDrawer: React.FC<DiscoveryLeadDrawerProps> = ({
                   )}
                 </div>
               </div>
-              <div className="px-3.5 py-2.5 flex items-center justify-between gap-2">
+
+              {/* Email */}
+              <div className="px-3 py-2 flex items-center justify-between gap-2">
                 <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5" /> Email
+                  <Mail className="w-3 h-3 text-slate-400" /> Email
                 </span>
-                <span className="font-mono text-zinc-800 dark:text-zinc-200 truncate max-w-[260px]">
-                  {lead.contactEmail}
-                </span>
+                {hasRealEmail ? (
+                  <div className="flex items-center gap-1.5 font-mono text-zinc-900 dark:text-zinc-100 truncate">
+                    <span className="truncate max-w-[220px]">{lead.contactEmail}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(lead.contactEmail, "email")}
+                      className="p-1 rounded hover:bg-slate-200/60 dark:hover:bg-white/[0.08] text-slate-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer transition-colors"
+                      title="Copy email"
+                    >
+                      {copiedField === "email" ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-500" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-slate-400 italic">Not available</span>
+                )}
               </div>
-              <div className="px-3.5 py-2.5 flex items-center justify-between gap-2">
+
+              {/* Website */}
+              <div className="px-3 py-2 flex items-center justify-between gap-2">
                 <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5" /> Website
+                  <Globe className="w-3 h-3 text-slate-400" /> Website
                 </span>
                 {lead.companyWebsite && lead.companyWebsite !== "#" ? (
                   <a
                     href={lead.companyWebsite}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:underline font-mono truncate max-w-[240px]"
+                    className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:underline font-mono truncate max-w-[220px]"
                   >
-                    <span>{lead.companyWebsite}</span>
+                    <span className="truncate">{lead.companyWebsite}</span>
                     <ExternalLink className="w-3 h-3 shrink-0" />
                   </a>
                 ) : (
-                  <span className="text-slate-400 italic">No active website</span>
+                  <span className="text-slate-400 italic">No website found</span>
                 )}
               </div>
             </div>
-          </section>
+          </div>
 
-          {/* Location & Discovery Source */}
-          <section className="space-y-2.5">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>Location &amp; Discovery</span>
-            </h3>
-            <div className="rounded-xl border border-slate-200/80 dark:border-white/[0.08] divide-y divide-slate-100 dark:divide-white/[0.06]">
-              <div className="px-3.5 py-2.5 flex items-center justify-between">
+          {/* Card 2: Discovery Source & Location */}
+          <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Discovery Source &amp; Location</span>
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">Geo &amp; Pipeline</span>
+            </div>
+
+            <div className="rounded-lg border border-slate-100 dark:border-white/[0.06] divide-y divide-slate-100 dark:divide-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]">
+              <div className="px-3 py-2 flex items-center justify-between">
                 <span className="text-slate-500 dark:text-slate-400">Locality &amp; City</span>
                 <span className="font-medium text-zinc-900 dark:text-zinc-100">{lead.location}</span>
               </div>
-              <div className="px-3.5 py-2.5 flex items-center justify-between">
+              <div className="px-3 py-2 flex items-center justify-between">
                 <span className="text-slate-500 dark:text-slate-400">Source Provider</span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200">{lead.enrichment.provider}</span>
               </div>
-              <div className="px-3.5 py-2.5 flex items-center justify-between">
+              <div className="px-3 py-2 flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">Industry Sector</span>
+                <span className="text-zinc-800 dark:text-zinc-200">{lead.industry || "Dental Healthcare"}</span>
+              </div>
+              <div className="px-3 py-2 flex items-center justify-between">
                 <span className="text-slate-500 dark:text-slate-400">Enrichment State</span>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/50 text-[10px] font-mono uppercase">
                   {lead.enrichment.state}
                 </span>
               </div>
             </div>
-          </section>
+          </div>
 
-          {/* Verification Diagnostics */}
-          <section className="space-y-2.5">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Verification Diagnostics</span>
-            </h3>
-            <div className="rounded-xl border border-slate-200/80 dark:border-white/[0.08] divide-y divide-slate-100 dark:divide-white/[0.06]">
-              <div className="px-3.5 py-2.5 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">SMTP Check</span>
-                <span className="font-mono text-zinc-900 dark:text-zinc-100 uppercase">
-                  {lead.verification.smtpCheck}
+          {/* Card 3: Website Verification & Signals */}
+          <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Website Verification &amp; Signals</span>
+              </span>
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold font-mono">
+                {lead.demoReady ? "Demo Ready" : "Staged"}
+              </span>
+            </div>
+
+            <div className="rounded-lg border border-slate-100 dark:border-white/[0.06] divide-y divide-slate-100 dark:divide-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]">
+              <div className="px-3 py-2 flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">Verification Status</span>
+                <VerificationBadge
+                  status={lead.verification.status}
+                  details={lead.verification}
+                  lead={lead}
+                  placement="bottom"
+                />
+              </div>
+              <div className="px-3 py-2 flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">Confidence / Fit</span>
+                <span className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-zinc-800 dark:text-zinc-200 text-[11px] px-2 py-0.5 rounded font-mono font-medium">
+                  {lead.verification.confidenceScore}%
                 </span>
               </div>
-              <div className="px-3.5 py-2.5 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">MX Record</span>
-                <span className="font-mono text-zinc-800 dark:text-zinc-200">
-                  {lead.verification.mxRecordValid ? `Valid (${lead.verification.mxHost})` : "Invalid"}
-                </span>
-              </div>
-              <div className="px-3.5 py-2.5 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Flags</span>
-                <div className="flex flex-wrap gap-1.5 justify-end">
-                  <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 font-mono text-[10px]">
-                    Catch-All: {lead.verification.isCatchAll ? "Yes" : "No"}
+              {hasRealMxHost && (
+                <div className="px-3 py-2 flex items-center justify-between">
+                  <span className="text-slate-500 dark:text-slate-400">MX Host</span>
+                  <span className="font-mono text-zinc-800 dark:text-zinc-200 truncate max-w-[200px]">
+                    {lead.verification.mxHost}
                   </span>
-                  <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 font-mono text-[10px]">
-                    Disposable: {lead.verification.isDisposable ? "Yes" : "No"}
-                  </span>
+                </div>
+              )}
+              <div className="px-3 py-2 flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">Detected Stack</span>
+                <div className="flex flex-wrap gap-1 justify-end">
+                  {(lead.enrichment.techStack || []).length > 0 ? (
+                    lead.enrichment.techStack!.map((tech) => (
+                      <span
+                        key={tech}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40 text-[10px] font-medium"
+                      >
+                        <Layers className="w-2.5 h-2.5" />
+                        {tech}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 italic">None</span>
+                  )}
                 </div>
               </div>
             </div>
-          </section>
+          </div>
 
-          {/* Detected Signals & Tags */}
-          <section className="space-y-2.5">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Detected Signals &amp; Tech</span>
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {(lead.enrichment.techStack || []).map((item) => (
-                <span
-                  key={item}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40 text-[11px] font-medium"
-                >
-                  <Layers className="w-3 h-3" />
-                  {item}
-                </span>
-              ))}
-              {lead.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.08] text-[11px] font-mono"
-                >
-                  {tag}
-                </span>
-              ))}
+          {/* Card 4: Discovered Details & Timestamps */}
+          <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <Building2 className="w-3.5 h-3.5" />
+                <span>Discovered Details</span>
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">Metadata</span>
             </div>
-          </section>
 
-          {/* Timestamps */}
-          <section className="space-y-2.5">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" />
-              <span>Timestamps</span>
-            </h3>
-            <div className="rounded-xl border border-slate-200/80 dark:border-white/[0.08] divide-y divide-slate-100 dark:divide-white/[0.06]">
-              <div className="px-3.5 py-2.5 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Discovered At</span>
-                <span className="font-mono text-zinc-800 dark:text-zinc-200">{formatTimestamp(lead.createdAt)}</span>
+            <div className="rounded-lg border border-slate-100 dark:border-white/[0.06] divide-y divide-slate-100 dark:divide-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]">
+              <div className="px-3 py-2 flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <Clock className="w-3 h-3 text-slate-400" /> Discovered
+                </span>
+                <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                  {formatTimestamp(lead.createdAt)}
+                </span>
               </div>
-              <div className="px-3.5 py-2.5 flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Verified At</span>
+              <div className="px-3 py-2 flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <Calendar className="w-3 h-3 text-slate-400" /> Verified
+                </span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200">
                   {formatTimestamp(lead.verification.verifiedAt)}
                 </span>
               </div>
+              {lead.tags && lead.tags.length > 0 && (
+                <div className="px-3 py-2 flex items-center justify-between gap-2">
+                  <span className="text-slate-500 dark:text-slate-400">Tags</span>
+                  <div className="flex flex-wrap gap-1 justify-end">
+                    {lead.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.08] text-[10px] font-mono"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </section>
+          </div>
         </div>
-      </aside>
+
+        {/* 5. CLEAN ACTION FOOTER */}
+        <div className="px-5 py-3.5 border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#141721] grid grid-cols-2 gap-2.5 shrink-0">
+          {phoneDigits ? (
+            <a
+              href={`https://wa.me/${phoneDigits}?text=Hi%20${encodeURIComponent(doctorFormatted)},`}
+              target="_blank"
+              rel="noreferrer"
+              className="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            >
+              <Phone className="w-4 h-4" />
+              <span>WhatsApp Doctor</span>
+            </a>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="bg-slate-100 dark:bg-slate-800/60 text-slate-400 border border-slate-200/60 dark:border-slate-700/60 rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed"
+            >
+              <Phone className="w-4 h-4" />
+              <span>No Phone</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-zinc-900 dark:text-zinc-100 border border-slate-200/80 dark:border-slate-700 rounded-xl py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            <span>Close</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
