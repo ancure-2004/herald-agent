@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models.entities import AvailabilityDay, Hustle, SmartView, Stage
 
@@ -11,6 +11,14 @@ class HustleRepository:
         return db.query(Hustle).filter(Hustle.id == hustle_id).first()
 
     @staticmethod
+    def get_by_ids(db: Session, hustle_ids: List[int]) -> Dict[int, Hustle]:
+        """Batched query returning {id: hustle} mapped into O(1) dict."""
+        if not hustle_ids:
+            return {}
+        hustles = db.query(Hustle).filter(Hustle.id.in_(hustle_ids)).all()
+        return {h.id: h for h in hustles}
+
+    @staticmethod
     def get_by_slug(db: Session, slug: str) -> Optional[Hustle]:
         return db.query(Hustle).filter(Hustle.slug == slug).first()
 
@@ -18,7 +26,7 @@ class HustleRepository:
     def list_all(db: Session) -> List[Hustle]:
         return (
             db.query(Hustle)
-            .options(joinedload(Hustle.stages), joinedload(Hustle.smart_views))
+            .options(selectinload(Hustle.stages), selectinload(Hustle.smart_views))
             .order_by(Hustle.id)
             .all()
         )

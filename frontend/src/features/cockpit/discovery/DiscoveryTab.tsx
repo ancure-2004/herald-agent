@@ -7,7 +7,9 @@ import { LeadDataTable } from "./LeadDataTable";
 import { FloatingActionBar } from "./FloatingActionBar";
 import { DiscoveryConsole } from "./DiscoveryConsole";
 import { DiscoveryLeadDrawer } from "./DiscoveryLeadDrawer";
+import { TableSkeleton } from "@/components/ui/Skeleton";
 import { apiFetch } from "@/lib/api/client";
+import { getPollingInterval } from "@/lib/utils/polling";
 import {
   Sparkles,
   CheckCircle2,
@@ -224,13 +226,30 @@ export const DiscoveryTab: React.FC = () => {
     discoveryTabCache = { leads, stagedCount, discoveredTodayCount, filteredCount };
   }, [hasLoaded, leads, stagedCount, discoveredTodayCount, filteredCount]);
 
-  // Periodic poll during active discovery
+  // Periodic poll during active discovery with network and tab-visibility backoff
   useEffect(() => {
     if (!isDiscovering) return;
-    const interval = setInterval(() => {
-      fetchCockpitTelemetry();
-    }, 2500);
-    return () => clearInterval(interval);
+    let timer: NodeJS.Timeout | null = null;
+    let isCancelled = false;
+
+    const scheduleNext = () => {
+      if (isCancelled || !isDiscovering) return;
+      const interval = getPollingInterval(2500, 10000);
+      timer = setTimeout(async () => {
+        try {
+          await fetchCockpitTelemetry();
+        } finally {
+          scheduleNext();
+        }
+      }, interval);
+    };
+
+    scheduleNext();
+
+    return () => {
+      isCancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [isDiscovering, fetchCockpitTelemetry]);
 
   const handleStartDiscovery = async () => {
@@ -717,10 +736,7 @@ export const DiscoveryTab: React.FC = () => {
 
       {/* 4. Overhauled Staged Leads Table with Integrated Filter Header Bar */}
       {!hasLoaded ? (
-        <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-mono text-slate-500 dark:text-zinc-400">
-          <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
-          <span>Loading leads from database...</span>
-        </div>
+        <TableSkeleton rows={8} columns={6} />
       ) : leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl bg-white dark:bg-zinc-900 border border-dashed border-slate-300 dark:border-zinc-700 text-center">
           <Database className="w-6 h-6 text-slate-400" />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { Plus, ChevronDown, ChevronRight, Layers } from "lucide-react";
 import { LeadCard } from "./LeadCard";
 import { Lead, Stage } from "@/types";
@@ -184,7 +184,7 @@ function BatchGroup({ batchId, batchLeads, expanded, onToggle, renderLead }: Bat
   );
 }
 
-export function KanbanColumn({
+export const KanbanColumn = React.memo(function KanbanColumn({
   stage,
   allStages,
   leads,
@@ -253,28 +253,40 @@ export function KanbanColumn({
     );
   }
 
-  const renderLead = (lead: Lead, isNested = false) => (
-    <div
-      key={lead.id}
-      draggable
-      onDragStart={(e) => {
-        e.dataTransfer.setData("text/plain", String(lead.id));
-        e.dataTransfer.effectAllowed = "move";
-      }}
-    >
-      <LeadCard
-        lead={lead}
-        stageName={stage.name}
-        stageSlug={stage.slug}
-        allStages={allStages}
-        isSelected={selectedLeadId === lead.id}
-        isDragging={draggingLeadId === lead.id}
-        isNestedInBatch={isNested}
-        onSelect={() => onLeadSelect(lead.id)}
-        onAdvanceStage={(nextStageId) => onAdvanceLeadStage(lead, nextStageId)}
-        onApproveAndSend={onApproveAndSend}
-      />
-    </div>
+  const renderLead = useCallback(
+    (lead: Lead, isNested = false) => (
+      <div
+        key={lead.id}
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.setData("text/plain", String(lead.id));
+          e.dataTransfer.effectAllowed = "move";
+        }}
+      >
+        <LeadCard
+          lead={lead}
+          stageName={stage.name}
+          stageSlug={stage.slug}
+          allStages={allStages}
+          isSelected={selectedLeadId === lead.id}
+          isDragging={draggingLeadId === lead.id}
+          isNestedInBatch={isNested}
+          onSelect={() => onLeadSelect(lead.id)}
+          onAdvanceStage={(nextStageId) => onAdvanceLeadStage(lead, nextStageId)}
+          onApproveAndSend={onApproveAndSend}
+        />
+      </div>
+    ),
+    [
+      stage.name,
+      stage.slug,
+      allStages,
+      selectedLeadId,
+      draggingLeadId,
+      onLeadSelect,
+      onAdvanceLeadStage,
+      onApproveAndSend,
+    ]
   );
 
   return (
@@ -355,4 +367,4 @@ export function KanbanColumn({
       </div>
     </div>
   );
-}
+});

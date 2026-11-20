@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { apiFetch } from "@/lib/api/client";
+import { ApiError, apiFetch } from "@/lib/api/client";
+import { getPollingInterval } from "@/lib/utils/polling";
 import { autopilotApi, leadsApi, settingsApi } from "@/api";
 import { useSSE } from "@/hooks/useSSE";
 import { useTheme } from "@/hooks/useTheme";
@@ -122,8 +123,10 @@ interface CRMContextType {
   copilotSuggestions: CopilotSuggestion[];
   bufferHealthPct: number;
   loading: boolean;
+  isBackendOffline: boolean;
+  checkBackendHealth: () => Promise<boolean>;
   toast: ToastState | null;
-  notify: (text: string, type?: "ok" | "err") => void;
+  notify: (textOrError: string | Error | unknown, type?: "ok" | "err") => void;
   closeToast: () => void;
 
   // Real-time & Terminal
@@ -202,6 +205,9 @@ interface CRMContextType {
   // Handlers
   loadAll: () => Promise<void>;
   handleStageChange: (lead: Lead, newStageId: number) => Promise<void>;
+  handleUpdateLead: (leadId: number, updates: Partial<Lead>) => Promise<void>;
+  handleBatchStageChange: (leadIds: number[], newStageId: number) => Promise<void>;
+  handleBatchArchive: (leadIds: number[], archive?: boolean) => Promise<void>;
   handleApproveAndSend: (lead: Lead) => Promise<void>;
   handleTriggerRefill: (batchSize?: number, testingMode?: boolean, locality?: string) => Promise<void>;
   handleDayModeChange: (mode: "normal" | "away" | "off") => Promise<void>;
@@ -305,6 +311,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
 
   // UI status
   const [loading, setLoading] = useState<boolean>(true);
+  const [isBackendOffline, setIsBackendOffline] = useState<boolean>(false);
   const [toast, setToast] = useState<ToastState | null>(null);
 
   // Sorting & Filtering
@@ -366,13 +373,41 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const [assistantLoading, setAssistantLoading] = useState<boolean>(false);
   const [assistantHistory, setAssistantHistory] = useState<AssistantHistoryItem[]>([]);
 
-  const notify = useCallback((text: string, type: "ok" | "err" = "ok") => {
-    setToast({ text, type });
+  const notify = useCallback((textOrError: string | Error | unknown, type: "ok" | "err" = "ok") => {
+    let message = "";
+    if (typeof textOrError === "string") {
+      message = textOrError;
+    } else if (textOrError instanceof ApiError) {
+      message = textOrError.code ? `[${textOrError.code}] ${textOrError.message}` : textOrError.message;
+      if (textOrError.requestId) {
+        message += ` (Ref: ${textOrError.requestId.slice(-6)})`;
+      }
+    } else if (textOrError instanceof Error) {
+      message = textOrError.message;
+    } else {
+      message = String(textOrError || "An unexpected error occurred");
+    }
+    setToast({ text: message, type });
     setTimeout(() => setToast(null), 4500);
   }, []);
 
   const closeToast = useCallback(() => {
     setToast(null);
+  }, []);
+
+  const checkBackendHealth = useCallback(async (): Promise<boolean> => {
+    try {
+      await apiFetch<{ status?: string }>("/api/health", {
+        timeoutMs: 5000,
+        skipDedupe: true,
+        disableCache: true,
+      });
+      setIsBackendOffline(false);
+      return true;
+    } catch {
+      setIsBackendOffline(true);
+      return false;
+    }
   }, []);
 
   // Sync global automation state from backend settings on mount
@@ -485,8 +520,15 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       setStockPlan(sPlan);
       setSprintPlan(spPlan);
       setRuns(rList);
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Failed to load CRM data", "err");
+      setIsBackendOffline(false);
+    } catch (err: unknown) {
+      if (
+        (err instanceof ApiError && (err.status === 408 || err.code === "NETWORK_ERROR" || err.code === "TIMEOUT_ERROR")) ||
+        (typeof navigator !== "undefined" && !navigator.onLine)
+      ) {
+        setIsBackendOffline(true);
+      }
+      notify(err instanceof Error ? err : "Failed to load CRM data", "err");
     } finally {
       setLoading(false);
     }
@@ -495,6 +537,57 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     loadAll();
   }, [loadAll]);
+
+  // Listen to browser network connectivity changes
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleOffline = () => setIsBackendOffline(true);
+    const handleOnline = () => {
+      checkBackendHealth().then((isUp) => {
+        if (isUp) {
+          loadAll();
+          notify("Network reconnected. Syncing live CRM data.", "ok");
+        }
+      });
+    };
+
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
+
+    return () => {
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
+    };
+  }, [checkBackendHealth, loadAll, notify]);
+
+  // Periodic health check & reconnection polling with network and visibility backoff when offline
+  useEffect(() => {
+    if (!isBackendOffline) return;
+    let timer: NodeJS.Timeout | null = null;
+    let isCancelled = false;
+
+    const scheduleRecheck = () => {
+      if (isCancelled) return;
+      const interval = getPollingInterval(8000, 25000);
+      timer = setTimeout(async () => {
+        const isUp = await checkBackendHealth();
+        if (isUp) {
+          loadAll();
+          notify("Backend connection restored.", "ok");
+        } else {
+          scheduleRecheck();
+        }
+      }, interval);
+    };
+
+    scheduleRecheck();
+
+    return () => {
+      isCancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [isBackendOffline, checkBackendHealth, loadAll, notify]);
 
   // Reply Copilot loader
   useEffect(() => {
@@ -508,13 +601,30 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       .catch(() => setCopilotSuggestions([]));
   }, [selectedLeadId]);
 
-  // Terminal poller during active jobs
+  // Terminal poller during active jobs with network and visibility backoff
   useEffect(() => {
     if (!activeTerminalJob) return;
-    const timer = setInterval(() => {
-      syncTerminalLogs();
-    }, 350);
-    return () => clearInterval(timer);
+    let timer: NodeJS.Timeout | null = null;
+    let isCancelled = false;
+
+    const scheduleNext = () => {
+      if (isCancelled || !activeTerminalJob) return;
+      const interval = getPollingInterval(350, 1500);
+      timer = setTimeout(async () => {
+        try {
+          await syncTerminalLogs();
+        } finally {
+          scheduleNext();
+        }
+      }, interval);
+    };
+
+    scheduleNext();
+
+    return () => {
+      isCancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [activeTerminalJob, syncTerminalLogs]);
 
   // Auto-scroll terminal
@@ -555,7 +665,13 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   }, [activeHustleId]);
 
   // Action Handlers
-  const { handleStageChange, handleApproveAndSend } = useLeadMutations({
+  const {
+    handleStageChange,
+    handleUpdateLead,
+    handleBatchStageChange,
+    handleBatchArchive,
+    handleApproveAndSend,
+  } = useLeadMutations({
     setLeads,
     loadAll,
     notify,
@@ -905,6 +1021,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     copilotSuggestions,
     bufferHealthPct,
     loading,
+    isBackendOffline,
+    checkBackendHealth,
     toast,
     notify,
     closeToast,
@@ -973,6 +1091,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     handleAssistantUndo,
     loadAll,
     handleStageChange,
+    handleUpdateLead,
+    handleBatchStageChange,
+    handleBatchArchive,
     handleApproveAndSend,
     handleTriggerRefill,
     handleDayModeChange,
@@ -1018,6 +1139,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     copilotSuggestions,
     bufferHealthPct,
     loading,
+    isBackendOffline,
+    checkBackendHealth,
     toast,
     notify,
     closeToast,
@@ -1059,6 +1182,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     handleAssistantUndo,
     loadAll,
     handleStageChange,
+    handleUpdateLead,
+    handleBatchStageChange,
+    handleBatchArchive,
     handleApproveAndSend,
     handleTriggerRefill,
     handleDayModeChange,
@@ -1081,4 +1207,69 @@ export function useCRM() {
     throw new Error("useCRM must be used within a CRMProvider");
   }
   return context;
+}
+
+/**
+ * Generic selector hook to select derived state from CRMContext.
+ */
+export function useCRMSelector<T>(selector: (state: CRMContextType) => T): T {
+  const context = useCRM();
+  return selector(context);
+}
+
+/**
+ * Specialized hook for lead data and active hustle to avoid re-renders on unrelated telemetry.
+ */
+export function useCRMLeads() {
+  const { leads, activeHustle, selectedLeadId, selectedLead, loading } = useCRM();
+  return useMemo(
+    () => ({ leads, activeHustle, selectedLeadId, selectedLead, loading }),
+    [leads, activeHustle, selectedLeadId, selectedLead, loading]
+  );
+}
+
+/**
+ * Specialized hook for lead mutation actions with stable references.
+ */
+export function useCRMMutations() {
+  const {
+    handleStageChange,
+    handleUpdateLead,
+    handleBatchStageChange,
+    handleBatchArchive,
+    handleApproveAndSend,
+    loadAll,
+    notify,
+  } = useCRM();
+  return useMemo(
+    () => ({
+      handleStageChange,
+      handleUpdateLead,
+      handleBatchStageChange,
+      handleBatchArchive,
+      handleApproveAndSend,
+      loadAll,
+      notify,
+    }),
+    [
+      handleStageChange,
+      handleUpdateLead,
+      handleBatchStageChange,
+      handleBatchArchive,
+      handleApproveAndSend,
+      loadAll,
+      notify,
+    ]
+  );
+}
+
+/**
+ * Specialized hook for navigation and layout states.
+ */
+export function useCRMNavigation() {
+  const { activeTab, setActiveTab, surface, cockpitTab, sidebarCollapsed } = useCRM();
+  return useMemo(
+    () => ({ activeTab, setActiveTab, surface, cockpitTab, sidebarCollapsed }),
+    [activeTab, setActiveTab, surface, cockpitTab, sidebarCollapsed]
+  );
 }

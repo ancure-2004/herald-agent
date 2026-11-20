@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterator, Optional
 
 from sqlalchemy.orm import Session
 
@@ -24,6 +24,10 @@ class AssistantController:
     @staticmethod
     def ask_or_do(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
         return AssistantService.ask_or_do(db, payload)
+
+    @staticmethod
+    def stream_ask_or_do(db: Session, payload: Dict[str, Any]) -> Iterator[str]:
+        return AssistantService.stream_ask_or_do(db, payload)
 
     @staticmethod
     def undo(db: Session, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:

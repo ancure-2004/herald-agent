@@ -2,7 +2,7 @@ import csv
 import io
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy.orm import Session, joinedload
 
@@ -21,6 +21,7 @@ from app.models.entities import (
 from app.repositories.hustle_repo import HustleRepository
 from app.repositories.lead_repo import LeadRepository
 from app.schemas.lead import CompleteTaskRequest, LeadCreate, LeadUpdate
+from app.services.cache_manager import get_cache_manager
 from app.services.event_bus import broadcast_sse, emit_terminal_log
 from app.services.sse_publisher import EventPublisher
 from app.utils.safety import (
@@ -100,7 +101,10 @@ class LeadService:
         include_archived: bool = False,
         search: Optional[str] = None,
         status: Optional[str] = None,
-    ) -> List[Lead]:
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[Lead], Dict[str, Any]]:
         return LeadRepository.list_leads(
             db=db,
             hustle_id=hustle_id,
@@ -109,6 +113,9 @@ class LeadService:
             include_archived=include_archived,
             search=search,
             status=status,
+            limit=limit,
+            offset=offset,
+            cursor=cursor,
         )
 
     @staticmethod
@@ -201,6 +208,8 @@ class LeadService:
 
         db.commit()
         db.refresh(lead)
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("leads:")
         EventPublisher.publish_lead_created(lead.id, lead.name)
         try:
             from app.services.rag_service import RAGIndexingService
@@ -270,6 +279,8 @@ class LeadService:
 
         db.commit()
         db.refresh(lead)
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("leads:")
         EventPublisher.publish_lead_updated(lead.id, stage_id=lead.stage_id)
         try:
             from app.services.rag_service import RAGIndexingService
@@ -316,6 +327,8 @@ class LeadService:
 
         db.commit()
         db.refresh(lead)
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("leads:")
         EventPublisher.publish_task_completed(lead.id, next_action=lead.next_action)
         return lead
 
@@ -331,6 +344,8 @@ class LeadService:
         LeadRepository.add_internal_note(db, lead.id, f"Lead archived: {reason}")
         db.commit()
         db.refresh(lead)
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("leads:")
         return lead
 
     @staticmethod
@@ -386,6 +401,12 @@ class LeadService:
 
     @staticmethod
     def get_reply_copilot(db: Session, lead_id: int) -> Dict[str, Any]:
+        cache = get_cache_manager()
+        cache_key = f"leads:reply_copilot:{lead_id}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         lead = LeadService.get_lead(db, lead_id)
         preferred_design = "Modern"
         for e in lead.events:
@@ -417,11 +438,13 @@ class LeadService:
                     }
                 )
 
-        return {
+        result = {
             "lead_id": lead.id,
             "preferred_design": preferred_design,
             "suggestions": suggestions[:4],
         }
+        cache.set(cache_key, result, ttl=60)
+        return result
 
     @staticmethod
     def post_call_draft(db: Session, lead_id: int, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -559,5 +582,8 @@ class LeadService:
         db.query(LeadFact).delete()
         db.query(Lead).delete()
         db.commit()
+        get_cache_manager().invalidate_prefix("cockpit:")
+        get_cache_manager().invalidate_prefix("leads:")
+        get_cache_manager().invalidate_prefix("messages:")
         EventPublisher.publish_leads_wiped()
         return {"status": "clean_slate", "remaining_leads": 0}

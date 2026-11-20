@@ -1,5 +1,5 @@
 import io
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,10 @@ class LeadController:
         include_archived: bool = False,
         search: Optional[str] = None,
         status: Optional[str] = None,
-    ) -> List[Lead]:
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[Lead], Dict[str, Any]]:
         return LeadService.list_leads(
             db=db,
             hustle_id=hustle_id,
@@ -28,6 +31,9 @@ class LeadController:
             include_archived=include_archived,
             search=search,
             status=status,
+            limit=limit,
+            offset=offset,
+            cursor=cursor,
         )
 
     @staticmethod

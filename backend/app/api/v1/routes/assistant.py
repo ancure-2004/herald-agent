@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
@@ -11,8 +12,40 @@ router = APIRouter(tags=["Assistant & Telegram"])
 
 
 @router.post("/assistant/ask-do")
-def assistant_ask_or_do(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def assistant_ask_or_do(
+    payload: Dict[str, Any],
+    stream: Optional[bool] = Query(None),
+    db: Session = Depends(get_db),
+):
+    is_stream = bool(stream) if stream is not None else bool(payload.get("stream", False))
+    if is_stream:
+        return StreamingResponse(
+            AssistantController.stream_ask_or_do(db, payload),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
+        )
     return AssistantController.ask_or_do(db, payload)
+
+
+@router.post("/assistant/ask-do/stream")
+@router.post("/assistant/stream")
+def assistant_stream(
+    payload: Dict[str, Any],
+    db: Session = Depends(get_db),
+):
+    return StreamingResponse(
+        AssistantController.stream_ask_or_do(db, payload),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @router.post("/assistant/undo")

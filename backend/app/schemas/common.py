@@ -1,4 +1,7 @@
+from typing import Generic, List, Optional, TypeVar
 from pydantic import BaseModel, ConfigDict
+
+T = TypeVar("T")
 
 
 class BaseSchema(BaseModel):
@@ -11,3 +14,11 @@ class BaseORMModel(BaseModel):
     """Base schema for database entity representations."""
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    """Standard pagination envelope."""
+
+    items: List[T]
+    next_cursor: Optional[int] = None
+    total: int

@@ -100,3 +100,21 @@ class EventPublisher:
     @staticmethod
     def publish_pipeline_step(node_data: Dict[str, Any]) -> None:
         broadcast_sse("pipeline_step", node_data)
+
+    # Job Queue & Progress Events
+    @staticmethod
+    def publish_job_progress(
+        job_id: str,
+        status: str,
+        progress: int = 0,
+        message: str = "",
+        **extra: Any,
+    ) -> None:
+        payload = {
+            "job_id": job_id,
+            "status": status,
+            "progress": progress,
+            "message": message,
+        }
+        payload.update(extra)
+        broadcast_sse("job_progress", payload)

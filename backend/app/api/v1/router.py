@@ -6,6 +6,7 @@ from app.api.v1.routes import (
     events,
     health,
     hustles,
+    jobs,
     leads,
     messages,
     pipeline,
@@ -15,6 +16,7 @@ from app.api.v1.routes import (
 api_v1_router = APIRouter()
 
 api_v1_router.include_router(health.router)
+api_v1_router.include_router(jobs.router)
 api_v1_router.include_router(hustles.router)
 api_v1_router.include_router(leads.router)
 api_v1_router.include_router(messages.router)

@@ -1,29 +1,105 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { CRMProvider, useCRM } from "@/context/CRMContext";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DashboardView } from "@/features/dashboard/DashboardView";
-import { WhatsAppInboxView } from "@/features/inbox/WhatsAppInboxView";
-import { CallsManagementView } from "@/features/calls/CallsManagementView";
-import { KanbanBoardView } from "@/features/board/KanbanBoardView";
-import { LeadsTableView } from "@/features/table/LeadsTableView";
-import { EveningSprintView } from "@/features/sprint/EveningSprintView";
-import { AutopilotCockpitView } from "@/features/cockpit/AutopilotCockpitView";
-import { HustleSettingsView } from "@/features/settings/HustleSettingsView";
-import { LeadDetailModal } from "@/features/modals/LeadDetailModal";
-import { AddLeadModal } from "@/features/modals/AddLeadModal";
-import { ProblemReportModal } from "@/features/modals/ProblemReportModal";
-import { AssistantDrawer } from "@/features/modals/AssistantDrawer";
-import { LogCallModal } from "@/features/modals/LogCallModal";
-import { LogReplyModal } from "@/features/modals/LogReplyModal";
-import { CommandPaletteModal } from "@/features/modals/CommandPaletteModal";
-import { SettingsModal } from "@/features/settings/SettingsModal";
+import { Toast } from "@/components/ui/Toast";
+import { KanbanSkeleton, TableSkeleton, DashboardSkeleton } from "@/components/ui/Skeleton";
+
+// Dynamic imports with ssr: false for heavy views, modals, and drawers
+const KanbanBoardView = dynamic(
+  () => import("@/features/board/KanbanBoardView").then((mod) => mod.KanbanBoardView),
+  { ssr: false, loading: () => <KanbanSkeleton /> }
+);
+
+const LeadsTableView = dynamic(
+  () => import("@/features/table/LeadsTableView").then((mod) => mod.LeadsTableView),
+  { ssr: false, loading: () => <TableSkeleton rows={8} columns={8} /> }
+);
+
+const WhatsAppInboxView = dynamic(
+  () => import("@/features/inbox/WhatsAppInboxView").then((mod) => mod.WhatsAppInboxView),
+  { ssr: false, loading: () => <TableSkeleton rows={6} columns={4} /> }
+);
+
+const CallsManagementView = dynamic(
+  () => import("@/features/calls/CallsManagementView").then((mod) => mod.CallsManagementView),
+  { ssr: false, loading: () => <TableSkeleton rows={6} columns={4} /> }
+);
+
+const EveningSprintView = dynamic(
+  () => import("@/features/sprint/EveningSprintView").then((mod) => mod.EveningSprintView),
+  { ssr: false, loading: () => <TableSkeleton rows={6} columns={4} /> }
+);
+
+const HustleSettingsView = dynamic(
+  () => import("@/features/settings/HustleSettingsView").then((mod) => mod.HustleSettingsView),
+  { ssr: false, loading: () => <TableSkeleton rows={6} columns={4} /> }
+);
+
+const AutopilotCockpitView = dynamic(
+  () => import("@/features/cockpit/AutopilotCockpitView").then((mod) => mod.AutopilotCockpitView),
+  { ssr: false, loading: () => <TableSkeleton rows={8} columns={6} /> }
+);
+
+const CommandPaletteModal = dynamic(
+  () => import("@/features/modals/CommandPaletteModal").then((mod) => mod.CommandPaletteModal),
+  { ssr: false }
+);
+
+const SettingsModal = dynamic(
+  () => import("@/features/settings/SettingsModal").then((mod) => mod.SettingsModal),
+  { ssr: false }
+);
+
+const AssistantDrawer = dynamic(
+  () => import("@/features/modals/AssistantDrawer").then((mod) => mod.AssistantDrawer),
+  { ssr: false }
+);
+
+const LeadDetailModal = dynamic(
+  () => import("@/features/modals/LeadDetailModal").then((mod) => mod.LeadDetailModal),
+  { ssr: false }
+);
+
+const AddLeadModal = dynamic(
+  () => import("@/features/modals/AddLeadModal").then((mod) => mod.AddLeadModal),
+  { ssr: false }
+);
+
+const ProblemReportModal = dynamic(
+  () => import("@/features/modals/ProblemReportModal").then((mod) => mod.ProblemReportModal),
+  { ssr: false }
+);
+
+const LogCallModal = dynamic(
+  () => import("@/features/modals/LogCallModal").then((mod) => mod.LogCallModal),
+  { ssr: false }
+);
+
+const LogReplyModal = dynamic(
+  () => import("@/features/modals/LogReplyModal").then((mod) => mod.LogReplyModal),
+  { ssr: false }
+);
 
 function CRMContent() {
-  const { activeTab, loading, toast } = useCRM();
+  const {
+    activeTab,
+    loading,
+    toast,
+    closeToast,
+    settingsModalOpen,
+    cmdKOpen,
+    selectedLeadId,
+    newLeadModalOpen,
+    problemModalOpen,
+    logCallModalOpen,
+    logReplyModalOpen,
+  } = useCRM();
   const isCockpit = activeTab === "autopilot";
 
   return (
@@ -67,9 +143,13 @@ function CRMContent() {
           }`}
         >
           {loading ? (
-            <div className="p-8 sm:p-16 text-center text-sm text-slate-500 dark:text-zinc-400">
-              Loading Herald Operations Engine...
-            </div>
+            activeTab === "dashboard" ? (
+              <DashboardSkeleton />
+            ) : activeTab === "board" ? (
+              <KanbanSkeleton />
+            ) : (
+              <TableSkeleton rows={8} columns={8} />
+            )
           ) : (
             <>
               {activeTab === "dashboard" && <DashboardView />}
@@ -85,15 +165,16 @@ function CRMContent() {
         </main>
       </div>
 
-      {/* Modals & Drawers */}
-      <SettingsModal />
-      <CommandPaletteModal />
-      <LeadDetailModal />
-      <AddLeadModal />
-      <ProblemReportModal />
-      <LogCallModal />
-      <LogReplyModal />
+      {/* Modals & Drawers - only mounted when activated */}
+      {settingsModalOpen && <SettingsModal />}
+      {cmdKOpen && <CommandPaletteModal />}
+      {Boolean(selectedLeadId) && <LeadDetailModal />}
+      {newLeadModalOpen && <AddLeadModal />}
+      {problemModalOpen && <ProblemReportModal />}
+      {logCallModalOpen && <LogCallModal />}
+      {logReplyModalOpen && <LogReplyModal />}
       {!isCockpit && <AssistantDrawer />}
+      <Toast toast={toast} onClose={closeToast} />
     </div>
   );
 }

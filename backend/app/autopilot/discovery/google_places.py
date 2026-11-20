@@ -1,10 +1,9 @@
 import json
 import logging
 import time
-import urllib.error
-import urllib.request
 from typing import Any, Dict, List, Optional
 
+import httpx
 from sqlalchemy.orm import Session
 
 from app.autopilot.discovery.localities import Locality
@@ -60,21 +59,59 @@ def google_places_search(
             "places.internationalPhoneNumber",
         ]
     )
-    req = urllib.request.Request(
-        "https://places.googleapis.com/v1/places:searchText",
-        data=json.dumps({"textQuery": query, "maxResultCount": max_results}).encode("utf-8"),
-        headers={
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": api_key,
-            "X-Goog-FieldMask": field_mask,
-        },
-        method="POST",
-    )
+
+    explicit_timeout = httpx.Timeout(15.0, connect=5.0)
     max_attempts = 3
+    backoffs = [1.0, 2.0, 4.0]
+
     for attempt in range(max_attempts):
         try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
+            with httpx.Client(timeout=explicit_timeout) as client:
+                resp = client.post(
+                    "https://places.googleapis.com/v1/places:searchText",
+                    headers={
+                        "Content-Type": "application/json",
+                        "X-Goog-Api-Key": api_key,
+                        "X-Goog-FieldMask": field_mask,
+                    },
+                    json={"textQuery": query, "maxResultCount": max_results},
+                )
+                if resp.status_code == 429:
+                    if attempt < max_attempts - 1:
+                        retry_after = resp.headers.get("Retry-After")
+                        delay = float(retry_after) if retry_after and retry_after.isdigit() else backoffs[attempt]
+                        logger.warning(
+                            "Google Places API rate limited (HTTP 429). Retrying in %.1fs (attempt %d/%d)...",
+                            delay,
+                            attempt + 1,
+                            max_attempts,
+                        )
+                        time.sleep(delay)
+                        continue
+                    logger.error(
+                        "Google Places API rate limited (HTTP 429) after %d attempts. Quota exhausted.",
+                        max_attempts,
+                    )
+                    GooglePlacesProvider.quota_exhausted = True
+                    raise GoogleQuotaExhausted(f"Google Places API rate limited (HTTP 429): {resp.text}")
+
+                if resp.status_code in (500, 502, 503, 504) and attempt < max_attempts - 1:
+                    delay = backoffs[attempt]
+                    logger.warning(
+                        "Google Places API returned status %d. Retrying in %.1fs (attempt %d/%d)...",
+                        resp.status_code,
+                        delay,
+                        attempt + 1,
+                        max_attempts,
+                    )
+                    time.sleep(delay)
+                    continue
+
+                if resp.status_code != 200:
+                    logger.error("Google Places search HTTP error %d: %s", resp.status_code, resp.text)
+                    return []
+
+                data = resp.json()
                 out: List[Dict[str, Any]] = []
                 for p in data.get("places", []):
                     phone = p.get("nationalPhoneNumber") or p.get("internationalPhoneNumber") or ""
@@ -96,23 +133,20 @@ def google_places_search(
 
                     DbCache.set(db, cache_key, out, provider="google_places_raw", ttl_hours=168)
                 return out
-        except urllib.error.HTTPError as e:
-            if e.code == 429 and attempt < max_attempts - 1:
-                delay = min(2 ** (attempt + 1), 8)
+        except (httpx.TimeoutException, httpx.NetworkError) as e:
+            if attempt < max_attempts - 1:
+                delay = backoffs[attempt]
                 logger.warning(
-                    "Google Places API rate limited (HTTP 429). Retrying in %ds (attempt %d/%d)...",
+                    "Google Places API timeout/network failure (%s). Retrying in %.1fs...",
+                    e,
                     delay,
-                    attempt + 1,
-                    max_attempts,
                 )
                 time.sleep(delay)
                 continue
-            if e.code == 429:
-                logger.error("Google Places API rate limited (HTTP 429) after %d attempts. Quota exhausted.", max_attempts)
-                GooglePlacesProvider.quota_exhausted = True
-                raise GoogleQuotaExhausted(f"Google Places API rate limited (HTTP 429): {e}")
-            logger.error("Google Places search HTTP error %s: %s", getattr(e, "code", None), e)
+            logger.error("Google Places search failed after %d attempts: %s", max_attempts, e)
             return []
+        except GoogleQuotaExhausted:
+            raise
         except Exception as e:
             logger.error("Google Places search failed: %s", e)
             return []
@@ -133,36 +167,56 @@ def google_place_details(
             logger.warning("%s Google Place Details monthly quota exceeded, skipping call.", TAG_QUOTA)
             return {}
 
-    req = urllib.request.Request(
-        f"https://places.googleapis.com/v1/places/{place_id}",
-        headers={
-            "X-Goog-Api-Key": api_key,
-            "X-Goog-FieldMask": "nationalPhoneNumber,internationalPhoneNumber,regularOpeningHours,websiteUri",
-        },
-        method="GET",
-    )
+    explicit_timeout = httpx.Timeout(12.0, connect=5.0)
     max_attempts = 3
+    backoffs = [1.0, 2.0, 4.0]
+
     for attempt in range(max_attempts):
         try:
-            with urllib.request.urlopen(req, timeout=12) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-        except urllib.error.HTTPError as e:
-            if e.code == 429 and attempt < max_attempts - 1:
-                delay = min(2 ** (attempt + 1), 8)
-                logger.warning(
-                    "Google Place Details rate limited (HTTP 429). Retrying in %ds (attempt %d/%d)...",
-                    delay,
-                    attempt + 1,
-                    max_attempts,
+            with httpx.Client(timeout=explicit_timeout) as client:
+                resp = client.get(
+                    f"https://places.googleapis.com/v1/places/{place_id}",
+                    headers={
+                        "X-Goog-Api-Key": api_key,
+                        "X-Goog-FieldMask": "nationalPhoneNumber,internationalPhoneNumber,regularOpeningHours,websiteUri",
+                    },
                 )
-                time.sleep(delay)
+                if resp.status_code == 429:
+                    if attempt < max_attempts - 1:
+                        retry_after = resp.headers.get("Retry-After")
+                        delay = float(retry_after) if retry_after and retry_after.isdigit() else backoffs[attempt]
+                        logger.warning(
+                            "Google Place Details rate limited (HTTP 429). Retrying in %.1fs (attempt %d/%d)...",
+                            delay,
+                            attempt + 1,
+                            max_attempts,
+                        )
+                        time.sleep(delay)
+                        continue
+                    logger.error(
+                        "Google Place Details rate limited (HTTP 429) after %d attempts. Quota exhausted.",
+                        max_attempts,
+                    )
+                    GooglePlacesProvider.quota_exhausted = True
+                    raise GoogleQuotaExhausted(f"Google Place Details rate limited (HTTP 429): {resp.text}")
+
+                if resp.status_code in (500, 502, 503, 504) and attempt < max_attempts - 1:
+                    time.sleep(backoffs[attempt])
+                    continue
+
+                if resp.status_code != 200:
+                    logger.debug("Google place details fetch returned status %d: %s", resp.status_code, resp.text)
+                    return {}
+
+                return resp.json()
+        except (httpx.TimeoutException, httpx.NetworkError) as e:
+            if attempt < max_attempts - 1:
+                time.sleep(backoffs[attempt])
                 continue
-            if e.code == 429:
-                logger.error("Google Place Details rate limited (HTTP 429) after %d attempts. Quota exhausted.", max_attempts)
-                GooglePlacesProvider.quota_exhausted = True
-                raise GoogleQuotaExhausted(f"Google Place Details rate limited (HTTP 429): {e}")
-            logger.debug("Google place details fetch failed: %s", e)
+            logger.debug("Google place details fetch timed out: %s", e)
             return {}
+        except GoogleQuotaExhausted:
+            raise
         except Exception as e:
             logger.debug("Google place details fetch failed: %s", e)
             return {}

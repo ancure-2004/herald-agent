@@ -8,16 +8,19 @@ Implements the 3 specialized pipeline agents:
 3. CloserAgent: Bridges Neon Postgres Outbox with `wa_autopilot.mjs`, `ig_autopilot.mjs`, and `email_autopilot.py` (`GET /api/batch`, `POST /api/mark-sent`, `POST /api/mark-unreachable`) and drafts smart follow-ups for hot viewers.
 """
 
+import asyncio
 import json
 import os
 import shutil
 import subprocess
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
+import httpx
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -46,6 +49,7 @@ def find_lead_recording_path(lead: "Lead") -> Optional[str]:  # noqa: F821
 def call_gemini_flash_free(prompt: str) -> Optional[str]:
     """
     Calls Google AI Studio Free Tier (`gemini-2.5-flash` / `gemini-2.0-flash`) if GEMINI_API_KEY is configured.
+    Enforces explicit httpx timeout and bounded retries/backoff on transient rate limits (429) or server errors.
     Returns None gracefully if no key is set or if offline, so the deterministic fallback runs at Rs. 0 cost.
     """
     api_key = os.getenv("GEMINI_API_KEY", "").strip()
@@ -56,22 +60,30 @@ def call_gemini_flash_free(prompt: str) -> Optional[str]:
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.2, "maxOutputTokens": 250},
     }
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            candidates = data.get("candidates") or []
-            if candidates:
-                parts = candidates[0].get("content", {}).get("parts") or []
-                if parts:
-                    return parts[0].get("text", "").strip()
-    except Exception:
-        return None
+    explicit_timeout = httpx.Timeout(10.0, connect=3.0)
+    for attempt in range(3):
+        try:
+            with httpx.Client(timeout=explicit_timeout) as client:
+                resp = client.post(url, json=payload)
+                if resp.status_code in (429, 500, 502, 503, 504) and attempt < 2:
+                    time.sleep(1.0 * (2 ** attempt))
+                    continue
+                if resp.status_code != 200:
+                    return None
+                data = resp.json()
+                candidates = data.get("candidates") or []
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts") or []
+                    if parts:
+                        return parts[0].get("text", "").strip()
+                return None
+        except (httpx.TimeoutException, httpx.NetworkError):
+            if attempt < 2:
+                time.sleep(1.0 * (2 ** attempt))
+                continue
+            return None
+        except Exception:
+            return None
     return None
 
 
@@ -151,9 +163,7 @@ def run_scout_agent(
         f"[SCOUT] Enriching {len(leads)} active clinic dossiers (IG Research={'ENABLED' if allow_ig_research else 'DISABLED for Dental Clinics'})..."
     )
 
-    enriched_count = 0
-    extra_logs: List[str] = []
-    for lead in leads:
+    async def _enrich_lead_async(lead: Lead) -> Tuple[bool, Optional[str]]:
         changed = False
         key = lead.name.strip().lower()
         cached = enrichment_lookup.get(key, {})
@@ -169,9 +179,10 @@ def run_scout_agent(
 
         # Optional Gemini Flash enrichment if GEMINI_API_KEY is present
         if not lead.ai_fields or "scout_summary" not in (lead.ai_fields or {}):
-            ai_summary = call_gemini_flash_free(
+            ai_summary = await asyncio.to_thread(
+                call_gemini_flash_free,
                 f"Write a 1-sentence sales research note for dental clinic '{lead.name}' "
-                f"({lead.doctor_name or 'Doctor'}) in {lead.locality}, {lead.city} that has no website."
+                f"({lead.doctor_name or 'Doctor'}) in {lead.locality}, {lead.city} that has no website.",
             )
             if not ai_summary:
                 ai_summary = (
@@ -183,6 +194,7 @@ def run_scout_agent(
             lead.ai_fields = ai_f
             changed = True
 
+        log_msg = None
         if changed:
             fit, reasons = compute_fit_score(
                 lead.facts,
@@ -193,10 +205,36 @@ def run_scout_agent(
             )
             lead.fit_score = fit
             lead.fit_reasons = reasons
+            log_msg = f"[SCOUT] Enriched dossier for '{lead.name}' ({lead.locality}) -> Fit Score: {fit} | Phone: {lead.primary_phone or 'N/A'}"
+
+        return changed, log_msg
+
+    async def _run_all_enrichments():
+        tasks = [_enrich_lead_async(lead) for lead in leads]
+        return await asyncio.gather(*tasks, return_exceptions=True)
+
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                enrich_results = executor.submit(lambda: asyncio.run(_run_all_enrichments())).result()
+        else:
+            enrich_results = loop.run_until_complete(_run_all_enrichments())
+    except RuntimeError:
+        enrich_results = asyncio.run(_run_all_enrichments())
+
+    enriched_count = 0
+    extra_logs: List[str] = []
+    for res in enrich_results:
+        if isinstance(res, Exception):
+            continue
+        changed, log_msg = res
+        if changed:
             enriched_count += 1
-            msg = f"[SCOUT] Enriched dossier for '{lead.name}' ({lead.locality}) -> Fit Score: {fit} | Phone: {lead.primary_phone or 'N/A'}"
-            extra_logs.append(msg)
-            _emit(msg)
+            if log_msg:
+                extra_logs.append(log_msg)
+                _emit(log_msg)
 
     summary_line = (
         f"[SCOUT] Completed: {discovery_res['passed']} new clinics built, {enriched_count} clinic dossiers enriched."

@@ -36,7 +36,7 @@ export function formatDoctorName(name?: string | null): string {
   return `Dr. ${stripped}`;
 }
 
-export function LeadCard({
+export const LeadCard = React.memo(function LeadCard({
   lead,
   stageName,
   stageSlug,
@@ -245,4 +245,4 @@ export function LeadCard({
       )}
     </div>
   );
-}
+});

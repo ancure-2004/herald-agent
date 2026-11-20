@@ -1,10 +1,11 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Union
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.controllers.message_controller import MessageController
+from app.schemas.common import PaginatedResponse
 from app.schemas.message import (
     AISettingsSchema,
     AISettingsUpdate,
@@ -25,10 +26,22 @@ from app.schemas.message import (
 router = APIRouter(tags=["Messages"])
 
 
-@router.get("/leads/{lead_id}/messages", response_model=List[MessageOut])
-def get_lead_messages(lead_id: int, db: Session = Depends(get_db)):
+@router.get("/leads/{lead_id}/messages", response_model=Union[PaginatedResponse[MessageOut], List[MessageOut]])
+def get_lead_messages(
+    lead_id: int,
+    limit: Optional[int] = Query(None, ge=1, le=500),
+    offset: Optional[int] = Query(None, ge=0),
+    cursor: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+):
     """Returns conversation thread history with delivery statuses for a lead."""
-    return MessageController.get_lead_messages(db, lead_id)
+    return MessageController.get_lead_messages(
+        db,
+        lead_id,
+        limit=limit,
+        offset=offset,
+        cursor=cursor,
+    )
 
 
 @router.post("/leads/{lead_id}/messages", response_model=MessageOut, status_code=201)

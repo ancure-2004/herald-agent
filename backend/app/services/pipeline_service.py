@@ -2,7 +2,7 @@ import logging
 import os
 import threading
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
@@ -70,11 +70,118 @@ def _db_assert_no_active_run(db: Session) -> None:
 
 class PipelineService:
     @staticmethod
-    def list_runs(db: Session, hustle_id: Optional[int] = None) -> List[RunLog]:
+    def list_runs(
+        db: Session,
+        hustle_id: Optional[int] = None,
+        job_type: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[RunLog], Dict[str, Any]]:
         q = db.query(RunLog)
         if hustle_id is not None:
             q = q.filter(RunLog.hustle_id == hustle_id)
+        if job_type is not None:
+            q = q.filter(RunLog.job_type == job_type)
+
+        is_paginated = (limit is not None) or (offset is not None) or (cursor is not None)
+        if is_paginated:
+            total = q.count()
+            q = q.order_by(RunLog.id.desc())
+            if cursor is not None:
+                q = q.filter(RunLog.id < cursor)
+            if offset is not None:
+                q = q.offset(offset)
+            if limit is not None:
+                q = q.limit(limit)
+            items = q.all()
+            next_cursor = items[-1].id if (items and limit is not None and len(items) == limit) else None
+            return {
+                "items": items,
+                "next_cursor": next_cursor,
+                "total": total,
+            }
+
         return q.order_by(RunLog.id.desc()).limit(30).all()
+
+    @staticmethod
+    def list_discovery_candidates(
+        db: Session,
+        hustle_id: Optional[int] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+        q = db.query(Lead).filter(Lead.status == "STAGED", Lead.is_archived == False)  # noqa: E712
+        if hustle_id is not None:
+            q = q.filter(Lead.hustle_id == hustle_id)
+        if hasattr(Lead, "is_test"):
+            q = q.filter((Lead.is_test == False) | (Lead.is_test == None))  # noqa: E711, E712
+
+        is_paginated = (limit is not None) or (offset is not None) or (cursor is not None)
+        if is_paginated:
+            total = q.count()
+            q = q.order_by(Lead.id.desc())
+            if cursor is not None:
+                q = q.filter(Lead.id < cursor)
+            if offset is not None:
+                q = q.offset(offset)
+            if limit is not None:
+                q = q.limit(limit)
+            leads = q.all()
+            items = [
+                {
+                    "id": l.id,
+                    "name": l.name,
+                    "doctor_name": l.doctor_name,
+                    "locality": l.locality,
+                    "phone": l.primary_phone,
+                    "status": l.status,
+                    "fit_score": l.fit_score,
+                    "intent_score": l.intent_score,
+                    "created_at": l.created_at.isoformat() if l.created_at else None,
+                }
+                for l in leads
+            ]
+            next_cursor = items[-1]["id"] if (items and limit is not None and len(items) == limit) else None
+            return {
+                "items": items,
+                "next_cursor": next_cursor,
+                "total": total,
+            }
+
+        leads = q.order_by(Lead.id.desc()).limit(50).all()
+        return [
+            {
+                "id": l.id,
+                "name": l.name,
+                "doctor_name": l.doctor_name,
+                "locality": l.locality,
+                "phone": l.primary_phone,
+                "status": l.status,
+                "fit_score": l.fit_score,
+                "intent_score": l.intent_score,
+                "created_at": l.created_at.isoformat() if l.created_at else None,
+            }
+            for l in leads
+        ]
+
+    @staticmethod
+    def list_discovery_runs(
+        db: Session,
+        hustle_id: Optional[int] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[RunLog], Dict[str, Any]]:
+        return PipelineService.list_runs(
+            db=db,
+            hustle_id=hustle_id,
+            job_type="autopilot_discovery_and_staging",
+            limit=limit,
+            offset=offset,
+            cursor=cursor,
+        )
 
     @staticmethod
     def get_run_by_id(db: Session, run_id: int) -> Dict[str, Any]:
@@ -194,12 +301,24 @@ class PipelineService:
                         JobManager.release_single_flight(run_log.id)
                         set_autopilot_running(False, run_id=run_log.id)
 
-            t = threading.Thread(target=_bg_worker, daemon=True)
-            t.start()
+            from app.services.job_queue import get_job_queue
+
+            job_info = get_job_queue().submit_job(
+                job_type="autopilot_discovery",
+                func=_bg_worker,
+                hustle_id=hustle_id,
+                input_payload={
+                    "target_count": target_count,
+                    "locality": locality,
+                    "testing_mode": testing_mode,
+                    "run_id": run_log.id,
+                },
+            )
             return {
-                "status": "running",
+                "job_id": job_info["job_id"],
+                "status": "queued",
                 "async": True,
-                "message": "Autopilot lead discovery started in background thread",
+                "message": "Autopilot lead discovery started in background job queue",
                 "run_id": run_log.id,
             }
 
@@ -246,12 +365,23 @@ class PipelineService:
                     except Exception as ex:
                         logger.error("Async demo factory build batch failed: %s", ex)
 
-            t = threading.Thread(target=_bg_worker, daemon=True)
-            t.start()
+            from app.services.job_queue import get_job_queue
+
+            job_info = get_job_queue().submit_job(
+                job_type="demo_build_batch",
+                func=_bg_worker,
+                hustle_id=hustle_id,
+                input_payload={
+                    "batch_id": batch_id,
+                    "batch_size": batch_size,
+                    "testing_mode": testing_mode,
+                },
+            )
             return {
-                "status": "running",
+                "job_id": job_info["job_id"],
+                "status": "queued",
                 "async": True,
-                "message": "Autopilot demo factory batch build started in background thread",
+                "message": "Autopilot demo factory batch build started in background job queue",
             }
 
         return DemoFactoryService.build_batch(
@@ -335,13 +465,30 @@ class PipelineService:
                 raise HTTPException(status_code=409, detail=f"Run #{active_id} already in progress")
             _db_assert_no_active_run(db)
 
-            t = threading.Thread(
-                target=_worker,
-                args=(hustle_id, batch_size, testing_mode, locality, stop_after),
-                daemon=True,
+            from app.services.job_queue import get_job_queue
+
+            job_info = get_job_queue().submit_job(
+                "autopilot_refill",
+                _worker,
+                hustle_id,
+                batch_size,
+                testing_mode,
+                locality,
+                stop_after,
+                hustle_id=hustle_id,
+                input_payload={
+                    "batch_size": batch_size,
+                    "locality": locality,
+                    "testing_mode": testing_mode,
+                    "stop_after": stop_after,
+                },
             )
-            t.start()
-            return {"status": "running", "async": True, "message": "Autopilot refill started in background thread"}
+            return {
+                "job_id": job_info["job_id"],
+                "status": "queued",
+                "async": True,
+                "message": "Autopilot refill started in background job queue",
+            }
 
         emit_terminal_log(
             "REFILL-BATCH", f"Starting 7-Step Autopilot Refill Batch (target_count={batch_size}){mode_tag}..."
@@ -468,12 +615,19 @@ class PipelineService:
                     except Exception as ex:
                         logger.error("Async retry recordings failed: %s", ex)
 
-            t = threading.Thread(target=_bg_worker, daemon=True)
-            t.start()
+            from app.services.job_queue import get_job_queue
+
+            job_info = get_job_queue().submit_job(
+                job_type="retry_recordings",
+                func=_bg_worker,
+                hustle_id=hustle_id,
+                input_payload={"batch_id": batch_id, "testing_mode": testing_mode},
+            )
             return {
-                "status": "running",
+                "job_id": job_info["job_id"],
+                "status": "queued",
                 "async": True,
-                "message": "Retry recordings started in background thread",
+                "message": "Retry recordings started in background job queue",
             }
 
         return DemoFactoryService.retry_recordings(

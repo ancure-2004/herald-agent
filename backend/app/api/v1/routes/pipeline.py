@@ -12,8 +12,56 @@ router = APIRouter(tags=["Pipeline & Autopilot"])
 
 
 @router.get("/runs")
-def list_runs(hustle_id: Optional[int] = Query(None), db: Session = Depends(get_db)):
-    return PipelineController.list_runs(db, hustle_id)
+def list_runs(
+    hustle_id: Optional[int] = Query(None),
+    job_type: Optional[str] = Query(None),
+    limit: Optional[int] = Query(None, ge=1, le=500),
+    offset: Optional[int] = Query(None, ge=0),
+    cursor: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+):
+    return PipelineController.list_runs(
+        db,
+        hustle_id=hustle_id,
+        job_type=job_type,
+        limit=limit,
+        offset=offset,
+        cursor=cursor,
+    )
+
+
+@router.get("/autopilot/discovery/runs")
+def list_discovery_runs(
+    hustle_id: Optional[int] = Query(None),
+    limit: Optional[int] = Query(None, ge=1, le=500),
+    offset: Optional[int] = Query(None, ge=0),
+    cursor: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+):
+    return PipelineController.list_discovery_runs(
+        db=db,
+        hustle_id=hustle_id,
+        limit=limit,
+        offset=offset,
+        cursor=cursor,
+    )
+
+
+@router.get("/autopilot/discovery/candidates")
+def list_discovery_candidates(
+    hustle_id: Optional[int] = Query(None),
+    limit: Optional[int] = Query(None, ge=1, le=500),
+    offset: Optional[int] = Query(None, ge=0),
+    cursor: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+):
+    return PipelineController.list_discovery_candidates(
+        db=db,
+        hustle_id=hustle_id,
+        limit=limit,
+        offset=offset,
+        cursor=cursor,
+    )
 
 
 @router.get("/autopilot/runs/{run_id}")

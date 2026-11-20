@@ -2,11 +2,13 @@
 Custom Application Exceptions & Global Handlers (`app/core/exceptions.py`)
 """
 
+from http import HTTPStatus
 from typing import Any, Dict, Optional
 
 from fastapi import Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .logging import logger
 
@@ -124,7 +126,7 @@ class AIProviderError(AppException):
 
 
 async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
-    req_id = getattr(request.state, "request_id", "-")
+    req_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID") or "-"
     logger.warning(f"[{req_id}] AppException: {exc.error_code} - {exc.message}")
     return JSONResponse(
         status_code=exc.status_code,
@@ -132,16 +134,45 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
             "error": {
                 "code": exc.error_code,
                 "message": exc.message,
-                "details": exc.details,
                 "request_id": req_id,
+                "details": exc.details if exc.details is not None else {},
             },
             "detail": exc.message,  # Legacy detail key for frontend compatibility
         },
     )
 
 
+async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    req_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID") or "-"
+    code = getattr(exc, "error_code", None)
+    if not code:
+        try:
+            code = HTTPStatus(exc.status_code).name
+        except Exception:
+            code = f"HTTP_{exc.status_code}"
+
+    message = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+    details = exc.detail if not isinstance(exc.detail, str) else {}
+    headers = getattr(exc, "headers", None)
+
+    logger.warning(f"[{req_id}] HTTPException {exc.status_code}: {message}")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": {
+                "code": code,
+                "message": message,
+                "request_id": req_id,
+                "details": details,
+            },
+            "detail": message,  # Legacy detail key for frontend compatibility
+        },
+        headers=headers,
+    )
+
+
 async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
-    req_id = getattr(request.state, "request_id", "-")
+    req_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID") or "-"
     errors = []
     for err in exc.errors():
         field = ".".join(str(loc) for loc in err.get("loc", []))
@@ -154,8 +185,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "error": {
                 "code": "VALIDATION_ERROR",
                 "message": "Invalid request body or parameters.",
-                "details": errors,
                 "request_id": req_id,
+                "details": errors,
             },
             "detail": errors,  # Legacy detail key for frontend compatibility
         },
@@ -163,7 +194,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    req_id = getattr(request.state, "request_id", "-")
+    req_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID") or "-"
     logger.exception(f"[{req_id}] Unhandled server exception: {exc}")
     # Never expose stack traces or internal errors to the client
     return JSONResponse(
@@ -173,7 +204,27 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
                 "code": "INTERNAL_SERVER_ERROR",
                 "message": "An unexpected error occurred. Please contact the administrator.",
                 "request_id": req_id,
+                "details": {},
             },
             "detail": "An unexpected error occurred.",
+        },
+    )
+
+
+async def rate_limit_exceeded_handler(request: Request, exc: Any) -> JSONResponse:
+    req_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID") or "-"
+    detail = getattr(exc, "detail", str(exc))
+    msg = f"Rate limit exceeded: {detail}"
+    logger.warning(f"[{req_id}] Rate limit exceeded on {request.url.path}: {detail}")
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={
+            "error": {
+                "code": "RATE_LIMIT_EXCEEDED",
+                "message": msg,
+                "request_id": req_id,
+                "details": {},
+            },
+            "detail": msg,
         },
     )

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy.orm import Session
 
@@ -50,8 +50,20 @@ class MessageController:
         return MessageService.get_reply_suggestions(db, lead_id)
 
     @staticmethod
-    def get_lead_messages(db: Session, lead_id: int) -> List[Message]:
-        return MessageService.get_lead_messages(db, lead_id)
+    def get_lead_messages(
+        db: Session,
+        lead_id: int,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        cursor: Optional[int] = None,
+    ) -> Union[List[Message], Dict[str, Any]]:
+        return MessageService.get_lead_messages(
+            db,
+            lead_id,
+            limit=limit,
+            offset=offset,
+            cursor=cursor,
+        )
 
     @staticmethod
     def update_messages(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:

@@ -64,6 +64,16 @@ class Settings(BaseSettings):
         description="Direct database connection string for serverless pooler bypass",
     )
 
+    # Cache Settings
+    REDIS_URL: Optional[str] = Field(
+        default=None,
+        description="Redis connection string (e.g., redis://localhost:6379/0)",
+    )
+    CACHE_DEFAULT_TTL: int = Field(
+        default=60,
+        description="Default cache TTL in seconds",
+    )
+
     # Demo Engine & Outreach Defaults
     DEMO_ENGINE_BASE_URL: str = Field(
         default="http://localhost:3001",

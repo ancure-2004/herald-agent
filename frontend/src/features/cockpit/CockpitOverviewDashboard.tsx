@@ -774,16 +774,16 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
             {/* Left Legend with live percentages */}
             <div className="space-y-1.5 text-xs font-bold">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#1C1D1F]" />
-                <span className="text-[#1C1D1F] text-[11px]">{phonePct}% Phone</span>
+                <span className="w-2 h-2 rounded-full bg-[#1C1D1F] dark:bg-zinc-200" />
+                <span className="text-[#1C1D1F] dark:text-zinc-200 text-[11px]">{phonePct}% Phone</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#6B7280]" />
-                <span className="text-[#6B7280] text-[11px]">{demoPct}% Demo</span>
+                <span className="w-2 h-2 rounded-full bg-[#6B7280] dark:bg-zinc-400" />
+                <span className="text-[#6B7280] dark:text-zinc-300 text-[11px]">{demoPct}% Demo</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#D1D5DB]" />
-                <span className="text-[#9CA3AF] text-[11px]">{outreachPct}% Outreach</span>
+                <span className="w-2 h-2 rounded-full bg-[#D1D5DB] dark:bg-zinc-600" />
+                <span className="text-[#9CA3AF] dark:text-zinc-400 text-[11px]">{outreachPct}% Outreach</span>
               </div>
             </div>
 
@@ -791,54 +791,57 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
             <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
               <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
                 {/* Outer Ring: Phone Verified */}
-                <circle cx="50" cy="50" r="42" stroke="#F3F4F0" strokeWidth="6" fill="none" />
+                <circle cx="50" cy="50" r="42" stroke="currentColor" strokeWidth="6" fill="none" className="text-[#F3F4F0] dark:text-zinc-800" />
                 <circle
                   cx="50"
                   cy="50"
                   r="42"
-                  stroke="#1C1D1F"
+                  stroke="currentColor"
                   strokeWidth="6"
                   strokeDasharray="264"
                   strokeDashoffset={264 - (phonePct / 100) * 264}
                   strokeLinecap="round"
                   fill="none"
+                  className="text-[#1C1D1F] dark:text-zinc-100"
                 />
 
                 {/* Middle Ring: Demo Built */}
-                <circle cx="50" cy="50" r="32" stroke="#F3F4F0" strokeWidth="5.5" fill="none" />
+                <circle cx="50" cy="50" r="32" stroke="currentColor" strokeWidth="5.5" fill="none" className="text-[#F3F4F0] dark:text-zinc-800" />
                 <circle
                   cx="50"
                   cy="50"
                   r="32"
-                  stroke="#6B7280"
+                  stroke="currentColor"
                   strokeWidth="5.5"
                   strokeDasharray="201"
                   strokeDashoffset={201 - (demoPct / 100) * 201}
                   strokeLinecap="round"
                   fill="none"
+                  className="text-[#6B7280] dark:text-zinc-400"
                 />
 
                 {/* Inner Ring: Outreach Contacted */}
-                <circle cx="50" cy="50" r="23" stroke="#F3F4F0" strokeWidth="5" fill="none" />
+                <circle cx="50" cy="50" r="23" stroke="currentColor" strokeWidth="5" fill="none" className="text-[#F3F4F0] dark:text-zinc-800" />
                 <circle
                   cx="50"
                   cy="50"
                   r="23"
-                  stroke="#D1D5DB"
+                  stroke="currentColor"
                   strokeWidth="5"
                   strokeDasharray="144"
                   strokeDashoffset={144 - (outreachPct / 100) * 144}
                   strokeLinecap="round"
                   fill="none"
+                  className="text-[#D1D5DB] dark:text-zinc-600"
                 />
               </svg>
 
               {/* Center Readiness Percentage */}
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                <span className="text-base font-black text-[#1C1D1F] tracking-tight">
+                <span className="text-base font-black text-[#1C1D1F] dark:text-zinc-100 tracking-tight">
                   {overallReadinessPct}%
                 </span>
-                <span className="text-[8px] font-bold text-[#8E8F94] uppercase tracking-wider">
+                <span className="text-[8px] font-bold text-[#8E8F94] dark:text-zinc-400 uppercase tracking-wider">
                   Readiness
                 </span>
               </div>
@@ -846,11 +849,11 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
           </div>
 
           {/* Bottom Action Row: Real Export JSON & Sync */}
-          <div className="flex items-center gap-2 pt-1 border-t border-[#F3F4F0]">
+          <div className="flex items-center gap-2 pt-1 border-t border-[#F3F4F0] dark:border-zinc-800">
             <button
               type="button"
               onClick={handleManualRefresh}
-              className="w-8 h-8 rounded-full bg-[#1C1D1F] text-white flex items-center justify-center hover:bg-black transition-colors cursor-pointer shrink-0 shadow-xs"
+              className="w-8 h-8 rounded-full bg-[#1C1D1F] dark:bg-zinc-800 text-white flex items-center justify-center hover:bg-black dark:hover:bg-zinc-700 transition-colors cursor-pointer shrink-0 shadow-xs"
               title="Sync Telemetry"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
@@ -859,7 +862,7 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
             <button
               type="button"
               onClick={handleExportTelemetry}
-              className="flex-1 py-1.5 px-3 rounded-full bg-[#EBECE8] hover:bg-[#E2E3DF] text-[#1C1D1F] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              className="flex-1 py-1.5 px-3 rounded-full bg-[#EBECE8] dark:bg-zinc-800 hover:bg-[#E2E3DF] dark:hover:bg-zinc-700 text-[#1C1D1F] dark:text-zinc-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <span>Export JSON</span>
               <Download className="w-3 h-3" />
@@ -1099,7 +1102,7 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
         {/* Header: Title + Live Step indicator */}
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold tracking-tight text-[#1C1D1F]">
+            <h2 className="text-sm font-bold tracking-tight text-[#1C1D1F] dark:text-zinc-300">
               Core Cockpit Engines
             </h2>
             {latestPipelineStep && (
