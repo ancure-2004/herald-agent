@@ -118,25 +118,27 @@ body {
   }
 }
 
-/* View Transitions Circular Ripple Theme Switch Animation */
+/* View Transitions Directional Circular Ripple Theme Switch Animation */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
 
-::view-transition-old(root) {
+/* Light -> Dark (page is transitioning to .dark):
+ * New dark canvas is on top and expands outward from the button. */
+.dark::view-transition-old(root) {
   z-index: 1;
 }
-
-::view-transition-new(root) {
-  z-index: 999999;
-}
-
-.dark::view-transition-old(root) {
-  z-index: 999999;
-}
-
 .dark::view-transition-new(root) {
+  z-index: 999999;
+}
+
+/* Dark -> Light (page is transitioning to light):
+ * Old dark canvas is on top and collapses inward back into the button. */
+:root:not(.dark)::view-transition-old(root) {
+  z-index: 999999;
+}
+:root:not(.dark)::view-transition-new(root) {
   z-index: 1;
 }
