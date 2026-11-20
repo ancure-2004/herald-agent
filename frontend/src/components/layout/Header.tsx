@@ -43,17 +43,17 @@ export function Header() {
 
   return (
     <div className="flex flex-col w-full shrink-0">
-      {/* Persistent Non-Intrusive Backend Offline Banner */}
+      {/* Persistent Non-Intrusive Backend Offline Floating Banner (zero layout shift) */}
       {isBackendOffline && (
         <div
           role="alert"
-          className="mx-4 sm:mx-6 mt-2 mb-1 px-4 py-2 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200 shadow-sm backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed top-3 left-1/2 -translate-x-1/2 z-50 max-w-xl w-[calc(100%-2rem)] sm:w-auto px-4 py-2 rounded-xl bg-amber-500/90 dark:bg-amber-950/90 border border-amber-600/30 dark:border-amber-500/40 flex items-center justify-between gap-3 text-xs text-amber-950 dark:text-amber-200 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200"
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <WifiOff className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+            <WifiOff className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 animate-pulse" />
             <div className="truncate">
               <span className="font-bold tracking-wide">Backend Disconnected</span>
-              <span className="hidden sm:inline text-amber-700/90 dark:text-amber-300/90 ml-1.5">
+              <span className="hidden sm:inline text-amber-900/80 dark:text-amber-300/80 ml-1.5">
                 - Unable to reach API server. Retrying automatically with cached data preserved.
               </span>
             </div>
