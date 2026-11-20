@@ -607,13 +607,13 @@ export function LeadsTableView() {
             <thead>
               <tr className="border-b border-slate-200/70 dark:border-white/[0.06] bg-slate-50/70 dark:bg-white/[0.02] text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
                 <th className="py-2.5 px-3 w-[190px] max-w-[190px]">Clinic &amp; Doctor</th>
-                <th className="py-2.5 px-2 w-[110px]">Locality</th>
-                <th className="py-2.5 px-2 w-[115px]">Contacts</th>
-                <th className="py-2.5 px-2 w-[82px]">Batch</th>
-                <th className="py-2.5 px-2 w-[92px]">Outreach</th>
-                <th className="py-2.5 px-2 w-[86px]">Found</th>
-                <th className="py-2.5 px-2 w-[130px]">Fit &amp; Intent</th>
-                <th className="py-2.5 px-2">Next Step</th>
+                <th className="py-2.5 px-2.5 w-[110px]">Locality</th>
+                <th className="py-2.5 px-2.5 w-[115px]">Contacts</th>
+                <th className="py-2.5 px-2.5 w-[82px]">Batch</th>
+                <th className="py-2.5 px-2.5 w-[92px]">Outreach</th>
+                <th className="py-2.5 px-2.5 w-[86px]">Found</th>
+                <th className="py-2.5 px-2.5 w-[130px]">Fit &amp; Intent</th>
+                <th className="py-2.5 px-2.5">Next Step</th>
                 <th className="py-2.5 px-3 text-right w-[88px]">Action</th>
               </tr>
             </thead>
@@ -660,7 +660,7 @@ export function LeadsTableView() {
                       </td>
 
                       {/* Locality & City */}
-                      <td className="py-2.5 px-2 text-slate-600 dark:text-slate-300 max-w-[110px]">
+                      <td className="py-2.5 px-2.5 text-slate-600 dark:text-slate-300 max-w-[110px]">
                         <div className="flex items-center gap-1 min-w-0">
                           <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
                           <span className="truncate">{lead.locality || lead.city || "-"}</span>
@@ -668,7 +668,7 @@ export function LeadsTableView() {
                       </td>
 
                       {/* Contacts */}
-                      <td className="py-2.5 px-2 space-y-0.5 text-[11px] max-w-[115px]">
+                      <td className="py-2.5 px-2.5 space-y-0.5 text-[11px] max-w-[115px]">
                         {lead.primary_phone && (
                           <div className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200 font-mono whitespace-nowrap truncate">
                             {lead.primary_phone}
@@ -685,7 +685,7 @@ export function LeadsTableView() {
                       </td>
 
                       {/* Batch Badge */}
-                      <td className="py-2.5 px-2 whitespace-nowrap">
+                      <td className="py-2.5 px-2.5 whitespace-nowrap">
                         {batchId ? (
                           <span className="bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.08] rounded-md px-1.5 py-0.5 text-[10px] font-mono font-medium whitespace-nowrap">
                             {batchId}
@@ -696,7 +696,7 @@ export function LeadsTableView() {
                       </td>
 
                       {/* Outreach Status Pill */}
-                      <td className="py-2.5 px-2 whitespace-nowrap">
+                      <td className="py-2.5 px-2.5 whitespace-nowrap">
                         {isSent ? (
                           <div className="flex flex-col gap-0.5 whitespace-nowrap">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-900/40 text-[10px] font-medium whitespace-nowrap w-fit">
@@ -717,12 +717,12 @@ export function LeadsTableView() {
                       </td>
 
                       {/* Found Date */}
-                      <td className="py-2.5 px-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
+                      <td className="py-2.5 px-2.5 text-[11px] text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
                         {lead.created_at ? formatDate(lead.created_at) : "-"}
                       </td>
 
                       {/* Fit & Intent */}
-                      <td className="py-2.5 px-2 whitespace-nowrap">
+                      <td className="py-2.5 px-2.5 whitespace-nowrap">
                         <div className="flex items-center gap-1.5 flex-nowrap">
                           <span className="bg-slate-100 dark:bg-white/[0.06] text-zinc-800 dark:text-zinc-200 font-mono font-medium px-1.5 py-0.5 rounded text-[10px] border border-slate-200/60 dark:border-white/[0.06] whitespace-nowrap">
                             Fit {lead.fit_score}%
@@ -735,7 +735,7 @@ export function LeadsTableView() {
                       </td>
 
                       {/* Next Step */}
-                      <td className="py-2.5 px-2 max-w-[140px]">
+                      <td className="py-2.5 px-2.5 max-w-[140px]">
                         <div
                           className="text-slate-600 dark:text-slate-300 truncate text-xs"
                           title={lead.next_action || "None scheduled"}
