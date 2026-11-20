@@ -115,10 +115,10 @@ export function Sidebar() {
     { id: "profile", label: "Operator Profile", icon: User },
   ];
 
-  // Shared Compact Popover Content (w-64 with premium dark grayish styling)
+  // Shared Compact Popover Content (premium dark grayish styling)
   const renderProfilePopover = (positionClasses: string) => (
     <div
-      className={`${positionClasses} w-64 rounded-2xl bg-[#242529] border border-zinc-700/80 shadow-2xl shadow-black/40 p-2 z-50 text-zinc-100 space-y-2`}
+      className={`${positionClasses} rounded-2xl bg-[#242529] border border-zinc-700/80 shadow-2xl shadow-black/40 p-2 z-50 text-zinc-100 space-y-2`}
     >
       {/* Header */}
       <div className="flex items-center gap-2.5 p-1.5 pb-2.5 border-b border-zinc-700/70">
@@ -344,10 +344,10 @@ export function Sidebar() {
             {operatorProfile?.initials || "AT"}
           </button>
 
-          {/* Compact Popover anchored to the right side of the sidebar */}
+          {/* Compact Popover anchored to the right side of the collapsed dock */}
           {profileMenuOpen &&
             renderProfilePopover(
-              "absolute left-full bottom-2 ml-3 animate-in fade-in slide-in-from-left-2 duration-150"
+              "absolute left-full bottom-0 ml-3 w-64 animate-in fade-in slide-in-from-left-2 duration-150"
             )}
         </div>
       </aside>
@@ -649,10 +649,10 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* Compact Profile Popover anchored to the right side of the sidebar */}
+        {/* Compact Profile Popover anchored right above footer aligned with sidebar edges */}
         {profileMenuOpen &&
           renderProfilePopover(
-            "absolute left-full bottom-2 ml-3 animate-in fade-in slide-in-from-left-2 duration-150"
+            "absolute left-0 right-0 bottom-full mb-2 animate-in fade-in slide-in-from-bottom-2 duration-150"
           )}
       </div>
     </aside>
