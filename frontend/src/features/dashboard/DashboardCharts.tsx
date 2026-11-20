@@ -145,9 +145,9 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
   const donutCircumference = 2 * Math.PI * donutR;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-[472px] lg:min-h-[242px]">
       {/* Left Combo Chart (8 Cols) */}
-      <div className="lg:col-span-8 p-3 sm:p-3.5 rounded-2xl bg-[#1C1D1F] text-white border border-[#2A2B2E] shadow-sm space-y-2 flex flex-col justify-between">
+      <div className="lg:col-span-8 p-3 sm:p-3.5 rounded-2xl bg-[#1C1D1F] text-white border border-[#2A2B2E] shadow-sm space-y-2 flex flex-col justify-between h-[226px] sm:h-[242px]">
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -318,7 +318,7 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
       </div>
 
       {/* Right Donut Chart: Clinics by Stage (4 Cols) */}
-      <div className="lg:col-span-4 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-2">
+      <div className="lg:col-span-4 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-2 h-[226px] sm:h-[242px]">
         {/* Header */}
         <div className="flex items-center justify-between gap-2">
           <div>

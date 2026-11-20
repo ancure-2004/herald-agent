@@ -63,6 +63,7 @@ export function Sidebar() {
 
   const [profileMenuOpen, setProfileMenuOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const collapsedDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const isSettings = activeTab === "settings";
   const isCockpit = surface === "cockpit" || activeTab === "autopilot";
@@ -71,7 +72,10 @@ export function Sidebar() {
   // Close profile dropdown on click outside or Esc key
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const insideOpen = dropdownRef.current?.contains(target);
+      const insideCollapsed = collapsedDropdownRef.current?.contains(target);
+      if (!insideOpen && !insideCollapsed) {
         setProfileMenuOpen(false);
       }
     };
@@ -221,13 +225,15 @@ export function Sidebar() {
   );
 
   // -------------------------------------------------------------
-  // CLOSED / COLLAPSED SIDEBAR DOCK
+  // COLLAPSED SIDEBAR DOCK RENDERER
   // -------------------------------------------------------------
-  if (sidebarCollapsed) {
+  const renderCollapsedDock = (extraClasses = "") => {
     const collapsedItems = isSettings ? settingsNav : isCockpit ? cockpitNav : managementNav;
 
     return (
-      <aside className="w-18 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm p-2.5 flex flex-col justify-start items-center transition-all duration-200 z-20 relative">
+      <aside
+        className={`w-18 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm p-2.5 flex flex-col justify-start items-center transition-all duration-200 z-20 relative ${extraClasses}`}
+      >
         {/* Top: Logo + Expand Toggle */}
         <div className="flex flex-col items-center gap-2">
           <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shadow-xs">
@@ -304,7 +310,7 @@ export function Sidebar() {
 
         {/* Bottom Footer Block: Pushed to bottom via mt-auto */}
         <div
-          ref={dropdownRef}
+          ref={collapsedDropdownRef}
           className="mt-auto flex flex-col items-center gap-2 pt-2 border-t border-slate-100 dark:border-[#27272A] w-full relative"
         >
           {/* Autopilot Indicator Button with crisp emerald dot */}
@@ -352,13 +358,22 @@ export function Sidebar() {
         </div>
       </aside>
     );
+  };
+
+  // -------------------------------------------------------------
+  // CLOSED / COLLAPSED SIDEBAR DOCK
+  // -------------------------------------------------------------
+  if (sidebarCollapsed) {
+    return renderCollapsedDock();
   }
 
   // -------------------------------------------------------------
-  // OPEN SIDEBAR
+  // OPEN SIDEBAR (on mobile viewports, stays collapsed dock to eliminate CLS)
   // -------------------------------------------------------------
   return (
-    <aside className="w-64 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm p-3.5 flex flex-col justify-start transition-all duration-200 z-20 relative">
+    <>
+      {renderCollapsedDock("md:hidden")}
+      <aside className="hidden md:flex w-64 shrink-0 m-3 h-[calc(100dvh-1.5rem)] rounded-2xl border border-slate-200/80 dark:border-[#27272A] bg-white dark:bg-[#18181B] shadow-sm p-3.5 flex-col justify-start transition-all duration-200 z-20 relative">
       {/* Top Header: Brand Logo + Workspace Name + Collapse Toggle */}
       <div className="flex items-center justify-between pb-2">
         <div className="flex items-center gap-2.5">
@@ -658,5 +673,6 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
-  );
+  </>
+);
 }

@@ -45,9 +45,9 @@ const DashboardCharts = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-[280px]">
-        <div className="lg:col-span-8 p-3 rounded-2xl bg-[#1C1D1F] border border-[#2A2B2E] animate-pulse h-64" />
-        <div className="lg:col-span-4 p-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] animate-pulse h-64" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-[472px] lg:min-h-[242px]">
+        <div className="lg:col-span-8 p-3 sm:p-3.5 rounded-2xl bg-[#1C1D1F] border border-[#2A2B2E] animate-pulse h-[226px] sm:h-[242px]" />
+        <div className="lg:col-span-4 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] animate-pulse h-[226px] sm:h-[242px]" />
       </div>
     ),
   }

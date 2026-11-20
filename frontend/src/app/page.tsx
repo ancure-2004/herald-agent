@@ -8,7 +8,7 @@ import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DashboardView } from "@/features/dashboard/DashboardView";
 import { Toast } from "@/components/ui/Toast";
-import { KanbanSkeleton, TableSkeleton } from "@/components/ui/Skeleton";
+import { KanbanSkeleton, TableSkeleton, DashboardSkeleton } from "@/components/ui/Skeleton";
 
 // Dynamic imports with ssr: false for heavy views, modals, and drawers
 const KanbanBoardView = dynamic(
@@ -143,7 +143,9 @@ function CRMContent() {
           }`}
         >
           {loading ? (
-            activeTab === "board" ? (
+            activeTab === "dashboard" ? (
+              <DashboardSkeleton />
+            ) : activeTab === "board" ? (
               <KanbanSkeleton />
             ) : (
               <TableSkeleton rows={8} columns={8} />

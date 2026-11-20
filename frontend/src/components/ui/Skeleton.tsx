@@ -226,3 +226,59 @@ export function DiscoverySkeleton({ className }: { className?: string }) {
     </div>
   );
 }
+
+/**
+ * Layout-matched skeleton for DashboardView (Management > Overview).
+ * Matches exact geometry of Greeting, 4 KPI cards, Row 2 Charts, and Row 3 Pipeline.
+ */
+export function DashboardSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={cn("space-y-2.5 w-full", className)}>
+      {/* 1. Greeting & Date Filter Skeleton */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-0.5">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-6 w-48 rounded-lg" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-7 w-28 rounded-xl" />
+          <Skeleton className="h-7 w-24 rounded-xl" />
+        </div>
+      </div>
+
+      {/* 2. 4 KPI Cards Grid Skeleton */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={`kpi-skel-${i}`}
+            className="p-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs flex flex-col justify-between space-y-2 h-[96px]"
+          >
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-3 w-20 rounded" />
+              <Skeleton className="w-4.5 h-4.5 rounded-md" />
+            </div>
+            <Skeleton className="h-6 w-16 rounded" />
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-2.5 w-24 rounded" />
+              <Skeleton className="h-2.5 w-12 rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 3. Row 2: Charts Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-[472px] lg:min-h-[242px]">
+        <div className="lg:col-span-8 p-3 sm:p-3.5 rounded-2xl bg-[#1C1D1F] border border-[#2A2B2E] shadow-sm h-[226px] sm:h-[242px] animate-pulse" />
+        <div className="lg:col-span-4 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs h-[226px] sm:h-[242px] animate-pulse" />
+      </div>
+
+      {/* 4. Row 3: Priority Clinics Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+        <div className="lg:col-span-8 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs h-[340px] animate-pulse" />
+        <div className="lg:col-span-4 space-y-3">
+          <div className="p-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs h-[162px] animate-pulse" />
+          <div className="p-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-white/[0.08] shadow-xs h-[162px] animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
