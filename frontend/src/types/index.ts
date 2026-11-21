@@ -124,6 +124,7 @@ export interface Lead {
   stage_slug?: string;
   stage_name?: string;
   needs_followup?: boolean;
+  next_followup_at?: string | null;
   automation_enabled?: boolean;
   fit_score: number;
   fit_reasons: string[];

@@ -654,6 +654,9 @@ class PipelineService:
         )
         stage_ready_id = package_ready_stage.id if package_ready_stage else 2
 
+        from app.services.lead_service import LeadService
+        LeadService.auto_transition_unreplied_to_closed_lost(db, hustle_id=hustle_id)
+
         last_run = db.query(RunLog).filter(RunLog.hustle_id == hustle_id).order_by(RunLog.id.desc()).first()
         packages = (
             db.query(Package)

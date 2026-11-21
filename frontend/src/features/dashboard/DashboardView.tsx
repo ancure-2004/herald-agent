@@ -165,14 +165,23 @@ export function DashboardView() {
 
   const needsFollowUp = useMemo(() => {
     return currentMonthActiveLeads.filter((l) => {
-      if (l.needs_followup) return true;
-      if (l.stage_id === 5 || l.stage_id === 6) return true;
-      if (l.events?.some((e) => e.event_type === "page_view" || e.event_type === "demo_view")) return true;
-      if (l.next_action_due_at) {
-        const due = new Date(l.next_action_due_at);
-        return due <= now;
-      }
-      return false;
+      // 3.3: Surface only leads that saw the demo, replied, or are due for follow-up
+      const sawDemo =
+        l.stage_id === 5 ||
+        l.stage_slug === "viewed_demo" ||
+        l.events?.some((e) => e.event_type === "page_view" || e.event_type === "demo_view");
+      const hasReplied =
+        l.stage_id === 6 ||
+        l.stage_slug === "replied" ||
+        l.status === "REPLIED" ||
+        l.messages?.some((m) => m.direction === "inbound");
+      const isDue = Boolean(
+        l.needs_followup ||
+        (l.next_followup_at && new Date(l.next_followup_at) <= now) ||
+        (l.next_action_due_at && new Date(l.next_action_due_at) <= now)
+      );
+
+      return Boolean(sawDemo || hasReplied || isDue);
     }).length;
   }, [currentMonthActiveLeads, now]);
 
@@ -236,23 +245,49 @@ export function DashboardView() {
     });
   }, [activeLeads]);
 
-  // 6. Upcoming Follow-Ups from real active leads with genuine actions scheduled
+  // 6. Upcoming Follow-Ups: Surface only leads that saw the demo, replied, or are due for follow-up
   const upcomingFollowUps = useMemo(() => {
-    const withAction = activeLeads.filter(
-      (l) => l.next_action_due_at || (l.needs_followup && l.next_action)
-    );
-    const sorted = [...withAction].sort((a, b) => {
-      const aTime = a.next_action_due_at ? new Date(a.next_action_due_at).getTime() : Infinity;
-      const bTime = b.next_action_due_at ? new Date(b.next_action_due_at).getTime() : Infinity;
+    const qualifiedLeads = activeLeads.filter((l) => {
+      const sawDemo =
+        l.stage_id === 5 ||
+        l.stage_slug === "viewed_demo" ||
+        l.events?.some((e) => e.event_type === "page_view" || e.event_type === "demo_view");
+      const hasReplied =
+        l.stage_id === 6 ||
+        l.stage_slug === "replied" ||
+        l.status === "REPLIED" ||
+        l.messages?.some((m) => m.direction === "inbound");
+      const isDueOrScheduled = Boolean(
+        l.needs_followup ||
+        l.next_followup_at ||
+        l.next_action_due_at ||
+        l.next_action
+      );
+
+      return Boolean(sawDemo || hasReplied || isDueOrScheduled);
+    });
+
+    const sorted = [...qualifiedLeads].sort((a, b) => {
+      const aTime = a.next_followup_at
+        ? new Date(a.next_followup_at).getTime()
+        : a.next_action_due_at
+        ? new Date(a.next_action_due_at).getTime()
+        : Infinity;
+      const bTime = b.next_followup_at
+        ? new Date(b.next_followup_at).getTime()
+        : b.next_action_due_at
+        ? new Date(b.next_action_due_at).getTime()
+        : Infinity;
       return aTime - bTime;
     });
 
     return sorted.slice(0, 4).map((l) => {
-      const dueDate = l.next_action_due_at ? new Date(l.next_action_due_at) : now;
-      const dateStr = l.next_action_due_at
+      const effectiveDueStr = l.next_followup_at || l.next_action_due_at;
+      const dueDate = effectiveDueStr ? new Date(effectiveDueStr) : now;
+      const dateStr = effectiveDueStr
         ? dueDate.toLocaleString("en-US", { month: "short", day: "numeric" })
         : "Pending";
-      const dayStr = l.next_action_due_at
+      const dayStr = effectiveDueStr
         ? dueDate.toLocaleString("en-US", { weekday: "short" })
         : "--";
       const initials =
@@ -263,11 +298,19 @@ export function DashboardView() {
           .map((w) => w[0]?.toUpperCase())
           .join("") || "CL";
 
+      const title =
+        l.next_action ||
+        (l.stage_id === 5 || l.stage_slug === "viewed_demo"
+          ? "Hot: Demo viewed, follow-up due"
+          : l.stage_id === 6 || l.stage_slug === "replied"
+          ? "Replied: Follow-up needed"
+          : "Follow up scheduled");
+
       return {
         id: l.id,
         date: dateStr,
         day: dayStr,
-        title: l.next_action || "Follow up scheduled",
+        title,
         clinic: l.name,
         avatar: initials,
       };

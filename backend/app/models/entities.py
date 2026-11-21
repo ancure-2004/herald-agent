@@ -110,6 +110,7 @@ class Lead(Base):
     deal_value_inr = Column(Integer, default=15000)
     automation_enabled = Column(Boolean, default=True, index=True)
     needs_followup = Column(Boolean, default=False, index=True)
+    next_followup_at = Column(DateTime(timezone=True), nullable=True, index=True)
     is_test = Column(Boolean, default=False, index=True)
     test_run_id = Column(String(100), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), default=utcnow)
