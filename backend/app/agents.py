@@ -635,9 +635,12 @@ def ensure_hustle_lead_batches(
         stage_slug = lead.stage_rel.slug if lead.stage_rel else "discovered"
         batch_map[bid]["stage_counts"][stage_slug] = batch_map[bid]["stage_counts"].get(stage_slug, 0) + 1
 
-        # Check demo readiness: stage is package_ready or beyond, or lead.status == 'DEMO_READY', or has ready package
+        # Check demo readiness (aligned with Demo Factory):
+        # Excludes lost leads and unbuilt discovered leads ("No Video");
+        # Requires lead to be non-lost and have a built demo package (ready/ready_for_review/sent) or DEMO_READY status / package_ready stage.
+        lead_lost = is_lead_lost(lead)
         has_ready_pkg = any(p.status in ("ready", "ready_for_review", "sent") for p in (lead.packages or []))
-        is_demo_ready = (
+        is_demo_ready = not lead_lost and (
             stage_slug in ("package_ready", "queued", "contacted", "viewed_demo", "replied", "won")
             or (lead.status or "").upper() == "DEMO_READY"
             or has_ready_pkg
