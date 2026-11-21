@@ -43,10 +43,35 @@ interface BatchMeta {
   active_batch_id: string;
 }
 
+function isLeadLost(lead: any): boolean {
+  if (!lead) return false;
+  if (lead.is_lost) return true;
+  const status = (lead.status || "").toUpperCase();
+  if (status === "CLOSED_LOST" || status === "LOST") return true;
+  const stageSlug = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (
+    stageSlug === "lost" ||
+    stageSlug === "closed_lost" ||
+    stageSlug === "archived" ||
+    stageSlug === "dnc" ||
+    stageSlug.includes("lost")
+  ) {
+    return true;
+  }
+  if (lead.stage_rel?.is_lost) return true;
+  if (lead.stage_id === 8) return true;
+  if (Boolean(lead.do_not_contact)) return true;
+  if (Boolean(lead.is_archived)) return true;
+  return false;
+}
+
 export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRun[] {
   const runs: DemoRun[] = [];
 
   for (const lead of leads) {
+    if (isLeadLost(lead)) {
+      continue;
+    }
     const leadBatchId =
       lead.custom_fields && typeof lead.custom_fields === "object" && lead.custom_fields.batch_id
         ? String(lead.custom_fields.batch_id)

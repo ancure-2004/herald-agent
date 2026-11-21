@@ -54,6 +54,28 @@ const DELHI_NCR_PRESETS = [
   "Vaishali (Ghaziabad)",
 ];
 
+function isLeadLost(lead: any): boolean {
+  if (!lead) return false;
+  if (lead.is_lost) return true;
+  const status = (lead.status || "").toUpperCase();
+  if (status === "CLOSED_LOST" || status === "LOST") return true;
+  const stageSlug = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (
+    stageSlug === "lost" ||
+    stageSlug === "closed_lost" ||
+    stageSlug === "archived" ||
+    stageSlug === "dnc" ||
+    stageSlug.includes("lost")
+  ) {
+    return true;
+  }
+  if (lead.stage_rel?.is_lost) return true;
+  if (lead.stage_id === 8) return true;
+  if (Boolean(lead.do_not_contact)) return true;
+  if (Boolean(lead.is_archived)) return true;
+  return false;
+}
+
 export function mapLeadToDiscoveryLead(lead: Record<string, any>): DiscoveryLead {
   const facts = lead.facts || [];
   const websiteFact = facts.find((f: any) => f.field === "website_check" || f.field === "website");
@@ -162,7 +184,8 @@ export const DiscoveryTab: React.FC = () => {
     try {
       const dbLeads = await apiFetch<Array<Record<string, any>>>("/api/leads?hustle_id=1");
       if (Array.isArray(dbLeads)) {
-        setLeads(dbLeads.map(mapLeadToDiscoveryLead));
+        const activeDbLeads = dbLeads.filter((l) => !isLeadLost(l));
+        setLeads(activeDbLeads.map(mapLeadToDiscoveryLead));
       }
     } catch {
       // Keep cached data if offline
