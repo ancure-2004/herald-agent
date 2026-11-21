@@ -334,6 +334,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const [sprintPlan, setSprintPlan] = useState<SprintPlan | null>(null);
   const [runs, setRuns] = useState<RunLog[]>([]);
   const [copilotSuggestions, setCopilotSuggestions] = useState<CopilotSuggestion[]>([]);
+  const archivedReqIdRef = useRef<number>(0);
 
   // UI status
   const [loading, setLoading] = useState<boolean>(true);
@@ -563,8 +564,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   // Lazy-load archived leads cache on demand when smart_view=archived is clicked
   useEffect(() => {
     const isArchived = activeSmartView === "archived" || activeSmartView === "archived_dnc";
-    if (isArchived && activeHustleId && !archivedLoaded && !archivedLoading) {
-      let isMounted = true;
+    if (isArchived && activeHustleId && !archivedLoaded) {
+      const reqId = ++archivedReqIdRef.current;
       setArchivedLoading(true);
       leadsApi
         .list({
@@ -573,35 +574,35 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
           include_archived: true,
         })
         .then((data) => {
-          if (isMounted) {
+          if (reqId === archivedReqIdRef.current) {
             setArchivedLeads(data);
             setArchivedLoaded(true);
           }
         })
         .catch((err) => {
-          if (isMounted) {
+          if (reqId === archivedReqIdRef.current) {
             notify(err instanceof Error ? err : "Failed to load archived leads", "err");
           }
         })
         .finally(() => {
-          if (isMounted) {
+          if (reqId === archivedReqIdRef.current) {
             setArchivedLoading(false);
           }
         });
-      return () => {
-        isMounted = false;
-      };
     }
-  }, [activeSmartView, activeHustleId, archivedLoaded, archivedLoading, notify]);
+  }, [activeSmartView, activeHustleId, archivedLoaded, notify]);
 
   // Invalidate archived leads cache when switching hustle
   useEffect(() => {
+    archivedReqIdRef.current++;
+    setArchivedLoading(false);
     setArchivedLoaded(false);
     setArchivedLeads([]);
   }, [activeHustleId]);
 
   const refreshArchivedLeads = useCallback(async () => {
     if (!activeHustleId) return;
+    const reqId = ++archivedReqIdRef.current;
     setArchivedLoading(true);
     try {
       const data = await leadsApi.list({
@@ -609,12 +610,18 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         smart_view: "archived",
         include_archived: true,
       });
-      setArchivedLeads(data);
-      setArchivedLoaded(true);
+      if (reqId === archivedReqIdRef.current) {
+        setArchivedLeads(data);
+        setArchivedLoaded(true);
+      }
     } catch (err) {
-      notify(err instanceof Error ? err : "Failed to load archived leads", "err");
+      if (reqId === archivedReqIdRef.current) {
+        notify(err instanceof Error ? err : "Failed to load archived leads", "err");
+      }
     } finally {
-      setArchivedLoading(false);
+      if (reqId === archivedReqIdRef.current) {
+        setArchivedLoading(false);
+      }
     }
   }, [activeHustleId, notify]);
 

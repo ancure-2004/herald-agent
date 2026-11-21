@@ -601,7 +601,7 @@ export function KanbanBoardView() {
         /* ==================== 2. FOCUSED LIST VIEW FOR SMART FILTERS ==================== */
         <div className="space-y-3 pb-6">
           {/* Focused List Rows / Empty State */}
-          {archivedLoading ? (
+          {(activeSmartView === "archived" || activeSmartView === "archived_dnc") && archivedLoading && focusedLeads.length === 0 ? (
             <KanbanSkeleton />
           ) : focusedLeads.length === 0 ? (
             <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-3">
