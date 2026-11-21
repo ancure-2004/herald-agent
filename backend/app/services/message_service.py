@@ -234,6 +234,7 @@ class MessageService:
                 lead.stage_id = contacted_stage.id
             lead.next_action = "Check demo view telemetry & follow up in 3 days"
             lead.next_action_due_at = now + timedelta(days=3)
+            lead.next_followup_at = now + timedelta(days=3)
             lead.what_changed_summary = f"Approved & sent {payload.channel} pitch. Demo link expires in 7 days."
 
         db.commit()
@@ -371,6 +372,7 @@ class MessageService:
             lead.stage_id = contacted_stage.id
         lead.next_action = "Check demo view telemetry & follow up in 3 days"
         lead.next_action_due_at = now + timedelta(days=3)
+        lead.next_followup_at = now + timedelta(days=3)
         lead.what_changed_summary = f"Approved & sent {channel} pitch. Demo link expires in 7 days."
 
         db.commit()
@@ -589,8 +591,22 @@ class MessageService:
                 created_at=now,
             )
             MessageRepository.create_message(db, msg)
+            from app.models.entities import Stage as StageModel
+            contacted_stage = (
+                db.query(StageModel)
+                .filter(StageModel.hustle_id == lead.hustle_id, StageModel.slug == "contacted")
+                .first()
+            )
+            if contacted_stage:
+                lead.stage_id = contacted_stage.id
+            lead.next_action = "Check demo view telemetry & follow up in 3 days"
+            lead.next_action_due_at = now + timedelta(days=3)
+            lead.next_followup_at = now + timedelta(days=3)
+            lead.what_changed_summary = f"Sent manual {clean_channel} message. Follow-up scheduled in 3 days."
+
             db.commit()
             db.refresh(msg)
+            db.refresh(lead)
             get_cache_manager().invalidate_prefix("cockpit:")
             get_cache_manager().invalidate_prefix("messages:")
             get_cache_manager().invalidate_prefix("leads:")

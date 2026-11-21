@@ -22,11 +22,13 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'STAGED';
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS automation_enabled BOOLEAN DEFAULT TRUE;
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS needs_followup BOOLEAN DEFAULT FALSE;
+                ALTER TABLE leads ADD COLUMN IF NOT EXISTS next_followup_at TIMESTAMP WITH TIME ZONE;
                 CREATE INDEX IF NOT EXISTS ix_leads_is_test ON leads (is_test);
                 CREATE INDEX IF NOT EXISTS ix_leads_test_run_id ON leads (test_run_id);
                 CREATE INDEX IF NOT EXISTS ix_leads_status ON leads (status);
                 CREATE INDEX IF NOT EXISTS ix_leads_automation_enabled ON leads (automation_enabled);
                 CREATE INDEX IF NOT EXISTS ix_leads_needs_followup ON leads (needs_followup);
+                CREATE INDEX IF NOT EXISTS ix_leads_next_followup_at ON leads (next_followup_at);
                 CREATE INDEX IF NOT EXISTS ix_leads_stage_id_updated_at ON leads (stage_id, updated_at);
                 CREATE INDEX IF NOT EXISTS ix_leads_status_updated_at ON leads (status, updated_at);
                 CREATE INDEX IF NOT EXISTS ix_leads_created_at ON leads (created_at);
@@ -103,6 +105,8 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
                 conn.execute(text("ALTER TABLE leads ADD COLUMN automation_enabled BOOLEAN DEFAULT 1"))
             if "needs_followup" not in lead_cols:
                 conn.execute(text("ALTER TABLE leads ADD COLUMN needs_followup BOOLEAN DEFAULT 0"))
+            if "next_followup_at" not in lead_cols:
+                conn.execute(text("ALTER TABLE leads ADD COLUMN next_followup_at TIMESTAMP"))
             if insp.has_table("packages"):
                 conn.execute(
                     text(

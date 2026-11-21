@@ -76,6 +76,10 @@ class CockpitService:
         if cached is not None:
             return cached
 
+        # Run 7-day auto-lost transition check
+        from app.services.lead_service import LeadService
+        LeadService.auto_transition_unreplied_to_closed_lost(db, hustle_id=hustle_id)
+
         # Query all active non-archived, non-DNC leads for hustle
         leads = (
             db.query(Lead)
@@ -132,32 +136,52 @@ class CockpitService:
                 )
 
             # 3. Follow-up required:
-            # - lead.needs_followup is True, OR
-            # - contacted/pitch_sent and last message was sent >= 3 days ago, OR
-            # - has commitments due soon
-            needs_fup = False
-            fup_reason = ""
-            if lead.needs_followup:
-                needs_fup = True
-                fup_reason = "Flagged: Follow-up required"
-            elif stage_slug in ("contacted", "pitch_sent", "viewed_demo"):
+            # Item 3.3: Surface only leads that saw the demo, replied, or are due for follow-up
+            saw_demo = (
+                stage_slug == "viewed_demo"
+                or any(getattr(e, "event_type", "") in ("page_view", "demo_view") for e in (lead.events or []))
+            )
+            has_replied = (
+                stage_slug in ("replied", "warm")
+                or (lead.status or "").upper() == "REPLIED"
+                or any(getattr(m, "direction", "") == "inbound" for m in (lead.messages or []))
+            )
+            is_due = False
+            if lead.next_followup_at:
+                fup_due = _to_utc(lead.next_followup_at)
+                if fup_due and fup_due <= now:
+                    is_due = True
+            elif due_at_utc and due_at_utc <= now:
+                is_due = True
+            elif lead.needs_followup:
+                is_due = True
+            elif stage_slug in ("contacted", "pitch_sent"):
                 if lead.messages:
                     last_outbound = next((m for m in reversed(lead.messages) if m.direction == "outbound"), None)
                     if last_outbound and last_outbound.created_at:
                         out_created_at = _to_utc(last_outbound.created_at)
                         if out_created_at and out_created_at <= three_days_ago:
-                            needs_fup = True
-                            days = (now - out_created_at).days
-                            fup_reason = f"Pitch sent {days} days ago without reply"
+                            is_due = True
                 elif lead.packages and lead.packages[-1].sent_at:
                     pkg_sent_at = _to_utc(lead.packages[-1].sent_at)
                     if pkg_sent_at and pkg_sent_at <= three_days_ago:
-                        needs_fup = True
-                        fup_reason = "Demo sent >= 3 days ago"
+                        is_due = True
+
+            needs_fup = False
+            fup_reason = ""
+            if saw_demo:
+                needs_fup = True
+                fup_reason = "Demo viewed: Hot prospect follow-up"
+            elif has_replied:
+                needs_fup = True
+                fup_reason = "Replied: Follow-up conversation due"
+            elif is_due:
+                needs_fup = True
+                fup_reason = lead.next_action or "3-day follow-up reminder due"
 
             if needs_fup:
                 followup_required.append(
-                    cls._serialize_card(lead, reason=fup_reason, urgency="medium")
+                    cls._serialize_card(lead, reason=fup_reason, urgency="high" if (saw_demo or has_replied) else "medium")
                 )
 
             # 4. Call preparation:

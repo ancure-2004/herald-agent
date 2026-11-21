@@ -66,6 +66,10 @@ interface BatchClinic {
   has_custom_edits?: boolean;
   has_video?: boolean;
   video_file_path?: string;
+  needs_followup?: boolean;
+  next_followup_at?: string | null;
+  next_action?: string | null;
+  next_action_due_at?: string | null;
   demo_url?: string;
   template_urls?: { modern: string; premium: string; warm: string };
   wa_msg1?: string;
@@ -126,6 +130,9 @@ export function OutreachHubSubpage() {
 
   // Unified Terminal & Outreach Channel Tab
   const [channelTab, setChannelTab] = useState<"whatsapp" | "email" | "instagram">("whatsapp");
+
+  // Outreach / Follow-Up Switcher Mode (3.4)
+  const [hubMode, setHubMode] = useState<"outreach" | "followup">("outreach");
 
   // Dispatch workspace state
   const [selectedClinicId, setSelectedClinicId] = useState<number | null>(null);
@@ -297,10 +304,29 @@ export function OutreachHubSubpage() {
     [batchClinics, selectedClinicId]
   );
 
-  // Simplified queue filter: ONLY All, Sent, Unsent
+  // Helper to determine if a clinic is due for follow-up (3.4)
+  const isClinicDueFollowup = useCallback((c: BatchClinic) => {
+    if (c.stage_slug === "viewed_demo" || c.stage_slug === "replied") return true;
+    if (c.needs_followup) return true;
+    const nowTs = Date.now();
+    if (c.next_followup_at && new Date(c.next_followup_at).getTime() <= nowTs) return true;
+    if (c.next_action_due_at && new Date(c.next_action_due_at).getTime() <= nowTs) return true;
+    // If pitch was already sent, it's in the follow-up flow
+    return Boolean(c.is_sent);
+  }, []);
+
+  // Simplified queue filter: Outreach vs Follow-Up switcher + search/status
   const filteredClinics = useMemo<BatchClinic[]>(() => {
     const q = queueSearch.trim().toLowerCase();
     return batchClinics.filter((c) => {
+      // 3.4 Switcher filter:
+      if (hubMode === "followup") {
+        if (!isClinicDueFollowup(c)) return false;
+      } else {
+        // In outreach mode, show non-follow-up or initial outreach candidates
+        // (if queueFilter is unsent, show only unsent; otherwise keep outreach items)
+      }
+
       if (queueFilter === "sent" && !c.is_sent) return false;
       if (queueFilter === "unsent" && c.is_sent) return false;
       if (!q) return true;
@@ -310,13 +336,21 @@ export function OutreachHubSubpage() {
         .toLowerCase();
       return haystack.includes(q);
     });
-  }, [batchClinics, queueSearch, queueFilter]);
+  }, [batchClinics, queueSearch, queueFilter, hubMode, isClinicDueFollowup]);
 
   const syncDeckFrom = useCallback((c: BatchClinic) => {
     setEditPhone(c.primary_phone || c.phone || "");
-    setEditWaMsg1(c.wa_msg1 || "");
-    setEditWaMsg2(c.wa_msg2 || "");
-  }, []);
+    if (hubMode === "followup") {
+      const doc = c.doctor ? (c.doctor.startsWith("Dr.") ? c.doctor : `Dr. ${c.doctor}`) : "Doctor";
+      const fupMsg1 = `Namaste ${doc} Ji,\n\nDid you get a chance to check the 3 custom mobile preview designs we built for ${c.name}?`;
+      const fupMsg2 = `A quick link to view them again: ${c.demo_url || `http://localhost:3001/demo/${c.slug}`}\n\nLet us know if you'd prefer any tweaks or have a favorite layout!`;
+      setEditWaMsg1(c.wa_msg1 ? c.wa_msg1 : fupMsg1);
+      setEditWaMsg2(c.wa_msg2 ? c.wa_msg2 : fupMsg2);
+    } else {
+      setEditWaMsg1(c.wa_msg1 || "");
+      setEditWaMsg2(c.wa_msg2 || "");
+    }
+  }, [hubMode]);
 
   // Auto-select first clinic when batch loads
   useEffect(() => {
@@ -573,6 +607,34 @@ export function OutreachHubSubpage() {
               }`}
             />
             <span>{dryRunMode ? "Mode: DRY-RUN (Safe)" : "Mode: LIVE SEND"}</span>
+          </div>
+
+          {/* Outreach / Follow-Up Switcher (3.4) */}
+          <div className="bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-xl inline-flex items-center gap-0.5 border border-slate-200/80 dark:border-zinc-700 shadow-xs">
+            <button
+              type="button"
+              onClick={() => setHubMode("outreach")}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                hubMode === "outreach"
+                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-2xs"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+              }`}
+            >
+              <Send className="w-3 h-3 text-emerald-500" />
+              <span>Outreach</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setHubMode("followup")}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                hubMode === "followup"
+                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-2xs"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+              }`}
+            >
+              <RotateCw className="w-3 h-3 text-blue-500" />
+              <span>Follow-Up</span>
+            </button>
           </div>
 
           {/* Batch Progress Telemetry Island */}
@@ -937,10 +999,10 @@ export function OutreachHubSubpage() {
                           type="button"
                           onClick={handleOpenWhatsApp}
                           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-slate-200/90 dark:border-zinc-700 text-xs font-semibold shadow-xs transition-all cursor-pointer"
-                          title="Press '1' to open WhatsApp with Message 1"
+                          title={hubMode === "followup" ? "Press '1' to open WhatsApp with Follow-Up message" : "Press '1' to open WhatsApp with Message 1"}
                         >
                           <MessageCircle className="w-4 h-4 text-emerald-500" />
-                          <span>Open WhatsApp</span>
+                          <span>{hubMode === "followup" ? "Open Follow-Up" : "Open WhatsApp"}</span>
                           <span className="bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 rounded px-1.5 py-0.5 font-mono text-[10px]">
                             1
                           </span>
@@ -955,7 +1017,7 @@ export function OutreachHubSubpage() {
                           title="Press '4' or Spacebar to mark as Sent and advance"
                         >
                           <CheckCircle2 className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
-                          <span>Mark Sent & Next</span>
+                          <span>{hubMode === "followup" ? "Follow-Up Sent & Next" : "Mark Sent & Next"}</span>
                           <span className="bg-zinc-800 text-zinc-300 dark:bg-zinc-200 dark:text-zinc-700 border border-zinc-700 dark:border-zinc-300 rounded px-1.5 py-0.5 font-mono text-[10px]">
                             Space
                           </span>
@@ -970,7 +1032,7 @@ export function OutreachHubSubpage() {
                       className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-zinc-900 hover:text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-slate-200/90 dark:border-zinc-700 text-xs font-semibold transition-all cursor-pointer group"
                     >
                       <Send className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
-                      <span>Send to This Clinic Only</span>
+                      <span>{hubMode === "followup" ? "1-Click Send Follow-Up to This Clinic" : "Send to This Clinic Only"}</span>
                       <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 group-hover:bg-amber-400/30 group-hover:text-amber-200 transition-colors">
                         {dryRunMode ? "DRY-RUN" : "LIVE"}
                       </span>
