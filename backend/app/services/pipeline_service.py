@@ -659,7 +659,13 @@ class PipelineService:
             db.query(Package)
             .options(joinedload(Package.lead))
             .join(Lead)
-            .filter(Lead.hustle_id == hustle_id, (Lead.is_test == False) | Lead.is_test.is_(None))
+            .filter(
+                Lead.hustle_id == hustle_id,
+                (Lead.is_test == False) | Lead.is_test.is_(None),
+                Lead.is_archived == False,
+                Lead.do_not_contact == False,
+                Lead.status.notin_(["CLOSED_LOST", "LOST"]),
+            )
             .order_by(Package.id.desc())
             .limit(15)
             .all()  # noqa: E711, E712
@@ -670,6 +676,9 @@ class PipelineService:
                 Lead.hustle_id == hustle_id,
                 Lead.stage_id == stage_ready_id,
                 (Lead.is_test == False) | Lead.is_test.is_(None),
+                Lead.is_archived == False,
+                Lead.do_not_contact == False,
+                Lead.status.notin_(["CLOSED_LOST", "LOST"]),
             )  # noqa: E711, E712
             .order_by(Lead.id.desc())
             .limit(15)
@@ -907,7 +916,13 @@ class PipelineService:
 
         recent_leads = (
             db.query(Lead)
-            .filter(Lead.hustle_id == hustle_id, (Lead.is_test == False) | Lead.is_test.is_(None))
+            .filter(
+                Lead.hustle_id == hustle_id,
+                (Lead.is_test == False) | Lead.is_test.is_(None),
+                Lead.is_archived == False,
+                Lead.do_not_contact == False,
+                Lead.status.notin_(["CLOSED_LOST", "LOST"]),
+            )
             .order_by(Lead.id.desc())
             .limit(1)
             .all()

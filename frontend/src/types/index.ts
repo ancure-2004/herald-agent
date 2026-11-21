@@ -118,6 +118,13 @@ export interface Lead {
   email: string | null;
   instagram_handle: string | null;
   preferred_channel: string;
+  status?: string;
+  is_lost?: boolean;
+  is_won?: boolean;
+  stage_slug?: string;
+  stage_name?: string;
+  needs_followup?: boolean;
+  automation_enabled?: boolean;
   fit_score: number;
   fit_reasons: string[];
   intent_score: number;

@@ -132,6 +132,34 @@ class Lead(Base):
     )
     terminal_logs = relationship("TerminalLog", back_populates="lead")
 
+    @property
+    def stage_slug(self) -> str:
+        return self.stage_rel.slug if self.stage_rel else ""
+
+    @property
+    def stage_name(self) -> str:
+        return self.stage_rel.name if self.stage_rel else ""
+
+    @property
+    def is_lost(self) -> bool:
+        if (self.status or "").upper() in ("CLOSED_LOST", "LOST"):
+            return True
+        if self.stage_rel and self.stage_rel.is_lost:
+            return True
+        if self.stage_id == 8:
+            return True
+        return bool(self.is_archived or self.do_not_contact)
+
+    @property
+    def is_won(self) -> bool:
+        if (self.status or "").upper() in ("WON", "CLOSED_WON"):
+            return True
+        if self.stage_rel and self.stage_rel.is_won:
+            return True
+        if self.stage_id == 7:
+            return True
+        return False
+
     __table_args__ = (
         Index("ix_leads_stage_id_updated_at", "stage_id", "updated_at"),
         Index("ix_leads_status_updated_at", "status", "updated_at"),

@@ -123,7 +123,7 @@ export const LeadCard = React.memo(function LeadCard({
           )}
 
           <span className="text-[10px] font-medium bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 px-1.5 py-0.5 rounded font-mono shrink-0">
-            {lead.fit_score}% Fit
+            {Math.min(100, Math.max(0, Math.round(lead.fit_score || 0)))}% Fit
           </span>
         </div>
 

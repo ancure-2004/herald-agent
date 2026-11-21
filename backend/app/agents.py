@@ -661,13 +661,20 @@ def build_cockpit_batch_payload(db: Session, hustle_id: int = 1, batch_id: Optio
     leads = (
         db.query(Lead)
         .options(joinedload(Lead.packages), joinedload(Lead.stage_rel), joinedload(Lead.outbox_items))
-        .filter(Lead.hustle_id == hustle_id, Lead.is_archived == False, Lead.do_not_contact == False)  # noqa: E712
+        .filter(
+            Lead.hustle_id == hustle_id,
+            Lead.is_archived == False,
+            Lead.do_not_contact == False,
+            Lead.status.notin_(["CLOSED_LOST", "LOST"]),
+        )  # noqa: E712
         .order_by(Lead.id.asc())
         .all()
     )
 
     clinics_out: List[Dict[str, Any]] = []
     for l in leads:
+        if (l.status or "").upper() in ("CLOSED_LOST", "LOST") or l.stage_id == 8 or (l.stage_rel and l.stage_rel.is_lost):
+            continue
         pkg = l.packages[-1] if l.packages else None
         pitches = build_pitch_messages(l, pkg, base_url=base_url)
         stage_slug = l.stage_rel.slug if l.stage_rel else "discovered"
