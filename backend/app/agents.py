@@ -16,7 +16,7 @@ import subprocess
 import time
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -662,11 +662,25 @@ def ensure_hustle_lead_batches(
         db.commit()
 
     # Build summary per batch
+    now_utc = datetime.now(timezone.utc)
+    today_start = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+
     batch_map: Dict[str, Dict[str, Any]] = {}
     for lead in leads:
         bid = (lead.custom_fields or {}).get("batch_id") or "BATCH-01"
         if bid not in batch_map:
-            batch_map[bid] = {"batch_id": bid, "total": 0, "ready_unsent": 0, "sent": 0, "stage_counts": {}}
+            batch_map[bid] = {
+                "batch_id": bid,
+                "total": 0,
+                "ready_unsent": 0,
+                "sent": 0,
+                "followup_count": 0,
+                "followup_due_today": 0,
+                "followup_overdue": 0,
+                "followup_upcoming": 0,
+                "stage_counts": {},
+            }
         batch_map[bid]["total"] += 1
         stage_slug = lead.stage_rel.slug if lead.stage_rel else "discovered"
         batch_map[bid]["stage_counts"][stage_slug] = batch_map[bid]["stage_counts"].get(stage_slug, 0) + 1
@@ -680,6 +694,27 @@ def ensure_hustle_lead_batches(
             batch_map[bid]["ready_unsent"] += 1
         else:
             batch_map[bid]["sent"] += 1
+
+        # Track follow-up eligibility and schedule
+        is_fup = bool(lead.needs_followup) or stage_slug in ("contacted", "viewed_demo", "replied")
+        if is_fup and not lead.do_not_contact:
+            batch_map[bid]["followup_count"] += 1
+            fup_dt = None
+            if lead.next_followup_at:
+                fup_dt = lead.next_followup_at if lead.next_followup_at.tzinfo else lead.next_followup_at.replace(tzinfo=timezone.utc)
+            elif lead.next_action_due_at:
+                fup_dt = lead.next_action_due_at if lead.next_action_due_at.tzinfo else lead.next_action_due_at.replace(tzinfo=timezone.utc)
+            
+            if fup_dt:
+                if fup_dt < today_start:
+                    batch_map[bid]["followup_overdue"] += 1
+                elif today_start <= fup_dt < today_end:
+                    batch_map[bid]["followup_due_today"] += 1
+                else:
+                    batch_map[bid]["followup_upcoming"] += 1
+            else:
+                # Default for active follow-up without future date is due today
+                batch_map[bid]["followup_due_today"] += 1
 
     # Sort batch list: active BATCH-xx first (sorted numerically), then LOST-BATCH-xx (sorted numerically)
     def batch_sort_key(b: Dict[str, Any]):

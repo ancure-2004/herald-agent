@@ -850,14 +850,16 @@ export const DemoFactoryTab: React.FC = () => {
             disabled={batchLoading}
             options={[
               { value: "ALL", label: `All Batches (${runs.length} runs)` },
-              ...(batchMeta?.batches?.map((b) => {
-                const stagedCount = b.stage_counts?.staged ?? 0;
-                const builtCount = runs.filter((r) => r.batchId === b.batch_id).length;
-                return {
-                  value: b.batch_id,
-                  label: `${b.batch_id} (${stagedCount} staged · ${builtCount} built)`,
-                };
-              }) || []),
+              ...(batchMeta?.batches
+                ?.filter((b) => !b.batch_id.startsWith("LOST-BATCH-"))
+                ?.map((b) => {
+                  const stagedCount = b.stage_counts?.staged ?? 0;
+                  const builtCount = runs.filter((r) => r.batchId === b.batch_id).length;
+                  return {
+                    value: b.batch_id,
+                    label: `${b.batch_id} (${stagedCount} staged · ${builtCount} built)`,
+                  };
+                }) || []),
             ]}
             className="min-w-[190px]"
             triggerClassName="!py-1.5 !px-3 font-mono font-medium"

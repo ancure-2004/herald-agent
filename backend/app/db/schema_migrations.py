@@ -243,6 +243,29 @@ def _run_migration_statements(conn: Any, dialect: str, insp: Any) -> None:
             if "started_at" in run_cols:
                 conn.execute(text("CREATE INDEX IF NOT EXISTS ix_runs_started_at ON runs (started_at)"))
 
+        # Ensure Follow-Up stage exists in stages table
+        if insp.has_table("stages"):
+            stage_rows = conn.execute(text("SELECT id, hustle_id, slug, \"order\", name FROM stages")).fetchall()
+            hustle_ids = {r[1] for r in stage_rows}
+            for hid in hustle_ids:
+                h_stages = [r for r in stage_rows if r[1] == hid]
+                slugs = {r[2] for r in h_stages}
+                if "follow_up" not in slugs:
+                    contacted = next((r for r in h_stages if r[2] == "contacted"), None)
+                    base_order = contacted[3] if contacted else 4
+                    # Shift later stages forward
+                    conn.execute(
+                        text("UPDATE stages SET \"order\" = \"order\" + 1 WHERE hustle_id = :hid AND \"order\" > :base_order"),
+                        {"hid": hid, "base_order": base_order},
+                    )
+                    conn.execute(
+                        text(
+                            "INSERT INTO stages (hustle_id, slug, name, \"order\", color, is_won, is_lost) "
+                            "VALUES (:hid, 'follow_up', '5. Follow-Up', :order, 'violet', 0, 0)"
+                        ),
+                        {"hid": hid, "order": base_order + 1},
+                    )
+
 
 def ensure_schema_columns(target: Union[Engine, Connection, Session, Any]) -> None:
     """Ensures newly added columns exist in pre-existing tables.

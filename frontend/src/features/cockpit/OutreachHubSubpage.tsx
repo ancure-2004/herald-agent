@@ -37,6 +37,10 @@ interface BatchInfo {
   total: number;
   ready_unsent: number;
   sent: number;
+  followup_count?: number;
+  followup_due_today?: number;
+  followup_overdue?: number;
+  followup_upcoming?: number;
   stage_counts: Record<string, number>;
 }
 
@@ -234,8 +238,71 @@ export function OutreachHubSubpage() {
     }
   };
 
+  // Batches filtered according to hub mode (Outreach vs Follow-Up)
+  // Invariants:
+  // 1. Remove LOST-BATCH-xx completely from Outreach and Cockpit dropdowns.
+  // 2. In Outreach mode: show ONLY non-lost batches that have NOT been outreached for the first time yet (sent === 0, or ready_unsent === total).
+  // 3. In Follow-Up mode: show ONLY batches that have a follow-up due today, upcoming, or overdue — and clearly label each as Upcoming or Overdue.
+  const displayedBatchOptions = useMemo(() => {
+    const allBatches = batchMeta?.batches || [];
+    const nonLostBatches = allBatches.filter((b) => !b.batch_id.startsWith("LOST-BATCH-"));
+
+    if (hubMode === "outreach") {
+      // Non-lost batches that have NOT been outreached for the first time yet
+      const unoutreached = nonLostBatches.filter((b) => b.sent === 0 || b.ready_unsent === b.total);
+      return unoutreached.map((b) => ({
+        value: b.batch_id,
+        label: `${b.batch_id} (${b.ready_unsent} unsent / ${b.total})`,
+      }));
+    } else {
+      // Follow-Up mode: show only batches that have follow-up due today, upcoming, or overdue
+      const fupBatches = nonLostBatches.filter((b) => {
+        const hasDueToday = (b.followup_due_today ?? 0) > 0;
+        const hasOverdue = (b.followup_overdue ?? 0) > 0;
+        const hasUpcoming = (b.followup_upcoming ?? 0) > 0;
+        const hasTotalFup = (b.followup_count ?? 0) > 0;
+        return hasDueToday || hasOverdue || hasUpcoming || hasTotalFup;
+      });
+
+      return fupBatches.map((b) => {
+        const overdueCount = b.followup_overdue ?? 0;
+        const dueTodayCount = b.followup_due_today ?? 0;
+        const upcomingCount = b.followup_upcoming ?? 0;
+
+        let statusLabel = "Upcoming";
+        if (overdueCount > 0) {
+          statusLabel = "Overdue";
+        } else if (dueTodayCount > 0) {
+          statusLabel = "Due Today";
+        } else if (upcomingCount > 0) {
+          statusLabel = "Upcoming";
+        }
+
+        const totalFup = overdueCount + dueTodayCount + upcomingCount || b.followup_count || b.sent;
+        return {
+          value: b.batch_id,
+          label: `${b.batch_id} [${statusLabel}] (${totalFup} follow-ups)`,
+        };
+      });
+    }
+  }, [batchMeta, hubMode]);
+
+  // Adjust selected batch when switching hub mode or when displayedBatchOptions change
+  useEffect(() => {
+    if (!displayedBatchOptions.length) {
+      if (selectedBatchId !== null) {
+        setSelectedBatchId(null);
+      }
+      return;
+    }
+    const currentValid = displayedBatchOptions.some((opt) => opt.value === selectedBatchId);
+    if (!currentValid) {
+      setSelectedBatchId(displayedBatchOptions[0].value);
+    }
+  }, [displayedBatchOptions, selectedBatchId]);
+
   const activeBatchInfo = batchMeta?.batches.find((b) => b.batch_id === selectedBatchId) ?? null;
-  const effectiveBatchId = selectedBatchId ?? batchMeta?.active_batch_id ?? undefined;
+  const effectiveBatchId = selectedBatchId ?? (displayedBatchOptions.length ? displayedBatchOptions[0].value : undefined);
 
   // Dynamic next clinic targets
   const nextWaClinic = useMemo<BatchClinic | null>(() => {
@@ -671,13 +738,10 @@ export function OutreachHubSubpage() {
           <Select
             value={selectedBatchId ?? ""}
             onChange={(val) => setSelectedBatchId(val || null)}
-            disabled={batchLoading || !batchMeta?.batches.length}
+            disabled={batchLoading || !displayedBatchOptions.length}
             options={
-              batchMeta?.batches?.length
-                ? batchMeta.batches.map((b) => ({
-                    value: b.batch_id,
-                    label: `${b.batch_id} (${b.ready_unsent} unsent / ${b.total})`,
-                  }))
+              displayedBatchOptions.length
+                ? displayedBatchOptions
                 : [
                     {
                       value: "",
@@ -686,7 +750,7 @@ export function OutreachHubSubpage() {
                     },
                   ]
             }
-            className="min-w-[170px]"
+            className="min-w-[190px]"
             triggerClassName="!py-1.5 !px-3 font-mono font-medium"
           />
 
