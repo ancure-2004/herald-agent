@@ -87,6 +87,20 @@ function compareBatchIds(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
 }
 
+function isLeadClosedLost(lead: Lead, allStages?: Stage[]): boolean {
+  const l = lead as any;
+  if (l.status === "CLOSED_LOST" || l.status === "LOST") return true;
+  if (l.is_archived || l.do_not_contact) return true;
+  if (l.stage_rel?.is_lost) return true;
+  const stageSlug = (l.stage_rel?.slug ?? l.stage ?? "").toLowerCase();
+  if (stageSlug === "lost" || stageSlug === "closed_lost" || stageSlug === "dnc" || stageSlug === "archived") return true;
+  if (allStages && l.stage_id) {
+    const s = allStages.find((st) => st.id === l.stage_id);
+    if (s && ((s as BatchableStage).is_lost || s.slug === "lost" || s.slug === "closed_lost")) return true;
+  }
+  return false;
+}
+
 function hasPackages(lead: Lead): boolean {
   return ((lead as BatchableLead).packages?.length ?? 0) > 0;
 }
@@ -107,7 +121,15 @@ function BatchGroup({ batchId, batchLeads, expanded, onToggle, renderLead }: Bat
   const count = batchLeads.length;
   const isUnbatched = batchId === UNBATCHED;
 
-  const avgFit = Math.round(batchLeads.reduce((sum, l) => sum + (l.fit_score ?? 0), 0) / count);
+  const avgFit = Math.min(
+    100,
+    Math.max(
+      0,
+      Math.round(
+        batchLeads.reduce((sum, l) => sum + Math.min(100, Math.max(0, l.fit_score ?? 0)), 0) / count
+      )
+    )
+  );
   const demosReady = batchLeads.filter(hasPackages).length;
   const readyCount = batchLeads.filter(isReady).length;
   const progressPct = Math.round((readyCount / count) * 100);
@@ -219,8 +241,13 @@ export const KanbanColumn = React.memo(function KanbanColumn({
       if (bucket) bucket.push(lead);
       else groups.set(id, [lead]);
     }
-    return [...groups.entries()].sort(([a], [b]) => compareBatchIds(a, b));
-  }, [leads, useBatchView]);
+    // Hide any batch where all leads are CLOSED_LOST from active Kanban columns
+    const filteredEntries = [...groups.entries()].filter(([, bLeads]) => {
+      const allLost = bLeads.length > 0 && bLeads.every((l) => isLeadClosedLost(l, allStages));
+      return !allLost;
+    });
+    return filteredEntries.sort(([a], [b]) => compareBatchIds(a, b));
+  }, [leads, useBatchView, allStages]);
 
   const renderLead = useCallback(
     (lead: Lead, isNested = false) => (
@@ -258,6 +285,15 @@ export const KanbanColumn = React.memo(function KanbanColumn({
     ]
   );
 
+  const PAGE_SIZE = 30;
+  const displayedLeads = useMemo(() => {
+    if (useBatchView) return leads;
+    return leads.slice(0, visibleCount);
+  }, [leads, useBatchView, visibleCount]);
+
+  const hasMoreLeads = !useBatchView && visibleCount < leads.length;
+  const remainingCount = leads.length - visibleCount;
+
   // Collapsed Empty Stage Column
   if (isCollapsed) {
     return (
@@ -289,15 +325,6 @@ export const KanbanColumn = React.memo(function KanbanColumn({
       </div>
     );
   }
-
-  const PAGE_SIZE = 30;
-  const displayedLeads = useMemo(() => {
-    if (useBatchView) return leads;
-    return leads.slice(0, visibleCount);
-  }, [leads, useBatchView, visibleCount]);
-
-  const hasMoreLeads = !useBatchView && visibleCount < leads.length;
-  const remainingCount = leads.length - visibleCount;
 
   return (
     <div

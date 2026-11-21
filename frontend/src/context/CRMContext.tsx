@@ -114,6 +114,11 @@ interface CRMContextType {
   activeHustle: Hustle | null;
   leads: Lead[];
   setLeads: React.Dispatch<React.SetStateAction<Lead[]>>;
+  archivedLeads: Lead[];
+  setArchivedLeads: React.Dispatch<React.SetStateAction<Lead[]>>;
+  archivedLoaded: boolean;
+  archivedLoading: boolean;
+  refreshArchivedLeads: () => Promise<void>;
   selectedLeadId: number | null;
   setSelectedLeadId: (id: number | null) => void;
   selectedLead: Lead | null;
@@ -322,10 +327,14 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const [hustles, setHustles] = useState<Hustle[]>([]);
   const [activeHustleId, setActiveHustleId] = useState<number>(1);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [archivedLeads, setArchivedLeads] = useState<Lead[]>([]);
+  const [archivedLoaded, setArchivedLoaded] = useState<boolean>(false);
+  const [archivedLoading, setArchivedLoading] = useState<boolean>(false);
   const [stockPlan, setStockPlan] = useState<StockPlan | null>(null);
   const [sprintPlan, setSprintPlan] = useState<SprintPlan | null>(null);
   const [runs, setRuns] = useState<RunLog[]>([]);
   const [copilotSuggestions, setCopilotSuggestions] = useState<CopilotSuggestion[]>([]);
+  const archivedReqIdRef = useRef<number>(0);
 
   // UI status
   const [loading, setLoading] = useState<boolean>(true);
@@ -526,7 +535,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         settingsApi.listHustles(),
         leadsApi.list({
           hustle_id: activeHustleId,
-          smart_view: activeSmartView,
+          smart_view: "all_active",
           search: searchQuery,
         }),
         apiFetch<StockPlan>(`/api/stock-plan?hustle_id=${activeHustleId}`),
@@ -550,7 +559,71 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [activeHustleId, activeSmartView, searchQuery, notify]);
+  }, [activeHustleId, searchQuery, notify]);
+
+  // Lazy-load archived leads cache on demand when smart_view=archived is clicked
+  useEffect(() => {
+    const isArchived = activeSmartView === "archived" || activeSmartView === "archived_dnc";
+    if (isArchived && activeHustleId && !archivedLoaded) {
+      const reqId = ++archivedReqIdRef.current;
+      setArchivedLoading(true);
+      leadsApi
+        .list({
+          hustle_id: activeHustleId,
+          smart_view: "archived",
+          include_archived: true,
+        })
+        .then((data) => {
+          if (reqId === archivedReqIdRef.current) {
+            setArchivedLeads(data);
+            setArchivedLoaded(true);
+          }
+        })
+        .catch((err) => {
+          if (reqId === archivedReqIdRef.current) {
+            notify(err instanceof Error ? err : "Failed to load archived leads", "err");
+          }
+        })
+        .finally(() => {
+          if (reqId === archivedReqIdRef.current) {
+            setArchivedLoading(false);
+          }
+        });
+    }
+  }, [activeSmartView, activeHustleId, archivedLoaded, notify]);
+
+  // Invalidate archived leads cache when switching hustle
+  useEffect(() => {
+    archivedReqIdRef.current++;
+    setArchivedLoading(false);
+    setArchivedLoaded(false);
+    setArchivedLeads([]);
+  }, [activeHustleId]);
+
+  const refreshArchivedLeads = useCallback(async () => {
+    if (!activeHustleId) return;
+    const reqId = ++archivedReqIdRef.current;
+    setArchivedLoading(true);
+    try {
+      const data = await leadsApi.list({
+        hustle_id: activeHustleId,
+        smart_view: "archived",
+        include_archived: true,
+      });
+      if (reqId === archivedReqIdRef.current) {
+        setArchivedLeads(data);
+        setArchivedLoaded(true);
+      }
+    } catch (err) {
+      if (reqId === archivedReqIdRef.current) {
+        notify(err instanceof Error ? err : "Failed to load archived leads", "err");
+      }
+    } finally {
+      if (reqId === archivedReqIdRef.current) {
+        setArchivedLoading(false);
+      }
+    }
+  }, [activeHustleId, notify]);
 
   useEffect(() => {
     loadAll();
@@ -1030,6 +1103,11 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     activeHustle,
     leads,
     setLeads,
+    archivedLeads,
+    setArchivedLeads,
+    archivedLoaded,
+    archivedLoading,
+    refreshArchivedLeads,
     selectedLeadId,
     setSelectedLeadId,
     selectedLead,
@@ -1149,6 +1227,10 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     activeHustleId,
     activeHustle,
     leads,
+    archivedLeads,
+    archivedLoaded,
+    archivedLoading,
+    refreshArchivedLeads,
     selectedLeadId,
     selectedLead,
     stockPlan,

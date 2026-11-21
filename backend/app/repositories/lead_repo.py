@@ -78,24 +78,52 @@ class LeadRepository:
 
         now = datetime.now(timezone.utc)
 
-        if smart_view == "archived":
-            q = q.filter((Lead.is_archived == True) | (Lead.do_not_contact == True))  # noqa: E712
+        stage_joined = False
+
+        if smart_view in ("archived", "archived_dnc"):
+            q = q.outerjoin(Stage, Lead.stage_id == Stage.id).filter(
+                (Lead.is_archived == True)  # noqa: E712
+                | (Lead.do_not_contact == True)  # noqa: E712
+                | (Lead.status.in_(["CLOSED_LOST", "LOST"]))
+                | (Stage.slug.in_(["lost", "closed_lost"]))
+                | (Stage.is_lost == True)  # noqa: E712
+            )
+            stage_joined = True
         elif not include_archived:
-            q = q.filter(Lead.is_archived == False)  # noqa: E712
+            q = q.outerjoin(Stage, Lead.stage_id == Stage.id).filter(
+                (Lead.is_archived == False)  # noqa: E712
+                & (Lead.do_not_contact == False)  # noqa: E712
+                & (~Lead.status.in_(["CLOSED_LOST", "LOST"]))
+                & (~Stage.slug.in_(["lost", "closed_lost"]))
+                & ((Stage.is_lost == False) | (Stage.is_lost == None))  # noqa: E711, E712
+            )
+            stage_joined = True
 
         if smart_view == "review_tray":
-            q = q.join(Stage, Lead.stage_id == Stage.id).filter(Stage.slug == "package_ready")
+            if not stage_joined:
+                q = q.join(Stage, Lead.stage_id == Stage.id)
+                stage_joined = True
+            q = q.filter(Stage.slug == "package_ready")
         elif smart_view == "due_today":
             end_of_today = now + timedelta(hours=12)
             q = q.filter(Lead.next_action_due_at <= end_of_today)
         elif smart_view == "hot_intent":
             q = q.filter(Lead.intent_score >= 40)
         elif smart_view == "replied_warm":
-            q = q.join(Stage, Lead.stage_id == Stage.id).filter(Stage.slug == "replied")
+            if not stage_joined:
+                q = q.join(Stage, Lead.stage_id == Stage.id)
+                stage_joined = True
+            q = q.filter(Stage.slug == "replied")
         elif smart_view == "no_reply_5d":
-            q = q.join(Stage, Lead.stage_id == Stage.id).filter(Stage.slug == "contacted")
+            if not stage_joined:
+                q = q.join(Stage, Lead.stage_id == Stage.id)
+                stage_joined = True
+            q = q.filter(Stage.slug == "contacted")
         if stage_slug:
-            q = q.join(Stage, Lead.stage_id == Stage.id).filter(Stage.slug == stage_slug)
+            if not stage_joined:
+                q = q.join(Stage, Lead.stage_id == Stage.id)
+                stage_joined = True
+            q = q.filter(Stage.slug == stage_slug)
 
         if status:
             q = q.filter(Lead.status == status)

@@ -34,6 +34,8 @@ interface BatchInfo {
   total: number;
   ready_unsent: number;
   sent: number;
+  is_all_lost?: boolean;
+  lost_count?: number;
   stage_counts: Record<string, number>;
 }
 
@@ -43,10 +45,35 @@ interface BatchMeta {
   active_batch_id: string;
 }
 
+function isLeadLost(lead: any): boolean {
+  if (!lead) return false;
+  if (lead.is_lost) return true;
+  const status = (lead.status || "").toUpperCase();
+  if (status === "CLOSED_LOST" || status === "LOST") return true;
+  const stageSlug = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (
+    stageSlug === "lost" ||
+    stageSlug === "closed_lost" ||
+    stageSlug === "archived" ||
+    stageSlug === "dnc" ||
+    stageSlug.includes("lost")
+  ) {
+    return true;
+  }
+  if (lead.stage_rel?.is_lost) return true;
+  if (lead.stage_id === 8) return true;
+  if (Boolean(lead.do_not_contact)) return true;
+  if (Boolean(lead.is_archived)) return true;
+  return false;
+}
+
 export function mapPackagesToDemoRuns(leads: Array<Record<string, any>>): DemoRun[] {
   const runs: DemoRun[] = [];
 
   for (const lead of leads) {
+    if (isLeadLost(lead)) {
+      continue;
+    }
     const leadBatchId =
       lead.custom_fields && typeof lead.custom_fields === "object" && lead.custom_fields.batch_id
         ? String(lead.custom_fields.batch_id)
@@ -825,14 +852,22 @@ export const DemoFactoryTab: React.FC = () => {
             disabled={batchLoading}
             options={[
               { value: "ALL", label: `All Batches (${runs.length} runs)` },
-              ...(batchMeta?.batches?.map((b) => {
-                const stagedCount = b.stage_counts?.staged ?? 0;
-                const builtCount = runs.filter((r) => r.batchId === b.batch_id).length;
-                return {
-                  value: b.batch_id,
-                  label: `${b.batch_id} (${stagedCount} staged · ${builtCount} built)`,
-                };
-              }) || []),
+              ...(batchMeta?.batches
+                ?.filter((b) => {
+                  if (b.is_all_lost) return false;
+                  if (b.total > 0 && b.lost_count !== undefined && b.lost_count === b.total) return false;
+                  const lostInStage = (b.stage_counts?.lost ?? 0) + (b.stage_counts?.closed_lost ?? 0);
+                  if (b.total > 0 && lostInStage === b.total) return false;
+                  return true;
+                })
+                ?.map((b) => {
+                  const stagedCount = b.stage_counts?.staged ?? 0;
+                  const builtCount = runs.filter((r) => r.batchId === b.batch_id).length;
+                  return {
+                    value: b.batch_id,
+                    label: `${b.batch_id} (${stagedCount} staged · ${builtCount} built)`,
+                  };
+                }) || []),
             ]}
             className="min-w-[190px]"
             triggerClassName="!py-1.5 !px-3 font-mono font-medium"

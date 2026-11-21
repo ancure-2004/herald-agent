@@ -16,7 +16,7 @@ import subprocess
 import time
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -536,20 +536,50 @@ def ensure_hustle_lead_batches(
     # Fetch ALL non-archived leads ordered by id asc
     leads = (
         db.query(Lead)
-        .options(joinedload(Lead.stage_rel), joinedload(Lead.outbox_items))
+        .options(joinedload(Lead.stage_rel), joinedload(Lead.outbox_items), joinedload(Lead.packages))
         .filter(Lead.hustle_id == hustle_id, Lead.is_archived == False, Lead.do_not_contact == False)  # noqa: E712
         .order_by(Lead.id.asc())
         .all()
     )
 
+    def is_lead_lost(l: Lead) -> bool:
+        if (l.status or "").upper() in ("CLOSED_LOST", "LOST") or l.stage_id == 8:
+            return True
+        if l.stage_rel and (l.stage_rel.slug in ("lost", "closed_lost") or l.stage_rel.is_lost):
+            return True
+        return False
+
+    active_leads = [l for l in leads if not is_lead_lost(l)]
+    lost_leads = [l for l in leads if is_lead_lost(l)]
+
     any_updated = False
 
     if force_rebatch:
-        # Re-slice ALL non-archived leads (every stage) into clean BATCH-01, BATCH-02, ...
-        # This leaves zero unbatched / "UNBATCHED" leads anywhere in the pipeline.
+        # Re-slice leads cleanly in two groups:
+        # 1) First pack ALL CLOSED_LOST leads into batches of 25 starting from BATCH-01, BATCH-02, ...
+        # 2) Then pack ALL active (non-lost) leads starting from the very next batch number (e.g. BATCH-17, BATCH-18, ...),
+        #    each with exact size 25 (only the very last active batch may have < 25).
+        # Do NOT mix lost and active leads in the same batch.
         batch_num = 1
         slot_count = 0
-        for lead in leads:
+        for lead in lost_leads:
+            if slot_count >= batch_size:
+                batch_num += 1
+                slot_count = 0
+            new_bid = f"BATCH-{batch_num:02d}"
+            cf = dict(lead.custom_fields or {})
+            if cf.get("batch_id") != new_bid:
+                cf["batch_id"] = new_bid
+                lead.custom_fields = cf
+                flag_modified(lead, "custom_fields")
+                any_updated = True
+            slot_count += 1
+
+        if lost_leads:
+            batch_num += 1
+            slot_count = 0
+
+        for lead in active_leads:
             if slot_count >= batch_size:
                 batch_num += 1
                 slot_count = 0
@@ -562,55 +592,122 @@ def ensure_hustle_lead_batches(
                 any_updated = True
             slot_count += 1
     else:
-        # Incremental mode: keep existing assignments intact; assign ALL unbatched
-        # leads (regardless of stage) into the current open batch / next batch.
-        # Find max existing batch number and how full it is.
-        batch_counts: Dict[str, int] = {}
+        # Incremental mode:
+        # Keep existing assignments intact; assign unbatched lost leads to open/next lost batches,
+        # and unbatched active leads to open/next active batches without mixing.
+        lost_batch_counts: Dict[str, int] = {}
+        active_batch_counts: Dict[str, int] = {}
         for lead in leads:
             bid = (lead.custom_fields or {}).get("batch_id")
-            if bid:
-                batch_counts[bid] = batch_counts.get(bid, 0) + 1
+            if bid and bid.startswith("BATCH-"):
+                if is_lead_lost(lead):
+                    lost_batch_counts[bid] = lost_batch_counts.get(bid, 0) + 1
+                else:
+                    active_batch_counts[bid] = active_batch_counts.get(bid, 0) + 1
 
-        if batch_counts:
-            max_num = max(
-                int(k.replace("BATCH-", ""))
-                for k in batch_counts
-                if k.startswith("BATCH-")
-            )
-            current_batch_id = f"BATCH-{max_num:02d}"
-            slot_count = batch_counts.get(current_batch_id, 0)
-        else:
-            max_num = 1
-            current_batch_id = "BATCH-01"
-            slot_count = 0
+        all_nums = [
+            int(k.replace("BATCH-", ""))
+            for k in list(lost_batch_counts.keys()) + list(active_batch_counts.keys())
+            if k.startswith("BATCH-")
+        ]
+        max_all_num = max(all_nums) if all_nums else 0
 
-        for lead in leads:
-            if (lead.custom_fields or {}).get("batch_id"):
-                continue  # already batched — keep as-is
-            # Assign this unbatched lead (any stage) to the current open slot
-            if slot_count >= batch_size:
-                max_num += 1
-                current_batch_id = f"BATCH-{max_num:02d}"
-                slot_count = 0
-            cf = dict(lead.custom_fields or {})
-            cf["batch_id"] = current_batch_id
-            lead.custom_fields = cf
-            flag_modified(lead, "custom_fields")
-            any_updated = True
-            slot_count += 1
+        # Unbatched lost leads
+        unbatched_lost = [l for l in lost_leads if not ((l.custom_fields or {}).get("batch_id") or "").startswith("BATCH-")]
+        if unbatched_lost:
+            # find an open lost batch or start new
+            open_lost_bids = [b for b, cnt in lost_batch_counts.items() if cnt < batch_size and b not in active_batch_counts]
+            if open_lost_bids:
+                curr_lost_bid = open_lost_bids[0]
+                lost_slot = lost_batch_counts[curr_lost_bid]
+                lost_num = int(curr_lost_bid.replace("BATCH-", ""))
+            else:
+                max_all_num += 1
+                lost_num = max_all_num
+                curr_lost_bid = f"BATCH-{lost_num:02d}"
+                lost_slot = 0
+
+            for lead in unbatched_lost:
+                if lost_slot >= batch_size:
+                    max_all_num += 1
+                    lost_num = max_all_num
+                    curr_lost_bid = f"BATCH-{lost_num:02d}"
+                    lost_slot = 0
+                cf = dict(lead.custom_fields or {})
+                cf["batch_id"] = curr_lost_bid
+                lead.custom_fields = cf
+                flag_modified(lead, "custom_fields")
+                any_updated = True
+                lost_slot += 1
+
+        # Unbatched active leads
+        unbatched_active = [l for l in active_leads if not ((l.custom_fields or {}).get("batch_id") or "").startswith("BATCH-")]
+        if unbatched_active:
+            # find open active batch or start new
+            open_active_bids = [b for b, cnt in active_batch_counts.items() if cnt < batch_size and b not in lost_batch_counts]
+            if open_active_bids:
+                curr_act_bid = open_active_bids[0]
+                act_slot = active_batch_counts[curr_act_bid]
+                act_num = int(curr_act_bid.replace("BATCH-", ""))
+            else:
+                max_all_num += 1
+                act_num = max_all_num
+                curr_act_bid = f"BATCH-{act_num:02d}"
+                act_slot = 0
+
+            for lead in unbatched_active:
+                if act_slot >= batch_size:
+                    max_all_num += 1
+                    act_num = max_all_num
+                    curr_act_bid = f"BATCH-{act_num:02d}"
+                    act_slot = 0
+                cf = dict(lead.custom_fields or {})
+                cf["batch_id"] = curr_act_bid
+                lead.custom_fields = cf
+                flag_modified(lead, "custom_fields")
+                any_updated = True
+                act_slot += 1
 
     if any_updated:
         db.commit()
 
     # Build summary per batch
+    now_utc = datetime.now(timezone.utc)
+    today_start = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+
     batch_map: Dict[str, Dict[str, Any]] = {}
     for lead in leads:
         bid = (lead.custom_fields or {}).get("batch_id") or "BATCH-01"
         if bid not in batch_map:
-            batch_map[bid] = {"batch_id": bid, "total": 0, "ready_unsent": 0, "sent": 0, "stage_counts": {}}
+            batch_map[bid] = {
+                "batch_id": bid,
+                "total": 0,
+                "ready_unsent": 0,
+                "sent": 0,
+                "followup_count": 0,
+                "followup_due_today": 0,
+                "followup_overdue": 0,
+                "followup_upcoming": 0,
+                "stage_counts": {},
+                "demo_ready_count": 0,
+            }
         batch_map[bid]["total"] += 1
         stage_slug = lead.stage_rel.slug if lead.stage_rel else "discovered"
         batch_map[bid]["stage_counts"][stage_slug] = batch_map[bid]["stage_counts"].get(stage_slug, 0) + 1
+
+        # Check demo readiness (aligned with Demo Factory):
+        # Excludes lost leads and unbuilt discovered leads ("No Video");
+        # Requires lead to be non-lost and have a built demo package (ready/ready_for_review/sent) or DEMO_READY status / package_ready stage.
+        lead_lost = is_lead_lost(lead)
+        has_ready_pkg = any(p.status in ("ready", "ready_for_review", "sent") for p in (lead.packages or []))
+        is_demo_ready = not lead_lost and (
+            stage_slug in ("package_ready", "queued", "contacted", "viewed_demo", "replied", "won")
+            or (lead.status or "").upper() == "DEMO_READY"
+            or has_ready_pkg
+        )
+        if is_demo_ready:
+            batch_map[bid]["demo_ready_count"] = batch_map[bid].get("demo_ready_count", 0) + 1
         already_sent = stage_slug in ("contacted", "viewed_demo", "replied", "won") or any(
             ob.status == "sent" for ob in (lead.outbox_items or [])
         )
@@ -622,12 +719,53 @@ def ensure_hustle_lead_batches(
         else:
             batch_map[bid]["sent"] += 1
 
-    # Sort batch list by batch number
-    batches = sorted(batch_map.values(), key=lambda b: b["batch_id"])
+        # Track follow-up eligibility and schedule
+        is_fup = bool(lead.needs_followup) or stage_slug in ("contacted", "viewed_demo", "replied")
+        if is_fup and not lead.do_not_contact:
+            batch_map[bid]["followup_count"] += 1
+            fup_dt = None
+            if lead.next_followup_at:
+                fup_dt = lead.next_followup_at if lead.next_followup_at.tzinfo else lead.next_followup_at.replace(tzinfo=timezone.utc)
+            elif lead.next_action_due_at:
+                fup_dt = lead.next_action_due_at if lead.next_action_due_at.tzinfo else lead.next_action_due_at.replace(tzinfo=timezone.utc)
+            
+            if fup_dt:
+                if fup_dt < today_start:
+                    batch_map[bid]["followup_overdue"] += 1
+                elif today_start <= fup_dt < today_end:
+                    batch_map[bid]["followup_due_today"] += 1
+                else:
+                    batch_map[bid]["followup_upcoming"] += 1
+            else:
+                # Default for active follow-up without future date is due today
+                batch_map[bid]["followup_due_today"] += 1
 
-    # Active batch = first batch that still has unsent leads; fall back to last batch
-    active_batch_id = batches[-1]["batch_id"] if batches else "BATCH-01"
-    for b in batches:
+        # Track closed-lost count to identify all-lost batches
+        if is_lead_lost(lead):
+            batch_map[bid]["lost_count"] = batch_map[bid].get("lost_count", 0) + 1
+
+    # Mark is_all_lost on each batch (True when total > 0 and lost_count == total)
+    for b in batch_map.values():
+        b["is_all_lost"] = b.get("total", 0) > 0 and b.get("lost_count", 0) == b.get("total", 0)
+
+    # Sort batch list: continuous BATCH-xx sorted numerically
+    def batch_sort_key(b: Dict[str, Any]):
+        bid = b["batch_id"]
+        if bid.startswith("BATCH-"):
+            try:
+                return (0, int(bid.replace("BATCH-", "")))
+            except ValueError:
+                return (0, 999999)
+        return (1, bid)
+
+    batches = sorted(batch_map.values(), key=batch_sort_key)
+
+    # Active batch = first active (non-all-lost) batch that still has unsent leads; fall back to last active batch
+    active_batches = [b for b in batches if not b.get("is_all_lost")]
+    if not active_batches:
+        active_batches = batches
+    active_batch_id = active_batches[-1]["batch_id"] if active_batches else (batches[0]["batch_id"] if batches else "BATCH-01")
+    for b in active_batches:
         if b["ready_unsent"] > 0:
             active_batch_id = b["batch_id"]
             break

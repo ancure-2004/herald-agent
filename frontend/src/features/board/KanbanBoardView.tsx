@@ -49,6 +49,9 @@ export function KanbanBoardView() {
   const {
     activeHustle,
     leads,
+    archivedLeads,
+    archivedLoading,
+    refreshArchivedLeads,
     loading,
     activeSmartView,
     setActiveSmartView,
@@ -217,22 +220,32 @@ export function KanbanBoardView() {
 
   // Filtered leads for the focused list view when a specific smart view is selected
   const focusedLeads = useMemo(() => {
+    const isArchivedView = activeSmartView === "archived" || activeSmartView === "archived_dnc";
+    const sourceLeads = isArchivedView ? archivedLeads : leads;
     const query = searchQuery.trim().toLowerCase();
-    const candidateLeads = leads.filter((lead) => {
+    const candidateLeads = sourceLeads.filter((lead) => {
+      const stage = activeHustle?.stages.find((s) => s.id === lead.stage_id);
+      const stageSlug = (lead.stage_slug ?? stage?.slug ?? "").toLowerCase();
+
       if (activeSmartView === "review_tray") {
-        const stage = activeHustle?.stages.find((s) => s.id === lead.stage_id);
-        if (stage && stage.slug !== "package_ready" && stage.slug !== "review_tray") return false;
+        if (stageSlug !== "package_ready" && stageSlug !== "review_tray") return false;
       } else if (activeSmartView === "due_today") {
-        if (!lead.next_action_due_at) return false;
-        const due = new Date(lead.next_action_due_at).getTime();
-        if (due > Date.now() + 24 * 3600 * 1000) return false;
+        const nowTs = Date.now();
+        const nextActionDueTs = lead.next_action_due_at ? new Date(lead.next_action_due_at).getTime() : null;
+        const nextFollowupDueTs = lead.next_followup_at ? new Date(lead.next_followup_at).getTime() : null;
+        const isActionDue = nextActionDueTs !== null && nextActionDueTs <= nowTs;
+        const isFollowupDue = nextFollowupDueTs !== null && nextFollowupDueTs <= nowTs;
+        const isDue = isActionDue || isFollowupDue || lead.needs_followup === true;
+        if (!isDue) return false;
       } else if (activeSmartView === "hot_intent") {
-        const hasViews = ((lead as any).demo_views_count ?? lead.events?.length ?? 0) > 0;
-        if (lead.intent_score < 40 && !hasViews) return false;
+        const demoViews = (lead as any).demo_views_count ?? (lead as any).demo_views ?? lead.events?.filter((e) => e.event_type === "demo_view" || e.event_type === "page_view").length ?? lead.events?.length ?? 0;
+        const isDemoViewedStage = stageSlug === "demo_viewed" || stageSlug === "viewed_demo";
+        if (demoViews <= 0 && !isDemoViewedStage) return false;
       } else if (activeSmartView === "replied_warm") {
-        const stage = activeHustle?.stages.find((s) => s.id === lead.stage_id);
-        if (stage && stage.slug !== "replied") return false;
-      } else if (activeSmartView === "archived" || activeSmartView === "archived_dnc") {
+        const isRepliedStage = stageSlug === "replied";
+        const isRepliedStatus = lead.status === "REPLIED";
+        if (!isRepliedStage && !isRepliedStatus) return false;
+      } else if (isArchivedView) {
         if (!isLeadClosedLost(lead, activeHustle?.stages)) return false;
       } else {
         // Active smart views: exclude CLOSED_LOST / archived / DNC leads
@@ -241,8 +254,7 @@ export function KanbanBoardView() {
       return true;
     });
 
-    // If client filter was stricter than backend-returned dataset, fallback to candidateLeads
-    const baseSet = candidateLeads.length > 0 || isAllActive ? candidateLeads : leads;
+    const baseSet = candidateLeads;
 
     return baseSet
       .filter((l) => (filterMinFit > 0 ? l.fit_score >= filterMinFit : true))
@@ -267,7 +279,7 @@ export function KanbanBoardView() {
         }
         return 0;
       });
-  }, [leads, activeSmartView, activeHustle?.stages, isAllActive, filterMinFit, filterVerifiedOnly, searchQuery, sortBy, sortOrder]);
+  }, [leads, archivedLeads, activeSmartView, activeHustle?.stages, isAllActive, filterMinFit, filterVerifiedOnly, searchQuery, sortBy, sortOrder]);
 
   // Overall count for Total in View badge
   const totalCount = useMemo(() => {
@@ -508,6 +520,18 @@ export function KanbanBoardView() {
             </button>
           )}
 
+          {!isAllActive && (activeSmartView === "archived" || activeSmartView === "archived_dnc") && (
+            <button
+              onClick={refreshArchivedLeads}
+              disabled={archivedLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium shadow-xs transition-all cursor-pointer bg-white hover:bg-slate-50 dark:bg-[#18181B] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-zinc-200 disabled:opacity-50 disabled:cursor-wait"
+              title="Refresh archived leads"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${archivedLoading ? "animate-spin" : ""}`} />
+              <span>{archivedLoading ? "Refreshing…" : "Refresh"}</span>
+            </button>
+          )}
+
           <span className="text-xs font-medium text-slate-500 dark:text-zinc-400 pl-1">
             {totalCount} clinics
           </span>
@@ -584,7 +608,9 @@ export function KanbanBoardView() {
         /* ==================== 2. FOCUSED LIST VIEW FOR SMART FILTERS ==================== */
         <div className="space-y-3 pb-6">
           {/* Focused List Rows / Empty State */}
-          {focusedLeads.length === 0 ? (
+          {(activeSmartView === "archived" || activeSmartView === "archived_dnc") && archivedLoading && focusedLeads.length === 0 ? (
+            <KanbanSkeleton />
+          ) : focusedLeads.length === 0 ? (
             <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center mx-auto text-slate-400">
                 <CurrentViewIcon className="w-6 h-6" />

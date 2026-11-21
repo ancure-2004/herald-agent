@@ -90,10 +90,11 @@ def seed_initial_data(db: Session, include_demo_leads: bool = False) -> Hustle:
         ("package_ready", "2. Review Tray (Ready)", 2, "indigo", False, False),
         ("queued", "3. Approved & Outbox", 3, "blue", False, False),
         ("contacted", "4. Pitch Sent", 4, "amber", False, False),
-        ("viewed_demo", "5. Viewed Demo", 5, "purple", False, False),
-        ("replied", "6. Replied / Warm", 6, "emerald", False, False),
-        ("won", "7. Won (Client)", 7, "green", True, False),
-        ("lost", "8. Lost / Closed", 8, "rose", False, True),
+        ("follow_up", "5. Follow-Up", 5, "violet", False, False),
+        ("viewed_demo", "6. Viewed Demo", 6, "purple", False, False),
+        ("replied", "7. Replied / Warm", 7, "emerald", False, False),
+        ("won", "8. Won (Client)", 8, "green", True, False),
+        ("lost", "9. Lost / Closed", 9, "rose", False, True),
     ]
     for slug, name, order, color, is_won, is_lost in stage_defs:
         st = Stage(

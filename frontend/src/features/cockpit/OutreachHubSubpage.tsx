@@ -37,7 +37,14 @@ interface BatchInfo {
   total: number;
   ready_unsent: number;
   sent: number;
+  followup_count?: number;
+  followup_due_today?: number;
+  followup_overdue?: number;
+  followup_upcoming?: number;
   stage_counts: Record<string, number>;
+  is_all_lost?: boolean;
+  lost_count?: number;
+  demo_ready_count?: number;
 }
 
 interface BatchMeta {
@@ -234,8 +241,141 @@ export function OutreachHubSubpage() {
     }
   };
 
+  // Batches filtered according to hub mode (Outreach vs Follow-Up)
+  // Invariants:
+  // 1. Remove all-lost batches completely from Outreach and Cockpit dropdowns.
+  // 2. In Outreach mode: show ONLY batches that have Demo Ready leads (demo_ready_count > 0 or has package_ready/video),
+  //    and exclude batches that are entirely unbuilt discovered leads (discovered === total).
+  // 3. In Follow-Up mode: show ONLY batches that have a follow-up due today, upcoming, or overdue — and clearly label each as Upcoming or Overdue.
+  const displayedBatchOptions = useMemo(() => {
+    const allBatches = batchMeta?.batches || [];
+    const nonLostBatches = allBatches.filter((b) => {
+      if (b.batch_id.startsWith("LOST-BATCH-")) return false;
+      if (b.is_all_lost) return false;
+      if (b.total > 0 && b.lost_count === b.total) return false;
+      const stageLost = (b.stage_counts?.lost ?? 0) + (b.stage_counts?.closed_lost ?? 0);
+      if (b.total > 0 && stageLost === b.total) return false;
+      return true;
+    });
+
+    if (hubMode === "outreach") {
+      // Outreach dropdown = Demo Ready only (not unbuilt discovered leads)
+      // Must have demo-ready leads (demo_ready_count > 0 or package_ready > 0) AND not be 100% discovered leads.
+      const demoReadyBatches = nonLostBatches.filter((b) => {
+        if (b.total <= 0) return false;
+        const discoveredCount = b.stage_counts?.discovered ?? 0;
+        const pkgReadyCount = b.stage_counts?.package_ready ?? 0;
+        const queuedCount = b.stage_counts?.queued ?? 0;
+        const sentCount = b.sent ?? 0;
+        const demoReady = typeof b.demo_ready_count === "number" ? b.demo_ready_count : (pkgReadyCount + queuedCount + sentCount);
+
+        // Exclude batches that have zero demo ready leads or are 100% discovered
+        if (demoReady <= 0) return false;
+        if (discoveredCount >= b.total) return false;
+
+        // Non-lost batches that have NOT been outreached for the first time yet (or have unsent ready leads)
+        return b.sent === 0 || b.ready_unsent > 0;
+      });
+
+      return demoReadyBatches.map((b) => {
+        const demoCount = typeof b.demo_ready_count === "number" ? b.demo_ready_count : (b.stage_counts?.package_ready ?? 0);
+        return {
+          value: b.batch_id,
+          label: `${b.batch_id} (${demoCount} demo ready · ${b.ready_unsent} unsent / ${b.total})`,
+        };
+      });
+    } else {
+      // Follow-Up mode: show only batches that have follow-up due today, upcoming, or overdue
+      const fupBatches = nonLostBatches.filter((b) => {
+        const hasDueToday = (b.followup_due_today ?? 0) > 0;
+        const hasOverdue = (b.followup_overdue ?? 0) > 0;
+        const hasUpcoming = (b.followup_upcoming ?? 0) > 0;
+        const hasTotalFup = (b.followup_count ?? 0) > 0;
+        return hasDueToday || hasOverdue || hasUpcoming || hasTotalFup;
+      });
+
+      return fupBatches.map((b) => {
+        const overdueCount = b.followup_overdue ?? 0;
+        const dueTodayCount = b.followup_due_today ?? 0;
+        const upcomingCount = b.followup_upcoming ?? 0;
+
+        let statusLabel = "Upcoming";
+        if (overdueCount > 0) {
+          statusLabel = "Overdue";
+        } else if (dueTodayCount > 0) {
+          statusLabel = "Due Today";
+        } else if (upcomingCount > 0) {
+          statusLabel = "Upcoming";
+        }
+
+        const totalFup = overdueCount + dueTodayCount + upcomingCount || b.followup_count || b.sent;
+        return {
+          value: b.batch_id,
+          label: `${b.batch_id} [${statusLabel}] (${totalFup} follow-ups)`,
+        };
+      });
+    }
+  }, [batchMeta, hubMode]);
+
+  // Adjust selected batch when switching hub mode or when displayedBatchOptions change
+  useEffect(() => {
+    if (!displayedBatchOptions.length) {
+      if (selectedBatchId !== null) {
+        setSelectedBatchId(null);
+      }
+      setBatchClinics([]);
+      setSelectedClinicId(null);
+      return;
+    }
+    const currentValid = displayedBatchOptions.some((opt) => opt.value === selectedBatchId);
+    if (!currentValid) {
+      setSelectedBatchId(displayedBatchOptions[0].value);
+    }
+  }, [displayedBatchOptions, selectedBatchId]);
+
+  // Check if any follow-ups exist across all batches in the workspace
+  const hasAvailableFollowups = useMemo(() => {
+    const allBatches = batchMeta?.batches || [];
+    return allBatches.some((b) => {
+      if (b.is_all_lost) return false;
+      const dueToday = (b.followup_due_today ?? 0) > 0;
+      const overdue = (b.followup_overdue ?? 0) > 0;
+      const upcoming = (b.followup_upcoming ?? 0) > 0;
+      const totalFup = (b.followup_count ?? 0) > 0;
+      return dueToday || overdue || upcoming || totalFup;
+    });
+  }, [batchMeta]);
+
+  // Handler to switch to Follow-Up tab: checks if any follow-ups are due/upcoming BEFORE switching
+  const handleSwitchToFollowup = useCallback(() => {
+    if (!hasAvailableFollowups) {
+      notify("No follow-ups due or upcoming");
+      return;
+    }
+    setHubMode("followup");
+  }, [hasAvailableFollowups, notify]);
+
+  // Stop loading and notify when in follow-up mode with 0 follow-ups
+  const prevFollowupNotifiedRef = useRef<boolean>(false);
+  useEffect(() => {
+    if (hubMode === "followup") {
+      const hasFollowups = displayedBatchOptions.length > 0;
+      if (!hasFollowups) {
+        setBatchLoading(false);
+        if (!prevFollowupNotifiedRef.current) {
+          notify("No follow-ups due or upcoming");
+          prevFollowupNotifiedRef.current = true;
+        }
+      } else {
+        prevFollowupNotifiedRef.current = false;
+      }
+    } else {
+      prevFollowupNotifiedRef.current = false;
+    }
+  }, [hubMode, displayedBatchOptions.length, notify]);
+
   const activeBatchInfo = batchMeta?.batches.find((b) => b.batch_id === selectedBatchId) ?? null;
-  const effectiveBatchId = selectedBatchId ?? batchMeta?.active_batch_id ?? undefined;
+  const effectiveBatchId = selectedBatchId ?? (displayedBatchOptions.length ? displayedBatchOptions[0].value : undefined);
 
   // Dynamic next clinic targets
   const nextWaClinic = useMemo<BatchClinic | null>(() => {
@@ -319,12 +459,15 @@ export function OutreachHubSubpage() {
   const filteredClinics = useMemo<BatchClinic[]>(() => {
     const q = queueSearch.trim().toLowerCase();
     return batchClinics.filter((c) => {
+      // In outreach mode: show ONLY demo-ready leads (do not show unbuilt discovered leads with no video)
+      if (hubMode === "outreach") {
+        const isDemoReady = c.stage_slug !== "discovered" || c.has_video || Boolean(c.video_file_path);
+        if (!isDemoReady) return false;
+      }
+
       // 3.4 Switcher filter:
       if (hubMode === "followup") {
         if (!isClinicDueFollowup(c)) return false;
-      } else {
-        // In outreach mode, show non-follow-up or initial outreach candidates
-        // (if queueFilter is unsent, show only unsent; otherwise keep outreach items)
       }
 
       if (queueFilter === "sent" && !c.is_sent) return false;
@@ -352,16 +495,16 @@ export function OutreachHubSubpage() {
     }
   }, [hubMode]);
 
-  // Auto-select first clinic when batch loads
+  // Auto-select first clinic when batch or filtered clinics load
   useEffect(() => {
-    if (batchClinics.length === 0) {
+    if (filteredClinics.length === 0) {
       setSelectedClinicId(null);
       return;
     }
     setSelectedClinicId((prev) =>
-      prev !== null && batchClinics.some((c) => c.id === prev) ? prev : batchClinics[0].id
+      prev !== null && filteredClinics.some((c) => c.id === prev) ? prev : filteredClinics[0].id
     );
-  }, [batchClinics]);
+  }, [filteredClinics]);
 
   useEffect(() => {
     if (selectedClinic) syncDeckFrom(selectedClinic);
@@ -625,7 +768,7 @@ export function OutreachHubSubpage() {
             </button>
             <button
               type="button"
-              onClick={() => setHubMode("followup")}
+              onClick={handleSwitchToFollowup}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 hubMode === "followup"
                   ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-2xs"
@@ -671,13 +814,10 @@ export function OutreachHubSubpage() {
           <Select
             value={selectedBatchId ?? ""}
             onChange={(val) => setSelectedBatchId(val || null)}
-            disabled={batchLoading || !batchMeta?.batches.length}
+            disabled={batchLoading || !displayedBatchOptions.length}
             options={
-              batchMeta?.batches?.length
-                ? batchMeta.batches.map((b) => ({
-                    value: b.batch_id,
-                    label: `${b.batch_id} (${b.ready_unsent} unsent / ${b.total})`,
-                  }))
+              displayedBatchOptions.length
+                ? displayedBatchOptions
                 : [
                     {
                       value: "",
@@ -686,7 +826,7 @@ export function OutreachHubSubpage() {
                     },
                   ]
             }
-            className="min-w-[170px]"
+            className="min-w-[190px]"
             triggerClassName="!py-1.5 !px-3 font-mono font-medium"
           />
 
@@ -750,9 +890,25 @@ export function OutreachHubSubpage() {
         {/* Left Side (9/12 width): Selected Clinic Message & Video Workspace */}
         <div className="lg:col-span-9 p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#27272A] shadow-xs space-y-4">
           {!selectedClinic ? (
-            <div className="text-xs text-slate-400 text-center py-16">
-              {batchLoading ? "Loading batch..." : "Select a clinic from the queue to view its outreach workspace."}
-            </div>
+            hubMode === "followup" && (!displayedBatchOptions.length || filteredClinics.length === 0) ? (
+              <div className="py-16 flex flex-col items-center justify-center text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] flex items-center justify-center shadow-xs">
+                  <Clock className="w-6 h-6 text-slate-400 dark:text-zinc-500" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-zinc-900 dark:text-white">
+                    No follow-ups pending or upcoming
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm">
+                    All sent pitches are current or awaiting responses. When leads view demos or schedule follow-ups, they will appear here.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-400 text-center py-16">
+                {batchLoading ? "Loading batch..." : "Select a clinic from the queue to view its outreach workspace."}
+              </div>
+            )
           ) : (
             <>
               {/* Card Header: 2 Clean Aligned Rows (pb-4 mb-4 border-b border-slate-100) */}
@@ -1091,7 +1247,11 @@ export function OutreachHubSubpage() {
           {/* Scrollable Clinic List */}
           <div className="max-h-[600px] overflow-y-auto space-y-2 pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {filteredClinics.length === 0 && (
-              <div className="text-xs text-slate-400 text-center py-10">No clinics match this filter.</div>
+              <div className="text-xs text-slate-400 text-center py-10">
+                {hubMode === "followup"
+                  ? "No follow-ups pending or upcoming."
+                  : "No clinics match this filter."}
+              </div>
             )}
             {filteredClinics.map((c) => {
               const isActive = c.id === selectedClinicId;
