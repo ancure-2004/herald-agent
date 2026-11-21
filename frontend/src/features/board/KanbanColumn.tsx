@@ -84,6 +84,10 @@ function getBatchId(lead: Lead): string {
 function compareBatchIds(a: string, b: string): number {
   if (a === UNBATCHED) return 1;
   if (b === UNBATCHED) return -1;
+  const aIsLost = a.startsWith("LOST-BATCH-");
+  const bIsLost = b.startsWith("LOST-BATCH-");
+  if (!aIsLost && bIsLost) return -1;
+  if (aIsLost && !bIsLost) return 1;
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
 }
 
