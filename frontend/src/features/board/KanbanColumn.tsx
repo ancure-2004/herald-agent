@@ -107,7 +107,15 @@ function BatchGroup({ batchId, batchLeads, expanded, onToggle, renderLead }: Bat
   const count = batchLeads.length;
   const isUnbatched = batchId === UNBATCHED;
 
-  const avgFit = Math.round(batchLeads.reduce((sum, l) => sum + (l.fit_score ?? 0), 0) / count);
+  const avgFit = Math.min(
+    100,
+    Math.max(
+      0,
+      Math.round(
+        batchLeads.reduce((sum, l) => sum + Math.min(100, Math.max(0, l.fit_score ?? 0)), 0) / count
+      )
+    )
+  );
   const demosReady = batchLeads.filter(hasPackages).length;
   const readyCount = batchLeads.filter(isReady).length;
   const progressPct = Math.round((readyCount / count) * 100);
