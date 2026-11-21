@@ -50,6 +50,7 @@ class LeadCreate(BaseSchema):
     deal_value_inr: int = 15000
     automation_enabled: bool = True
     needs_followup: bool = False
+    next_followup_at: Optional[datetime] = None
     facts: List[LeadFactCreate] = Field(default_factory=list)
 
 
@@ -69,6 +70,7 @@ class LeadUpdate(BaseSchema):
     next_action_due_at: Optional[datetime] = None
     automation_enabled: Optional[bool] = None
     needs_followup: Optional[bool] = None
+    next_followup_at: Optional[datetime] = None
     do_not_contact: Optional[bool] = None
     do_not_contact_reason: Optional[str] = None
     custom_fields: Optional[Dict[str, Any]] = None
@@ -122,6 +124,7 @@ class LeadOut(BaseORMModel):
     deal_value_inr: int
     automation_enabled: bool = True
     needs_followup: bool = False
+    next_followup_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
     facts: List[LeadFactOut] = []

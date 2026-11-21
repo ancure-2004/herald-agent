@@ -648,6 +648,10 @@ def build_cockpit_batch_payload(db: Session, hustle_id: int = 1, batch_id: Optio
     """
     base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001")
 
+    # Run 7-day auto-lost transition check
+    from app.services.lead_service import LeadService
+    LeadService.auto_transition_unreplied_to_closed_lost(db, hustle_id=hustle_id)
+
     # Ensure all leads have batch assignments; get active batch meta
     batch_meta = ensure_hustle_lead_batches(db, hustle_id)
     valid_batch_ids = {b["batch_id"] for b in batch_meta["batches"]}
@@ -754,6 +758,10 @@ def build_cockpit_batch_payload(db: Session, hustle_id: int = 1, batch_id: Optio
                     "warm": f"{base_url}/warm/{l.slug}",
                 },
                 "has_video": bool(_video_file_path and os.path.exists(_video_file_path)),
+                "needs_followup": bool(l.needs_followup),
+                "next_followup_at": l.next_followup_at.isoformat() if l.next_followup_at else None,
+                "next_action": l.next_action,
+                "next_action_due_at": l.next_action_due_at.isoformat() if l.next_action_due_at else None,
                 **pitches,
             }
         )

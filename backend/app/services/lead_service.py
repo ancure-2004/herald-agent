@@ -573,6 +573,100 @@ class LeadService:
         }
 
     @staticmethod
+    def auto_transition_unreplied_to_closed_lost(db: Session, hustle_id: Optional[int] = None) -> List[Lead]:
+        """Item 3.2: 7-day auto-lost rule.
+
+        If a lead was contacted/followed up and no reply was received within 7 days,
+        automatically transition the lead to CLOSED_LOST / lost stage.
+        """
+        now = datetime.now(timezone.utc)
+        seven_days_ago = now - timedelta(days=7)
+
+        # Find lost stage for the hustle
+        lost_stage = db.query(Stage).filter(
+            Stage.is_lost == True if hustle_id is None else (Stage.hustle_id == hustle_id) & (Stage.is_lost == True)
+        ).first()
+
+        q = db.query(Lead).filter(
+            Lead.is_archived == False,
+            Lead.do_not_contact == False,
+            Lead.status.notin_(["CLOSED_LOST", "LOST", "WON", "CLOSED_WON"]),
+        )
+        if hustle_id is not None:
+            q = q.filter(Lead.hustle_id == hustle_id)
+
+        leads = q.all()
+        transitioned: List[Lead] = []
+
+        for lead in leads:
+            # Check if lead is already won or lost
+            if lead.is_lost or lead.is_won:
+                continue
+
+            # Check if lead received any inbound reply
+            has_inbound_reply = any(m.direction == "inbound" for m in (lead.messages or []))
+            if has_inbound_reply or (lead.status or "").upper() == "REPLIED":
+                continue
+
+            # Determine baseline follow-up / outreach sent time
+            # 1. next_followup_at exists and was scheduled >= 7 days ago, OR
+            # 2. last outbound message was sent >= 7 days ago, OR
+            # 3. lead package sent_at >= 7 days ago
+            eligible = False
+            fup_time = None
+
+            if lead.next_followup_at:
+                fup_tz = lead.next_followup_at if lead.next_followup_at.tzinfo else lead.next_followup_at.replace(tzinfo=timezone.utc)
+                # If follow-up was scheduled and 7 days have passed since that follow-up due date (or 7 days since outreach)
+                # Rule: "if no reply is received 7 days after follow-up, automatically transition the lead to CLOSED_LOST"
+                if fup_tz <= seven_days_ago:
+                    eligible = True
+                    fup_time = fup_tz
+            
+            if not eligible and lead.messages:
+                last_outbound = next((m for m in reversed(lead.messages) if m.direction == "outbound"), None)
+                if last_outbound and last_outbound.created_at:
+                    out_tz = last_outbound.created_at if last_outbound.created_at.tzinfo else last_outbound.created_at.replace(tzinfo=timezone.utc)
+                    # 7 days after outreach/followup
+                    if out_tz <= seven_days_ago:
+                        eligible = True
+                        fup_time = out_tz
+
+            if not eligible and lead.packages:
+                last_pkg = lead.packages[-1]
+                if last_pkg.sent_at:
+                    pkg_tz = last_pkg.sent_at if last_pkg.sent_at.tzinfo else last_pkg.sent_at.replace(tzinfo=timezone.utc)
+                    if pkg_tz <= seven_days_ago:
+                        eligible = True
+                        fup_time = pkg_tz
+
+            if eligible:
+                lead.status = "CLOSED_LOST"
+                if lost_stage:
+                    lead.stage_id = lost_stage.id
+                elif lead.hustle_id:
+                    hustle_lost = db.query(Stage).filter(Stage.hustle_id == lead.hustle_id, Stage.is_lost == True).first()
+                    if hustle_lost:
+                        lead.stage_id = hustle_lost.id
+                    else:
+                        lead.stage_id = 8
+                else:
+                    lead.stage_id = 8
+
+                lead.needs_followup = False
+                lead.next_action = "Auto-closed: No reply received 7 days after follow-up"
+                lead.what_changed_summary = "Auto-transitioned to CLOSED_LOST (unreplied after 7 days)."
+                transitioned.append(lead)
+
+        if transitioned:
+            db.commit()
+            get_cache_manager().invalidate_prefix("cockpit:")
+            get_cache_manager().invalidate_prefix("leads:")
+            get_cache_manager().invalidate_prefix("messages:")
+
+        return transitioned
+
+    @staticmethod
     def wipe_leads(db: Session) -> Dict[str, Any]:
         db.query(TrackingEvent).delete()
         db.query(Commitment).delete()
