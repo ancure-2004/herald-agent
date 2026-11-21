@@ -283,9 +283,6 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       return tab;
     });
     setSelectedLeadId(null);
-    if (tab === "dashboard") {
-      setActiveSmartView("all_active");
-    }
   }, []);
 
   const handleBackToWorkspace = useCallback(() => {
@@ -529,7 +526,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         settingsApi.listHustles(),
         leadsApi.list({
           hustle_id: activeHustleId,
-          smart_view: activeSmartView,
+          smart_view: "all_active",
           search: searchQuery,
         }),
         apiFetch<StockPlan>(`/api/stock-plan?hustle_id=${activeHustleId}`),
@@ -553,7 +550,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [activeHustleId, activeSmartView, searchQuery, notify]);
+  }, [activeHustleId, searchQuery, notify]);
 
   useEffect(() => {
     loadAll();

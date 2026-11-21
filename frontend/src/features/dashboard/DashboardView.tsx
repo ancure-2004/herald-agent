@@ -101,16 +101,7 @@ export function DashboardView() {
     setNewLeadModalOpen,
     setActiveTab,
     operatorProfile,
-    activeSmartView,
-    setActiveSmartView,
   } = useCRM();
-
-  // Ensure Overview always has all active leads loaded
-  useEffect(() => {
-    if (activeSmartView !== "all_active") {
-      setActiveSmartView("all_active");
-    }
-  }, [activeSmartView, setActiveSmartView]);
 
   // 1. Current Date & Time Calculations
   const now = useMemo(() => new Date(), []);

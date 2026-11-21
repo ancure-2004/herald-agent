@@ -29,7 +29,9 @@ import { useCRM } from "@/context/CRMContext";
 import { KanbanColumn } from "./KanbanColumn";
 import { formatDoctorName } from "./LeadCard";
 import { autopilotApi } from "@/api/autopilotApi";
+import { leadsApi } from "@/api/leadsApi";
 import { KanbanSkeleton } from "@/components/ui/Skeleton";
+import type { Lead } from "@/types";
 
 // Helper to check if a lead is closed/lost
 function isLeadClosedLost(lead: any, allStages?: Array<{ id: number; slug: string; name: string; is_lost?: boolean }>): boolean {
@@ -102,6 +104,40 @@ export function KanbanBoardView() {
   const [hideEmptyStages, setHideEmptyStages] = useState<boolean>(true);
   const [batchGroupingEnabled, setBatchGroupingEnabled] = useState<boolean>(true);
   const [syncingBatches, setSyncingBatches] = useState<boolean>(false);
+  const [archivedLeads, setArchivedLeads] = useState<Lead[]>([]);
+  const [archivedLoading, setArchivedLoading] = useState<boolean>(false);
+
+  // Lazily load archived leads only when Archived smart view is active
+  useEffect(() => {
+    if ((activeSmartView === "archived" || activeSmartView === "archived_dnc") && activeHustle?.id) {
+      let isMounted = true;
+      setArchivedLoading(true);
+      leadsApi
+        .list({
+          hustle_id: activeHustle.id,
+          smart_view: "archived",
+          include_archived: true,
+        })
+        .then((data) => {
+          if (isMounted) {
+            setArchivedLeads(data);
+          }
+        })
+        .catch((err) => {
+          if (isMounted) {
+            notify(err instanceof Error ? err : "Failed to load archived leads", "err");
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setArchivedLoading(false);
+          }
+        });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [activeSmartView, activeHustle?.id, notify]);
 
   const handleSyncBatches = async () => {
     if (!activeHustle || syncingBatches) return;
@@ -217,8 +253,10 @@ export function KanbanBoardView() {
 
   // Filtered leads for the focused list view when a specific smart view is selected
   const focusedLeads = useMemo(() => {
+    const isArchivedView = activeSmartView === "archived" || activeSmartView === "archived_dnc";
+    const sourceLeads = isArchivedView ? archivedLeads : leads;
     const query = searchQuery.trim().toLowerCase();
-    const candidateLeads = leads.filter((lead) => {
+    const candidateLeads = sourceLeads.filter((lead) => {
       if (activeSmartView === "review_tray") {
         const stage = activeHustle?.stages.find((s) => s.id === lead.stage_id);
         if (stage && stage.slug !== "package_ready" && stage.slug !== "review_tray") return false;
@@ -232,7 +270,7 @@ export function KanbanBoardView() {
       } else if (activeSmartView === "replied_warm") {
         const stage = activeHustle?.stages.find((s) => s.id === lead.stage_id);
         if (stage && stage.slug !== "replied") return false;
-      } else if (activeSmartView === "archived" || activeSmartView === "archived_dnc") {
+      } else if (isArchivedView) {
         if (!isLeadClosedLost(lead, activeHustle?.stages)) return false;
       } else {
         // Active smart views: exclude CLOSED_LOST / archived / DNC leads
@@ -242,7 +280,7 @@ export function KanbanBoardView() {
     });
 
     // If client filter was stricter than backend-returned dataset, fallback to candidateLeads
-    const baseSet = candidateLeads.length > 0 || isAllActive ? candidateLeads : leads;
+    const baseSet = candidateLeads.length > 0 || isAllActive ? candidateLeads : sourceLeads;
 
     return baseSet
       .filter((l) => (filterMinFit > 0 ? l.fit_score >= filterMinFit : true))
@@ -267,7 +305,7 @@ export function KanbanBoardView() {
         }
         return 0;
       });
-  }, [leads, activeSmartView, activeHustle?.stages, isAllActive, filterMinFit, filterVerifiedOnly, searchQuery, sortBy, sortOrder]);
+  }, [leads, archivedLeads, activeSmartView, activeHustle?.stages, isAllActive, filterMinFit, filterVerifiedOnly, searchQuery, sortBy, sortOrder]);
 
   // Overall count for Total in View badge
   const totalCount = useMemo(() => {
@@ -584,7 +622,9 @@ export function KanbanBoardView() {
         /* ==================== 2. FOCUSED LIST VIEW FOR SMART FILTERS ==================== */
         <div className="space-y-3 pb-6">
           {/* Focused List Rows / Empty State */}
-          {focusedLeads.length === 0 ? (
+          {archivedLoading ? (
+            <KanbanSkeleton />
+          ) : focusedLeads.length === 0 ? (
             <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center mx-auto text-slate-400">
                 <CurrentViewIcon className="w-6 h-6" />
