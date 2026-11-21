@@ -244,7 +244,8 @@ export function OutreachHubSubpage() {
   // Batches filtered according to hub mode (Outreach vs Follow-Up)
   // Invariants:
   // 1. Remove all-lost batches completely from Outreach and Cockpit dropdowns.
-  // 2. In Outreach mode: show ONLY Demo Ready batches (not unbuilt discovered leads) that have NOT been outreached for the first time yet.
+  // 2. In Outreach mode: show ONLY batches that have Demo Ready leads (demo_ready_count > 0 or has package_ready/video),
+  //    and exclude batches that are entirely unbuilt discovered leads (discovered === total).
   // 3. In Follow-Up mode: show ONLY batches that have a follow-up due today, upcoming, or overdue — and clearly label each as Upcoming or Overdue.
   const displayedBatchOptions = useMemo(() => {
     const allBatches = batchMeta?.batches || [];
@@ -259,29 +260,30 @@ export function OutreachHubSubpage() {
 
     if (hubMode === "outreach") {
       // Outreach dropdown = Demo Ready only (not unbuilt discovered leads)
-      // Must have demo-ready leads (demo_ready_count > 0, or package_ready/contacted/sent stages, or not 100% discovered)
+      // Must have demo-ready leads (demo_ready_count > 0 or package_ready > 0) AND not be 100% discovered leads.
       const demoReadyBatches = nonLostBatches.filter((b) => {
         if (b.total <= 0) return false;
-        // If demo_ready_count is explicitly provided:
-        if (typeof b.demo_ready_count === "number") {
-          if (b.demo_ready_count <= 0) return false;
-        } else {
-          // Fallback based on stage counts: cannot be purely unbuilt discovered leads
-          const discoveredCount = b.stage_counts?.discovered ?? 0;
-          const pkgReadyCount = b.stage_counts?.package_ready ?? 0;
-          const queuedCount = b.stage_counts?.queued ?? 0;
-          const sentCount = b.sent ?? 0;
-          const hasDemoReady = pkgReadyCount > 0 || queuedCount > 0 || sentCount > 0 || discoveredCount < b.total;
-          if (!hasDemoReady) return false;
-        }
+        const discoveredCount = b.stage_counts?.discovered ?? 0;
+        const pkgReadyCount = b.stage_counts?.package_ready ?? 0;
+        const queuedCount = b.stage_counts?.queued ?? 0;
+        const sentCount = b.sent ?? 0;
+        const demoReady = typeof b.demo_ready_count === "number" ? b.demo_ready_count : (pkgReadyCount + queuedCount + sentCount);
+
+        // Exclude batches that have zero demo ready leads or are 100% discovered
+        if (demoReady <= 0) return false;
+        if (discoveredCount >= b.total) return false;
+
         // Non-lost batches that have NOT been outreached for the first time yet (or have unsent ready leads)
         return b.sent === 0 || b.ready_unsent > 0;
       });
 
-      return demoReadyBatches.map((b) => ({
-        value: b.batch_id,
-        label: `${b.batch_id} (${b.ready_unsent} unsent / ${b.total})`,
-      }));
+      return demoReadyBatches.map((b) => {
+        const demoCount = typeof b.demo_ready_count === "number" ? b.demo_ready_count : (b.stage_counts?.package_ready ?? 0);
+        return {
+          value: b.batch_id,
+          label: `${b.batch_id} (${demoCount} demo ready · ${b.ready_unsent} unsent / ${b.total})`,
+        };
+      });
     } else {
       // Follow-Up mode: show only batches that have follow-up due today, upcoming, or overdue
       const fupBatches = nonLostBatches.filter((b) => {
@@ -331,7 +333,29 @@ export function OutreachHubSubpage() {
     }
   }, [displayedBatchOptions, selectedBatchId]);
 
-  // Stop loading and notify when switching to follow-up mode with 0 follow-ups
+  // Check if any follow-ups exist across all batches in the workspace
+  const hasAvailableFollowups = useMemo(() => {
+    const allBatches = batchMeta?.batches || [];
+    return allBatches.some((b) => {
+      if (b.is_all_lost) return false;
+      const dueToday = (b.followup_due_today ?? 0) > 0;
+      const overdue = (b.followup_overdue ?? 0) > 0;
+      const upcoming = (b.followup_upcoming ?? 0) > 0;
+      const totalFup = (b.followup_count ?? 0) > 0;
+      return dueToday || overdue || upcoming || totalFup;
+    });
+  }, [batchMeta]);
+
+  // Handler to switch to Follow-Up tab: checks if any follow-ups are due/upcoming BEFORE switching
+  const handleSwitchToFollowup = useCallback(() => {
+    if (!hasAvailableFollowups) {
+      notify("No follow-ups due or upcoming");
+      return;
+    }
+    setHubMode("followup");
+  }, [hasAvailableFollowups, notify]);
+
+  // Stop loading and notify when in follow-up mode with 0 follow-ups
   const prevFollowupNotifiedRef = useRef<boolean>(false);
   useEffect(() => {
     if (hubMode === "followup") {
@@ -339,7 +363,7 @@ export function OutreachHubSubpage() {
       if (!hasFollowups) {
         setBatchLoading(false);
         if (!prevFollowupNotifiedRef.current) {
-          notify("No follow-ups pending or upcoming");
+          notify("No follow-ups due or upcoming");
           prevFollowupNotifiedRef.current = true;
         }
       } else {
@@ -435,12 +459,15 @@ export function OutreachHubSubpage() {
   const filteredClinics = useMemo<BatchClinic[]>(() => {
     const q = queueSearch.trim().toLowerCase();
     return batchClinics.filter((c) => {
+      // In outreach mode: show ONLY demo-ready leads (do not show unbuilt discovered leads with no video)
+      if (hubMode === "outreach") {
+        const isDemoReady = c.stage_slug !== "discovered" || c.has_video || Boolean(c.video_file_path);
+        if (!isDemoReady) return false;
+      }
+
       // 3.4 Switcher filter:
       if (hubMode === "followup") {
         if (!isClinicDueFollowup(c)) return false;
-      } else {
-        // In outreach mode, show non-follow-up or initial outreach candidates
-        // (if queueFilter is unsent, show only unsent; otherwise keep outreach items)
       }
 
       if (queueFilter === "sent" && !c.is_sent) return false;
@@ -468,16 +495,16 @@ export function OutreachHubSubpage() {
     }
   }, [hubMode]);
 
-  // Auto-select first clinic when batch loads
+  // Auto-select first clinic when batch or filtered clinics load
   useEffect(() => {
-    if (batchClinics.length === 0) {
+    if (filteredClinics.length === 0) {
       setSelectedClinicId(null);
       return;
     }
     setSelectedClinicId((prev) =>
-      prev !== null && batchClinics.some((c) => c.id === prev) ? prev : batchClinics[0].id
+      prev !== null && filteredClinics.some((c) => c.id === prev) ? prev : filteredClinics[0].id
     );
-  }, [batchClinics]);
+  }, [filteredClinics]);
 
   useEffect(() => {
     if (selectedClinic) syncDeckFrom(selectedClinic);
@@ -741,7 +768,7 @@ export function OutreachHubSubpage() {
             </button>
             <button
               type="button"
-              onClick={() => setHubMode("followup")}
+              onClick={handleSwitchToFollowup}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 hubMode === "followup"
                   ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-2xs"
