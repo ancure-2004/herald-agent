@@ -555,10 +555,31 @@ def ensure_hustle_lead_batches(
     any_updated = False
 
     if force_rebatch:
-        # Re-slice ALL non-archived leads (ordered by Lead.id.asc()) continuously into BATCH-01, BATCH-02, ...
+        # Re-slice leads cleanly in two groups:
+        # 1) First pack ALL CLOSED_LOST leads into batches of 25 starting from BATCH-01, BATCH-02, ...
+        # 2) Then pack ALL active (non-lost) leads starting from the very next batch number (e.g. BATCH-17, BATCH-18, ...),
+        #    each with exact size 25 (only the very last active batch may have < 25).
+        # Do NOT mix lost and active leads in the same batch.
         batch_num = 1
         slot_count = 0
-        for lead in leads:
+        for lead in lost_leads:
+            if slot_count >= batch_size:
+                batch_num += 1
+                slot_count = 0
+            new_bid = f"BATCH-{batch_num:02d}"
+            cf = dict(lead.custom_fields or {})
+            if cf.get("batch_id") != new_bid:
+                cf["batch_id"] = new_bid
+                lead.custom_fields = cf
+                flag_modified(lead, "custom_fields")
+                any_updated = True
+            slot_count += 1
+
+        if lost_leads:
+            batch_num += 1
+            slot_count = 0
+
+        for lead in active_leads:
             if slot_count >= batch_size:
                 batch_num += 1
                 slot_count = 0
@@ -572,40 +593,80 @@ def ensure_hustle_lead_batches(
             slot_count += 1
     else:
         # Incremental mode:
-        # Keep existing assignments intact; assign unbatched leads to open / next BATCH-xx
-        batch_counts: Dict[str, int] = {}
+        # Keep existing assignments intact; assign unbatched lost leads to open/next lost batches,
+        # and unbatched active leads to open/next active batches without mixing.
+        lost_batch_counts: Dict[str, int] = {}
+        active_batch_counts: Dict[str, int] = {}
         for lead in leads:
             bid = (lead.custom_fields or {}).get("batch_id")
             if bid and bid.startswith("BATCH-"):
-                batch_counts[bid] = batch_counts.get(bid, 0) + 1
+                if is_lead_lost(lead):
+                    lost_batch_counts[bid] = lost_batch_counts.get(bid, 0) + 1
+                else:
+                    active_batch_counts[bid] = active_batch_counts.get(bid, 0) + 1
 
-        if batch_counts:
-            max_num = max(
-                int(k.replace("BATCH-", ""))
-                for k in batch_counts
-                if k.startswith("BATCH-")
-            )
-            current_batch_id = f"BATCH-{max_num:02d}"
-            slot_count = batch_counts.get(current_batch_id, 0)
-        else:
-            max_num = 1
-            current_batch_id = "BATCH-01"
-            slot_count = 0
+        all_nums = [
+            int(k.replace("BATCH-", ""))
+            for k in list(lost_batch_counts.keys()) + list(active_batch_counts.keys())
+            if k.startswith("BATCH-")
+        ]
+        max_all_num = max(all_nums) if all_nums else 0
 
-        for lead in leads:
-            bid = (lead.custom_fields or {}).get("batch_id")
-            if bid and bid.startswith("BATCH-"):
-                continue  # already has continuous BATCH-xx — keep as-is
-            if slot_count >= batch_size:
-                max_num += 1
-                current_batch_id = f"BATCH-{max_num:02d}"
-                slot_count = 0
-            cf = dict(lead.custom_fields or {})
-            cf["batch_id"] = current_batch_id
-            lead.custom_fields = cf
-            flag_modified(lead, "custom_fields")
-            any_updated = True
-            slot_count += 1
+        # Unbatched lost leads
+        unbatched_lost = [l for l in lost_leads if not ((l.custom_fields or {}).get("batch_id") or "").startswith("BATCH-")]
+        if unbatched_lost:
+            # find an open lost batch or start new
+            open_lost_bids = [b for b, cnt in lost_batch_counts.items() if cnt < batch_size and b not in active_batch_counts]
+            if open_lost_bids:
+                curr_lost_bid = open_lost_bids[0]
+                lost_slot = lost_batch_counts[curr_lost_bid]
+                lost_num = int(curr_lost_bid.replace("BATCH-", ""))
+            else:
+                max_all_num += 1
+                lost_num = max_all_num
+                curr_lost_bid = f"BATCH-{lost_num:02d}"
+                lost_slot = 0
+
+            for lead in unbatched_lost:
+                if lost_slot >= batch_size:
+                    max_all_num += 1
+                    lost_num = max_all_num
+                    curr_lost_bid = f"BATCH-{lost_num:02d}"
+                    lost_slot = 0
+                cf = dict(lead.custom_fields or {})
+                cf["batch_id"] = curr_lost_bid
+                lead.custom_fields = cf
+                flag_modified(lead, "custom_fields")
+                any_updated = True
+                lost_slot += 1
+
+        # Unbatched active leads
+        unbatched_active = [l for l in active_leads if not ((l.custom_fields or {}).get("batch_id") or "").startswith("BATCH-")]
+        if unbatched_active:
+            # find open active batch or start new
+            open_active_bids = [b for b, cnt in active_batch_counts.items() if cnt < batch_size and b not in lost_batch_counts]
+            if open_active_bids:
+                curr_act_bid = open_active_bids[0]
+                act_slot = active_batch_counts[curr_act_bid]
+                act_num = int(curr_act_bid.replace("BATCH-", ""))
+            else:
+                max_all_num += 1
+                act_num = max_all_num
+                curr_act_bid = f"BATCH-{act_num:02d}"
+                act_slot = 0
+
+            for lead in unbatched_active:
+                if act_slot >= batch_size:
+                    max_all_num += 1
+                    act_num = max_all_num
+                    curr_act_bid = f"BATCH-{act_num:02d}"
+                    act_slot = 0
+                cf = dict(lead.custom_fields or {})
+                cf["batch_id"] = curr_act_bid
+                lead.custom_fields = cf
+                flag_modified(lead, "custom_fields")
+                any_updated = True
+                act_slot += 1
 
     if any_updated:
         db.commit()
