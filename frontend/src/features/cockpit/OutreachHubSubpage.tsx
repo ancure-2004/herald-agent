@@ -42,6 +42,9 @@ interface BatchInfo {
   followup_overdue?: number;
   followup_upcoming?: number;
   stage_counts: Record<string, number>;
+  is_all_lost?: boolean;
+  lost_count?: number;
+  demo_ready_count?: number;
 }
 
 interface BatchMeta {
@@ -240,17 +243,42 @@ export function OutreachHubSubpage() {
 
   // Batches filtered according to hub mode (Outreach vs Follow-Up)
   // Invariants:
-  // 1. Remove LOST-BATCH-xx completely from Outreach and Cockpit dropdowns.
-  // 2. In Outreach mode: show ONLY non-lost batches that have NOT been outreached for the first time yet (sent === 0, or ready_unsent === total).
+  // 1. Remove all-lost batches completely from Outreach and Cockpit dropdowns.
+  // 2. In Outreach mode: show ONLY Demo Ready batches (not unbuilt discovered leads) that have NOT been outreached for the first time yet.
   // 3. In Follow-Up mode: show ONLY batches that have a follow-up due today, upcoming, or overdue — and clearly label each as Upcoming or Overdue.
   const displayedBatchOptions = useMemo(() => {
     const allBatches = batchMeta?.batches || [];
-    const nonLostBatches = allBatches.filter((b) => !b.batch_id.startsWith("LOST-BATCH-"));
+    const nonLostBatches = allBatches.filter((b) => {
+      if (b.batch_id.startsWith("LOST-BATCH-")) return false;
+      if (b.is_all_lost) return false;
+      if (b.total > 0 && b.lost_count === b.total) return false;
+      const stageLost = (b.stage_counts?.lost ?? 0) + (b.stage_counts?.closed_lost ?? 0);
+      if (b.total > 0 && stageLost === b.total) return false;
+      return true;
+    });
 
     if (hubMode === "outreach") {
-      // Non-lost batches that have NOT been outreached for the first time yet
-      const unoutreached = nonLostBatches.filter((b) => b.sent === 0 || b.ready_unsent === b.total);
-      return unoutreached.map((b) => ({
+      // Outreach dropdown = Demo Ready only (not unbuilt discovered leads)
+      // Must have demo-ready leads (demo_ready_count > 0, or package_ready/contacted/sent stages, or not 100% discovered)
+      const demoReadyBatches = nonLostBatches.filter((b) => {
+        if (b.total <= 0) return false;
+        // If demo_ready_count is explicitly provided:
+        if (typeof b.demo_ready_count === "number") {
+          if (b.demo_ready_count <= 0) return false;
+        } else {
+          // Fallback based on stage counts: cannot be purely unbuilt discovered leads
+          const discoveredCount = b.stage_counts?.discovered ?? 0;
+          const pkgReadyCount = b.stage_counts?.package_ready ?? 0;
+          const queuedCount = b.stage_counts?.queued ?? 0;
+          const sentCount = b.sent ?? 0;
+          const hasDemoReady = pkgReadyCount > 0 || queuedCount > 0 || sentCount > 0 || discoveredCount < b.total;
+          if (!hasDemoReady) return false;
+        }
+        // Non-lost batches that have NOT been outreached for the first time yet (or have unsent ready leads)
+        return b.sent === 0 || b.ready_unsent > 0;
+      });
+
+      return demoReadyBatches.map((b) => ({
         value: b.batch_id,
         label: `${b.batch_id} (${b.ready_unsent} unsent / ${b.total})`,
       }));
@@ -293,6 +321,8 @@ export function OutreachHubSubpage() {
       if (selectedBatchId !== null) {
         setSelectedBatchId(null);
       }
+      setBatchClinics([]);
+      setSelectedClinicId(null);
       return;
     }
     const currentValid = displayedBatchOptions.some((opt) => opt.value === selectedBatchId);
@@ -300,6 +330,25 @@ export function OutreachHubSubpage() {
       setSelectedBatchId(displayedBatchOptions[0].value);
     }
   }, [displayedBatchOptions, selectedBatchId]);
+
+  // Stop loading and notify when switching to follow-up mode with 0 follow-ups
+  const prevFollowupNotifiedRef = useRef<boolean>(false);
+  useEffect(() => {
+    if (hubMode === "followup") {
+      const hasFollowups = displayedBatchOptions.length > 0;
+      if (!hasFollowups) {
+        setBatchLoading(false);
+        if (!prevFollowupNotifiedRef.current) {
+          notify("No follow-ups pending or upcoming");
+          prevFollowupNotifiedRef.current = true;
+        }
+      } else {
+        prevFollowupNotifiedRef.current = false;
+      }
+    } else {
+      prevFollowupNotifiedRef.current = false;
+    }
+  }, [hubMode, displayedBatchOptions.length, notify]);
 
   const activeBatchInfo = batchMeta?.batches.find((b) => b.batch_id === selectedBatchId) ?? null;
   const effectiveBatchId = selectedBatchId ?? (displayedBatchOptions.length ? displayedBatchOptions[0].value : undefined);
@@ -814,9 +863,25 @@ export function OutreachHubSubpage() {
         {/* Left Side (9/12 width): Selected Clinic Message & Video Workspace */}
         <div className="lg:col-span-9 p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#27272A] shadow-xs space-y-4">
           {!selectedClinic ? (
-            <div className="text-xs text-slate-400 text-center py-16">
-              {batchLoading ? "Loading batch..." : "Select a clinic from the queue to view its outreach workspace."}
-            </div>
+            hubMode === "followup" && (!displayedBatchOptions.length || filteredClinics.length === 0) ? (
+              <div className="py-16 flex flex-col items-center justify-center text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] flex items-center justify-center shadow-xs">
+                  <Clock className="w-6 h-6 text-slate-400 dark:text-zinc-500" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-zinc-900 dark:text-white">
+                    No follow-ups pending or upcoming
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm">
+                    All sent pitches are current or awaiting responses. When leads view demos or schedule follow-ups, they will appear here.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-400 text-center py-16">
+                {batchLoading ? "Loading batch..." : "Select a clinic from the queue to view its outreach workspace."}
+              </div>
+            )
           ) : (
             <>
               {/* Card Header: 2 Clean Aligned Rows (pb-4 mb-4 border-b border-slate-100) */}
@@ -1155,7 +1220,11 @@ export function OutreachHubSubpage() {
           {/* Scrollable Clinic List */}
           <div className="max-h-[600px] overflow-y-auto space-y-2 pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {filteredClinics.length === 0 && (
-              <div className="text-xs text-slate-400 text-center py-10">No clinics match this filter.</div>
+              <div className="text-xs text-slate-400 text-center py-10">
+                {hubMode === "followup"
+                  ? "No follow-ups pending or upcoming."
+                  : "No clinics match this filter."}
+              </div>
             )}
             {filteredClinics.map((c) => {
               const isActive = c.id === selectedClinicId;

@@ -84,11 +84,21 @@ function getBatchId(lead: Lead): string {
 function compareBatchIds(a: string, b: string): number {
   if (a === UNBATCHED) return 1;
   if (b === UNBATCHED) return -1;
-  const aIsLost = a.startsWith("LOST-BATCH-");
-  const bIsLost = b.startsWith("LOST-BATCH-");
-  if (!aIsLost && bIsLost) return -1;
-  if (aIsLost && !bIsLost) return 1;
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+}
+
+function isLeadClosedLost(lead: Lead, allStages?: Stage[]): boolean {
+  const l = lead as any;
+  if (l.status === "CLOSED_LOST" || l.status === "LOST") return true;
+  if (l.is_archived || l.do_not_contact) return true;
+  if (l.stage_rel?.is_lost) return true;
+  const stageSlug = (l.stage_rel?.slug ?? l.stage ?? "").toLowerCase();
+  if (stageSlug === "lost" || stageSlug === "closed_lost" || stageSlug === "dnc" || stageSlug === "archived") return true;
+  if (allStages && l.stage_id) {
+    const s = allStages.find((st) => st.id === l.stage_id);
+    if (s && ((s as BatchableStage).is_lost || s.slug === "lost" || s.slug === "closed_lost")) return true;
+  }
+  return false;
 }
 
 function hasPackages(lead: Lead): boolean {
@@ -231,8 +241,13 @@ export const KanbanColumn = React.memo(function KanbanColumn({
       if (bucket) bucket.push(lead);
       else groups.set(id, [lead]);
     }
-    return [...groups.entries()].sort(([a], [b]) => compareBatchIds(a, b));
-  }, [leads, useBatchView]);
+    // Hide any batch where all leads are CLOSED_LOST from active Kanban columns
+    const filteredEntries = [...groups.entries()].filter(([, bLeads]) => {
+      const allLost = bLeads.length > 0 && bLeads.every((l) => isLeadClosedLost(l, allStages));
+      return !allLost;
+    });
+    return filteredEntries.sort(([a], [b]) => compareBatchIds(a, b));
+  }, [leads, useBatchView, allStages]);
 
   const renderLead = useCallback(
     (lead: Lead, isNested = false) => (

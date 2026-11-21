@@ -34,6 +34,8 @@ interface BatchInfo {
   total: number;
   ready_unsent: number;
   sent: number;
+  is_all_lost?: boolean;
+  lost_count?: number;
   stage_counts: Record<string, number>;
 }
 
@@ -851,7 +853,13 @@ export const DemoFactoryTab: React.FC = () => {
             options={[
               { value: "ALL", label: `All Batches (${runs.length} runs)` },
               ...(batchMeta?.batches
-                ?.filter((b) => !b.batch_id.startsWith("LOST-BATCH-"))
+                ?.filter((b) => {
+                  if (b.is_all_lost) return false;
+                  if (b.total > 0 && b.lost_count !== undefined && b.lost_count === b.total) return false;
+                  const lostInStage = (b.stage_counts?.lost ?? 0) + (b.stage_counts?.closed_lost ?? 0);
+                  if (b.total > 0 && lostInStage === b.total) return false;
+                  return true;
+                })
                 ?.map((b) => {
                   const stagedCount = b.stage_counts?.staged ?? 0;
                   const builtCount = runs.filter((r) => r.batchId === b.batch_id).length;
