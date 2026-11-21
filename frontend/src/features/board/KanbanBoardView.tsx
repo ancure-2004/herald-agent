@@ -29,9 +29,7 @@ import { useCRM } from "@/context/CRMContext";
 import { KanbanColumn } from "./KanbanColumn";
 import { formatDoctorName } from "./LeadCard";
 import { autopilotApi } from "@/api/autopilotApi";
-import { leadsApi } from "@/api/leadsApi";
 import { KanbanSkeleton } from "@/components/ui/Skeleton";
-import type { Lead } from "@/types";
 
 // Helper to check if a lead is closed/lost
 function isLeadClosedLost(lead: any, allStages?: Array<{ id: number; slug: string; name: string; is_lost?: boolean }>): boolean {
@@ -51,6 +49,9 @@ export function KanbanBoardView() {
   const {
     activeHustle,
     leads,
+    archivedLeads,
+    archivedLoading,
+    refreshArchivedLeads,
     loading,
     activeSmartView,
     setActiveSmartView,
@@ -104,67 +105,6 @@ export function KanbanBoardView() {
   const [hideEmptyStages, setHideEmptyStages] = useState<boolean>(true);
   const [batchGroupingEnabled, setBatchGroupingEnabled] = useState<boolean>(true);
   const [syncingBatches, setSyncingBatches] = useState<boolean>(false);
-  const [archivedLeads, setArchivedLeads] = useState<Lead[]>([]);
-  const [archivedLoading, setArchivedLoading] = useState<boolean>(false);
-  const archivedLoadedRef = useRef<boolean>(false);
-
-  // Lazily load archived leads only once on first selection of Archived smart view (cached thereafter)
-  useEffect(() => {
-    const isArchivedView = activeSmartView === "archived" || activeSmartView === "archived_dnc";
-    if (isArchivedView && activeHustle?.id && !archivedLoadedRef.current) {
-      let isMounted = true;
-      setArchivedLoading(true);
-      leadsApi
-        .list({
-          hustle_id: activeHustle.id,
-          smart_view: "archived",
-          include_archived: true,
-        })
-        .then((data) => {
-          if (isMounted) {
-            setArchivedLeads(data);
-            archivedLoadedRef.current = true;
-          }
-        })
-        .catch((err) => {
-          if (isMounted) {
-            notify(err instanceof Error ? err : "Failed to load archived leads", "err");
-          }
-        })
-        .finally(() => {
-          if (isMounted) {
-            setArchivedLoading(false);
-          }
-        });
-      return () => {
-        isMounted = false;
-      };
-    }
-  }, [activeSmartView, activeHustle?.id, notify]);
-
-  // Invalidate cache when active hustle changes
-  useEffect(() => {
-    archivedLoadedRef.current = false;
-    setArchivedLeads([]);
-  }, [activeHustle?.id]);
-
-  const refreshArchivedLeads = useCallback(async () => {
-    if (!activeHustle?.id) return;
-    setArchivedLoading(true);
-    try {
-      const data = await leadsApi.list({
-        hustle_id: activeHustle.id,
-        smart_view: "archived",
-        include_archived: true,
-      });
-      setArchivedLeads(data);
-      archivedLoadedRef.current = true;
-    } catch (err) {
-      notify(err instanceof Error ? err : "Failed to load archived leads", "err");
-    } finally {
-      setArchivedLoading(false);
-    }
-  }, [activeHustle?.id, notify]);
 
   const handleSyncBatches = async () => {
     if (!activeHustle || syncingBatches) return;

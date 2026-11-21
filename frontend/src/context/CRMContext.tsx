@@ -114,6 +114,11 @@ interface CRMContextType {
   activeHustle: Hustle | null;
   leads: Lead[];
   setLeads: React.Dispatch<React.SetStateAction<Lead[]>>;
+  archivedLeads: Lead[];
+  setArchivedLeads: React.Dispatch<React.SetStateAction<Lead[]>>;
+  archivedLoaded: boolean;
+  archivedLoading: boolean;
+  refreshArchivedLeads: () => Promise<void>;
   selectedLeadId: number | null;
   setSelectedLeadId: (id: number | null) => void;
   selectedLead: Lead | null;
@@ -322,6 +327,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const [hustles, setHustles] = useState<Hustle[]>([]);
   const [activeHustleId, setActiveHustleId] = useState<number>(1);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [archivedLeads, setArchivedLeads] = useState<Lead[]>([]);
+  const [archivedLoaded, setArchivedLoaded] = useState<boolean>(false);
+  const [archivedLoading, setArchivedLoading] = useState<boolean>(false);
   const [stockPlan, setStockPlan] = useState<StockPlan | null>(null);
   const [sprintPlan, setSprintPlan] = useState<SprintPlan | null>(null);
   const [runs, setRuns] = useState<RunLog[]>([]);
@@ -551,6 +559,64 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     }
   }, [activeHustleId, searchQuery, notify]);
+
+  // Lazy-load archived leads cache on demand when smart_view=archived is clicked
+  useEffect(() => {
+    const isArchived = activeSmartView === "archived" || activeSmartView === "archived_dnc";
+    if (isArchived && activeHustleId && !archivedLoaded && !archivedLoading) {
+      let isMounted = true;
+      setArchivedLoading(true);
+      leadsApi
+        .list({
+          hustle_id: activeHustleId,
+          smart_view: "archived",
+          include_archived: true,
+        })
+        .then((data) => {
+          if (isMounted) {
+            setArchivedLeads(data);
+            setArchivedLoaded(true);
+          }
+        })
+        .catch((err) => {
+          if (isMounted) {
+            notify(err instanceof Error ? err : "Failed to load archived leads", "err");
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setArchivedLoading(false);
+          }
+        });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [activeSmartView, activeHustleId, archivedLoaded, archivedLoading, notify]);
+
+  // Invalidate archived leads cache when switching hustle
+  useEffect(() => {
+    setArchivedLoaded(false);
+    setArchivedLeads([]);
+  }, [activeHustleId]);
+
+  const refreshArchivedLeads = useCallback(async () => {
+    if (!activeHustleId) return;
+    setArchivedLoading(true);
+    try {
+      const data = await leadsApi.list({
+        hustle_id: activeHustleId,
+        smart_view: "archived",
+        include_archived: true,
+      });
+      setArchivedLeads(data);
+      setArchivedLoaded(true);
+    } catch (err) {
+      notify(err instanceof Error ? err : "Failed to load archived leads", "err");
+    } finally {
+      setArchivedLoading(false);
+    }
+  }, [activeHustleId, notify]);
 
   useEffect(() => {
     loadAll();
@@ -1030,6 +1096,11 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     activeHustle,
     leads,
     setLeads,
+    archivedLeads,
+    setArchivedLeads,
+    archivedLoaded,
+    archivedLoading,
+    refreshArchivedLeads,
     selectedLeadId,
     setSelectedLeadId,
     selectedLead,
@@ -1149,6 +1220,10 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     activeHustleId,
     activeHustle,
     leads,
+    archivedLeads,
+    archivedLoaded,
+    archivedLoading,
+    refreshArchivedLeads,
     selectedLeadId,
     selectedLead,
     stockPlan,
