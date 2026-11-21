@@ -258,6 +258,15 @@ export const KanbanColumn = React.memo(function KanbanColumn({
     ]
   );
 
+  const PAGE_SIZE = 30;
+  const displayedLeads = useMemo(() => {
+    if (useBatchView) return leads;
+    return leads.slice(0, visibleCount);
+  }, [leads, useBatchView, visibleCount]);
+
+  const hasMoreLeads = !useBatchView && visibleCount < leads.length;
+  const remainingCount = leads.length - visibleCount;
+
   // Collapsed Empty Stage Column
   if (isCollapsed) {
     return (
@@ -289,15 +298,6 @@ export const KanbanColumn = React.memo(function KanbanColumn({
       </div>
     );
   }
-
-  const PAGE_SIZE = 30;
-  const displayedLeads = useMemo(() => {
-    if (useBatchView) return leads;
-    return leads.slice(0, visibleCount);
-  }, [leads, useBatchView, visibleCount]);
-
-  const hasMoreLeads = !useBatchView && visibleCount < leads.length;
-  const remainingCount = leads.length - visibleCount;
 
   return (
     <div

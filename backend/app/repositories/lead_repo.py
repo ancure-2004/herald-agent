@@ -78,10 +78,22 @@ class LeadRepository:
 
         now = datetime.now(timezone.utc)
 
-        if smart_view == "archived":
-            q = q.filter((Lead.is_archived == True) | (Lead.do_not_contact == True))  # noqa: E712
+        if smart_view in ("archived", "archived_dnc"):
+            q = q.outerjoin(Stage, Lead.stage_id == Stage.id).filter(
+                (Lead.is_archived == True)  # noqa: E712
+                | (Lead.do_not_contact == True)  # noqa: E712
+                | (Lead.status.in_(["CLOSED_LOST", "LOST"]))
+                | (Stage.slug.in_(["lost", "closed_lost"]))
+                | (Stage.is_lost == True)  # noqa: E712
+            )
         elif not include_archived:
-            q = q.filter(Lead.is_archived == False)  # noqa: E712
+            q = q.outerjoin(Stage, Lead.stage_id == Stage.id).filter(
+                (Lead.is_archived == False)  # noqa: E712
+                & (Lead.do_not_contact == False)  # noqa: E712
+                & (~Lead.status.in_(["CLOSED_LOST", "LOST"]))
+                & (~Stage.slug.in_(["lost", "closed_lost"]))
+                & ((Stage.is_lost == False) | (Stage.is_lost == None))  # noqa: E711, E712
+            )
 
         if smart_view == "review_tray":
             q = q.join(Stage, Lead.stage_id == Stage.id).filter(Stage.slug == "package_ready")
