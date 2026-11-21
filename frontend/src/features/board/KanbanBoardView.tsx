@@ -106,10 +106,12 @@ export function KanbanBoardView() {
   const [syncingBatches, setSyncingBatches] = useState<boolean>(false);
   const [archivedLeads, setArchivedLeads] = useState<Lead[]>([]);
   const [archivedLoading, setArchivedLoading] = useState<boolean>(false);
+  const archivedLoadedRef = useRef<boolean>(false);
 
-  // Lazily load archived leads only when Archived smart view is active
+  // Lazily load archived leads only once on first selection of Archived smart view (cached thereafter)
   useEffect(() => {
-    if ((activeSmartView === "archived" || activeSmartView === "archived_dnc") && activeHustle?.id) {
+    const isArchivedView = activeSmartView === "archived" || activeSmartView === "archived_dnc";
+    if (isArchivedView && activeHustle?.id && !archivedLoadedRef.current) {
       let isMounted = true;
       setArchivedLoading(true);
       leadsApi
@@ -121,6 +123,7 @@ export function KanbanBoardView() {
         .then((data) => {
           if (isMounted) {
             setArchivedLeads(data);
+            archivedLoadedRef.current = true;
           }
         })
         .catch((err) => {
@@ -138,6 +141,30 @@ export function KanbanBoardView() {
       };
     }
   }, [activeSmartView, activeHustle?.id, notify]);
+
+  // Invalidate cache when active hustle changes
+  useEffect(() => {
+    archivedLoadedRef.current = false;
+    setArchivedLeads([]);
+  }, [activeHustle?.id]);
+
+  const refreshArchivedLeads = useCallback(async () => {
+    if (!activeHustle?.id) return;
+    setArchivedLoading(true);
+    try {
+      const data = await leadsApi.list({
+        hustle_id: activeHustle.id,
+        smart_view: "archived",
+        include_archived: true,
+      });
+      setArchivedLeads(data);
+      archivedLoadedRef.current = true;
+    } catch (err) {
+      notify(err instanceof Error ? err : "Failed to load archived leads", "err");
+    } finally {
+      setArchivedLoading(false);
+    }
+  }, [activeHustle?.id, notify]);
 
   const handleSyncBatches = async () => {
     if (!activeHustle || syncingBatches) return;
@@ -543,6 +570,18 @@ export function KanbanBoardView() {
             >
               <Eye className="w-3.5 h-3.5" />
               <span>{hideEmptyStages ? "Hide Empty Stages" : "Show All Stages"}</span>
+            </button>
+          )}
+
+          {!isAllActive && (activeSmartView === "archived" || activeSmartView === "archived_dnc") && (
+            <button
+              onClick={refreshArchivedLeads}
+              disabled={archivedLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium shadow-xs transition-all cursor-pointer bg-white hover:bg-slate-50 dark:bg-[#18181B] dark:hover:bg-slate-800 border-slate-200/80 dark:border-white/[0.08] text-slate-700 dark:text-zinc-200 disabled:opacity-50 disabled:cursor-wait"
+              title="Refresh archived leads"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${archivedLoading ? "animate-spin" : ""}`} />
+              <span>{archivedLoading ? "Refreshing…" : "Refresh"}</span>
             </button>
           )}
 
