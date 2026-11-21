@@ -31,6 +31,20 @@ import { formatDoctorName } from "./LeadCard";
 import { autopilotApi } from "@/api/autopilotApi";
 import { KanbanSkeleton } from "@/components/ui/Skeleton";
 
+// Helper to check if a lead is closed/lost
+function isLeadClosedLost(lead: any, allStages?: Array<{ id: number; slug: string; name: string; is_lost?: boolean }>): boolean {
+  if (lead.status === "CLOSED_LOST" || lead.status === "LOST") return true;
+  if (lead.is_archived || lead.do_not_contact) return true;
+  if (lead.stage_rel?.is_lost) return true;
+  const stageSlug = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (stageSlug === "lost" || stageSlug === "closed_lost" || stageSlug === "dnc" || stageSlug === "archived") return true;
+  if (allStages && lead.stage_id) {
+    const s = allStages.find((st) => st.id === lead.stage_id);
+    if (s && (s.is_lost || s.slug === "lost" || s.slug === "closed_lost")) return true;
+  }
+  return false;
+}
+
 export function KanbanBoardView() {
   const {
     activeHustle,
@@ -219,7 +233,10 @@ export function KanbanBoardView() {
         const stage = activeHustle?.stages.find((s) => s.id === lead.stage_id);
         if (stage && stage.slug !== "replied") return false;
       } else if (activeSmartView === "archived" || activeSmartView === "archived_dnc") {
-        if (!lead.is_archived && !lead.do_not_contact) return false;
+        if (!isLeadClosedLost(lead, activeHustle?.stages)) return false;
+      } else {
+        // Active smart views: exclude CLOSED_LOST / archived / DNC leads
+        if (isLeadClosedLost(lead, activeHustle?.stages)) return false;
       }
       return true;
     });
@@ -257,6 +274,8 @@ export function KanbanBoardView() {
     if (!isAllActive) return focusedLeads.length;
     const query = searchQuery.trim().toLowerCase();
     return leads.filter((l) => {
+      // Exclude CLOSED_LOST from active board total
+      if (isLeadClosedLost(l, activeHustle?.stages)) return false;
       if (filterMinFit > 0 && l.fit_score < filterMinFit) return false;
       if (filterVerifiedOnly && !l.facts?.some((f) => f.verified_by_two_sources)) return false;
       if (query) {
@@ -267,7 +286,7 @@ export function KanbanBoardView() {
       }
       return true;
     }).length;
-  }, [leads, isAllActive, focusedLeads.length, filterMinFit, filterVerifiedOnly, searchQuery]);
+  }, [leads, isAllActive, focusedLeads.length, activeHustle?.stages, filterMinFit, filterVerifiedOnly, searchQuery]);
 
   if (loading || !activeHustle) {
     return <KanbanSkeleton />;
@@ -499,8 +518,10 @@ export function KanbanBoardView() {
       {isAllActive ? (
         /* ==================== 1. FULL-SCALE KANBAN COLUMNS ==================== */
         <div className="flex gap-4 overflow-x-auto pb-6 snap-x snap-mandatory touch-pan-x">
-          {activeHustle.stages.map((stage, sIdx) => {
-            const stageLeads = leads.filter((l) => l.stage_id === stage.id);
+          {activeHustle.stages
+            .filter((stage) => !stage.is_lost && stage.slug !== "lost" && stage.slug !== "closed_lost")
+            .map((stage, sIdx) => {
+            const stageLeads = leads.filter((l) => l.stage_id === stage.id && !isLeadClosedLost(l, activeHustle.stages));
             const query = searchQuery.trim().toLowerCase();
             const filteredLeads = stageLeads
               .filter((l) => (filterMinFit > 0 ? l.fit_score >= filterMinFit : true))

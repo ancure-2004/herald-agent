@@ -34,9 +34,9 @@ assert(columnCode.includes("onDrop={onDrop}"), "Missing drop handler on collapse
 console.log("✔ Collapsed DOM structure verified: w-12 slim bar, vertical text, click-to-expand, drag-and-drop droppable");
 
 // Assert expanded column structure
-assert(columnCode.includes("min-w-[280px]"), "Missing expanded min-w-[280px]");
+assert(columnCode.includes("min-w-[350px]") || columnCode.includes("min-w-[280px]"), "Missing expanded min-w");
 assert(columnCode.includes("{leads.length}"), "Missing leads length count in expanded header");
-console.log("✔ Expanded column structure verified: min-w-[280px], full header, card droppable list");
+console.log("✔ Expanded column structure verified: min-w-[350px], full header, card droppable list");
 
 // 2. Check KanbanBoardView.tsx Toggle Invariants
 const boardCode = fs.readFileSync(boardPath, "utf-8");

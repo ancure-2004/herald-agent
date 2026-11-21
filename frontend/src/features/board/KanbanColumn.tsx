@@ -204,6 +204,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
 }: KanbanColumnProps) {
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(false);
   const [expandedBatches, setExpandedBatches] = useState<Record<string, boolean>>({});
+  const [visibleCount, setVisibleCount] = useState<number>(30);
 
   const isEmpty = leads.length === 0;
   const isCollapsed = hideEmpty && isEmpty && !manuallyExpanded;
@@ -220,38 +221,6 @@ export const KanbanColumn = React.memo(function KanbanColumn({
     }
     return [...groups.entries()].sort(([a], [b]) => compareBatchIds(a, b));
   }, [leads, useBatchView]);
-
-  // Collapsed Empty Stage Column
-  if (isCollapsed) {
-    return (
-      <div
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-        onClick={() => setManuallyExpanded(true)}
-        className={`w-12 shrink-0 flex flex-col items-center py-4 rounded-2xl bg-[#EAEEF3]/60 dark:bg-[#18181B]/60 border border-dashed transition-all cursor-pointer group hover:bg-[#EAEEF3] dark:hover:bg-slate-800 ${
-          isDragOver
-            ? "border-zinc-900 ring-2 ring-zinc-900/20 bg-zinc-100/50"
-            : "border-slate-200/80 dark:border-[#27272A]"
-        }`}
-        title={`Click to expand empty stage: ${stage.name}`}
-      >
-        <span className={`w-1 h-4 rounded-full ${stageColorClass} mb-2`} />
-        <span className="text-[10px] font-mono font-bold text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">
-          0
-        </span>
-        <div className="flex-1 flex items-center justify-center my-3">
-          <span
-            className="text-[11px] font-semibold text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 uppercase tracking-widest whitespace-nowrap"
-            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-          >
-            {stage.name}
-          </span>
-        </div>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-zinc-900 transition-colors" />
-      </div>
-    );
-  }
 
   const renderLead = useCallback(
     (lead: Lead, isNested = false) => (
@@ -288,6 +257,47 @@ export const KanbanColumn = React.memo(function KanbanColumn({
       onApproveAndSend,
     ]
   );
+
+  // Collapsed Empty Stage Column
+  if (isCollapsed) {
+    return (
+      <div
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        onClick={() => setManuallyExpanded(true)}
+        className={`w-12 shrink-0 flex flex-col items-center py-4 rounded-2xl bg-[#EAEEF3]/60 dark:bg-[#18181B]/60 border border-dashed transition-all cursor-pointer group hover:bg-[#EAEEF3] dark:hover:bg-slate-800 ${
+          isDragOver
+            ? "border-zinc-900 ring-2 ring-zinc-900/20 bg-zinc-100/50"
+            : "border-slate-200/80 dark:border-[#27272A]"
+        }`}
+        title={`Click to expand empty stage: ${stage.name}`}
+      >
+        <span className={`w-1 h-4 rounded-full ${stageColorClass} mb-2`} />
+        <span className="text-[10px] font-mono font-bold text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">
+          0
+        </span>
+        <div className="flex-1 flex items-center justify-center my-3">
+          <span
+            className="text-[11px] font-semibold text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 uppercase tracking-widest whitespace-nowrap"
+            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+          >
+            {stage.name}
+          </span>
+        </div>
+        <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-zinc-900 transition-colors" />
+      </div>
+    );
+  }
+
+  const PAGE_SIZE = 30;
+  const displayedLeads = useMemo(() => {
+    if (useBatchView) return leads;
+    return leads.slice(0, visibleCount);
+  }, [leads, useBatchView, visibleCount]);
+
+  const hasMoreLeads = !useBatchView && visibleCount < leads.length;
+  const remainingCount = leads.length - visibleCount;
 
   return (
     <div
@@ -362,7 +372,21 @@ export const KanbanColumn = React.memo(function KanbanColumn({
             />
           ))
         ) : (
-          leads.map((lead) => renderLead(lead))
+          <>
+            {displayedLeads.map((lead) => renderLead(lead))}
+            {hasMoreLeads && (
+              <div className="pt-1 pb-2 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+                  className="w-full py-2 px-3 rounded-xl bg-white dark:bg-[#18181B] hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-white/[0.08] shadow-xs text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span>Show more ({remainingCount} remaining)</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
