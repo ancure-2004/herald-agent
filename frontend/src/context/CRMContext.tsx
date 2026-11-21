@@ -283,6 +283,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       return tab;
     });
     setSelectedLeadId(null);
+    if (tab === "dashboard") {
+      setActiveSmartView("all_active");
+    }
   }, []);
 
   const handleBackToWorkspace = useCallback(() => {
