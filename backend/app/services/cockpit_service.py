@@ -89,6 +89,7 @@ class CockpitService:
                 Lead.hustle_id == hustle_id,
                 Lead.is_archived == False,  # noqa: E712
                 Lead.do_not_contact == False,  # noqa: E712
+                Lead.status.notin_(["CLOSED_LOST", "LOST"]),
             )
             .all()
         )
@@ -99,8 +100,8 @@ class CockpitService:
         call_preparation: List[Dict[str, Any]] = []
 
         for lead in leads:
-            is_won = bool(lead.stage_rel and lead.stage_rel.is_won)
-            is_lost = bool(lead.stage_rel and lead.stage_rel.is_lost)
+            is_won = bool(lead.stage_rel and lead.stage_rel.is_won) or (lead.status or "").upper() in ("WON", "CLOSED_WON") or lead.stage_id == 7
+            is_lost = bool(lead.stage_rel and lead.stage_rel.is_lost) or (lead.status or "").upper() in ("CLOSED_LOST", "LOST") or lead.stage_id == 8
             if is_won or is_lost:
                 continue
 

@@ -141,7 +141,7 @@ def create_lead_package_and_facts(
         False,
         lead.ai_fields,
     )
-    lead.fit_score = fit
+    lead.fit_score = min(100, max(0, int(fit)))
     lead.fit_reasons = fit_reasons
 
     # Quality score

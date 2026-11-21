@@ -40,6 +40,47 @@ function BarcodeMeter({ percentage, totalBars = 9 }: { percentage: number; total
   );
 }
 
+function isLeadLost(lead: any): boolean {
+  if (!lead) return false;
+  if (lead.is_lost) return true;
+  const status = (lead.status || "").toUpperCase();
+  if (status === "CLOSED_LOST" || status === "LOST") return true;
+  const stageSlug = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (
+    stageSlug === "lost" ||
+    stageSlug === "closed_lost" ||
+    stageSlug === "archived" ||
+    stageSlug === "dnc" ||
+    stageSlug.includes("lost")
+  ) {
+    return true;
+  }
+  if (lead.stage_rel?.is_lost) return true;
+  if (lead.stage_id === 8) return true;
+  if (Boolean(lead.do_not_contact)) return true;
+  if (Boolean(lead.is_archived)) return true;
+  return false;
+}
+
+function isLeadWon(lead: any): boolean {
+  if (!lead) return false;
+  if (lead.is_won) return true;
+  const status = (lead.status || "").toUpperCase();
+  if (status === "WON" || status === "CLOSED_WON") return true;
+  const stageSlug = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (
+    stageSlug === "won" ||
+    stageSlug === "closed_won" ||
+    stageSlug === "client" ||
+    stageSlug.includes("won")
+  ) {
+    return true;
+  }
+  if (lead.stage_rel?.is_won) return true;
+  if (lead.stage_id === 7) return true;
+  return false;
+}
+
 const DashboardCharts = dynamic(
   () => import("./DashboardCharts").then((mod) => mod.DashboardCharts),
   {
@@ -88,24 +129,52 @@ export function DashboardView() {
   );
   const pipelineMonth = useMemo(() => `${currentMonthName} ${currentYear}`, [currentMonthName, currentYear]);
 
-  // 2. KPI Counts & Metas from real CRM leads
-  const totalClinics = leads.length;
+  // Active leads (excluding CLOSED_LOST, LOST, DNC, Archived)
+  const activeLeads = useMemo(() => leads.filter((l) => !isLeadLost(l)), [leads]);
+  const totalLostCount = useMemo(() => leads.filter(isLeadLost).length, [leads]);
+
+  // Current-month filter for active metrics
+  const isCurrentMonth = useMemo(() => {
+    return (l: any) => {
+      const dStr = l.created_at || l.updated_at;
+      if (!dStr) return true;
+      const d = new Date(dStr);
+      return d.getFullYear() === currentYear && d.getMonth() === now.getMonth();
+    };
+  }, [currentYear, now]);
+
+  const currentMonthActiveLeads = useMemo(() => {
+    const cm = activeLeads.filter(isCurrentMonth);
+    return cm.length > 0 ? cm : activeLeads;
+  }, [activeLeads, isCurrentMonth]);
+
+  // 2. KPI Counts & Metas from real CRM leads (current-month active metrics, excluding CLOSED_LOST)
+  const totalClinics = currentMonthActiveLeads.length;
 
   const walkthroughsReady = useMemo(() => {
-    return leads.filter(
-      (l) => l.packages?.some((p) => !!p.video_file_path) || l.stage_id >= 2
+    return currentMonthActiveLeads.filter(
+      (l) => l.packages?.some((p) => Boolean(p.video_file_path)) || l.stage_id === 2 || l.stage_id === 3
     ).length;
-  }, [leads]);
+  }, [currentMonthActiveLeads]);
 
   const inOutreach = useMemo(() => {
-    return leads.filter((l) => l.stage_id >= 4).length;
-  }, [leads]);
+    return currentMonthActiveLeads.filter(
+      (l) => l.messages?.some((m) => m.direction === "outbound") || (l.stage_id >= 4 && l.stage_id <= 6)
+    ).length;
+  }, [currentMonthActiveLeads]);
 
   const needsFollowUp = useMemo(() => {
-    return leads.filter(
-      (l) => (l.intent_score || 0) >= 40 || l.next_action_due_at
-    ).length;
-  }, [leads]);
+    return currentMonthActiveLeads.filter((l) => {
+      if (l.needs_followup) return true;
+      if (l.stage_id === 5 || l.stage_id === 6) return true;
+      if (l.events?.some((e) => e.event_type === "page_view" || e.event_type === "demo_view")) return true;
+      if (l.next_action_due_at) {
+        const due = new Date(l.next_action_due_at);
+        return due <= now;
+      }
+      return false;
+    }).length;
+  }, [currentMonthActiveLeads, now]);
 
   // Percentages for Barcode Meters
   const totalPct = totalClinics > 0 ? Math.min(100, Math.max(15, totalClinics * 10)) : 10;
@@ -113,9 +182,9 @@ export function DashboardView() {
   const outreachPct = totalClinics > 0 ? Math.round((inOutreach / totalClinics) * 100) : 0;
   const followUpPct = totalClinics > 0 ? Math.round((needsFollowUp / totalClinics) * 100) : 0;
 
-  // 5. Priority Clinics Stage-Progress (Top 6 high-intent leads, real 7-step stage progress)
+  // 5. Priority Clinics Stage-Progress (Top 6 high-intent active leads, real 7-step stage progress)
   const pipelineRows = useMemo(() => {
-    const sorted = [...leads].sort(
+    const sorted = [...activeLeads].sort(
       (a, b) => (b.intent_score || b.fit_score || 0) - (a.intent_score || a.fit_score || 0)
     );
     const topLeads = sorted.slice(0, 6);
@@ -124,16 +193,23 @@ export function DashboardView() {
       1: "Discovered",
       2: "Demo Ready",
       3: "Approved",
-      4: "WhatsApp Sent",
+      4: "Pitch Sent",
       5: "Demo Viewed",
-      6: "Call Scheduled",
+      6: "Replied / Warm",
       7: "Won",
     };
 
     return topLeads.map((lead) => {
-      const stageStep = Math.min(7, Math.max(1, Number(lead.stage_id) || 1));
+      let stageStep = 1;
+      if (isLeadWon(lead) || lead.stage_id === 7) {
+        stageStep = 7;
+      } else if (lead.stage_id && lead.stage_id >= 1 && lead.stage_id <= 6) {
+        stageStep = lead.stage_id;
+      } else if (lead.packages?.some((p) => Boolean(p.video_file_path))) {
+        stageStep = 2;
+      }
       const milestone = milestoneStages[stageStep] || "Discovered";
-      const fitScore = Math.round(lead.intent_score || lead.fit_score || 0);
+      const fitScore = Math.min(100, Math.max(0, Math.round(lead.intent_score || lead.fit_score || 0)));
       const initials =
         lead.name
           .split(" ")
@@ -158,19 +234,27 @@ export function DashboardView() {
         avatar: initials,
       };
     });
-  }, [leads]);
+  }, [activeLeads]);
 
-  // 6. Upcoming Follow-Ups from real leads
+  // 6. Upcoming Follow-Ups from real active leads with genuine actions scheduled
   const upcomingFollowUps = useMemo(() => {
-    const withAction = leads.filter((l) => l.next_action || l.next_action_due_at);
-    const pool = withAction.length > 0 ? withAction : leads;
+    const withAction = activeLeads.filter(
+      (l) => l.next_action_due_at || (l.needs_followup && l.next_action)
+    );
+    const sorted = [...withAction].sort((a, b) => {
+      const aTime = a.next_action_due_at ? new Date(a.next_action_due_at).getTime() : Infinity;
+      const bTime = b.next_action_due_at ? new Date(b.next_action_due_at).getTime() : Infinity;
+      return aTime - bTime;
+    });
 
-    return pool.slice(0, 4).map((l, i) => {
-      const dueDate = l.next_action_due_at
-        ? new Date(l.next_action_due_at)
-        : new Date(now.getTime() + (i + 1) * 86400000);
-      const dateStr = dueDate.toLocaleString("en-US", { month: "short", day: "numeric" });
-      const dayStr = dueDate.toLocaleString("en-US", { weekday: "short" });
+    return sorted.slice(0, 4).map((l) => {
+      const dueDate = l.next_action_due_at ? new Date(l.next_action_due_at) : now;
+      const dateStr = l.next_action_due_at
+        ? dueDate.toLocaleString("en-US", { month: "short", day: "numeric" })
+        : "Pending";
+      const dayStr = l.next_action_due_at
+        ? dueDate.toLocaleString("en-US", { weekday: "short" })
+        : "--";
       const initials =
         l.name
           .split(" ")
@@ -183,14 +267,14 @@ export function DashboardView() {
         id: l.id,
         date: dateStr,
         day: dayStr,
-        title: l.next_action || "Follow up on demo walkthrough",
+        title: l.next_action || "Follow up scheduled",
         clinic: l.name,
         avatar: initials,
       };
     });
-  }, [leads, now]);
+  }, [activeLeads, now]);
 
-  // 7. Recent Activity Feed from real events & liveFeed
+  // 7. Recent Activity Feed from real events & liveFeed (no fake views or actions)
   const recentActivities = useMemo(() => {
     const acts: Array<{
       id: string | number;
@@ -216,7 +300,7 @@ export function DashboardView() {
     }
 
     // Real events from leads
-    leads.forEach((l) => {
+    activeLeads.forEach((l) => {
       const initials =
         l.name
           .split(" ")
@@ -256,28 +340,8 @@ export function DashboardView() {
       }
     });
 
-    if (acts.length === 0) {
-      return leads.slice(0, 3).map((l, i) => {
-        const initials =
-          l.name
-            .split(" ")
-            .filter(Boolean)
-            .slice(0, 2)
-            .map((w) => w[0]?.toUpperCase())
-            .join("") || "CL";
-        return {
-          id: `act-${l.id}`,
-          actor: l.doctor_name || "Doctor",
-          action: "reviewed demo preview for",
-          target: l.name,
-          time: `${(i + 1) * 15}m ago`,
-          avatar: initials,
-        };
-      });
-    }
-
     return acts.slice(0, 3);
-  }, [leads, liveFeed]);
+  }, [activeLeads, liveFeed]);
 
   return (
     <div className="space-y-2.5 sm:space-y-3 max-w-[1600px] mx-auto pb-4">
@@ -318,8 +382,15 @@ export function DashboardView() {
               <Building2 className="w-2.5 h-2.5" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-[#111827] dark:text-white font-mono tracking-tight leading-none">
-            {totalClinics}
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-black text-[#111827] dark:text-white font-mono tracking-tight leading-none">
+              {totalClinics}
+            </span>
+            {totalLostCount > 0 && (
+              <span className="text-[10px] font-semibold text-rose-500 dark:text-rose-400">
+                ({totalLostCount} lost)
+              </span>
+            )}
           </div>
           <div className="flex items-center justify-between pt-0.5 text-xs">
             <span className="flex items-center gap-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
@@ -514,44 +585,50 @@ export function DashboardView() {
             </div>
 
             <div className="divide-y divide-slate-100 dark:divide-white/[0.04]">
-              {upcomingFollowUps.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => setActiveTab("calls")}
-                  className="py-1.5 flex items-center justify-between gap-2 group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-lg px-1 transition-colors"
-                >
-                  {/* Left Date / Day */}
-                  <div className="text-left w-9 shrink-0">
-                    <div className="font-bold text-[10px] text-slate-900 dark:text-white font-mono leading-tight">
-                      {item.date}
-                    </div>
-                    <div className="text-[8px] text-slate-400 font-medium">
-                      {item.day}
-                    </div>
-                  </div>
-
-                  {/* Vertical Indicator Bar */}
-                  <div className="w-0.5 h-6 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0 group-hover:bg-indigo-500 transition-colors" />
-
-                  {/* Middle Action Title & Clinic */}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-semibold text-slate-800 dark:text-zinc-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                      {item.title}
-                    </div>
-                    <div className="text-[9px] text-slate-400 truncate">
-                      {item.clinic}
-                    </div>
-                  </div>
-
-                  {/* Right Avatar + Menu */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] font-bold text-[8px] text-slate-700 dark:text-zinc-300 flex items-center justify-center shrink-0">
-                      {item.avatar}
-                    </div>
-                    <MoreVertical className="w-3 h-3 text-slate-400" />
-                  </div>
+              {upcomingFollowUps.length === 0 ? (
+                <div className="py-4 text-center text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
+                  No upcoming follow-ups scheduled.
                 </div>
-              ))}
+              ) : (
+                upcomingFollowUps.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setActiveTab("calls")}
+                    className="py-1.5 flex items-center justify-between gap-2 group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-lg px-1 transition-colors"
+                  >
+                    {/* Left Date / Day */}
+                    <div className="text-left w-9 shrink-0">
+                      <div className="font-bold text-[10px] text-slate-900 dark:text-white font-mono leading-tight">
+                        {item.date}
+                      </div>
+                      <div className="text-[8px] text-slate-400 font-medium">
+                        {item.day}
+                      </div>
+                    </div>
+
+                    {/* Vertical Indicator Bar */}
+                    <div className="w-0.5 h-6 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0 group-hover:bg-indigo-500 transition-colors" />
+
+                    {/* Middle Action Title & Clinic */}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] font-semibold text-slate-800 dark:text-zinc-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                        {item.title}
+                      </div>
+                      <div className="text-[9px] text-slate-400 truncate">
+                        {item.clinic}
+                      </div>
+                    </div>
+
+                    {/* Right Avatar + Menu */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-[#27272A] border border-slate-200 dark:border-[#3F3F46] font-bold text-[8px] text-slate-700 dark:text-zinc-300 flex items-center justify-center shrink-0">
+                        {item.avatar}
+                      </div>
+                      <MoreVertical className="w-3 h-3 text-slate-400" />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -572,28 +649,34 @@ export function DashboardView() {
             </div>
 
             <div className="space-y-2">
-              {recentActivities.map((act) => (
-                <div key={act.id} className="flex items-start gap-2.5 text-xs">
-                  {/* Fixed square dimension + shrink-0 to prevent oval squishing */}
-                  <div className="w-8 h-8 rounded-full bg-[#111827] text-white dark:bg-white dark:text-[#111827] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                    {act.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] text-slate-700 dark:text-zinc-300 leading-snug">
-                      <span className="font-bold text-slate-900 dark:text-white">{act.actor}</span>{" "}
-                      {act.action}{" "}
-                      {act.target && (
-                        <span className="font-semibold text-[#111827] dark:text-indigo-300">
-                          {act.target}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-[9px] text-slate-400 font-mono mt-0.5">
-                      {act.time}
-                    </div>
-                  </div>
+              {recentActivities.length === 0 ? (
+                <div className="py-4 text-center text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
+                  No recent activity recorded yet.
                 </div>
-              ))}
+              ) : (
+                recentActivities.map((act) => (
+                  <div key={act.id} className="flex items-start gap-2.5 text-xs">
+                    {/* Fixed square dimension + shrink-0 to prevent oval squishing */}
+                    <div className="w-8 h-8 rounded-full bg-[#111827] text-white dark:bg-white dark:text-[#111827] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                      {act.avatar}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] text-slate-700 dark:text-zinc-300 leading-snug">
+                        <span className="font-bold text-slate-900 dark:text-white">{act.actor}</span>{" "}
+                        {act.action}{" "}
+                        {act.target && (
+                          <span className="font-semibold text-[#111827] dark:text-indigo-300">
+                            {act.target}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[9px] text-slate-400 font-mono mt-0.5">
+                        {act.time}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

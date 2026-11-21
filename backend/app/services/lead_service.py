@@ -203,7 +203,7 @@ class LeadService:
             bool(lead.instagram_handle),
             lead.ai_fields or {},
         )
-        lead.fit_score = fit
+        lead.fit_score = min(100, max(0, int(fit)))
         lead.fit_reasons = fit_reasons
 
         db.commit()
@@ -274,7 +274,7 @@ class LeadService:
             bool(lead.instagram_handle),
             lead.ai_fields or {},
         )
-        lead.fit_score = fit
+        lead.fit_score = min(100, max(0, int(fit)))
         lead.fit_reasons = fit_reasons
 
         db.commit()

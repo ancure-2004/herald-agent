@@ -90,6 +90,8 @@ class LeadOut(BaseORMModel):
     id: int
     hustle_id: int
     stage_id: int
+    stage_slug: Optional[str] = None
+    stage_name: Optional[str] = None
     slug: str
     name: str
     doctor_name: str
@@ -102,6 +104,8 @@ class LeadOut(BaseORMModel):
     instagram_handle: Optional[str]
     preferred_channel: str
     status: Optional[str] = "STAGED"
+    is_lost: bool = False
+    is_won: bool = False
     fit_score: int
     fit_reasons: List[str]
     intent_score: int

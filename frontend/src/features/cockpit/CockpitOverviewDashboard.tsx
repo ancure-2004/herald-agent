@@ -68,6 +68,28 @@ const DEFAULT_DAILY_TASKS: DailyTask[] = [
   { id: "task-4", text: "Follow up on hot demo views", done: false },
 ];
 
+function isLeadLost(lead: any): boolean {
+  if (!lead) return false;
+  if (lead.is_lost) return true;
+  const status = (lead.status || "").toUpperCase();
+  if (status === "CLOSED_LOST" || status === "LOST") return true;
+  const stageSlug = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (
+    stageSlug === "lost" ||
+    stageSlug === "closed_lost" ||
+    stageSlug === "archived" ||
+    stageSlug === "dnc" ||
+    stageSlug.includes("lost")
+  ) {
+    return true;
+  }
+  if (lead.stage_rel?.is_lost) return true;
+  if (lead.stage_id === 8) return true;
+  if (Boolean(lead.do_not_contact)) return true;
+  if (Boolean(lead.is_archived)) return true;
+  return false;
+}
+
 interface CockpitOverviewDashboardProps {
   onNavigate: (tab: "attention" | "discovery" | "factory" | "outreach") => void;
 }
@@ -171,30 +193,32 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
     notify("Cockpit telemetry refreshed", "ok");
   };
 
-  // 2. Real metric calculations
-  const totalClinics = leads.length;
+  // 2. Real metric calculations (excluding CLOSED_LOST from active totals)
+  const activeLeads = useMemo(() => leads.filter((l) => !isLeadLost(l)), [leads]);
+  const lostLeadsCount = useMemo(() => leads.filter(isLeadLost).length, [leads]);
+  const totalClinics = activeLeads.length;
 
   const phoneReadyCount = useMemo(
-    () => leads.filter((l) => Boolean(l.primary_phone)).length,
-    [leads]
+    () => activeLeads.filter((l) => Boolean(l.primary_phone)).length,
+    [activeLeads]
   );
 
   const demosBuiltCount = useMemo(
     () =>
-      leads.filter((l) => l.packages && l.packages.length > 0).length,
-    [leads]
+      activeLeads.filter((l) => l.packages && l.packages.length > 0).length,
+    [activeLeads]
   );
 
   const dispatchedCount = useMemo(
     () =>
-      leads.filter((l) =>
-        l.messages?.some((m) => m.direction === "outbound")
+      activeLeads.filter((l) =>
+        l.messages?.some((m) => m.direction === "outbound") || (l.stage_id >= 4 && l.stage_id <= 7)
       ).length,
-    [leads]
+    [activeLeads]
   );
 
   const dncBlockedCount = useMemo(
-    () => leads.filter((l) => l.do_not_contact).length,
+    () => leads.filter((l) => l.do_not_contact || l.is_archived).length,
     [leads]
   );
 
@@ -344,8 +368,8 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
       }
     });
 
-    if (list.length < 2 && leads.length > 0) {
-      const candidates = leads.filter(
+    if (list.length < 2 && activeLeads.length > 0) {
+      const candidates = activeLeads.filter(
         (l) => !list.some((item) => item.leadId === l.id)
       );
       candidates.slice(0, 2 - list.length).forEach((l) => {
@@ -552,9 +576,16 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
               <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
                 {totalClinics}
               </span>
-              <span className="text-[10px] text-white/60 font-medium leading-tight max-w-[90px]">
-                Total clinics in CRM
-              </span>
+              <div className="space-y-0.5">
+                <span className="text-[10px] text-white/60 font-medium leading-tight max-w-[90px] block">
+                  Active clinics in CRM
+                </span>
+                {lostLeadsCount > 0 && (
+                  <span className="inline-block text-[9px] font-semibold text-rose-300/90">
+                    {lostLeadsCount} lost
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Right Big Number */}
@@ -767,7 +798,7 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
                 Pipeline Coverage
               </h2>
               <p className="text-[10px] text-[#6B7280] dark:text-zinc-400 font-medium">
-                {totalClinics} total clinics indexed
+                {totalClinics} active clinics indexed
               </p>
             </div>
             <div className="w-7 h-7 rounded-full bg-[#F7F7F5] dark:bg-zinc-800 flex items-center justify-center text-[#1C1D1F] dark:text-zinc-200">

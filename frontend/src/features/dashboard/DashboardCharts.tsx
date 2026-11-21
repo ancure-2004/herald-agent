@@ -14,12 +14,55 @@ interface DashboardChartsProps {
   setActiveTab: (tab: CRMTab) => void;
 }
 
+function isLeadLost(lead: any): boolean {
+  if (!lead) return false;
+  if (lead.is_lost) return true;
+  const status = (lead.status || "").toUpperCase();
+  if (status === "CLOSED_LOST" || status === "LOST") return true;
+  const stageSlug = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (
+    stageSlug === "lost" ||
+    stageSlug === "closed_lost" ||
+    stageSlug === "archived" ||
+    stageSlug === "dnc" ||
+    stageSlug.includes("lost")
+  ) {
+    return true;
+  }
+  if (lead.stage_rel?.is_lost) return true;
+  if (lead.stage_id === 8) return true;
+  if (Boolean(lead.do_not_contact)) return true;
+  if (Boolean(lead.is_archived)) return true;
+  return false;
+}
+
+function isLeadWon(lead: any): boolean {
+  if (!lead) return false;
+  if (lead.is_won) return true;
+  const status = (lead.status || "").toUpperCase();
+  if (status === "WON" || status === "CLOSED_WON") return true;
+  const stageSlug = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (
+    stageSlug === "won" ||
+    stageSlug === "closed_won" ||
+    stageSlug === "client" ||
+    stageSlug.includes("won")
+  ) {
+    return true;
+  }
+  if (lead.stage_rel?.is_won) return true;
+  if (lead.stage_id === 7) return true;
+  return false;
+}
+
 export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
   const now = useMemo(() => new Date(), []);
   const currentYear = now.getFullYear();
-  const totalClinics = leads.length;
 
-  // Mock 30-Day Outreach Activity Timeline (Area + Bar Combo)
+  const activeLeads = useMemo(() => leads.filter((l) => !isLeadLost(l)), [leads]);
+  const totalClinics = activeLeads.length;
+
+  // Real 28-Day Outreach & Demo Activity Timeline (strictly real database state)
   const chartPoints = useMemo(() => {
     const totalDays = 28;
     const realSentByDay: Record<string, number> = {};
@@ -50,20 +93,22 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
       const dayNum = dayDate.getDate();
       const dateKey = `${dayDate.getFullYear()}-${dayDate.getMonth() + 1}-${dayNum}`;
 
-      const pseudoSent = Math.round(12 + Math.sin(i * 0.7) * 7 + (i % 3) * 2);
-      const pseudoViews = Math.round(8 + Math.cos(i * 0.6) * 5 + (i % 4) * 2);
-
       const actualSent = realSentByDay[dateKey] || 0;
       const actualViews = realViewsByDay[dateKey] || 0;
 
       pts.push({
         day: `${mName} ${dayNum}`,
-        sent: Math.min(29, pseudoSent + actualSent),
-        views: Math.min(26, pseudoViews + actualViews),
+        sent: actualSent,
+        views: actualViews,
       });
     }
     return pts;
   }, [now, leads]);
+
+  const maxY = useMemo(() => {
+    const peak = Math.max(1, ...chartPoints.map((p) => Math.max(p.sent, p.views)));
+    return Math.max(10, Math.ceil(peak / 5) * 5);
+  }, [chartPoints]);
 
   const [hoveredDayIndex, setHoveredDayIndex] = useState<number>(27);
 
@@ -73,13 +118,13 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
     const totalDays = chartPoints.length;
     chartPoints.forEach((pt, i) => {
       const x = ((i + 0.5) / totalDays) * 100;
-      const y = 100 - (pt.views / 30) * 100;
+      const y = 100 - (pt.views / maxY) * 100;
       if (i === 0) {
         d += `M ${x} ${y}`;
       } else {
         const prev = chartPoints[i - 1];
         const prevX = ((i - 1 + 0.5) / totalDays) * 100;
-        const prevY = 100 - (prev.views / 30) * 100;
+        const prevY = 100 - (prev.views / maxY) * 100;
         const cp1x = prevX + (x - prevX) / 2;
         const cp1y = prevY;
         const cp2x = prevX + (x - prevX) / 2;
@@ -88,22 +133,22 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
       }
     });
     return d;
-  }, [chartPoints]);
+  }, [chartPoints, maxY]);
 
   const activePoint = chartPoints[hoveredDayIndex] || chartPoints[chartPoints.length - 1];
 
-  // Clinics by Stage (Donut Chart breakdown)
+  // Clinics by Stage (Donut Chart breakdown - strictly active stages, Won/Closed is 0 when none won)
   const stageStats = useMemo(() => {
-    const total = leads.length || 1;
-    const s1 = leads.filter((l) => l.stage_id <= 2).length;
-    const s2 = leads.filter((l) => l.stage_id === 3 || l.stage_id === 4).length;
-    const s3 = leads.filter((l) => l.stage_id === 5).length;
-    const s4 = leads.filter((l) => l.stage_id >= 6).length;
+    const total = activeLeads.length || 1;
+    const s1 = activeLeads.filter((l) => l.stage_id <= 2).length;
+    const s2 = activeLeads.filter((l) => l.stage_id === 3 || l.stage_id === 4 || l.stage_id === 6).length;
+    const s3 = activeLeads.filter((l) => l.stage_id === 5).length;
+    const s4 = activeLeads.filter((l) => isLeadWon(l) || l.stage_id === 7).length;
 
     const p1 = Math.round((s1 / total) * 100);
     const p2 = Math.round((s2 / total) * 100);
     const p3 = Math.round((s3 / total) * 100);
-    const p4 = Math.max(0, 100 - (p1 + p2 + p3));
+    const p4 = s4 > 0 ? Math.max(0, 100 - (p1 + p2 + p3)) : 0;
 
     return [
       {
@@ -139,7 +184,7 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
         dotClass: "bg-emerald-600 dark:bg-[#10B981]",
       },
     ];
-  }, [leads]);
+  }, [activeLeads]);
 
   const donutR = 58;
   const donutCircumference = 2 * Math.PI * donutR;
@@ -186,9 +231,9 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
           <div className="flex items-stretch gap-2 flex-1 relative min-h-0">
             {/* Left Y-axis labels */}
             <div className="flex flex-col justify-between text-[8px] text-white/40 font-mono text-right w-4 shrink-0 pb-1">
-              <span>30</span>
-              <span>20</span>
-              <span>10</span>
+              <span>{maxY}</span>
+              <span>{Math.round((maxY * 2) / 3)}</span>
+              <span>{Math.round(maxY / 3)}</span>
               <span>0</span>
             </div>
 
@@ -206,7 +251,7 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
               <div className="absolute inset-0 flex items-end justify-between gap-1 sm:gap-1.5 px-0.5 pb-1 z-0">
                 {chartPoints.map((pt, i) => {
                   const isHovered = i === hoveredDayIndex;
-                  const barHeightPct = Math.max(3, (pt.sent / 30) * 100);
+                  const barHeightPct = pt.sent > 0 ? Math.max(4, (pt.sent / maxY) * 100) : 0;
                   return (
                     <div
                       key={i}
@@ -247,7 +292,7 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
                 {chartPoints.map((pt, i) => {
                   const isHovered = i === hoveredDayIndex;
                   const leftPct = ((i + 0.5) / chartPoints.length) * 100;
-                  const bottomPct = (pt.views / 30) * 100;
+                  const bottomPct = (pt.views / maxY) * 100;
                   return (
                     <div
                       key={i}
@@ -275,7 +320,7 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
                   className="absolute z-20 pointer-events-none transition-all duration-150 -translate-x-1/2 -translate-y-full"
                   style={{
                     left: `${Math.max(6, Math.min(94, ((hoveredDayIndex + 0.5) / chartPoints.length) * 100))}%`,
-                    top: `${Math.max(0, 100 - (activePoint.views / 30) * 100 - 12)}%`,
+                    top: `${Math.max(0, 100 - (activePoint.views / maxY) * 100 - 12)}%`,
                   }}
                 >
                   <div className="bg-[#242528] border border-white/15 text-white shadow-xl rounded-lg px-2 py-1.5 min-w-[76px]">

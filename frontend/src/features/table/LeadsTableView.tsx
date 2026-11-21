@@ -43,27 +43,38 @@ function deriveOutreachSentAt(lead: any): string | null {
 }
 
 function isLeadSent(lead: any): boolean {
-  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
-  if (SENT_STAGES.has(stage)) return true;
+  if (lead.messages && Array.isArray(lead.messages) && lead.messages.some((m: any) => m.direction === "outbound")) return true;
   if (deriveOutreachSentAt(lead) !== null) return true;
   if (lead.packages && Array.isArray(lead.packages) && lead.packages.some((p: any) => p.sent_at)) return true;
-  if (lead.messages && Array.isArray(lead.messages) && lead.messages.some((m: any) => m.direction === "outbound")) return true;
+  const stage = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (SENT_STAGES.has(stage)) return true;
+  if (lead.stage_id >= 4 && lead.stage_id <= 7) return true;
   return false;
 }
 
 function isLeadLost(lead: any): boolean {
-  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
-  if (stage === "lost" || stage === "archived" || stage === "dnc") return true;
+  if (!lead) return false;
+  if (lead.is_lost) return true;
+  const status = (lead.status || "").toUpperCase();
+  if (status === "CLOSED_LOST" || status === "LOST") return true;
+  const stage = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (stage === "lost" || stage === "closed_lost" || stage === "archived" || stage === "dnc" || stage.includes("lost")) return true;
   if (lead.stage_rel?.is_lost) return true;
+  if (lead.stage_id === 8) return true;
   if (Boolean(lead.do_not_contact)) return true;
   if (Boolean(lead.is_archived)) return true;
   return false;
 }
 
 function isLeadWon(lead: any): boolean {
-  const stage = (lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
-  if (stage === "won" || stage === "closed_won" || stage === "client") return true;
+  if (!lead) return false;
+  if (lead.is_won) return true;
+  const status = (lead.status || "").toUpperCase();
+  if (status === "WON" || status === "CLOSED_WON") return true;
+  const stage = (lead.stage_slug ?? lead.stage_rel?.slug ?? lead.stage ?? "").toLowerCase();
+  if (stage === "won" || stage === "closed_won" || stage === "client" || stage.includes("won")) return true;
   if (lead.stage_rel?.is_won) return true;
+  if (lead.stage_id === 7) return true;
   return false;
 }
 
@@ -242,7 +253,9 @@ export const LeadsTableView = React.memo(function LeadsTableView() {
         result = result.filter((l) => !isLeadSent(l));
       } else {
         result = result.filter((l) => {
-          const stageSlug = (l.stage_rel?.slug ?? l.stage ?? "").toLowerCase();
+          const stageSlug = (l.stage_slug ?? l.stage_rel?.slug ?? l.stage ?? "").toLowerCase();
+          const targetStage = stages.find((s) => s.slug.toLowerCase() === stageFilter.toLowerCase());
+          if (targetStage && l.stage_id === targetStage.id) return true;
           return stageSlug === stageFilter.toLowerCase();
         });
       }
@@ -833,7 +846,7 @@ export const LeadsTableView = React.memo(function LeadsTableView() {
                         <td className="py-2.5 px-2.5 whitespace-nowrap">
                           <div className="flex items-center gap-1.5 flex-nowrap">
                             <span className="bg-slate-100 dark:bg-white/[0.06] text-zinc-800 dark:text-zinc-200 font-mono font-medium px-1.5 py-0.5 rounded text-[10px] border border-slate-200/60 dark:border-white/[0.06] whitespace-nowrap">
-                              Fit {lead.fit_score}%
+                              Fit {Math.min(100, Math.max(0, Math.round(lead.fit_score || 0)))}%
                             </span>
                             <span className="text-[11px] font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1 whitespace-nowrap">
                               <span className={`w-1.5 h-1.5 rounded-full ${intentDot} shrink-0`} />
