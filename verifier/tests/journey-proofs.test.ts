@@ -21,7 +21,7 @@ const journey = (title: string, quote = '"') => `import { test } from "@playwrig
  */
 function run(proofTest: string, file: string | null, known?: string | null) {
   const entry = { ...GOOD_ENTRY, proof: [{ test: proofTest, covers: ["board.drag"] }] };
-  const files = file === null ? {} : { "verifier/journeys/board.journey.ts": file };
+  const files: Record<string, string> = file === null ? {} : { "verifier/journeys/board.journey.ts": file };
   return runVerify(makeFixture({ typecheck: "exit 0", featureMap: map(entry), knownFailures: known, files }));
 }
 
