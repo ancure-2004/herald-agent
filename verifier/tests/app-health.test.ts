@@ -132,3 +132,10 @@ for (const file of ["frontend/.env.local", "engines/demo/.env"]) {
     assert.equal(exists(recordPath(root, "frontend")), false, "no frontend started");
   });
 }
+
+test("settings templates (.env.example, .env.sample, .env.template) are not refused: they hold no secrets", () => {
+  const files = { "frontend/.env.example": "X=\n", "backend/.env.example": "X=\n", "engines/demo/.env.sample": "X=\n", "frontend/.env.template": "X=\n" };
+  const r = runVerify(makeFixture({ typecheck: "exit 0", files }));
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.doesNotMatch(r.stdout, /refused/);
+});

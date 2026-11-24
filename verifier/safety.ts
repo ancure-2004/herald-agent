@@ -36,13 +36,16 @@ function isFolder(path: string): boolean {
   return lstatSync(path, { throwIfNoEntry: false })?.isDirectory() === true;
 }
 
+/** A settings template (`.env.example`, `.env.sample`, `.env.template`): tracked, no secrets, never read by Next. */
+const TEMPLATE = /\.(example|sample|template)$/;
+
 /**
  * The `.env*` files directly in one folder, as `<label>/<name>`: names only.
  * A missing folder has none.
  */
 function envFiles(dir: string, label: string): string[] {
   if (!isFolder(dir)) return [];
-  return readdirSync(dir).filter((name) => name.startsWith(".env")).map((name) => `${label}/${name}`);
+  return readdirSync(dir).filter((name) => name.startsWith(".env") && !TEMPLATE.test(name)).map((name) => `${label}/${name}`);
 }
 
 /** The paid or account-bound commands every check gets a stub of: a stub refuses at once. */
