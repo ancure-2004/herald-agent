@@ -30,6 +30,11 @@ function report(r: CheckResult): void {
 
 /** Run the checks; returns the overall exit code. */
 function main(): number {
+  const args = process.argv.slice(2);
+  if (args.length > 0) {
+    console.log(`usage: ./verify  (no options; unknown argument: ${args.join(" ")})`);
+    return 2;
+  }
   const found = refusals(ROOT);
   if (found.length > 0) {
     for (const file of found) console.log(`refused: ${file} exists in this checkout; run verify in a clean worktree`);
@@ -53,4 +58,14 @@ function main(): number {
   }
 }
 
-process.exitCode = main();
+/** Run main; anything unexpected means the Verifier could not run, which is exit 2. */
+function start(): number {
+  try {
+    return main();
+  } catch (error) {
+    console.log(`verify could not run: ${error instanceof Error ? error.message : String(error)}`);
+    return 2;
+  }
+}
+
+process.exitCode = start();

@@ -6,7 +6,7 @@ import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
 import { readFileSync } from "node:fs";
-import { cleanup, exists, makeFixture, readEvidence, runVerify } from "./fixture.ts";
+import { cleanup, exists, makeFixture, readEvidence, runVerify, tempDir } from "./fixture.ts";
 
 after(cleanup);
 
@@ -73,7 +73,7 @@ test("checks run with only the allowed environment and a throwaway database that
   assert.equal(vars.has("DIRECT_URL"), false);
   assert.equal(vars.get("VERIFY_FOO"), "z");
   assert.equal(vars.get("CI"), "1");
-  // npm adds its own variables to the scripts it runs; the caller's are the allow list.
+  /** npm adds its own variables to the scripts it runs; the caller's are the allow list. */
   const allowed = new Set(["PATH", "HOME", "LANG", "TERM", "TMPDIR", "CI", "DATABASE_URL", "COLOR", "EDITOR", "INIT_CWD", "NODE", "PWD"]);
   for (const name of vars.keys()) {
     assert.ok(allowed.has(name) || name.startsWith("VERIFY_") || name.startsWith("npm_"), `unexpected variable ${name}`);
@@ -82,4 +82,22 @@ test("checks run with only the allowed environment and a throwaway database that
   assert.ok(url.startsWith("sqlite:///"), url);
   const dbFile = url.slice("sqlite://".length);
   assert.equal(exists(dirname(dbFile)), false, "the throwaway database folder is removed after the run");
+});
+
+test("VERIFY_EVIDENCE_DIR receives the Evidence and keeps it after the run", () => {
+  const root = makeFixture({ typecheck: "exit 0" });
+  const dir = join(tempDir("verify-evidence-set-"), "kept");
+  const r = runVerify(root, [], { VERIFY_EVIDENCE_DIR: dir });
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.equal(r.evidence, dir);
+  assert.ok(exists(join(dir, "summary.json")));
+  assert.ok(exists(join(dir, "typecheck.log")));
+});
+
+test("an unknown flag exits 2 with a usage line", () => {
+  const root = makeFixture({ typecheck: "touch ran.marker && exit 0" });
+  const r = runVerify(root, ["--bogus"]);
+  assert.equal(r.code, 2, r.stdout + r.stderr);
+  assert.match(r.stdout, /^usage: \.\/verify/m);
+  assert.equal(exists(join(root, "frontend", "ran.marker")), false, "no check ran");
 });
