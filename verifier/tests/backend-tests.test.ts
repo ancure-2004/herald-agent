@@ -38,3 +38,21 @@ test("an unlisted failing test exits 1 and the message names its id", () => {
   assert.match(r.stdout, /backend-tests: fail \(unlisted failure: test_x\.py::test_a[ ,|)]/);
   assert.equal(backendStatus(r.evidence as string), "fail");
 });
+
+test("only listed failing tests exits 0 and backend-tests passes", () => {
+  const files = { "verifier/known-failures.txt": "test_x.py::test_a  # rq-test\n" };
+  const root = makeFixture({ typecheck: "exit 0", files, pytest: 'echo "FAILED test_x.py::test_a - assert 1 == 2"; exit 1' });
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /backend-tests: pass/);
+  assert.equal(backendStatus(r.evidence as string), "pass");
+});
+
+test("a listed test that no longer fails exits 0 and prints the remove-it line", () => {
+  const files = { "verifier/known-failures.txt": "# only the list shrinks\ntest_x.py::test_gone  # rq-test\n" };
+  const root = makeFixture({ typecheck: "exit 0", files, pytest: 'echo "1 passed"; exit 0' });
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /fixed: test_x\.py::test_gone; remove it from verifier\/known-failures\.txt/);
+  assert.equal(backendStatus(r.evidence as string), "pass");
+});
