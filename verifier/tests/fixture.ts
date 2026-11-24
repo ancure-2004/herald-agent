@@ -28,6 +28,27 @@ const PASSING_PYTEST = 'echo "1 passed"; exit 0';
 /** The fake E2E runner a fixture gets unless a test says otherwise: one passing test. */
 const PASSING_E2E = 'echo "1 passed"; exit 0';
 
+/** The feature map a fixture gets unless a test says otherwise: one entry whose folder the fixture makes. */
+const DEFAULT_FEATURE_MAP = JSON.stringify(
+  {
+    features: [
+      {
+        id: "demo",
+        name: "Demo",
+        reach: ["Test -> Demo"],
+        files: ["frontend/src/features/demo"],
+        subFeatures: [{ id: "demo.one", what: "the one part" }],
+        handles: [],
+        endState: "the demo shows",
+        gotchas: [],
+        proof: [],
+      },
+    ],
+  },
+  null,
+  2,
+);
+
 /** How a fake herald server behaves: healthy answers 200, crash exits at start, hang never listens, missing has no file. */
 export type FakeMode = "healthy" | "crash" | "hang" | "missing";
 
@@ -59,6 +80,8 @@ export type FixtureOptions = {
   noVenv?: boolean;
   uvicorn?: FakeMode;
   next?: FakeMode;
+  /** verifier/feature-map.json's text; null writes no map at all. Default: a valid one-entry map. */
+  featureMap?: string | null;
   files?: Record<string, string>;
 };
 
@@ -94,6 +117,11 @@ export function makeFixture(opts: FixtureOptions): string {
     writeFileSync(join(bin, "python"), `#!/bin/sh\n${opts.e2e ?? PASSING_E2E}\n`, { mode: 0o755 });
     placeFake(join(bin, "uvicorn"), root, opts.uvicorn ?? "healthy", recordPath(root, "backend"));
   }
+  const mapPath = join(root, "verifier", "feature-map.json");
+  if (opts.featureMap === null) rmSync(mapPath, { force: true });
+  else writeFileSync(mapPath, opts.featureMap ?? DEFAULT_FEATURE_MAP);
+  mkdirSync(join(root, "frontend", "src", "features", "demo"), { recursive: true });
+  writeFileSync(join(root, "frontend", "src", "features", "demo", "index.tsx"), "export {};\n");
   for (const [path, text] of Object.entries(opts.files ?? {})) {
     mkdirSync(join(root, path, ".."), { recursive: true });
     writeFileSync(join(root, path), text);
