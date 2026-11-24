@@ -69,6 +69,34 @@ test("a journey proof whose path climbs out of verifier/journeys/ with .. is a b
   assert.match(featureLine(r.stdout), /proof\[1\] test file ".*\.\..*" must be verifier\/journeys\/board\.journey\.ts/);
 });
 
+test("a title only in a // comment is not a test: a break", () => {
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", '// test("adds a lead", async () => {});\n');
+  assert.match(featureLine(r.stdout), /proof\[1\] test ".*::adds a lead": .*has no test "adds a lead"/);
+});
+
+test("a test.fixme with the title is never a proof: a break", () => {
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", 'test.fixme("adds a lead", async () => {});\n');
+  assert.match(featureLine(r.stdout), /has no test "adds a lead"/);
+});
+
+test("a test whose body calls test.skip( is not a proof: a break", () => {
+  const body = 'test("adds a lead", async () => {\n  test.skip(true, "parked");\n});\n';
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", body);
+  assert.match(featureLine(r.stdout), /has no test "adds a lead"/);
+});
+
+test("an indented test inside a describe is still a proof", () => {
+  const body = 'describe("board", () => {\n  test("adds a lead", async () => {});\n});\n';
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", body);
+  assert.match(featureLine(r.stdout), /^feature-map: pass/, r.stdout);
+});
+
+test("a test.skip in a later test does not refuse an earlier test", () => {
+  const body = 'test("adds a lead", async () => {});\ntest("removes a lead", async () => {\n  test.skip(true, "parked");\n});\n';
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", body);
+  assert.match(featureLine(r.stdout), /^feature-map: pass/, r.stdout);
+});
+
 test("a journey proof on known-failures.txt still covers its sub-feature: journeys are never known failures", () => {
   const r = run("verifier/journeys/board.journey.ts::adds a lead", journey("adds a lead"), "verifier/journeys/board.journey.ts::adds a lead\n");
   assert.match(featureLine(r.stdout), /^feature-map: pass/, r.stdout);

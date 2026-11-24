@@ -109,5 +109,5 @@ function checkJourney(root: string, at: string, { file, title }: { file: string;
     bad(`${at} test file "${file}" cannot be read: ${errorText(error)}`);
     return;
   }
-  if (!definesJourneyTest(source, title)) bad(`${at} test "${file}::${title}": ${file} has no test "${title}"`);
+  if (!definesJourneyTest(source, title)) bad(`${at} test "${file}::${title}": ${file} has no test "${title}" that runs (a fixme or skip is no proof)`);
 }
