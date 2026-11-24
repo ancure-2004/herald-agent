@@ -9,6 +9,7 @@ import { join } from "node:path";
 import type { Proof } from "./feature-map.ts";
 import { errorText, kindOf } from "./feature-fs.ts";
 import { isRecord, isText } from "./feature-shape.ts";
+import { definesJourneyTest, JOURNEY_DIR, journeyId } from "./journey-id.ts";
 import { definesTest, parseTestId } from "./pytest-id.ts";
 
 /** `proof`: may be empty. Each item is `{ test, covers }`; the good ones are returned. */
@@ -47,8 +48,13 @@ function checkCovers(value: unknown, at: string, subIds: string[], bad: (m: stri
   return ids;
 }
 
-/** A pytest id: `path` must be a file; a name after `::` must be defined in it (see pytest-id.ts). */
+/** A test id: a journey proof (see journey-id.ts), else a pytest id: `path` must be a file; a name after `::` must be defined in it (see pytest-id.ts). */
 function checkTest(root: string, at: string, test: string, bad: (m: string) => void): void {
+  const journey = journeyId(test);
+  if (journey) {
+    checkJourney(root, at, journey, bad);
+    return;
+  }
   const { file, names } = parseTestId(test);
   const kind = kindOf(join(root, file));
   if ("error" in kind) {
@@ -73,4 +79,29 @@ function checkTest(root: string, at: string, test: string, bad: (m: string) => v
     return;
   }
   if (!definesTest(source, names)) bad(`${at} test "${test}": ${file} has no def ${last}( or class ${last}`);
+}
+
+/** A journey proof: its file must be under verifier/journeys/, exist, and define a test with its title. */
+function checkJourney(root: string, at: string, { file, title }: { file: string; title: string }, bad: (m: string) => void): void {
+  if (!file.startsWith(JOURNEY_DIR)) {
+    bad(`${at} test file "${file}" must be under ${JOURNEY_DIR}`);
+    return;
+  }
+  const kind = kindOf(join(root, file));
+  if ("error" in kind) {
+    bad(`${at} test file "${file}" cannot be read: ${kind.error}`);
+    return;
+  }
+  if (kind.kind !== "file") {
+    bad(`${at} test file "${file}" ${kind.kind === "missing" ? "does not exist" : "is not a file"}`);
+    return;
+  }
+  let source: string;
+  try {
+    source = readFileSync(join(root, file), "utf8");
+  } catch (error) {
+    bad(`${at} test file "${file}" cannot be read: ${errorText(error)}`);
+    return;
+  }
+  if (!definesJourneyTest(source, title)) bad(`${at} test "${file}::${title}": ${file} has no test "${title}"`);
 }

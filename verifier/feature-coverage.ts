@@ -6,6 +6,7 @@
 import { existsSync, readdirSync, type Dirent } from "node:fs";
 import { join, normalize, relative, sep } from "node:path";
 import { errorText } from "./feature-fs.ts";
+import { journeyId } from "./journey-id.ts";
 import type { Feature } from "./feature-map.ts";
 
 /** The folders whose files must be claimed by some entry (the feature code, not shared code). */
@@ -32,12 +33,13 @@ function bareId(id: string): string {
 }
 
 /**
- * Whether a proof's test id is on the known-failures list. A map id under
+ * Whether a proof's test id is on the known-failures list (a journey proof never is). A map id under
  * `tests/backend/` matches a line equal to the rest of it (pytest's id from
  * backend/); any other map id matches a line equal to it. A `[...]` suffix on
  * either side is ignored.
  */
 export function isKnownFailing(test: string, known: string[]): boolean {
+  if (journeyId(test)) return false;
   const id = bareId(test);
   const backend = "tests/backend/";
   return known.some((line) => {
