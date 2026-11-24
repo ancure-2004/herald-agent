@@ -5,7 +5,7 @@
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { cleanup, exists, makeFixture, runVerify } from "./fixture.ts";
+import { cleanup, exists, makeFixture, readRecord, runVerify } from "./fixture.ts";
 
 after(cleanup);
 
@@ -18,4 +18,30 @@ test("healthy fakes: app-health passes, exit 0, and Evidence has both server log
   for (const file of ["backend.log", "frontend.log", "app-health.log"]) {
     assert.ok(exists(join(r.evidence, file)), file);
   }
+});
+
+/** The value after a flag in a recorded argv, or undefined. */
+function argAfter(argv: string[], flag: string): string | undefined {
+  const i = argv.indexOf(flag);
+  return i === -1 ? undefined : argv[i + 1];
+}
+
+test("backend and frontend get their free ports, the CORS and API addresses, telemetry off, and the throwaway database", () => {
+  const root = makeFixture({ typecheck: "exit 0" });
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  const backend = readRecord(root, "backend");
+  const frontend = readRecord(root, "frontend");
+  const bp = argAfter(backend.argv, "--port") ?? "";
+  const fp = argAfter(frontend.argv, "--port") ?? "";
+  assert.match(bp, /^\d+$/);
+  assert.match(fp, /^\d+$/);
+  assert.notEqual(bp, fp);
+  for (const port of [bp, fp]) assert.ok(!["8000", "3000", "3001"].includes(port), `not a reserved port: ${port}`);
+  assert.equal(backend.env.CORS_ORIGINS, `http://127.0.0.1:${fp},http://localhost:${fp}`);
+  assert.equal(frontend.env.NEXT_PUBLIC_API_BASE_URL, `http://127.0.0.1:${bp}`);
+  assert.equal(frontend.env.NEXT_TELEMETRY_DISABLED, "1");
+  assert.ok(backend.env.DATABASE_URL?.startsWith("sqlite:///"), String(backend.env.DATABASE_URL));
+  assert.ok(backend.env.DATABASE_URL?.endsWith("/verify.db"), String(backend.env.DATABASE_URL));
+  assert.equal(frontend.env.DATABASE_URL, backend.env.DATABASE_URL);
 });
