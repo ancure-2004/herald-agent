@@ -28,33 +28,71 @@ const PASSING_PYTEST = 'echo "1 passed"; exit 0';
 /** The fake E2E runner a fixture gets unless a test says otherwise: one passing test. */
 const PASSING_E2E = 'echo "1 passed"; exit 0';
 
+/** How a fake herald server behaves: healthy answers 200, crash exits at start, hang never listens, missing has no file. */
+export type FakeMode = "healthy" | "crash" | "hang" | "missing";
+
+/** What a fake server writes when it starts: its PID, its argv, and the environment variables the Verifier sets. */
+export type FakeRecord = { pid: number; argv: string[]; env: Record<string, string | null> };
+
+/** Where a fixture's fake server writes its record: beside the fixture, never inside it, so git sees nothing. */
+export function recordPath(root: string, server: "backend" | "frontend"): string {
+  return join(`${root}-records`, `${server}.json`);
+}
+
+/** A fake server's record; throws when that server never started. */
+export function readRecord(root: string, server: "backend" | "frontend"): FakeRecord {
+  return JSON.parse(readFileSync(recordPath(root, server), "utf8"));
+}
+
 /**
  * Options for a fixture: what the frontend's typecheck script does, whether
  * node_modules exists, the bodies of the fake backend/.venv/bin/pytest and
  * backend/.venv/bin/python (sh scripts; they run in backend/, and the python
  * one is the E2E runner, run from the root), whether that venv is missing,
- * and extra files.
+ * the modes of the fake uvicorn and next (healthy by default), and extra files.
  */
-export type FixtureOptions = { typecheck: string; nodeModules?: boolean; pytest?: string; e2e?: string; noVenv?: boolean; files?: Record<string, string> };
+export type FixtureOptions = {
+  typecheck: string;
+  nodeModules?: boolean;
+  pytest?: string;
+  e2e?: string;
+  noVenv?: boolean;
+  uvicorn?: FakeMode;
+  next?: FakeMode;
+  files?: Record<string, string>;
+};
+
+/** Write a fake server's sh script: it runs fake-server.mjs in the given mode, recording to `record`. Missing writes nothing. */
+function placeFake(path: string, root: string, mode: FakeMode, record: string): void {
+  if (mode === "missing") return;
+  const script = `#!/bin/sh\nexec node "${join(root, "fake-server.mjs")}" --fake-mode ${mode} --fake-record "${record}" "$@"\n`;
+  writeFileSync(path, script, { mode: 0o755 });
+}
 
 /** A fixture herald-shaped folder: `verify`, `verifier/` (no node_modules, no tests), `frontend/` and `backend/`. */
 export function makeFixture(opts: FixtureOptions): string {
   const root = tempDir("verify-fixture-");
+  mkdirSync(`${root}-records`);
+  made.push(`${root}-records`);
   cpSync(join(REAL_ROOT, "verify"), join(root, "verify"));
   cpSync(join(REAL_ROOT, "verifier"), join(root, "verifier"), {
     recursive: true,
     filter: (src) => !/[\\/](node_modules|tests)$/.test(src),
   });
+  cpSync(join(import.meta.dirname, "fake-server.mjs"), join(root, "fake-server.mjs"));
   mkdirSync(join(root, "frontend"));
   const pkg = { name: "frontend", private: true, scripts: { typecheck: opts.typecheck } };
   writeFileSync(join(root, "frontend", "package.json"), JSON.stringify(pkg, null, 2));
-  if (opts.nodeModules !== false) mkdirSync(join(root, "frontend", "node_modules"));
+  if (opts.nodeModules !== false) {
+    mkdirSync(join(root, "frontend", "node_modules", ".bin"), { recursive: true });
+    placeFake(join(root, "frontend", "node_modules", ".bin", "next"), root, opts.next ?? "healthy", recordPath(root, "frontend"));
+  }
   if (opts.noVenv !== true) {
-    mkdirSync(join(root, "backend", ".venv", "bin"), { recursive: true });
-    const pytest = join(root, "backend", ".venv", "bin", "pytest");
-    writeFileSync(pytest, `#!/bin/sh\n${opts.pytest ?? PASSING_PYTEST}\n`, { mode: 0o755 });
-    const python = join(root, "backend", ".venv", "bin", "python");
-    writeFileSync(python, `#!/bin/sh\n${opts.e2e ?? PASSING_E2E}\n`, { mode: 0o755 });
+    const bin = join(root, "backend", ".venv", "bin");
+    mkdirSync(bin, { recursive: true });
+    writeFileSync(join(bin, "pytest"), `#!/bin/sh\n${opts.pytest ?? PASSING_PYTEST}\n`, { mode: 0o755 });
+    writeFileSync(join(bin, "python"), `#!/bin/sh\n${opts.e2e ?? PASSING_E2E}\n`, { mode: 0o755 });
+    placeFake(join(bin, "uvicorn"), root, opts.uvicorn ?? "healthy", recordPath(root, "backend"));
   }
   for (const [path, text] of Object.entries(opts.files ?? {})) {
     mkdirSync(join(root, path, ".."), { recursive: true });

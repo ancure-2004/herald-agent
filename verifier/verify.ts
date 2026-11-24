@@ -64,12 +64,13 @@ async function main(): Promise<number> {
   const checks = await loadChecks();
   const runDir = mkdtempSync(join(tmpdir(), "verify-run-"));
   try {
+    const dir = evidenceDir(process.env);
     const env = cleanEnv(process.env, runDir, writeStubs(runDir));
     const before = trackedStatus(ROOT, env);
-    const results = checks.map((c) => c.run({ root: ROOT, env }));
+    const results: CheckResult[] = [];
+    for (const c of checks) results.push(await c.run({ root: ROOT, env, evidenceDir: dir }));
     const after = trackedStatus(ROOT, env);
     const exitCode = exitCodeFor(results);
-    const dir = evidenceDir(process.env);
     for (const r of results) {
       writeLog(dir, r);
       report(r);
