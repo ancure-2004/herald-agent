@@ -5,10 +5,15 @@
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
-import { mkdirSync, readFileSync, symlinkSync } from "node:fs";
+import { readFileSync, symlinkSync } from "node:fs";
 import { cleanup, exists, makeFixture, readEvidence, runVerify, tempDir } from "./fixture.ts";
 
 after(cleanup);
+
+/** The typecheck's entry in a summary: checks run in file-name order, so it is not always first. */
+function typecheckOf(summary: { checks: { name: string }[] }): { name: string; status: string } {
+  return summary.checks.find((c) => c.name === "typecheck") as { name: string; status: string };
+}
 
 test("a passing typecheck exits 0 and leaves Evidence", () => {
   const root = makeFixture({ typecheck: "exit 0" });
@@ -19,8 +24,8 @@ test("a passing typecheck exits 0 and leaves Evidence", () => {
   assert.ok(exists(`${r.evidence}/typecheck.log`));
   const summary = JSON.parse(readEvidence(r.evidence, "summary.json"));
   assert.equal(summary.exitCode, 0);
-  assert.equal(summary.checks[0].name, "typecheck");
-  assert.equal(summary.checks[0].status, "pass");
+  assert.equal(typecheckOf(summary).name, "typecheck");
+  assert.equal(typecheckOf(summary).status, "pass");
 });
 
 test("a failing typecheck exits 1, names the check and the error line, and records fail", () => {
@@ -32,7 +37,7 @@ test("a failing typecheck exits 1, names the check and the error line, and recor
   assert.ok(r.evidence, "last stdout line is `evidence: <path>`");
   const summary = JSON.parse(readEvidence(r.evidence, "summary.json"));
   assert.equal(summary.exitCode, 1);
-  assert.equal(summary.checks[0].status, "fail");
+  assert.equal(typecheckOf(summary).status, "fail");
 });
 
 test("a missing frontend/node_modules exits 2 and names `cd frontend && npm ci`", () => {
@@ -44,7 +49,7 @@ test("a missing frontend/node_modules exits 2 and names `cd frontend && npm ci`"
   assert.ok(r.evidence, "last stdout line is `evidence: <path>`");
   const summary = JSON.parse(readEvidence(r.evidence, "summary.json"));
   assert.equal(summary.exitCode, 2);
-  assert.equal(summary.checks[0].status, "could-not-run");
+  assert.equal(typecheckOf(summary).status, "could-not-run");
 });
 
 /** The typecheck script that leaves a marker file when it runs. */
@@ -120,7 +125,6 @@ test("checks are found in verifier/checks/, and a check that could not run wins 
 
 test("a dangling symlink at backend/.env is refused too", () => {
   const root = makeFixture({ typecheck: MARKER_SCRIPT });
-  mkdirSync(join(root, "backend"));
   symlinkSync(join(root, "nowhere"), join(root, "backend", ".env"));
   const r = runVerify(root);
   assert.equal(r.code, 2, r.stdout + r.stderr);

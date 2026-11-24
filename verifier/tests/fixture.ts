@@ -22,10 +22,17 @@ export function tempDir(prefix: string): string {
   return dir;
 }
 
-/** Options for a fixture: what the frontend's typecheck script does, and whether node_modules exists. */
-export type FixtureOptions = { typecheck: string; nodeModules?: boolean; files?: Record<string, string> };
+/** The fake pytest a fixture gets unless a test says otherwise: one passing test. */
+const PASSING_PYTEST = 'echo "1 passed"; exit 0';
 
-/** A fixture herald-shaped folder: `verify`, `verifier/` (no node_modules, no tests) and `frontend/`. */
+/**
+ * Options for a fixture: what the frontend's typecheck script does, whether
+ * node_modules exists, the body of the fake backend/.venv/bin/pytest (a sh
+ * script; it runs in backend/), whether that venv is missing, and extra files.
+ */
+export type FixtureOptions = { typecheck: string; nodeModules?: boolean; pytest?: string; noVenv?: boolean; files?: Record<string, string> };
+
+/** A fixture herald-shaped folder: `verify`, `verifier/` (no node_modules, no tests), `frontend/` and `backend/`. */
 export function makeFixture(opts: FixtureOptions): string {
   const root = tempDir("verify-fixture-");
   cpSync(join(REAL_ROOT, "verify"), join(root, "verify"));
@@ -37,6 +44,11 @@ export function makeFixture(opts: FixtureOptions): string {
   const pkg = { name: "frontend", private: true, scripts: { typecheck: opts.typecheck } };
   writeFileSync(join(root, "frontend", "package.json"), JSON.stringify(pkg, null, 2));
   if (opts.nodeModules !== false) mkdirSync(join(root, "frontend", "node_modules"));
+  if (opts.noVenv !== true) {
+    mkdirSync(join(root, "backend", ".venv", "bin"), { recursive: true });
+    const pytest = join(root, "backend", ".venv", "bin", "pytest");
+    writeFileSync(pytest, `#!/bin/sh\n${opts.pytest ?? PASSING_PYTEST}\n`, { mode: 0o755 });
+  }
   for (const [path, text] of Object.entries(opts.files ?? {})) {
     mkdirSync(join(root, path, ".."), { recursive: true });
     writeFileSync(join(root, path), text);
