@@ -1,33 +1,16 @@
 /**
- * Seam tests for the `feature-map` check: `verify` run as a program against a
- * fixture whose verifier/feature-map.json, feature folders and pytest files the
- * test writes. Asserts only on exit code, stdout and the Evidence files.
+ * Seam tests for the `feature-map` check, part 1: the report, the whole-map
+ * rules, and the item-numbered breaks. verify runs against a fixture; each
+ * test asserts only on exit code, stdout and the Evidence files.
+ * The proof and unreadable-path tests live in feature-map-proofs.test.ts and
+ * feature-map-rules.test.ts; the helpers are in feature-map-helpers.ts.
  */
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
-import { chmodSync } from "node:fs";
-import { join } from "node:path";
 import { cleanup, makeFixture, readEvidence, runVerify } from "./fixture.ts";
+import { GOOD_ENTRY, featureLine, featureLog, map, mapOf, runMap } from "./feature-map-helpers.ts";
 
 after(cleanup);
-
-/** A one-entry map: `features` is the list of entries, each given as JSON text. */
-function mapOf(...entries: object[]): string {
-  return JSON.stringify({ features: entries }, null, 2);
-}
-
-/** A well-formed entry for the fixture's demo folder, with one sub-feature and one proof. */
-const GOOD_ENTRY = {
-  id: "board",
-  name: "Board",
-  reach: ["Management sidebar -> Kanban Board"],
-  files: ["frontend/src/features/demo"],
-  subFeatures: [{ id: "board.drag", what: "drag a card" }],
-  handles: ["Kanban Board"],
-  endState: "the card shows in the new column",
-  gotchas: [],
-  proof: [{ test: "tests/backend/test_board.py::test_drag", covers: ["board.drag"] }],
-};
 
 test("a well-formed map with every proof present passes, and the status line says so", () => {
   const files = { "tests/backend/test_board.py": "def test_drag():\n    assert True\n" };
@@ -39,27 +22,6 @@ test("a well-formed map with every proof present passes, and the status line say
   assert.equal(summary.checks.find((c: { name: string }) => c.name === "feature-map").status, "pass");
 });
 
-/** The feature-map line of a run's stdout, with its status and message. */
-function featureLine(stdout: string): string {
-  const line = stdout.split("\n").find((l) => l.startsWith("feature-map: "));
-  assert.ok(line, `stdout has a feature-map line: ${stdout}`);
-  return line;
-}
-
-/** The feature-map.log text of a run; the Evidence folder is the last stdout line. */
-function featureLog(evidence: string | undefined): string {
-  assert.ok(evidence, "run printed an Evidence path");
-  return readEvidence(evidence, "feature-map.log");
-}
-
-/** Run verify on a fixture with this map, the good proof test present, and extra files. */
-function runMap(featureMap: string | null, extra: Record<string, string> = {}) {
-  const files = { "tests/backend/test_board.py": "def test_drag():\n    assert True\n", ...extra };
-  return runVerify(makeFixture({ typecheck: "exit 0", featureMap, files }));
-}
-
-/** A map JSON with the given entries. */
-const map = (...entries: object[]): string => mapOf(...entries);
 
 test("a missing field fails, and the line names the entry and the field", () => {
   const { endState: _dropped, ...noEndState } = GOOD_ENTRY;
@@ -222,149 +184,3 @@ test("a files path that is absolute, outside herald, or the root itself is a bre
   assert.match(line, /board: files\[4\] "\.\/" must be a path inside herald/);
 });
 
-/** Run verify with one proof on `test` and the given test file text; the rest of the map is GOOD_ENTRY. */
-function proofRun(test: string, source: string) {
-  const proof = [{ test, covers: ["board.drag"] }];
-  return runMap(map({ ...GOOD_ENTRY, proof }), { "tests/backend/test_board.py": source });
-}
-
-test("a def that is commented out does not count as a definition", () => {
-  const r = proofRun("tests/backend/test_board.py::test_drag", "# def test_drag():\n#     pass\n");
-  assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /board: proof\[1\] test "tests\/backend\/test_board\.py::test_drag": .*has no def test_drag\(/);
-});
-
-test("async def counts as a definition", () => {
-  const r = proofRun("tests/backend/test_board.py::test_drag", "async def test_drag():\n    pass\n");
-  assert.equal(r.code, 0, r.stdout + r.stderr);
-});
-
-test("Class::method passes when the method is in that class", () => {
-  const source = "class TestBoard:\n    def test_drag(self):\n        pass\n";
-  const r = proofRun("tests/backend/test_board.py::TestBoard::test_drag", source);
-  assert.equal(r.code, 0, r.stdout + r.stderr);
-});
-
-test("Wrong::method fails when the method lives in another class", () => {
-  const source = "class TestRight:\n    def test_drag(self):\n        pass\n\nclass TestWrong:\n    def test_other(self):\n        pass\n";
-  const r = proofRun("tests/backend/test_board.py::TestWrong::test_drag", source);
-  assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /board: proof\[1\] test ".*::TestWrong::test_drag": .*has no def test_drag\(/);
-});
-
-test("a parametrize suffix [...] is ignored when looking up the function", () => {
-  const r = proofRun("tests/backend/test_board.py::test_drag[case-1]", "def test_drag(x):\n    pass\n");
-  assert.equal(r.code, 0, r.stdout + r.stderr);
-});
-
-test("path::TestClass passes when the file defines that class", () => {
-  const r = proofRun("tests/backend/test_board.py::TestBoard", "class TestBoard:\n    def test_drag(self):\n        pass\n");
-  assert.equal(r.code, 0, r.stdout + r.stderr);
-});
-
-test("path::TestClass fails when the file has no such class", () => {
-  const r = proofRun("tests/backend/test_board.py::TestGone", "class TestBoard:\n    pass\n");
-  assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /board: proof\[1\] test ".*::TestGone": .*has no def TestGone\( or class TestGone/);
-});
-
-/** True when this run is root, which can read anything, so a chmod 000 test cannot fail. */
-const isRoot = process.getuid?.() === 0;
-
-/** The names of the checks a run's summary.json lists. */
-function checkNames(evidence: string | undefined): string[] {
-  assert.ok(evidence, "run printed an Evidence path");
-  return JSON.parse(readEvidence(evidence, "summary.json")).checks.map((c: { name: string }) => c.name);
-}
-
-test("an unreadable feature folder is a break naming the path, not a crash: exit 1, other checks still run", { skip: isRoot && "root reads everything" }, () => {
-  const root = makeFixture({ typecheck: "exit 0", featureMap: map(GOOD_ENTRY), files: { "tests/backend/test_board.py": "def test_drag():\n    pass\n", "frontend/src/features/locked/x.tsx": "export {};\n" } });
-  const locked = join(root, "frontend/src/features/locked");
-  try {
-    chmodSync(locked, 0o000);
-    const r = runVerify(root);
-    assert.equal(r.code, 1, r.stdout + r.stderr);
-    assert.match(featureLine(r.stdout), /^feature-map: fail .*frontend\/src\/features\/locked cannot be read: /);
-    assert.ok(checkNames(r.evidence).includes("typecheck"), "the other checks are still reported");
-  } finally {
-    chmodSync(locked, 0o755);
-  }
-});
-
-test("an unreadable proof file is a break naming the test, not a crash: exit 1", { skip: isRoot && "root reads everything" }, () => {
-  const root = makeFixture({ typecheck: "exit 0", featureMap: map(GOOD_ENTRY), files: { "tests/backend/test_board.py": "def test_drag():\n    pass\n" } });
-  const proofFile = join(root, "tests/backend/test_board.py");
-  try {
-    chmodSync(proofFile, 0o000);
-    const r = runVerify(root);
-    assert.equal(r.code, 1, r.stdout + r.stderr);
-    assert.match(featureLine(r.stdout), /board: proof\[1\] test ".*::test_drag": tests\/backend\/test_board\.py cannot be read: /);
-  } finally {
-    chmodSync(proofFile, 0o644);
-  }
-});
-
-test("an unreadable map file is a break naming the file, not a crash: exit 1, not 2", { skip: isRoot && "root reads everything" }, () => {
-  const root = makeFixture({ typecheck: "exit 0", featureMap: map(GOOD_ENTRY), files: { "tests/backend/test_board.py": "def test_drag():\n    pass\n" } });
-  const mapFile = join(root, "verifier/feature-map.json");
-  try {
-    chmodSync(mapFile, 0o000);
-    const r = runVerify(root);
-    assert.equal(r.code, 1, r.stdout + r.stderr);
-    assert.match(featureLine(r.stdout), /^feature-map: fail .*verifier\/feature-map\.json cannot be read: /);
-  } finally {
-    chmodSync(mapFile, 0o644);
-  }
-});
-
-test("a top level that is not { features: [...] } fails, and the line says what it must be", () => {
-  const r = runMap(JSON.stringify([GOOD_ENTRY]));
-  assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /^feature-map: fail .*the top level must be an object with a "features" list/);
-});
-
-test("an object whose features is not a list fails the same way", () => {
-  const r = runMap(JSON.stringify({ feature: [GOOD_ENTRY] }));
-  assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /the top level must be an object with a "features" list/);
-});
-
-test("an empty or blank id fails, and the line names the entry by its position", () => {
-  const r = runMap(map({ ...GOOD_ENTRY, id: "  " }));
-  assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /entry #1: id must be a non-empty string/);
-});
-
-test("an empty name fails, and the line names the entry", () => {
-  const r = runMap(map({ ...GOOD_ENTRY, name: "" }));
-  assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /board: name must be a non-empty string/);
-});
-
-test("handles or gotchas that is not a list fails, and the line names the field", () => {
-  const handles = runMap(map({ ...GOOD_ENTRY, handles: "Kanban Board" }));
-  assert.equal(handles.code, 1, handles.stdout + handles.stderr);
-  assert.match(featureLine(handles.stdout), /board: handles must be a list/);
-  const gotchas = runMap(map({ ...GOOD_ENTRY, gotchas: "watch out" }));
-  assert.equal(gotchas.code, 1, gotchas.stdout + gotchas.stderr);
-  assert.match(featureLine(gotchas.stdout), /board: gotchas must be a list/);
-});
-
-test("missing or empty subFeatures fails, and the line says it needs one { id, what }", () => {
-  const { subFeatures: _dropped, ...missing } = GOOD_ENTRY;
-  const none = runMap(map(missing));
-  assert.equal(none.code, 1, none.stdout + none.stderr);
-  assert.match(featureLine(none.stdout), /board: subFeatures must list at least one \{ id, what \}/);
-  const empty = runMap(map({ ...GOOD_ENTRY, subFeatures: [] }));
-  assert.equal(empty.code, 1, empty.stdout + empty.stderr);
-  assert.match(featureLine(empty.stdout), /board: subFeatures must list at least one/);
-});
-
-test("a proof with empty or missing covers fails, and the line names the proof", () => {
-  const empty = runMap(map({ ...GOOD_ENTRY, proof: [{ test: "tests/backend/test_board.py::test_drag", covers: [] }] }));
-  assert.equal(empty.code, 1, empty.stdout + empty.stderr);
-  assert.match(featureLine(empty.stdout), /board: proof\[1\] covers must list at least one sub-feature/);
-  const missing = runMap(map({ ...GOOD_ENTRY, proof: [{ test: "tests/backend/test_board.py::test_drag" }] }));
-  assert.equal(missing.code, 1, missing.stdout + missing.stderr);
-  assert.match(featureLine(missing.stdout), /board: proof\[1\] covers must list at least one sub-feature/);
-});
