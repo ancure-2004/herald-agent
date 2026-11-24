@@ -110,7 +110,8 @@ export function makeFixture(opts: FixtureOptions): string {
   cpSync(join(REAL_ROOT, "verify"), join(root, "verify"));
   cpSync(join(REAL_ROOT, "verifier"), join(root, "verifier"), {
     recursive: true,
-    filter: (src) => !/[\\/](node_modules|tests)$/.test(src),
+    /** herald's real journeys stay out: a fixture has its own features, and no Playwright install. */
+    filter: (src) => !/[\\/](node_modules|tests|journeys)$/.test(src),
   });
   cpSync(join(import.meta.dirname, "fake-server.mjs"), join(root, "fake-server.mjs"));
   mkdirSync(join(root, "frontend"));
