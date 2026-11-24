@@ -5,7 +5,7 @@
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, symlinkSync } from "node:fs";
 import { cleanup, exists, makeFixture, readEvidence, runVerify, tempDir } from "./fixture.ts";
 
 after(cleanup);
@@ -95,9 +95,50 @@ test("VERIFY_EVIDENCE_DIR receives the Evidence and keeps it after the run", () 
 });
 
 test("an unknown flag exits 2 with a usage line", () => {
-  const root = makeFixture({ typecheck: "touch ran.marker && exit 0" });
+  const root = makeFixture({ typecheck: MARKER_SCRIPT });
   const r = runVerify(root, ["--bogus"]);
   assert.equal(r.code, 2, r.stdout + r.stderr);
   assert.match(r.stdout, /^usage: \.\/verify/m);
   assert.equal(exists(join(root, "frontend", "ran.marker")), false, "no check ran");
+});
+
+/** A check file a fixture drops into verifier/checks/: it always reports could-not-run. */
+const CANNOT_RUN_CHECK = `import type { Check } from "../check.ts";
+export const check: Check = {
+  name: "cannot",
+  run: () => ({ name: "cannot", status: "could-not-run", command: "none", exitCode: null, durationMs: 0, output: "", message: "planted" }),
+};
+`;
+
+test("checks are found in verifier/checks/, and a check that could not run wins over one that failed: exit 2", () => {
+  const root = makeFixture({ typecheck: "exit 1", files: { "verifier/checks/zz-cannot.ts": CANNOT_RUN_CHECK } });
+  const r = runVerify(root);
+  assert.equal(r.code, 2, r.stdout + r.stderr);
+  assert.match(r.stdout, /typecheck: fail/);
+  assert.match(r.stdout, /cannot: could-not-run/);
+});
+
+test("a dangling symlink at backend/.env is refused too", () => {
+  const root = makeFixture({ typecheck: MARKER_SCRIPT });
+  mkdirSync(join(root, "backend"));
+  symlinkSync(join(root, "nowhere"), join(root, "backend", ".env"));
+  const r = runVerify(root);
+  assert.equal(r.code, 2, r.stdout + r.stderr);
+  assert.match(r.stdout, /refused: backend\/\.env/);
+});
+
+test("the refusal comes before anything else, even an unknown flag", () => {
+  const root = makeFixture({ typecheck: MARKER_SCRIPT, files: { "backend/.env": "live\n" } });
+  const r = runVerify(root, ["--bogus"]);
+  assert.equal(r.code, 2);
+  assert.match(r.stdout, /refused: backend\/\.env/);
+});
+
+test("npm's own `>` header lines don't push the first error off the shown lines", () => {
+  /** From a script file, so npm's echo of the command can't contain the expected text. */
+  const noisy = Array.from({ length: 12 }, (_, i) => `echo '> noise ${i}'`).join("\n") + "\necho 'src/b.ts(1,1): error TS1: real'\nexit 1\n";
+  const root = makeFixture({ typecheck: "sh noisy.sh", files: { "frontend/noisy.sh": noisy } });
+  const r = runVerify(root);
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /src\/b\.ts\(1,1\): error TS1: real/);
 });

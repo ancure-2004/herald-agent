@@ -7,7 +7,7 @@
 export type Status = "pass" | "fail" | "could-not-run";
 
 /** Everything a check gets: the herald root and the clean environment it must run with. */
-export type CheckContext = { root: string; env: Record<string, string>; dbDir: string };
+export type CheckContext = { root: string; env: Record<string, string> };
 
 /** One check's outcome, as written to its log and to summary.json. */
 export type CheckResult = {
@@ -20,5 +20,5 @@ export type CheckResult = {
   message: string;
 };
 
-/** A check: one file in checks/ exporting one of these. */
+/** A check: one file in checks/ exporting one of these as `check`. */
 export type Check = { name: string; run: (ctx: CheckContext) => CheckResult };

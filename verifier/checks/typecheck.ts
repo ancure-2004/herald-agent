@@ -27,4 +27,4 @@ function run(ctx: CheckContext): CheckResult {
 }
 
 /** The typecheck check. */
-export const typecheck: Check = { name: "typecheck", run };
+export const check: Check = { name: "typecheck", run };

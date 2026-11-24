@@ -16,11 +16,11 @@ It takes no options; any argument prints a usage line and exits 2.
 
 ## Refusals
 
-Before any check runs, `verify` exits 2 if `backend/.env` or any `backend/personal_os.db*` file exists in the checkout it lives in. It only checks that the file exists; it never opens, copies or reads it. Run it in a clean worktree instead.
+Before anything else (even reading its arguments), `verify` exits 2 if `backend/.env` (or a symlink by that name, even a broken one) or any `backend/personal_os.db*` file exists in the checkout it lives in. It only checks that the file exists; it never opens, copies or reads it. Run it in a clean worktree instead.
 
 ## Checks
 
-Each check is one file in `checks/` exporting a name and a run function. `verify.ts` lists them in `CHECKS`. Current checks:
+Each check is one file in `checks/` exporting `check` (a name and a run function). `verify` finds them there and runs them in file-name order; a new check is a new file, with no list to edit. Current checks:
 
 - `typecheck`: `npm run typecheck` in `frontend/`. Needs `frontend/node_modules`; without it the check cannot run (run `cd frontend && npm ci`).
 
