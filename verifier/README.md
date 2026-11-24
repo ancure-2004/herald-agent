@@ -98,7 +98,14 @@ Journeys are for the Verifier only: `verifier/tsconfig.json` leaves `journeys/` 
 
 ### Writing a journey
 
-To come (the first journey and this guide land with the next slice).
+- One file per feature: `verifier/journeys/<feature id>.journey.ts`, named after the map id (`global.palette.journey.ts`). The fast set and `--full` pick journeys by that name.
+- Use the stable handles from the feature's map entry (`handles`, such as an aria-label or exact button text). Do not match on layout or on text that changes with the data.
+- Wrap each user action in `test.step` so a failure names the step that broke.
+- Prove a change from a second view: a save message alone is not proof. Reopen the screen the data lands in, or reload, and look for the result there.
+- Keep data unique per run (a name with `Date.now()`), so a row from an earlier run can never pass this one.
+- Never weaken a journey to pass. A herald bug parks the journey with `test.fixme` and a one-line comment naming the Backlog Request id; unpark it when the bug is fixed. A missing precondition (such as seed data) becomes a gotcha in the map.
+- Run with `./verify --full` (every journey) or `./verify` (the changed features' journeys). A journey proof in the map is `verifier/journeys/<file>.ts::<test title>`.
+- Evidence under `journeys/`: `report/` (Playwright's HTML report), `results/` (a screenshot per test, a trace for a failed one).
 
 ## Feature map
 
