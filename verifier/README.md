@@ -38,7 +38,7 @@ Each check is one file in `checks/` exporting `check` (a name and a run function
 Both servers are started as herald runs them, with the same clean environment as the other checks (throwaway database, stubs), plus:
 
 - backend: `backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port <port>` in `backend/`, with `CORS_ORIGINS=["http://127.0.0.1:<frontend port>","http://localhost:<frontend port>"]` (a JSON list: herald crashes on the comma form its settings describe).
-- frontend: `frontend/node_modules/.bin/next dev --port <port> --hostname 127.0.0.1` in `frontend/`, with `NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:<backend port>` and `NEXT_TELEMETRY_DISABLED=1`. Next's own `frontend/.env*` files are refused, so none are read (settings templates, `.env.example`, `.env.sample` and `.env.template`, are allowed: they hold no secrets and Next never reads them).
+- frontend: `frontend/node_modules/.bin/next dev --webpack --port <port> --hostname 127.0.0.1` (as herald's own `dev` script) in `frontend/`, with `NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:<backend port>` and `NEXT_TELEMETRY_DISABLED=1`. Next's own `frontend/.env*` files are refused, so none are read (settings templates, `.env.example`, `.env.sample` and `.env.template`, are allowed: they hold no secrets and Next never reads them).
 
 Ports come from the operating system (a listen on port 0), so each run gets new ones. The demo engine is not started.
 

@@ -35,6 +35,8 @@ test("backend and frontend get their free ports, the CORS and API addresses, tel
   assert.equal(r.code, 0, r.stdout + r.stderr);
   const backend = readRecord(root, "backend");
   const frontend = readRecord(root, "frontend");
+  /** herald's own dev script runs `next dev --webpack`; without it Next 16 picks Turbopack and refuses herald's config. */
+  assert.ok(frontend.argv.includes("--webpack"), `frontend argv: ${frontend.argv.join(" ")}`);
   const bp = argAfter(backend.argv, "--port") ?? "";
   const fp = argAfter(frontend.argv, "--port") ?? "";
   assert.match(bp, /^\d+$/);

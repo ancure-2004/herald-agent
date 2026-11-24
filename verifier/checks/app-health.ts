@@ -100,7 +100,8 @@ async function run(ctx: CheckContext): Promise<CheckResult> {
       name: "frontend",
       port: frontendPort,
       program: next,
-      args: ["dev", "--port", String(frontendPort), "--hostname", "127.0.0.1"],
+      /** `--webpack` as herald's own dev script (frontend/package.json): Next 16 defaults to Turbopack, which refuses herald's webpack config. */
+      args: ["dev", "--webpack", "--port", String(frontendPort), "--hostname", "127.0.0.1"],
       cwd: join(ctx.root, "frontend"),
       env: { ...ctx.env, NEXT_PUBLIC_API_BASE_URL: `http://127.0.0.1:${backendPort}`, NEXT_TELEMETRY_DISABLED: "1" },
       logPath: join(ctx.evidenceDir, "frontend.log"),
