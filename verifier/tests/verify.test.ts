@@ -4,7 +4,8 @@
  */
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { readFileSync } from "node:fs";
 import { cleanup, exists, makeFixture, readEvidence, runVerify } from "./fixture.ts";
 
 after(cleanup);
@@ -59,3 +60,26 @@ for (const file of ["backend/.env", "backend/personal_os.db", "backend/personal_
     assert.equal(exists(join(root, "frontend", "ran.marker")), false, "no check ran");
   });
 }
+
+test("checks run with only the allowed environment and a throwaway database that is then removed", () => {
+  const root = makeFixture({ typecheck: "env > env.txt && exit 0" });
+  const r = runVerify(root, [], { SECRET_API_KEY: "x", DIRECT_URL: "y", VERIFY_FOO: "z" });
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  const vars = new Map(readFileSync(join(root, "frontend", "env.txt"), "utf8").split("\n").filter(Boolean).map((l) => {
+    const i = l.indexOf("=");
+    return [l.slice(0, i), l.slice(i + 1)] as const;
+  }));
+  assert.equal(vars.has("SECRET_API_KEY"), false);
+  assert.equal(vars.has("DIRECT_URL"), false);
+  assert.equal(vars.get("VERIFY_FOO"), "z");
+  assert.equal(vars.get("CI"), "1");
+  // npm adds its own variables to the scripts it runs; the caller's are the allow list.
+  const allowed = new Set(["PATH", "HOME", "LANG", "TERM", "TMPDIR", "CI", "DATABASE_URL", "COLOR", "EDITOR", "INIT_CWD", "NODE", "PWD"]);
+  for (const name of vars.keys()) {
+    assert.ok(allowed.has(name) || name.startsWith("VERIFY_") || name.startsWith("npm_"), `unexpected variable ${name}`);
+  }
+  const url = vars.get("DATABASE_URL") ?? "";
+  assert.ok(url.startsWith("sqlite:///"), url);
+  const dbFile = url.slice("sqlite://".length);
+  assert.equal(exists(dirname(dbFile)), false, "the throwaway database folder is removed after the run");
+});

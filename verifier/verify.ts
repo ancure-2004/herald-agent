@@ -8,7 +8,7 @@ import { join } from "node:path";
 import type { Check, CheckResult } from "./check.ts";
 import { evidenceDir, writeLog, writeSummary } from "./evidence.ts";
 import { typecheck } from "./checks/typecheck.ts";
-import { refusals } from "./safety.ts";
+import { cleanEnv, refusals } from "./safety.ts";
 
 /** The herald root: the folder holding `verify`, the parent of verifier/. */
 const ROOT = join(import.meta.dirname, "..");
@@ -37,15 +37,7 @@ function main(): number {
   }
   const dbDir = mkdtempSync(join(tmpdir(), "verify-db-"));
   try {
-    const env: Record<string, string> = {
-      PATH: process.env.PATH ?? "",
-      HOME: process.env.HOME ?? "",
-      LANG: process.env.LANG ?? "C",
-      TERM: process.env.TERM ?? "dumb",
-      TMPDIR: process.env.TMPDIR ?? tmpdir(),
-      CI: "1",
-      DATABASE_URL: `sqlite:///${join(dbDir, "verify.db")}`,
-    };
+    const env = cleanEnv(process.env, dbDir);
     const results = CHECKS.map((c) => c.run({ root: ROOT, env, dbDir }));
     const exitCode = results.some((r) => r.status === "could-not-run") ? 2 : results.some((r) => r.status === "fail") ? 1 : 0;
     const dir = evidenceDir(process.env);

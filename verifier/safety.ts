@@ -21,3 +21,25 @@ export function refusals(root: string): string[] {
   }
   return found;
 }
+
+/** The only variables a check may see from the caller; VERIFY_* passes through too. */
+const ALLOWED = ["PATH", "HOME", "LANG", "TERM", "TMPDIR"] as const;
+
+/**
+ * The clean environment for every check: the allow-listed caller variables
+ * (LANG and TERM default when unset), CI=1, the throwaway DATABASE_URL and the
+ * Verifier's own VERIFY_* variables. Nothing else from the caller passes.
+ */
+export function cleanEnv(caller: Record<string, string | undefined>, dbDir: string): Record<string, string> {
+  const env: Record<string, string> = {};
+  for (const name of ALLOWED) {
+    const value = caller[name] ?? (name === "LANG" ? "C" : name === "TERM" ? "dumb" : name === "TMPDIR" ? dbDir : undefined);
+    if (value !== undefined) env[name] = value;
+  }
+  for (const [name, value] of Object.entries(caller)) {
+    if (name.startsWith("VERIFY_") && value !== undefined) env[name] = value;
+  }
+  env.CI = "1";
+  env.DATABASE_URL = `sqlite:///${join(dbDir, "verify.db")}`;
+  return env;
+}
