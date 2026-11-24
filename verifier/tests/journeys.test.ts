@@ -178,6 +178,19 @@ test("a failing journey fails the check with exit 1, and the message names the j
   assert.match(r.stdout, /Error: expect\(locator\)\.toBeVisible\(\) failed/);
 });
 
+test("a failing journey's message names the failing step, from Playwright's header", () => {
+  const body = [
+    'echo "  1) [chromium] › verifier/journeys/demo.journey.ts:8:5 › jump between screens from Cmd+K › type Full Leads Table and choose it"',
+    'echo "    Error: expect(locator).toBeHidden() failed"',
+    "exit 1",
+  ].join("\n");
+  const root = journeyFixture(body);
+  changeDemo(root);
+  const r = journeyRun(root);
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /^journeys: fail \(.*› type Full Leads Table and choose it \| Error: expect\(locator\)\.toBeHidden\(\) failed\)$/m);
+});
+
 test("a failing journey still stops the herald it started", () => {
   const body = 'echo "  1) verifier/journeys/demo.journey.ts:4:5 › demo › adds a lead"; echo "    Error: boom"; exit 1';
   const root = journeyFixture(body);
