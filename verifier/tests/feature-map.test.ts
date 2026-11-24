@@ -5,6 +5,8 @@
  */
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
+import { chmodSync } from "node:fs";
+import { join } from "node:path";
 import { cleanup, makeFixture, readEvidence, runVerify } from "./fixture.ts";
 
 after(cleanup);
@@ -264,4 +266,53 @@ test("path::TestClass fails when the file has no such class", () => {
   const r = proofRun("tests/backend/test_board.py::TestGone", "class TestBoard:\n    pass\n");
   assert.equal(r.code, 1, r.stdout + r.stderr);
   assert.match(featureLine(r.stdout), /board: proof\[1\] test ".*::TestGone": .*has no def TestGone\( or class TestGone/);
+});
+
+/** True when this run is root, which can read anything, so a chmod 000 test cannot fail. */
+const isRoot = process.getuid?.() === 0;
+
+/** The names of the checks a run's summary.json lists. */
+function checkNames(evidence: string | undefined): string[] {
+  assert.ok(evidence, "run printed an Evidence path");
+  return JSON.parse(readEvidence(evidence, "summary.json")).checks.map((c: { name: string }) => c.name);
+}
+
+test("an unreadable feature folder is a break naming the path, not a crash: exit 1, other checks still run", { skip: isRoot && "root reads everything" }, () => {
+  const root = makeFixture({ typecheck: "exit 0", featureMap: map(GOOD_ENTRY), files: { "tests/backend/test_board.py": "def test_drag():\n    pass\n", "frontend/src/features/locked/x.tsx": "export {};\n" } });
+  const locked = join(root, "frontend/src/features/locked");
+  try {
+    chmodSync(locked, 0o000);
+    const r = runVerify(root);
+    assert.equal(r.code, 1, r.stdout + r.stderr);
+    assert.match(featureLine(r.stdout), /^feature-map: fail .*frontend\/src\/features\/locked cannot be read: /);
+    assert.ok(checkNames(r.evidence).includes("typecheck"), "the other checks are still reported");
+  } finally {
+    chmodSync(locked, 0o755);
+  }
+});
+
+test("an unreadable proof file is a break naming the test, not a crash: exit 1", { skip: isRoot && "root reads everything" }, () => {
+  const root = makeFixture({ typecheck: "exit 0", featureMap: map(GOOD_ENTRY), files: { "tests/backend/test_board.py": "def test_drag():\n    pass\n" } });
+  const proofFile = join(root, "tests/backend/test_board.py");
+  try {
+    chmodSync(proofFile, 0o000);
+    const r = runVerify(root);
+    assert.equal(r.code, 1, r.stdout + r.stderr);
+    assert.match(featureLine(r.stdout), /board: proof\[1\] test ".*::test_drag": tests\/backend\/test_board\.py cannot be read: /);
+  } finally {
+    chmodSync(proofFile, 0o644);
+  }
+});
+
+test("an unreadable map file is a break naming the file, not a crash: exit 1, not 2", { skip: isRoot && "root reads everything" }, () => {
+  const root = makeFixture({ typecheck: "exit 0", featureMap: map(GOOD_ENTRY), files: { "tests/backend/test_board.py": "def test_drag():\n    pass\n" } });
+  const mapFile = join(root, "verifier/feature-map.json");
+  try {
+    chmodSync(mapFile, 0o000);
+    const r = runVerify(root);
+    assert.equal(r.code, 1, r.stdout + r.stderr);
+    assert.match(featureLine(r.stdout), /^feature-map: fail .*verifier\/feature-map\.json cannot be read: /);
+  } finally {
+    chmodSync(mapFile, 0o644);
+  }
 });

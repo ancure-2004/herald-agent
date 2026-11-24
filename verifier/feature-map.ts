@@ -7,6 +7,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { checkEntry, type Seen } from "./feature-entry.ts";
+import { errorText } from "./feature-fs.ts";
 import { isRecord } from "./feature-shape.ts";
 
 /** The map's path, relative to herald's root. */
@@ -28,12 +29,17 @@ export type LoadedMap = { features: Feature[]; breaks: string[] };
 export function loadFeatureMap(root: string): LoadedMap {
   const path = join(root, MAP_FILE);
   if (!existsSync(path)) return { features: [], breaks: [`${MAP_FILE} is missing`] };
+  let text: string;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch (error) {
+    return { features: [], breaks: [`${MAP_FILE} cannot be read: ${errorText(error)}`] };
+  }
   let parsed: unknown;
   try {
-    parsed = JSON.parse(readFileSync(path, "utf8"));
+    parsed = JSON.parse(text);
   } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error);
-    return { features: [], breaks: [`${MAP_FILE} does not parse: ${reason}`] };
+    return { features: [], breaks: [`${MAP_FILE} does not parse: ${errorText(error)}`] };
   }
   if (!isRecord(parsed) || !Array.isArray(parsed.features)) {
     return { features: [], breaks: [`${MAP_FILE}: the top level must be an object with a "features" list`] };

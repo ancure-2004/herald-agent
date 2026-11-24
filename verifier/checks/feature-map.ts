@@ -24,9 +24,12 @@ function report(features: Feature[], gaps: string[], unmapped: string[], breaks:
 /** Run the check: any break fails it (exit 1); gaps and unmapped files are reported only. */
 function run(ctx: CheckContext): CheckResult {
   const started = Date.now();
-  const { features, breaks } = loadFeatureMap(ctx.root);
+  const loaded = loadFeatureMap(ctx.root);
+  const features = loaded.features;
   const gaps = gapsOf(features);
-  const unmapped = unmappedOf(ctx.root, features);
+  const scan = unmappedOf(ctx.root, features);
+  const unmapped = scan.unmapped;
+  const breaks = [...loaded.breaks, ...scan.problems];
   const failed = breaks.length > 0;
   const message = failed ? breaks.join("; ") : `${gaps.length} gap(s), ${unmapped.length} unmapped file(s): reported, not failing`;
   return {
