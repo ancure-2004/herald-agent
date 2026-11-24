@@ -23,7 +23,7 @@ export function tempDir(prefix: string): string {
 }
 
 /** Options for a fixture: what the frontend's typecheck script does, and whether node_modules exists. */
-export type FixtureOptions = { typecheck: string; nodeModules?: boolean };
+export type FixtureOptions = { typecheck: string; nodeModules?: boolean; files?: Record<string, string> };
 
 /** A fixture herald-shaped folder: `verify`, `verifier/` (no node_modules, no tests) and `frontend/`. */
 export function makeFixture(opts: FixtureOptions): string {
@@ -37,6 +37,10 @@ export function makeFixture(opts: FixtureOptions): string {
   const pkg = { name: "frontend", private: true, scripts: { typecheck: opts.typecheck } };
   writeFileSync(join(root, "frontend", "package.json"), JSON.stringify(pkg, null, 2));
   if (opts.nodeModules !== false) mkdirSync(join(root, "frontend", "node_modules"));
+  for (const [path, text] of Object.entries(opts.files ?? {})) {
+    mkdirSync(join(root, path, ".."), { recursive: true });
+    writeFileSync(join(root, path), text);
+  }
   return root;
 }
 

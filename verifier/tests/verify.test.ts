@@ -4,6 +4,7 @@
  */
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
+import { join } from "node:path";
 import { cleanup, exists, makeFixture, readEvidence, runVerify } from "./fixture.ts";
 
 after(cleanup);
@@ -44,3 +45,17 @@ test("a missing frontend/node_modules exits 2 and names `cd frontend && npm ci`"
   assert.equal(summary.exitCode, 2);
   assert.equal(summary.checks[0].status, "could-not-run");
 });
+
+/** The typecheck script that leaves a marker file when it runs. */
+const MARKER_SCRIPT = "touch ran.marker && exit 0";
+
+for (const file of ["backend/.env", "backend/personal_os.db", "backend/personal_os.db-wal"]) {
+  test(`refuses to run when ${file} exists, and runs no check`, () => {
+    const root = makeFixture({ typecheck: MARKER_SCRIPT, files: { [file]: "live data\n" } });
+    const r = runVerify(root);
+    assert.equal(r.code, 2, r.stdout + r.stderr);
+    assert.match(r.stdout, new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.match(r.stdout, /clean worktree/);
+    assert.equal(exists(join(root, "frontend", "ran.marker")), false, "no check ran");
+  });
+}

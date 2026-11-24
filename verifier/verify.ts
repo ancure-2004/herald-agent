@@ -8,6 +8,7 @@ import { join } from "node:path";
 import type { Check, CheckResult } from "./check.ts";
 import { evidenceDir, writeLog, writeSummary } from "./evidence.ts";
 import { typecheck } from "./checks/typecheck.ts";
+import { refusals } from "./safety.ts";
 
 /** The herald root: the folder holding `verify`, the parent of verifier/. */
 const ROOT = join(import.meta.dirname, "..");
@@ -29,6 +30,11 @@ function report(r: CheckResult): void {
 
 /** Run the checks; returns the overall exit code. */
 function main(): number {
+  const found = refusals(ROOT);
+  if (found.length > 0) {
+    for (const file of found) console.log(`refused: ${file} exists in this checkout; run verify in a clean worktree`);
+    return 2;
+  }
   const dbDir = mkdtempSync(join(tmpdir(), "verify-db-"));
   try {
     const env: Record<string, string> = {
