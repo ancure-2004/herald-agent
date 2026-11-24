@@ -6,7 +6,7 @@ import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
 import { connect } from "node:net";
-import { cleanup, exists, makeFixture, readRecord, runVerify } from "./fixture.ts";
+import { cleanup, exists, makeFixture, readRecord, recordPath, runVerify } from "./fixture.ts";
 
 after(cleanup);
 
@@ -81,4 +81,13 @@ test("after the run both servers are gone and their ports accept no connection",
   const frontendPort = Number(argAfter(frontend.argv, "--port"));
   assert.equal(await refused(backendPort), true, `backend port ${backendPort} refuses`);
   assert.equal(await refused(frontendPort), true, `frontend port ${frontendPort} refuses`);
+});
+
+test("a backend that crashes on start fails app-health with exit 1, shows its error line, and leaves the frontend stopped", () => {
+  const root = makeFixture({ typecheck: "exit 0", uvicorn: "crash" });
+  const r = runVerify(root);
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /app-health: fail/);
+  assert.match(r.stdout, /fake server: startup error: boom/);
+  assert.ok(gone(readRecord(root, "frontend").pid), "the frontend was stopped too");
 });
