@@ -82,6 +82,8 @@ export type FixtureOptions = {
   next?: FakeMode;
   /** verifier/feature-map.json's text; null writes no map at all. Default: a valid one-entry map. */
   featureMap?: string | null;
+  /** verifier/known-failures.txt's text; null removes the file. Default: the copied real list. */
+  knownFailures?: string | null;
   files?: Record<string, string>;
 };
 
@@ -120,6 +122,9 @@ export function makeFixture(opts: FixtureOptions): string {
   const mapPath = join(root, "verifier", "feature-map.json");
   if (opts.featureMap === null) rmSync(mapPath, { force: true });
   else writeFileSync(mapPath, opts.featureMap ?? DEFAULT_FEATURE_MAP);
+  const knownPath = join(root, "verifier", "known-failures.txt");
+  if (opts.knownFailures === null) rmSync(knownPath, { force: true });
+  else if (opts.knownFailures !== undefined) writeFileSync(knownPath, opts.knownFailures);
   mkdirSync(join(root, "frontend", "src", "features", "demo"), { recursive: true });
   writeFileSync(join(root, "frontend", "src", "features", "demo", "index.tsx"), "export {};\n");
   for (const [path, text] of Object.entries(opts.files ?? {})) {
