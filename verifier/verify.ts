@@ -58,10 +58,12 @@ async function main(): Promise<number> {
     return 2;
   }
   const args = process.argv.slice(2);
-  if (args.length > 0) {
-    console.log(`usage: ./verify  (no options; unknown argument: ${args.join(" ")})`);
+  const unknown = args.filter((arg) => arg !== "--full");
+  if (unknown.length > 0) {
+    console.log(`usage: ./verify [--full]  (unknown argument: ${unknown.join(" ")})`);
     return 2;
   }
+  const full = args.includes("--full");
   const checks = await loadChecks();
   const runDir = mkdtempSync(join(tmpdir(), "verify-run-"));
   try {
@@ -69,7 +71,7 @@ async function main(): Promise<number> {
     const env = cleanEnv(process.env, runDir, writeStubs(runDir));
     const before = trackedStatus(ROOT, env);
     const results: CheckResult[] = [];
-    for (const c of checks) results.push(await c.run({ root: ROOT, env, evidenceDir: dir }));
+    for (const c of checks) results.push(await c.run({ root: ROOT, env, evidenceDir: dir, full }));
     const after = trackedStatus(ROOT, env);
     const exitCode = exitCodeFor(results);
     for (const r of results) {

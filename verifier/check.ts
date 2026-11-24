@@ -9,9 +9,10 @@ export type Status = "pass" | "fail" | "could-not-run";
 
 /**
  * Everything a check gets: the herald root, the clean environment it must run
- * with, and the Evidence folder (already created) for logs written during the run.
+ * with, the Evidence folder (already created) for logs written during the run,
+ * and whether this run is `--full` (every journey) rather than the fast set.
  */
-export type CheckContext = { root: string; env: Record<string, string>; evidenceDir: string };
+export type CheckContext = { root: string; env: Record<string, string>; evidenceDir: string; full: boolean };
 
 /** One check's outcome, as written to its log and to summary.json. */
 export type CheckResult = {
