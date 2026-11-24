@@ -33,7 +33,7 @@ export function checkEntry(root: string, raw: unknown, index: number, seen: Seen
   checkList(raw.handles, "handles", 0, (x) => typeof x === "string", bad, "a string");
   if (!isText(raw.endState)) bad("endState must be a non-empty string");
   checkList(raw.gotchas, "gotchas", 0, (x) => typeof x === "string", bad, "a string");
-  const proofs = checkProofs(root, raw.proof, subIds, bad);
+  const proofs = checkProofs(root, raw.proof, id, subIds, bad);
   return { feature: { id, subIds, files, proofs }, breaks };
 }
 

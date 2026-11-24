@@ -13,7 +13,7 @@ import { definesJourneyTest, JOURNEY_DIR, journeyId } from "./journey-id.ts";
 import { definesTest, parseTestId } from "./pytest-id.ts";
 
 /** `proof`: may be empty. Each item is `{ test, covers }`; the good ones are returned. */
-export function checkProofs(root: string, value: unknown, subIds: string[], bad: (m: string) => void): Proof[] {
+export function checkProofs(root: string, value: unknown, featureId: string, subIds: string[], bad: (m: string) => void): Proof[] {
   if (!Array.isArray(value)) {
     bad("proof must be a list");
     return [];
@@ -26,7 +26,7 @@ export function checkProofs(root: string, value: unknown, subIds: string[], bad:
       return;
     }
     const test = proof.test;
-    checkTest(root, at, test, bad);
+    checkTest(root, at, test, featureId, bad);
     proofs.push({ test, covers: checkCovers(proof.covers, at, subIds, bad) });
   });
   return proofs;
@@ -49,10 +49,10 @@ function checkCovers(value: unknown, at: string, subIds: string[], bad: (m: stri
 }
 
 /** A test id: a journey proof (see journey-id.ts), else a pytest id: `path` must be a file; a name after `::` must be defined in it (see pytest-id.ts). */
-function checkTest(root: string, at: string, test: string, bad: (m: string) => void): void {
+function checkTest(root: string, at: string, test: string, featureId: string, bad: (m: string) => void): void {
   const journey = journeyId(test);
   if (journey) {
-    checkJourney(root, at, journey, bad);
+    checkJourney(root, at, journey, featureId, bad);
     return;
   }
   const { file, names } = parseTestId(test);
@@ -82,9 +82,15 @@ function checkTest(root: string, at: string, test: string, bad: (m: string) => v
 }
 
 /** A journey proof: its file must be under verifier/journeys/, exist, and define a test with its title. */
-function checkJourney(root: string, at: string, { file, title }: { file: string; title: string }, bad: (m: string) => void): void {
+function checkJourney(root: string, at: string, { file, title }: { file: string; title: string }, featureId: string, bad: (m: string) => void): void {
   if (!file.startsWith(JOURNEY_DIR)) {
     bad(`${at} test file "${file}" must be under ${JOURNEY_DIR}`);
+    return;
+  }
+  /** The fast set selects a journey by its file name, so the file must be this entry's own, with no `..` or other folder. */
+  const own = `${JOURNEY_DIR}${featureId}.journey.ts`;
+  if (file !== own) {
+    bad(`${at} test file "${file}" must be ${own}`);
     return;
   }
   const kind = kindOf(join(root, file));

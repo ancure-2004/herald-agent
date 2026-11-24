@@ -51,6 +51,24 @@ test("a journey proof outside verifier/journeys/ is a break", () => {
   assert.match(featureLine(r.stdout), /proof\[1\] test file "tests\/journeys\/board\.journey\.ts" must be under verifier\/journeys\//);
 });
 
+/** Run verify with the board entry proven by `proofTest`, and the given journey files (path to text). */
+function runFiles(proofTest: string, files: Record<string, string>) {
+  const entry = { ...GOOD_ENTRY, proof: [{ test: proofTest, covers: ["board.drag"] }] };
+  return runVerify(makeFixture({ typecheck: "exit 0", featureMap: map(entry), files }));
+}
+
+test("a journey proof whose file is another feature's journey is a break: the file must be the entry's own", () => {
+  const r = runFiles("verifier/journeys/other.journey.ts::adds a lead", { "verifier/journeys/other.journey.ts": journey("adds a lead") });
+  assert.match(featureLine(r.stdout), /proof\[1\] test file "verifier\/journeys\/other\.journey\.ts" must be verifier\/journeys\/board\.journey\.ts/);
+});
+
+test("a journey proof whose path climbs out of verifier/journeys/ with .. is a break, even when the file exists", () => {
+  const r = runFiles("verifier/journeys/../journeys/board.journey.ts::adds a lead", {
+    "verifier/journeys/board.journey.ts": journey("adds a lead"),
+  });
+  assert.match(featureLine(r.stdout), /proof\[1\] test file ".*\.\..*" must be verifier\/journeys\/board\.journey\.ts/);
+});
+
 test("a journey proof on known-failures.txt still covers its sub-feature: journeys are never known failures", () => {
   const r = run("verifier/journeys/board.journey.ts::adds a lead", journey("adds a lead"), "verifier/journeys/board.journey.ts::adds a lead\n");
   assert.match(featureLine(r.stdout), /^feature-map: pass/, r.stdout);
