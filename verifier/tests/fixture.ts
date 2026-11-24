@@ -87,6 +87,12 @@ export type FixtureOptions = {
   files?: Record<string, string>;
   /** Make the fixture a git repository on `main` whose one commit (`base`) holds every file. Default: not a repository. */
   git?: boolean;
+  /**
+   * Install a fake Playwright (verifier/node_modules/.bin/playwright and the
+   * @playwright/test folder) that records its arguments and environment, then
+   * runs this sh body; also a fake Chrome file at `fake-chrome`. Absent: not installed.
+   */
+  playwright?: string;
 };
 
 /** Write a fake server's sh script: it runs fake-server.mjs in the given mode, recording to `record`. Missing writes nothing. */
@@ -133,11 +139,28 @@ export function makeFixture(opts: FixtureOptions): string {
     mkdirSync(join(root, path, ".."), { recursive: true });
     writeFileSync(join(root, path), text);
   }
+  if (opts.playwright !== undefined) placePlaywright(root, opts.playwright);
   if (opts.git) {
     gitIn(root, ["init", "-q", "-b", "main"]);
     commitAll(root, "base");
   }
   return root;
+}
+
+/** Where the fake Playwright writes its record: one `arg <value>` or `env <NAME=value>` line per item. */
+export function playwrightRecordPath(root: string): string {
+  return join(`${root}-records`, "playwright.txt");
+}
+
+/** Install the fake Playwright and its fake Chrome into a fixture (see FixtureOptions.playwright). */
+function placePlaywright(root: string, body: string): void {
+  const modules = join(root, "verifier", "node_modules");
+  mkdirSync(join(modules, "@playwright", "test"), { recursive: true });
+  writeFileSync(join(modules, "@playwright", "test", "package.json"), '{"name":"@playwright/test"}\n');
+  mkdirSync(join(modules, ".bin"), { recursive: true });
+  const record = `{ for a in "$@"; do echo "arg $a"; done; env | sed 's/^/env /'; } > "${playwrightRecordPath(root)}"`;
+  writeFileSync(join(modules, ".bin", "playwright"), `#!/bin/sh\n${record}\n${body}\n`, { mode: 0o755 });
+  writeFileSync(join(root, "fake-chrome"), "chrome\n", { mode: 0o755 });
 }
 
 /** Run git in a fixture folder with a fixed identity; returns its trimmed stdout, and throws when git fails. */

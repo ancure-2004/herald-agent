@@ -3,6 +3,7 @@
  * result, now or after it finishes (a check may wait on a server). A check
  * never decides the exit code; verify.ts does.
  */
+import type { Changed } from "./changed.ts";
 
 /** How a check ended: passed, failed its own test, or could not run at all. */
 export type Status = "pass" | "fail" | "could-not-run";
@@ -10,9 +11,10 @@ export type Status = "pass" | "fail" | "could-not-run";
 /**
  * Everything a check gets: the herald root, the clean environment it must run
  * with, the Evidence folder (already created) for logs written during the run,
- * and whether this run is `--full` (every journey) rather than the fast set.
+ * whether this run is `--full` (every journey) rather than the fast set, and
+ * the changed files and features the fast set is chosen from.
  */
-export type CheckContext = { root: string; env: Record<string, string>; evidenceDir: string; full: boolean };
+export type CheckContext = { root: string; env: Record<string, string>; evidenceDir: string; full: boolean; changed: Changed };
 
 /** One check's outcome, as written to its log and to summary.json. */
 export type CheckResult = {
