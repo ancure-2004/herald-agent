@@ -16,9 +16,43 @@ export const UNMAPPED_ROOTS = [
   "backend/app/autopilot",
 ];
 
-/** Sub-features no proof of their own entry covers, as "sub-id (entry id)". */
-export function gapsOf(features: Feature[]): string[] {
-  return features.flatMap((f) => f.subIds.filter((sub) => !f.proofs.some((p) => p.covers.includes(sub))).map((sub) => `${sub} (${f.id})`));
+/** A pytest id without its `[...]` parametrize suffix. */
+function bareId(id: string): string {
+  return id.replace(/\[.*\]$/, "");
+}
+
+/**
+ * Whether a proof's test id is on the known-failures list. A map id under
+ * `tests/backend/` matches a line equal to the rest of it (pytest's id from
+ * backend/); any other map id matches a line equal to it. A `[...]` suffix on
+ * either side is ignored.
+ */
+export function isKnownFailing(test: string, known: string[]): boolean {
+  const id = bareId(test);
+  const backend = "tests/backend/";
+  return known.some((line) => {
+    const listed = bareId(line);
+    return id.startsWith(backend) ? id.slice(backend.length) === listed : id === listed;
+  });
+}
+
+/**
+ * Sub-features no proof of their own entry covers, as "sub-id (entry id)". A
+ * proof on the known-failures list covers nothing; a sub-feature whose only
+ * proofs are such is a gap that also names them: "sub-id (entry id) - proof
+ * known to fail: test1, test2".
+ */
+export function gapsOf(features: Feature[], known: string[] = []): string[] {
+  return features.flatMap((f) =>
+    f.subIds.flatMap((sub) => {
+      const covering = f.proofs.filter((p) => p.covers.includes(sub));
+      if (covering.some((p) => !isKnownFailing(p.test, known))) return [];
+      /** Here every covering proof is known to fail (a good one returned above). */
+      const failing = covering.map((p) => p.test);
+      const named = failing.length > 0 ? ` - proof known to fail: ${failing.join(", ")}` : "";
+      return [`${sub} (${f.id})${named}`];
+    }),
+  );
 }
 
 /**
