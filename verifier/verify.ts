@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { Check, CheckResult } from "./check.ts";
 import { evidenceDir, writeLog, writeSummary } from "./evidence.ts";
-import { cleanEnv, refusals } from "./safety.ts";
+import { cleanEnv, refusals, writeStubs } from "./safety.ts";
 
 /** The herald root: the folder holding `verify`, the parent of verifier/. */
 const ROOT = join(import.meta.dirname, "..");
@@ -60,9 +60,9 @@ async function main(): Promise<number> {
     return 2;
   }
   const checks = await loadChecks();
-  const dbDir = mkdtempSync(join(tmpdir(), "verify-db-"));
+  const runDir = mkdtempSync(join(tmpdir(), "verify-run-"));
   try {
-    const env = cleanEnv(process.env, dbDir);
+    const env = cleanEnv(process.env, runDir, writeStubs(runDir));
     const results = checks.map((c) => c.run({ root: ROOT, env }));
     const exitCode = exitCodeFor(results);
     const dir = evidenceDir(process.env);
@@ -74,7 +74,7 @@ async function main(): Promise<number> {
     console.log(`evidence: ${dir}`);
     return exitCode;
   } finally {
-    rmSync(dbDir, { recursive: true, force: true });
+    rmSync(runDir, { recursive: true, force: true });
   }
 }
 
