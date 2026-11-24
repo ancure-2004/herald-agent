@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "tsc --noEmit -p . && node --test tests/verify.test.ts"
+    "test": "tsc --noEmit -p . && node --test \"tests/**/*.test.ts\""
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
