@@ -1,7 +1,9 @@
-# Known failures on herald's main (the quarantine): a failing test listed here
-# does not fail the backend-tests check. The list only shrinks: remove a line
-# once its test passes, and never add one (the Gate enforces this from Day 3).
-# Each line: a pytest test id, then the Request it belongs to.
+# Known failures on herald's main (the quarantine), shared by backend-tests and
+# e2e: a failing, errored or skipped test listed here does not fail its check
+# (ids starting tests/e2e/ are e2e's, the rest backend-tests'). The list only
+# shrinks: remove a line once its test passes, and never add one (the Gate
+# enforces this from Day 3). Each line: a pytest test id (for a skip, pytest's
+# path:line location), then the Request it belongs to.
 # Tests that need a real AI model fail here by design: verify stubs agy, so they
 # can't spend quota (they passed before only by calling the real agy).
 test_ai_features_phase3.py::test_embedding_service_lazy_load_and_unload  # rq-herald-backend-tests-on-main-in-a-clean-48

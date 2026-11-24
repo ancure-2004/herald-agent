@@ -4,6 +4,8 @@
  */
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { cleanup, makeFixture, readEvidence, runVerify } from "./fixture.ts";
 
 after(cleanup);
@@ -71,4 +73,11 @@ test("an unlisted SKIPPED line with exit 0 fails backend-tests (the shared rule)
   assert.equal(r.code, 1, r.stdout + r.stderr);
   assert.match(r.stdout, /^backend-tests: fail \(unlisted failure: test_x\.py:3[ ,|)]/m);
   assert.equal(backendStatus(r.evidence as string), "fail");
+});
+
+test("backend-tests asks pytest to name failures, set-up errors and skips (-rfEs), so none pass unnamed", () => {
+  const root = makeFixture({ typecheck: "exit 0", pytest: 'echo "$@" > ../pytest-args.txt; echo "1 passed"; exit 0' });
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(readFileSync(join(root, "pytest-args.txt"), "utf8"), /-rfEs/);
 });

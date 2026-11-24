@@ -1,17 +1,15 @@
 /**
- * The pytest rules both checks share: the venv setup command, the quarantine
- * (known-failures.txt), and the verdict on one pytest run. pytest's exit 0 or
+ * The pytest rules both checks share: the quarantine (known-failures.txt), and the verdict on one pytest run. pytest's exit 0 or
  * 1 are test results; any other exit fails. Every test that is not passing is
  * named on a summary line, and each one must be listed to pass.
  */
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-/** The command that builds herald's backend venv; both checks name it when a venv is missing. */
-export const VENV_SETUP = 'cd backend && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]" -r requirements.txt';
-
-/** E2E ids start with this; every other listed id is a backend test. */
-export const E2E_PREFIX = "tests/e2e/";
+/** Whether a listed id is an E2E test (it starts with `tests/e2e/`); every other id is a backend test. */
+export function isE2eId(id: string): boolean {
+  return id.startsWith("tests/e2e/");
+}
 
 /** The verdict on one pytest run: pass or fail, with its message parts joined by ` | `. */
 export type PytestVerdict = { status: "pass" | "fail"; message: string };
