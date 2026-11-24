@@ -172,3 +172,13 @@ test("a passing run writes the full report to feature-map.log, with proof counts
   assert.match(log, /Unmapped \(0\)/);
   assert.match(log, /Breaks \(0\)/);
 });
+
+test("the Breaks section comes first in the report, so a fail's shown lines include it", () => {
+  const many = Array.from({ length: 12 }, (_, i) => ({ id: `board.extra${i}`, what: "a gap" }));
+  const r = runMap(map({ ...GOOD_ENTRY, subFeatures: [...GOOD_ENTRY.subFeatures, ...many], reach: [] }));
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.ok(r.stdout.split("\n").includes("  Breaks (1)"), `the shown lines include the Breaks header: ${r.stdout}`);
+  const log = featureLog(r.evidence);
+  assert.ok(log.indexOf("Breaks (1)") < log.indexOf("features: 1"), "Breaks comes before the feature counts");
+  assert.ok(log.indexOf("Breaks (1)") < log.indexOf("Gaps ("), "Breaks comes before the gaps");
+});

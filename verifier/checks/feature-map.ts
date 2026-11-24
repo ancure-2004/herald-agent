@@ -8,16 +8,16 @@ import type { Check, CheckContext, CheckResult } from "../check.ts";
 import { gapsOf, unmappedOf } from "../feature-coverage.ts";
 import { loadFeatureMap, MAP_FILE, type Feature } from "../feature-map.ts";
 
-/** The report: each feature's proof count, then gaps, unmapped files and breaks, each with its count. */
+/** The report: breaks first (so a fail's shown lines include them), then each feature's proof count, gaps and unmapped files. */
 function report(features: Feature[], gaps: string[], unmapped: string[], breaks: string[]): string {
-  const lines = [`features: ${features.length} in ${MAP_FILE}`];
+  const lines = [`Breaks (${breaks.length})`];
+  for (const b of breaks) lines.push(`  ${b}`);
+  lines.push("", `features: ${features.length} in ${MAP_FILE}`);
   for (const f of features) lines.push(`  ${f.id}: ${f.proofs.length} proof(s)`);
   lines.push("", `Gaps (${gaps.length}): sub-features no proof covers`);
   for (const gap of gaps) lines.push(`  ${gap}`);
   lines.push("", `Unmapped (${unmapped.length}): feature files no entry claims`);
   for (const file of unmapped) lines.push(`  ${file}`);
-  lines.push("", `Breaks (${breaks.length})`);
-  for (const b of breaks) lines.push(`  ${b}`);
   return lines.join("\n");
 }
 
