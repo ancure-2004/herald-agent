@@ -41,7 +41,8 @@ test("backend and frontend get their free ports, the CORS and API addresses, tel
   assert.match(fp, /^\d+$/);
   assert.notEqual(bp, fp);
   for (const port of [bp, fp]) assert.ok(!["8000", "3000", "3001"].includes(port), `not a reserved port: ${port}`);
-  assert.equal(backend.env.CORS_ORIGINS, `http://127.0.0.1:${fp},http://localhost:${fp}`);
+  /** A JSON list: herald's settings library parses list settings as JSON and crashes on a comma list. */
+  assert.deepEqual(JSON.parse(backend.env.CORS_ORIGINS ?? "null"), [`http://127.0.0.1:${fp}`, `http://localhost:${fp}`]);
   assert.equal(frontend.env.NEXT_PUBLIC_API_BASE_URL, `http://127.0.0.1:${bp}`);
   assert.equal(frontend.env.NEXT_TELEMETRY_DISABLED, "1");
   assert.ok(backend.env.DATABASE_URL?.startsWith("sqlite:///"), String(backend.env.DATABASE_URL));

@@ -91,7 +91,8 @@ async function run(ctx: CheckContext): Promise<CheckResult> {
       program: uvicorn,
       args: ["app.main:app", "--host", "127.0.0.1", "--port", String(backendPort)],
       cwd: join(ctx.root, "backend"),
-      env: { ...ctx.env, CORS_ORIGINS: `http://127.0.0.1:${frontendPort},http://localhost:${frontendPort}` },
+      /** A JSON list: herald's settings library parses list settings as JSON and crashes on a comma list. */
+      env: { ...ctx.env, CORS_ORIGINS: JSON.stringify([`http://127.0.0.1:${frontendPort}`, `http://localhost:${frontendPort}`]) },
       logPath: join(ctx.evidenceDir, "backend.log"),
     });
     servers.push(backend);
