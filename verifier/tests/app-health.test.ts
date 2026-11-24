@@ -158,7 +158,15 @@ for (const signal of ["SIGTERM", "SIGINT"] as const) {
     const env = { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "", VERIFY_FRONTEND_READY_SECONDS: "60" };
     const child = spawn(join(root, "verify"), [], { env, stdio: "ignore" });
     const exited = new Promise<number | null>((resolve) => child.on("exit", (code) => resolve(code)));
-    assert.ok(await until(() => exists(recordPath(root, "frontend")), 20_000), "both servers started");
+    /** Both start at once, so wait until each has written a whole record. */
+    const recorded = (name: "backend" | "frontend") => {
+      try {
+        return exists(recordPath(root, name)) && readRecord(root, name).pid > 0;
+      } catch {
+        return false;
+      }
+    };
+    assert.ok(await until(() => recorded("backend") && recorded("frontend"), 20_000), "both servers started");
     const pids = [readRecord(root, "backend").pid, readRecord(root, "frontend").pid];
     child.kill(signal);
     assert.equal(await exited, 2);
