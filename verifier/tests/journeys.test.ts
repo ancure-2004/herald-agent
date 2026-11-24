@@ -12,8 +12,28 @@ import { cleanup, exists, makeFixture, playwrightRecordPath, readRecord, runVeri
 
 after(cleanup);
 
-/** The fake Playwright's body when a test wants it to pass. */
-const PASSING = 'echo "1 passed"; exit 0';
+/** A test status in Playwright's JSON report: expected (passed), unexpected (failed), flaky, or skipped (test.fixme / test.skip). */
+type Status = "expected" | "unexpected" | "flaky" | "skipped";
+
+/**
+ * A fake Playwright body that writes Playwright's JSON report to
+ * VERIFY_JOURNEY_DIR: one test per journey file it was given, with the status
+ * `statuses[file name]` (or `fallback`), then exits `code`.
+ */
+function reporting(statuses: Record<string, Status>, fallback: Status, code: number): string {
+  const cases = Object.entries(statuses)
+    .map(([name, status]) => `'${name}') s=${status};;`)
+    .join(" ");
+  return [
+    'out="$VERIFY_JOURNEY_DIR/results.json"; sep=""',
+    `{ printf '{"suites":['; for a in "$@"; do case "$a" in *.journey.ts) b=$(basename "$a"); case "$b" in ${cases} *) s=${fallback};; esac`,
+    `printf '%s{"title":"%s","file":"%s","specs":[{"title":"t","file":"%s","tests":[{"status":"%s"}]}],"suites":[]}' "$sep" "$b" "$b" "$b" "$s"; sep=,;; esac; done; printf ']}'; } > "$out"`,
+    `exit ${code}`,
+  ].join("\n");
+}
+
+/** The fake Playwright's body when a test wants it to pass: every journey it was given passes. */
+const PASSING = reporting({}, "expected", 0);
 
 /** A journey file's text: the fixtures only need it to exist. */
 const JOURNEY = "// journey\n";
@@ -75,6 +95,30 @@ test("fast mode with a changed feature that has a journey runs that journey, thr
   const port = frontend.argv[frontend.argv.indexOf("--port") + 1];
   assert.equal(rec.env.get("VERIFY_BASE_URL"), `http://127.0.0.1:${port}`);
   assert.notEqual(port, "3000", "never the Master's herald on 3000");
+});
+
+test("a journey that was skipped is never reported as run: zero passed names the skipped journey", () => {
+  const root = journeyFixture(reporting({}, "skipped", 0));
+  changeDemo(root);
+  const r = journeyRun(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^journeys: pass \(0 passed, 1 skipped: demo\)$/m);
+  assert.doesNotMatch(r.stdout, /ran /);
+});
+
+test("a run with a passed and a skipped journey names each by its outcome", () => {
+  const root = journeyFixture(reporting({ "demo.journey.ts": "expected", "other.journey.ts": "skipped" }, "skipped", 0));
+  const r = journeyRun(root, ["--full"]);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^journeys: pass \(demo passed; other skipped\)$/m);
+});
+
+test("a run that exits 0 but writes no results cannot run, not pass", () => {
+  const root = journeyFixture("exit 0");
+  changeDemo(root);
+  const r = journeyRun(root);
+  assert.equal(r.code, 2, r.stdout + r.stderr);
+  assert.match(r.stdout, /^journeys: could-not-run/m);
 });
 
 test("fast mode with no changed feature that has a journey passes, says so, and starts no herald", () => {

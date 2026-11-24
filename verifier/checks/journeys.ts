@@ -13,10 +13,14 @@ import { basename, join } from "node:path";
 import type { Check, CheckContext, CheckResult } from "../check.ts";
 import { heraldMissing, launchHerald, readyLimits, stopHerald, type HeraldPorts, type Launch } from "../herald.ts";
 import { signalChildGroup, trackGroup, type Server } from "../launch.ts";
+import { readOutcomes, summarize } from "../journey-results.ts";
 
 /** Where the journeys live, relative to herald's root; one file per feature, named <feature id>.journey.ts. */
 const JOURNEY_DIR = "verifier/journeys";
 const SUFFIX = ".journey.ts";
+
+/** The file, in the journeys' Evidence folder, where Playwright writes its JSON report (playwright.config.ts). */
+const RESULTS_FILE = "results.json";
 
 /** The Playwright Test package and its program, installed by `cd verifier && npm install`. */
 const PLAYWRIGHT_PACKAGE = "verifier/node_modules/@playwright/test";
@@ -115,10 +119,19 @@ function runJourneys(ctx: CheckContext, files: string[], ports: HeraldPorts, evi
   return runProgram(join(ctx.root, PLAYWRIGHT), ["test", ...files, "--config", CONFIG], ctx.root, env);
 }
 
-/** The check's result for the journeys that ran: pass, or fail naming the failing lines, with the full output below them. */
-function verdict(base: { name: string; command: string; durationMs: number }, files: string[], ran: Ran, notes: string[]): CheckResult {
+/**
+ * The check's result for the journeys that ran: pass (naming what passed and
+ * what was skipped, from Playwright's report at `resultsFile`), or fail naming
+ * the failing lines, with the full output below them. A zero exit with no
+ * report, or with no test in it, cannot run: nothing is proven.
+ */
+function verdict(base: { name: string; command: string; durationMs: number }, ran: Ran, resultsFile: string, notes: string[]): CheckResult {
   if (ran.code === 0 && !ran.timedOut) {
-    return { ...base, status: "pass", exitCode: 0, output: notes.join("\n"), message: `ran ${files.map(featureOf).join(", ")}` };
+    const outcomes = readOutcomes(resultsFile);
+    if (outcomes.length === 0) {
+      return { ...base, status: "could-not-run", exitCode: null, output: notes.join("\n"), message: `playwright wrote no test results to ${resultsFile}` };
+    }
+    return { ...base, status: "pass", exitCode: 0, output: notes.join("\n"), message: summarize(outcomes) };
   }
   const named = failureLines(ran.output);
   const message = ran.timedOut ? "playwright timed out" : named.length > 0 ? named.join(" | ") : `playwright exited with ${ran.code ?? "no code"}`;
@@ -162,7 +175,7 @@ async function run(ctx: CheckContext): Promise<CheckResult> {
   if (!launch.ports) return { ...base, status: "could-not-run", exitCode: null, output: "", message: "no free port on 127.0.0.1" };
   if (launch.failure) return { ...base, durationMs, status: "fail", exitCode: 1, output: notes.join("\n"), message: launch.failure.message };
   if (!ran) return { ...base, durationMs, status: "could-not-run", exitCode: null, output: notes.join("\n"), message: "herald answered but playwright did not run" };
-  const result = verdict({ ...base, durationMs }, files, ran, notes);
+  const result = verdict({ ...base, durationMs }, ran, join(evidence, RESULTS_FILE), notes);
   if (result.status === "fail" || freed) return result;
   const message = `a port was still in use after stopping (${launch.ports.backend}, ${launch.ports.frontend})`;
   return { ...base, durationMs, status: "fail", exitCode: 1, output: notes.join("\n"), message };

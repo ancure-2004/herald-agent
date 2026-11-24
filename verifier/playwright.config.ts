@@ -16,7 +16,8 @@ export default defineConfig({
   workers: 1,
   /** Each expect waits this long: under `next dev` a route is compiled the first time it is opened. */
   expect: { timeout: 30_000 },
-  reporter: [["list"], ["html", { open: "never", outputFolder: join(evidence, "report") }]],
+  /** results.json is what the journeys check reads: which journeys passed and which were skipped (checks/journey-results.ts). */
+  reporter: [["list"], ["html", { open: "never", outputFolder: join(evidence, "report") }], ["json", { outputFile: join(evidence, "results.json") }]],
   outputDir: join(evidence, "results"),
   use: {
     baseURL: process.env.VERIFY_BASE_URL,
