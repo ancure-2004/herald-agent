@@ -21,3 +21,12 @@ test("a passing E2E run exits 0 and e2e passes", () => {
   assert.match(r.stdout, /e2e: pass/);
   assert.equal(e2eStatus(r.evidence as string), "pass");
 });
+
+test("a missing backend/.venv exits 2 and e2e names the setup command", () => {
+  const root = makeFixture({ typecheck: "exit 0", noVenv: true });
+  const r = runVerify(root);
+  assert.equal(r.code, 2, r.stdout + r.stderr);
+  /** The backend-tests line names the same command too, so the assertion is on the e2e line alone. */
+  assert.match(r.stdout, /^e2e: could-not-run \(.*cd backend && python3 -m venv \.venv && \.venv\/bin\/pip install -e "\.\[dev\]" -r requirements\.txt\)$/m);
+  assert.equal(e2eStatus(r.evidence as string), "could-not-run");
+});

@@ -5,8 +5,10 @@
  * backend-tests. E2E_BASE_URL never reaches it: the clean environment drops it.
  */
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import type { Check, CheckContext, CheckResult } from "../check.ts";
-import { judgePytest } from "../known-failures.ts";
+import { judgePytest, VENV_SETUP } from "../known-failures.ts";
 
 /** The runner's arguments: `-rfEs` for the failure, error and skip summary lines, and no cache folder in the repo. */
 const ARGS = ["tests/e2e/runner.py", "-rfEs", "-pno:cacheprovider"];
@@ -16,11 +18,15 @@ const TIMEOUT_MS = 600_000;
 
 /** Run the E2E suite with the clean environment; returns its result. */
 function run(ctx: CheckContext): CheckResult {
-  const python = "backend/.venv/bin/python";
-  const command = [python, ...ARGS].join(" ");
+  const command = ["backend/.venv/bin/python", ...ARGS].join(" ");
   const base = { name: "e2e", command, durationMs: 0 };
+  const python = join(ctx.root, "backend", ".venv", "bin", "python");
+  if (!existsSync(python)) {
+    const message = `backend/.venv/bin/python is missing; run: ${VENV_SETUP}`;
+    return { ...base, status: "could-not-run", exitCode: null, output: "", message };
+  }
   const started = Date.now();
-  const r = spawnSync(`${ctx.root}/${python}`, ARGS, { cwd: ctx.root, env: ctx.env, encoding: "utf8", timeout: TIMEOUT_MS });
+  const r = spawnSync(python, ARGS, { cwd: ctx.root, env: ctx.env, encoding: "utf8", timeout: TIMEOUT_MS });
   const durationMs = Date.now() - started;
   const output = `${r.stdout ?? ""}${r.stderr ?? ""}`;
   if (r.error) return { ...base, durationMs, status: "could-not-run", exitCode: null, output, message: r.error.message };
