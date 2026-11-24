@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import type { Check, CheckContext, CheckResult } from "../check.ts";
 import { heraldMissing, launchHerald, readyLimits, stopHerald, type HeraldPorts, type Launch } from "../herald.ts";
-import type { Server } from "../launch.ts";
+import { signalChildGroup, trackGroup, type Server } from "../launch.ts";
 
 /** Where the journeys live, relative to herald's root; one file per feature, named <feature id>.journey.ts. */
 const JOURNEY_DIR = "verifier/journeys";
@@ -68,10 +68,17 @@ export function failureLines(output: string): string[] {
 /** The outcome of one program run: its exit code (null when it was killed or never started), its output, and whether the time limit killed it. */
 type Ran = { code: number | null; output: string; timedOut: boolean };
 
-/** Run a program in `cwd` with `env`, collecting its output; it is killed after TIMEOUT_MS. */
-function runProgram(program: string, args: string[], cwd: string, env: Record<string, string>): Promise<Ran> {
+/**
+ * Run a program in `cwd` with `env`, collecting its output. It leads its own
+ * process group, so a time limit (or the end of the program) stops everything
+ * it started, Chrome included, and an outside stop of the Verifier does too
+ * (trackGroup). The group is killed once the program has exited, since a
+ * background child would otherwise keep the output open.
+ */
+export function runProgram(program: string, args: string[], cwd: string, env: Record<string, string>, timeoutMs = TIMEOUT_MS): Promise<Ran> {
   return new Promise((resolve) => {
-    const child = spawn(program, args, { cwd, env });
+    const child = spawn(program, args, { cwd, env, detached: true });
+    const untrack = trackGroup(child);
     let output = "";
     const collect = (chunk: Buffer) => {
       output += chunk.toString();
@@ -81,14 +88,17 @@ function runProgram(program: string, args: string[], cwd: string, env: Record<st
     let timedOut = false;
     const timer = setTimeout(() => {
       timedOut = true;
-      child.kill("SIGKILL");
-    }, TIMEOUT_MS);
+      signalChildGroup(child, "SIGKILL");
+    }, timeoutMs);
     child.on("error", (error) => {
       clearTimeout(timer);
+      untrack();
       resolve({ code: null, output: output + error.message, timedOut: false });
     });
+    child.on("exit", () => signalChildGroup(child, "SIGKILL"));
     child.on("close", (code) => {
       clearTimeout(timer);
+      untrack();
       resolve({ code, output, timedOut });
     });
   });

@@ -25,14 +25,30 @@ export type Server = { name: string; port: number; child: ChildProcess; logPath:
 /** Every server started and not yet stopped, so an interrupted run can still stop them. */
 const live = new Set<Server>();
 
+/** Process groups the Verifier started that are not servers (Playwright and what it starts), by their leader. */
+const liveGroups = new Set<ChildProcess>();
+
 /**
- * Stop every server still running, at once and without waiting (SIGKILL to each
- * whole group). For when the Verifier itself is being stopped from outside,
- * where an orderly stopServer can't finish.
+ * Track a child that leads its own process group (spawned detached), so an
+ * outside stop ends the whole group too. Returns the function that stops tracking it.
+ */
+export function trackGroup(child: ChildProcess): () => void {
+  liveGroups.add(child);
+  return () => {
+    liveGroups.delete(child);
+  };
+}
+
+/**
+ * Stop every server and tracked group still running, at once and without
+ * waiting (SIGKILL to each whole group). For when the Verifier itself is being
+ * stopped from outside, where an orderly stopServer can't finish.
  */
 export function killAllNow(): void {
   for (const server of live) signalGroup(server, "SIGKILL");
   live.clear();
+  for (const child of liveGroups) signalChildGroup(child, "SIGKILL");
+  liveGroups.clear();
 }
 
 /** Sleep for `ms` milliseconds. */
@@ -138,14 +154,19 @@ export async function waitReady(server: Server, url: string, timeoutMs: number, 
   }
 }
 
-/** Send a signal to the server's whole process group; a group already gone is not an error. */
-function signalGroup(server: Server, signal: NodeJS.Signals): void {
-  if (server.child.pid === undefined) return;
+/** Send a signal to a child's whole process group; a group already gone is not an error. */
+export function signalChildGroup(child: ChildProcess, signal: NodeJS.Signals): void {
+  if (child.pid === undefined) return;
   try {
-    process.kill(-server.child.pid, signal);
+    process.kill(-child.pid, signal);
   } catch {
     return;
   }
+}
+
+/** Send a signal to the server's whole process group. */
+function signalGroup(server: Server, signal: NodeJS.Signals): void {
+  signalChildGroup(server.child, signal);
 }
 
 /** True while any process in the server's group is alive (signal 0 only probes). */

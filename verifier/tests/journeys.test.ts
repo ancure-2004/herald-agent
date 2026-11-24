@@ -5,9 +5,10 @@
  */
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { cleanup, exists, makeFixture, playwrightRecordPath, readRecord, runVerify, type RunResult } from "./fixture.ts";
+import { cleanup, exists, makeFixture, playwrightRecordPath, readRecord, runVerify, tempDir, type RunResult } from "./fixture.ts";
 
 after(cleanup);
 
@@ -173,12 +174,47 @@ test("a change that selects no feature passes without Playwright installed: noth
   assert.match(r.stdout, /^journeys: pass \(no changed feature has a journey\)$/m);
 });
 
-/** True when the process with this PID no longer exists. */
+for (const signal of ["SIGTERM", "SIGINT"] as const) {
+  test(`a Verifier stopped from outside (${signal}) also stops Playwright's process group and its child, and exits 2`, async () => {
+    const pidFile = join(tempDir("journey-child-"), "child.pid");
+    const root = journeyFixture(`sleep 300 & echo $! > "${pidFile}"; sleep 300`);
+    const env = { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "", VERIFY_CHROME: join(root, "fake-chrome") };
+    const child = spawn(join(root, "verify"), ["--full"], { env, stdio: "ignore" });
+    const exited = new Promise<number | null>((resolve) => child.on("exit", (code) => resolve(code)));
+    const started = async () => {
+      const deadline = Date.now() + 60_000;
+      while (!exists(pidFile)) {
+        if (Date.now() >= deadline) return false;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      return true;
+    };
+    assert.ok(await started(), "Playwright's child started");
+    const pid = Number(readFileSync(pidFile, "utf8").trim());
+    child.kill(signal);
+    assert.equal(await exited, 2);
+    const until = async (ms: number) => {
+      const deadline = Date.now() + ms;
+      while (!gone(pid)) {
+        if (Date.now() >= deadline) return false;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      return true;
+    };
+    assert.ok(await until(3_000), "the background child of Playwright is gone");
+  });
+}
+
+/** True when the process with this PID no longer exists (or is a zombie nobody has reaped). */
 function gone(pid: number): boolean {
   try {
     process.kill(pid, 0);
-    return false;
-  } catch (error) {
-    return (error as NodeJS.ErrnoException).code === "ESRCH";
+  } catch {
+    return true;
+  }
+  try {
+    return /^\S+ \(.*\) Z /m.test(readFileSync(`/proc/${pid}/stat`, "utf8"));
+  } catch {
+    return true;
   }
 }
