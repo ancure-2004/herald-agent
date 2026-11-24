@@ -13,10 +13,14 @@ export const VENV_SETUP = 'cd backend && python3 -m venv .venv && .venv/bin/pip 
 /** The verdict on one pytest run: pass or fail, with its message parts joined by ` | `. */
 export type PytestVerdict = { status: "pass" | "fail"; message: string };
 
-/** The ids pytest named on its `FAILED <id> - <reason>` summary lines, once each. */
+/**
+ * The ids pytest named on its summary lines, once each. A `FAILED <id> - <reason>`
+ * or `ERROR <id> - <reason>` line names the id before the first ` - `; a set-up
+ * crash (an ERROR with no test id) names its file the same way.
+ */
 function nonPassingIds(output: string): string[] {
-  const ids = output.split("\n").filter((l) => l.startsWith("FAILED ")).map((l) => {
-    const rest = l.slice("FAILED ".length);
+  const ids = output.split("\n").filter((l) => l.startsWith("FAILED ") || l.startsWith("ERROR ")).map((l) => {
+    const rest = l.slice(l.indexOf(" ") + 1);
     const dash = rest.indexOf(" - ");
     return (dash < 0 ? rest : rest.slice(0, dash)).trim();
   });
