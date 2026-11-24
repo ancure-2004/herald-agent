@@ -77,7 +77,9 @@ Before the checks run, `verify` works out what the branch changed:
 - The changed files are `git diff --name-only <base>` (committed and uncommitted changes together) plus untracked files that git does not ignore.
 - A changed file under `frontend/` or `backend/` belongs to every feature whose `files` claim it (a folder claims everything inside, as in the Feature map).
 - A changed file under `frontend/` or `backend/` that no feature claims (shared code, or an unmapped file) makes **every** feature changed. The reason names the first such file, and `changed.log` lists them all.
-- A change anywhere else (`docs/`, `tests/`, `verifier/`, the root) selects no feature.
+- A changed journey, `verifier/journeys/<id>.journey.ts`, selects feature `<id>`, so editing a journey runs it.
+- A change anywhere else (`docs/`, `tests/`, the rest of `verifier/`, the root) selects no feature.
+- Renames count both paths (`git diff --no-renames`), so the feature a file moved out of is selected too.
 - With no base (a bad `VERIFY_BASE`, no `main`, or no git repository), every feature is changed, and the reason starts `no base:`.
 
 The output prints `changed files: <n>` with each file, then `changed features: <ids>`, `none`, or `all features: <reason>`. `summary.json` has the same under `changed`, and `changed.log` in Evidence has the full lists. The run writes nothing into the repository, so these lists are never polluted by the Verifier itself.
@@ -90,11 +92,12 @@ A journey drives herald the way the Master does and proves the result from a sec
 - `--full`: every file in `verifier/journeys/`. With none, it passes with `no journey exists`.
 - Herald: started on free ports as in "Launching herald", for this check alone (a second start, with its logs in `journeys/`), and stopped pass or fail.
 - Playwright runs `verifier/node_modules/.bin/playwright test <files> --config verifier/playwright.config.ts` with the clean environment plus `VERIFY_BASE_URL` (the Verifier's own herald's frontend), `VERIFY_JOURNEY_DIR` and `VERIFY_CHROME`. Headless, one worker, in the system's Google Chrome (`/usr/bin/google-chrome` unless `VERIFY_CHROME` names another binary).
-- Outcome: all journeys pass means pass. A failing journey fails the check (exit 1); the message names each failing journey line (`N) <file:line> › <title>`) and its first error line. The full output follows in `journeys.log`.
+- Outcome: read from Playwright's `results.json` in Evidence. Pass names what passed and what was skipped (`global.palette passed; global.lead-add skipped`); with nothing passed it says `0 passed, N skipped: <names>`, never "ran". A failing journey fails the check (exit 1); the message names each failing journey line (`N) <file:line> › <title> › <step>`) and its first error line. The full output follows in `journeys.log`. A zero exit with no readable results is could-not-run.
+- Timeouts (`playwright.config.ts`): 30 s per action and per `expect`, 120 s per navigation (the first `next dev` compile), 240 s per test.
 - Cannot run (exit 2): `verifier/node_modules/@playwright/test` missing, which names the setup command `cd verifier && npm install`, or no Chrome at the path. Nothing is downloaded; the browser is the system's Chrome.
 - Evidence: `journeys/report/` (Playwright's HTML report), `journeys/results/` (a screenshot per journey, and a trace for a failed one).
 
-Journeys are for the Verifier only: `verifier/tsconfig.json` leaves `journeys/` and `playwright.config.ts` out of the typecheck, so `npm test` passes before the package is installed.
+Journeys and `playwright.config.ts` are typechecked with the rest of `verifier/`, so `npm test` needs `cd verifier && npm install` first.
 
 ### Writing a journey
 
@@ -118,7 +121,7 @@ Journeys are for the Verifier only: `verifier/tsconfig.json` leaves `journeys/` 
 - `handles`: stable labels a journey should use, such as aria-labels (may be empty).
 - `endState`: the visible result that proves the feature works (non-empty).
 - `gotchas`: traps for whoever touches the feature (may be empty).
-- `proof`: `{ "test", "covers" }` items (may be empty). `test` is a pytest id: `path`, whose file must exist, or `path::name`, whose file must define `def name(` or `async def name(`. A journey proof is `verifier/journeys/<file>.journey.ts::<title>`: the file must exist under `verifier/journeys/`, and define a test with that title (`test("<title>"` or `test('<title>'`). A journey proof is never a known failure. `path::Class::name` looks for `name` inside `class Class`; `path::Class` accepts a `class Class` line. Commented-out lines do not count, and a `[...]` parametrize suffix is dropped before the lookup. `covers` lists one or more of this entry's own sub-feature ids.
+- `proof`: `{ "test", "covers" }` items (may be empty). `test` is a pytest id: `path`, whose file must exist, or `path::name`, whose file must define `def name(` or `async def name(`. A journey proof is `verifier/journeys/<entry id>.journey.ts::<title>`: exactly that path (the entry's own id, no `..`), and the file must define a test with that title that runs: a `test("<title>"` or `test('<title>'` line, not commented, whose body calls no `test.skip(` or `test.fixme(` (a parked journey is no proof). A journey proof is never a known failure. `path::Class::name` looks for `name` inside `class Class`; `path::Class` accepts a `class Class` line. Commented-out lines do not count, and a `[...]` parametrize suffix is dropped before the lookup. `covers` lists one or more of this entry's own sub-feature ids.
 
 ```json
 {
