@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Check, CheckContext, CheckResult } from "../check.ts";
-import { judgePytest, VENV_SETUP } from "../known-failures.ts";
+import { E2E_PREFIX, judgePytest, VENV_SETUP } from "../known-failures.ts";
 
 /** The runner's arguments: `-rfEs` for the failure, error and skip summary lines, and no cache folder in the repo. */
 const ARGS = ["tests/e2e/runner.py", "-rfEs", "-pno:cacheprovider"];
@@ -30,7 +30,7 @@ function run(ctx: CheckContext): CheckResult {
   const durationMs = Date.now() - started;
   const output = `${r.stdout ?? ""}${r.stderr ?? ""}`;
   if (r.error) return { ...base, durationMs, status: "could-not-run", exitCode: null, output, message: r.error.message };
-  const verdict = judgePytest(ctx.root, r.status ?? r.signal ?? "no exit status", output);
+  const verdict = judgePytest(ctx.root, r.status ?? r.signal ?? "no exit status", output, (id) => id.startsWith(E2E_PREFIX));
   return { ...base, durationMs, exitCode: r.status, output, ...verdict };
 }
 

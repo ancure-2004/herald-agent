@@ -10,6 +10,9 @@ import { join } from "node:path";
 /** The command that builds herald's backend venv; both checks name it when a venv is missing. */
 export const VENV_SETUP = 'cd backend && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]" -r requirements.txt';
 
+/** E2E ids start with this; every other listed id is a backend test. */
+export const E2E_PREFIX = "tests/e2e/";
+
 /** The verdict on one pytest run: pass or fail, with its message parts joined by ` | `. */
 export type PytestVerdict = { status: "pass" | "fail"; message: string };
 
@@ -47,15 +50,16 @@ export function knownFailures(root: string): string[] {
 
 /**
  * The verdict on one pytest run. `status` is pytest's exit status, or its
- * signal name when it was killed. Exit 1 with no named failure fails, and so
+ * signal name when it was killed; `owns` says which listed ids are this check's. Exit 1 with no named failure fails, and so
  * does any unlisted id. A listed id that did not come up non-passing is
  * reported as fixed, so the list can shrink; that alone does not fail.
  */
-export function judgePytest(root: string, status: number | string, output: string): PytestVerdict {
+export function judgePytest(root: string, status: number | string, output: string, owns: (id: string) => boolean): PytestVerdict {
   if (status !== 0 && status !== 1) {
     return { status: "fail", message: `pytest ended with ${status}, not a test result` };
   }
-  const known = knownFailures(root);
+  /** One list serves both checks; each judges only the ids that are its own. */
+  const known = knownFailures(root).filter(owns);
   const failed = nonPassingIds(output);
   const unlisted = failed.filter((id) => !known.includes(id));
   /** A listed test that did not fail, and pytest really ran: the quarantine can shrink. */

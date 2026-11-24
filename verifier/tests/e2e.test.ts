@@ -76,3 +76,15 @@ test("E2E_BASE_URL set by the caller never reaches the E2E runner", () => {
   assert.match(dump, /^PATH=/m, "the runner did run and dumped its environment");
   assert.doesNotMatch(dump, /E2E_BASE_URL/);
 });
+
+test("each check reports as fixed only its own listed tests, not the other check's", () => {
+  const list = "tests/e2e/x.py::test_e2e_listed  # rq\ntest_y.py::test_backend_listed  # rq\n";
+  const root = makeFixture({ typecheck: "exit 0", files: { "verifier/known-failures.txt": list } });
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  const line = (name: string) => r.stdout.split("\n").find((l) => l.startsWith(`${name}: `)) ?? "";
+  assert.match(line("e2e"), /fixed: tests\/e2e\/x\.py::test_e2e_listed/);
+  assert.doesNotMatch(line("e2e"), /test_backend_listed/);
+  assert.match(line("backend-tests"), /fixed: test_y\.py::test_backend_listed/);
+  assert.doesNotMatch(line("backend-tests"), /test_e2e_listed/);
+});

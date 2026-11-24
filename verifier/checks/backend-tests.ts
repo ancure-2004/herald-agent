@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Check, CheckContext, CheckResult } from "../check.ts";
-import { judgePytest, VENV_SETUP } from "../known-failures.ts";
+import { E2E_PREFIX, judgePytest, VENV_SETUP } from "../known-failures.ts";
 
 /** pytest's arguments: quiet, no cache folder written into the repo, and a `FAILED <id>` line per failure. */
 const ARGS = ["-q", "-p", "no:cacheprovider", "-rf"];
@@ -30,7 +30,7 @@ function run(ctx: CheckContext): CheckResult {
   const durationMs = Date.now() - started;
   const output = `${r.stdout ?? ""}${r.stderr ?? ""}`;
   if (r.error) return { ...base, durationMs, status: "could-not-run", exitCode: null, output, message: r.error.message };
-  const verdict = judgePytest(ctx.root, r.status ?? r.signal ?? "no exit status", output);
+  const verdict = judgePytest(ctx.root, r.status ?? r.signal ?? "no exit status", output, (id) => !id.startsWith(E2E_PREFIX));
   return { ...base, durationMs, exitCode: r.status, output, ...verdict };
 }
 
