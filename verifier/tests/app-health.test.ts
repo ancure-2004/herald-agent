@@ -121,3 +121,14 @@ test("a missing frontend/node_modules/.bin/next exits 2 and names `cd frontend &
   assert.match(r.stdout, /cd frontend && npm ci/);
   assert.equal(exists(recordPath(root, "backend")), false, "no backend started");
 });
+
+for (const file of ["frontend/.env.local", "engines/demo/.env"]) {
+  test(`refuses to run when ${file} exists, and starts no server`, () => {
+    const root = makeFixture({ typecheck: "exit 0", files: { [file]: "live key\n" } });
+    const r = runVerify(root);
+    assert.equal(r.code, 2, r.stdout + r.stderr);
+    assert.match(r.stdout, new RegExp(`refused: ${file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+    assert.equal(exists(recordPath(root, "backend")), false, "no backend started");
+    assert.equal(exists(recordPath(root, "frontend")), false, "no frontend started");
+  });
+}

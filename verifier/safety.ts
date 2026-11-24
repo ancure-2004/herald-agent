@@ -21,7 +21,28 @@ export function refusals(root: string): string[] {
       if (name.startsWith("personal_os.db")) found.push(`backend/${name}`);
     }
   }
+  found.push(...envFiles(join(root, "frontend"), "frontend"));
+  const engines = join(root, "engines");
+  if (isFolder(engines)) {
+    for (const engine of readdirSync(engines, { withFileTypes: true })) {
+      if (engine.isDirectory()) found.push(...envFiles(join(engines, engine.name), `engines/${engine.name}`));
+    }
+  }
   return found;
+}
+
+/** True when the path is a real folder (not a file, not missing). */
+function isFolder(path: string): boolean {
+  return lstatSync(path, { throwIfNoEntry: false })?.isDirectory() === true;
+}
+
+/**
+ * The `.env*` files directly in one folder, as `<label>/<name>`: names only.
+ * A missing folder has none.
+ */
+function envFiles(dir: string, label: string): string[] {
+  if (!isFolder(dir)) return [];
+  return readdirSync(dir).filter((name) => name.startsWith(".env")).map((name) => `${label}/${name}`);
 }
 
 /** The paid or account-bound commands every check gets a stub of: a stub refuses at once. */
