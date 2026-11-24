@@ -25,12 +25,17 @@ export function tempDir(prefix: string): string {
 /** The fake pytest a fixture gets unless a test says otherwise: one passing test. */
 const PASSING_PYTEST = 'echo "1 passed"; exit 0';
 
+/** The fake E2E runner a fixture gets unless a test says otherwise: one passing test. */
+const PASSING_E2E = 'echo "1 passed"; exit 0';
+
 /**
  * Options for a fixture: what the frontend's typecheck script does, whether
- * node_modules exists, the body of the fake backend/.venv/bin/pytest (a sh
- * script; it runs in backend/), whether that venv is missing, and extra files.
+ * node_modules exists, the bodies of the fake backend/.venv/bin/pytest and
+ * backend/.venv/bin/python (sh scripts; they run in backend/, and the python
+ * one is the E2E runner, run from the root), whether that venv is missing,
+ * and extra files.
  */
-export type FixtureOptions = { typecheck: string; nodeModules?: boolean; pytest?: string; noVenv?: boolean; files?: Record<string, string> };
+export type FixtureOptions = { typecheck: string; nodeModules?: boolean; pytest?: string; e2e?: string; noVenv?: boolean; files?: Record<string, string> };
 
 /** A fixture herald-shaped folder: `verify`, `verifier/` (no node_modules, no tests), `frontend/` and `backend/`. */
 export function makeFixture(opts: FixtureOptions): string {
@@ -48,6 +53,8 @@ export function makeFixture(opts: FixtureOptions): string {
     mkdirSync(join(root, "backend", ".venv", "bin"), { recursive: true });
     const pytest = join(root, "backend", ".venv", "bin", "pytest");
     writeFileSync(pytest, `#!/bin/sh\n${opts.pytest ?? PASSING_PYTEST}\n`, { mode: 0o755 });
+    const python = join(root, "backend", ".venv", "bin", "python");
+    writeFileSync(python, `#!/bin/sh\n${opts.e2e ?? PASSING_E2E}\n`, { mode: 0o755 });
   }
   for (const [path, text] of Object.entries(opts.files ?? {})) {
     mkdirSync(join(root, path, ".."), { recursive: true });
