@@ -3,7 +3,7 @@
  * hand each check a clean environment, a throwaway database, and stubs that
  * refuse in place of paid AI commands (agy, gemini, claude).
  */
-import { existsSync, lstatSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 /**
@@ -24,16 +24,17 @@ export function refusals(root: string): string[] {
   found.push(...envFiles(join(root, "frontend"), "frontend"));
   const engines = join(root, "engines");
   if (isFolder(engines)) {
-    for (const engine of readdirSync(engines, { withFileTypes: true })) {
-      if (engine.isDirectory()) found.push(...envFiles(join(engines, engine.name), `engines/${engine.name}`));
+    /** isFolder follows symlinks, so a linked engine folder is checked too. */
+    for (const name of readdirSync(engines)) {
+      if (isFolder(join(engines, name))) found.push(...envFiles(join(engines, name), `engines/${name}`));
     }
   }
   return found;
 }
 
-/** True when the path is a real folder (not a file, not missing). */
+/** True when the path is a folder, or a symlink to one (not a file, not missing). */
 function isFolder(path: string): boolean {
-  return lstatSync(path, { throwIfNoEntry: false })?.isDirectory() === true;
+  return statSync(path, { throwIfNoEntry: false })?.isDirectory() === true;
 }
 
 /** A settings template (`.env.example`, `.env.sample`, `.env.template`): tracked, no secrets, never read by Next. */

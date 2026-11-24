@@ -16,12 +16,16 @@ const RESERVED_PORTS = [8000, 3000, 3001];
 /** How many lines of a failing server's log are shown. */
 const TAIL_LINES = 20;
 
-/** A free port, other than the reserved ones and any already `taken`. */
-async function pickPort(taken: number[]): Promise<number> {
-  for (;;) {
-    const port = await freePort();
-    if (!RESERVED_PORTS.includes(port) && !taken.includes(port)) return port;
+/** How many free ports are asked for before giving up. */
+const PORT_TRIES = 20;
+
+/** A free port, other than the reserved ones and any already `taken`; undefined when none is found. */
+async function pickPort(taken: number[]): Promise<number | undefined> {
+  for (let i = 0; i < PORT_TRIES; i++) {
+    const port = await freePort().catch(() => undefined);
+    if (port !== undefined && !RESERVED_PORTS.includes(port) && !taken.includes(port)) return port;
   }
+  return undefined;
 }
 
 /** A readiness limit in seconds from the environment (the VERIFY_* tuning), or the default when unset or not a positive number. */
@@ -72,7 +76,10 @@ async function run(ctx: CheckContext): Promise<CheckResult> {
     frontend: seconds(ctx.env, "VERIFY_FRONTEND_READY_SECONDS", 180),
   };
   const backendPort = await pickPort([]);
-  const frontendPort = await pickPort([backendPort]);
+  const frontendPort = backendPort === undefined ? undefined : await pickPort([backendPort]);
+  if (backendPort === undefined || frontendPort === undefined) {
+    return { ...base, status: "could-not-run", exitCode: null, output: "", message: "no free port on 127.0.0.1" };
+  }
   const ports = { backend: backendPort, frontend: frontendPort };
   const servers: Server[] = [];
   let failure: Failure | undefined;

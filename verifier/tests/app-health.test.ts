@@ -4,9 +4,11 @@
  */
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { mkdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { connect } from "node:net";
-import { cleanup, exists, makeFixture, readRecord, recordPath, runVerify } from "./fixture.ts";
+import { cleanup, exists, makeFixture, readRecord, recordPath, runVerify, tempDir } from "./fixture.ts";
 
 after(cleanup);
 
@@ -138,4 +140,39 @@ test("settings templates (.env.example, .env.sample, .env.template) are not refu
   const r = runVerify(makeFixture({ typecheck: "exit 0", files }));
   assert.equal(r.code, 0, r.stdout + r.stderr);
   assert.doesNotMatch(r.stdout, /refused/);
+});
+
+/** Wait until `ready()` is true, checking every 100 ms, for at most `ms`. */
+async function until(ready: () => boolean, ms: number): Promise<boolean> {
+  const deadline = Date.now() + ms;
+  while (!ready()) {
+    if (Date.now() >= deadline) return false;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return true;
+}
+
+for (const signal of ["SIGTERM", "SIGINT"] as const) {
+  test(`a Verifier stopped from outside (${signal}) stops the servers it started, and exits 2`, async () => {
+    const root = makeFixture({ typecheck: "exit 0", next: "hang" });
+    const env = { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "", VERIFY_FRONTEND_READY_SECONDS: "60" };
+    const child = spawn(join(root, "verify"), [], { env, stdio: "ignore" });
+    const exited = new Promise<number | null>((resolve) => child.on("exit", (code) => resolve(code)));
+    assert.ok(await until(() => exists(recordPath(root, "frontend")), 20_000), "both servers started");
+    const pids = [readRecord(root, "backend").pid, readRecord(root, "frontend").pid];
+    child.kill(signal);
+    assert.equal(await exited, 2);
+    assert.ok(await until(() => pids.every(gone), 3_000), `servers still running: ${pids.filter((p) => !gone(p)).join(", ")}`);
+  });
+}
+
+test("an engine folder that is a symlink is checked for .env files too", () => {
+  const outside = tempDir("verify-linked-engine-");
+  writeFileSync(join(outside, ".env"), "live key\n");
+  const root = makeFixture({ typecheck: "exit 0" });
+  mkdirSync(join(root, "engines"), { recursive: true });
+  symlinkSync(outside, join(root, "engines", "linked"));
+  const r = runVerify(root);
+  assert.equal(r.code, 2, r.stdout + r.stderr);
+  assert.match(r.stdout, /refused: engines\/linked\/\.env/);
 });

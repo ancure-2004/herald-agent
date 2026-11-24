@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { Check, CheckResult } from "./check.ts";
 import { evidenceDir, writeLog, writeSummary } from "./evidence.ts";
+import { killAllNow } from "./launch.ts";
 import { cleanEnv, refusals, writeStubs } from "./safety.ts";
 import { trackedStatus, writeTrackedChanges } from "./tracked-files.ts";
 
@@ -93,6 +94,18 @@ async function start(): Promise<number> {
     console.log(`verify could not run: ${error instanceof Error ? error.message : String(error)}`);
     return 2;
   }
+}
+
+/**
+ * Stopped from outside (Ctrl-C, or a Gate or Runner timeout): a check's own
+ * cleanup will never run, so stop every server it started now, then exit 2.
+ */
+for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"] as const) {
+  process.on(signal, () => {
+    killAllNow();
+    console.log(`verify stopped by ${signal}; every server it started was stopped`);
+    process.exit(2);
+  });
 }
 
 process.exitCode = await start();

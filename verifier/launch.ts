@@ -22,6 +22,19 @@ const KILL_WAIT_MS = 2000;
 /** A server the Verifier started: its name, port, process, log file, and whether spawning failed. */
 export type Server = { name: string; port: number; child: ChildProcess; logPath: string; failedToStart: boolean };
 
+/** Every server started and not yet stopped, so an interrupted run can still stop them. */
+const live = new Set<Server>();
+
+/**
+ * Stop every server still running, at once and without waiting (SIGKILL to each
+ * whole group). For when the Verifier itself is being stopped from outside,
+ * where an orderly stopServer can't finish.
+ */
+export function killAllNow(): void {
+  for (const server of live) signalGroup(server, "SIGKILL");
+  live.clear();
+}
+
 /** Sleep for `ms` milliseconds. */
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -75,6 +88,7 @@ export function startServer(settings: ServerSettings): Server {
       stdio: ["ignore", fd, fd],
     });
     const server: Server = { name: settings.name, port: settings.port, child, logPath: settings.logPath, failedToStart: false };
+    live.add(server);
     child.on("error", () => {
       server.failedToStart = true;
     });
@@ -114,7 +128,8 @@ export async function waitReady(server: Server, url: string, timeoutMs: number, 
     }
     const status = await probe(url);
     note(`GET ${url} -> ${status ?? "no answer"}`);
-    if (status === 200) return true;
+    /** A 200 counts only while our own server is alive: another process may have taken the port. */
+    if (status === 200 && !ended(server)) return true;
     if (Date.now() >= deadline) {
       note(`${server.name} did not answer 200 within ${timeoutMs / 1000} s`);
       return false;
@@ -159,6 +174,7 @@ async function waitGone(server: Server, ms: number): Promise<boolean> {
  * anything is still alive. Returns true when its port is free again.
  */
 export async function stopServer(server: Server): Promise<boolean> {
+  live.delete(server);
   signalGroup(server, "SIGTERM");
   if (!(await waitGone(server, TERM_GRACE_MS))) signalGroup(server, "SIGKILL");
   await waitGone(server, KILL_WAIT_MS);

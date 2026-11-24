@@ -38,13 +38,13 @@ Each check is one file in `checks/` exporting `check` (a name and a run function
 Both servers are started as herald runs them, with the same clean environment as the other checks (throwaway database, stubs), plus:
 
 - backend: `backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port <port>` in `backend/`, with `CORS_ORIGINS=http://127.0.0.1:<frontend port>,http://localhost:<frontend port>`.
-- frontend: `frontend/node_modules/.bin/next dev --port <port> --hostname 127.0.0.1` in `frontend/`, with `NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:<backend port>` and `NEXT_TELEMETRY_DISABLED=1`. Next's own `frontend/.env*` files are refused, so none are read.
+- frontend: `frontend/node_modules/.bin/next dev --port <port> --hostname 127.0.0.1` in `frontend/`, with `NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:<backend port>` and `NEXT_TELEMETRY_DISABLED=1`. Next's own `frontend/.env*` files are refused, so none are read (settings templates, `.env.example`, `.env.sample` and `.env.template`, are allowed: they hold no secrets and Next never reads them).
 
 Ports come from the operating system (a listen on port 0), so each run gets new ones. The demo engine is not started.
 
 - Ready means answering: the backend when `GET /api/health` returns 200, the frontend when `GET /` returns 200. Each is polled every 500 ms. Limits: 60 s for the backend, 180 s for the frontend (first compile included). On a slow machine, raise them with `VERIFY_BACKEND_READY_SECONDS` and `VERIFY_FRONTEND_READY_SECONDS` (they pass through like any `VERIFY_*` variable).
 - A server that exits before it answers stops the wait at once.
-- Outcome: both answer 200 means pass. A crash on start, or a limit passing, fails the check (exit 1) and shows the last 20 lines of that server's log. A missing venv or `node_modules`, or no free port, cannot run (exit 2).
+- Outcome: both answer 200 means pass. A crash on start, or a limit passing, fails the check (exit 1) and shows the last 20 lines of that server's log. A missing venv or `node_modules`, or no free port, cannot run (exit 2). If `verify` itself is stopped from outside (Ctrl-C, SIGTERM, SIGHUP), it stops every server it started at once and exits 2, so nothing is left holding a port. A 200 counts only while the server the Verifier started is still alive.
 - Stopping: each server runs in its own process group. `verify` sends SIGTERM to the group, then SIGKILL after 5 s if anything is still alive, and confirms the port is free again. This runs on pass and fail alike, even if the check throws. Nothing is stopped by name.
 - Evidence: `backend.log` and `frontend.log` (each server's output), and `app-health.log` (every request and its status).
 
