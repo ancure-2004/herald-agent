@@ -6,6 +6,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import type { CheckResult } from "./check.ts";
+import type { Changed } from "./changed.ts";
 
 /** The Evidence folder for this run, as an absolute path, created if needed. */
 export function evidenceDir(env: Record<string, string | undefined>): string {
@@ -32,8 +33,8 @@ export function writeLog(dir: string, r: CheckResult): void {
   writeFileSync(join(dir, `${r.name}.log`), text);
 }
 
-/** Write summary.json: each check's name, status, exit code and duration, plus the overall exit code. */
-export function writeSummary(dir: string, results: CheckResult[], exitCode: number): void {
+/** Write summary.json: each check's name, status, exit code and duration, the changed files and features, plus the overall exit code. */
+export function writeSummary(dir: string, results: CheckResult[], exitCode: number, changed: Changed): void {
   const checks = results.map(({ name, status, exitCode: code, durationMs }) => ({ name, status, exitCode: code, durationMs }));
-  writeFileSync(join(dir, "summary.json"), JSON.stringify({ exitCode, checks }, null, 2) + "\n");
+  writeFileSync(join(dir, "summary.json"), JSON.stringify({ exitCode, checks, changed }, null, 2) + "\n");
 }

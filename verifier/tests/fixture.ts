@@ -85,6 +85,8 @@ export type FixtureOptions = {
   /** verifier/known-failures.txt's text; null removes the file. Default: the copied real list. */
   knownFailures?: string | null;
   files?: Record<string, string>;
+  /** Make the fixture a git repository on `main` whose one commit (`base`) holds every file. Default: not a repository. */
+  git?: boolean;
 };
 
 /** Write a fake server's sh script: it runs fake-server.mjs in the given mode, recording to `record`. Missing writes nothing. */
@@ -131,7 +133,25 @@ export function makeFixture(opts: FixtureOptions): string {
     mkdirSync(join(root, path, ".."), { recursive: true });
     writeFileSync(join(root, path), text);
   }
+  if (opts.git) {
+    gitIn(root, ["init", "-q", "-b", "main"]);
+    commitAll(root, "base");
+  }
   return root;
+}
+
+/** Run git in a fixture folder with a fixed identity; returns its trimmed stdout, and throws when git fails. */
+export function gitIn(root: string, args: string[]): string {
+  const r = spawnSync("git", ["-c", "user.name=verify-test", "-c", "user.email=verify-test@example.invalid", ...args], { cwd: root, encoding: "utf8" });
+  if (r.status !== 0) throw new Error(`git ${args.join(" ")} failed: ${r.stderr}`);
+  return r.stdout.trim();
+}
+
+/** Stage everything in a fixture folder and commit it (a no-op commit fails, so call it only after a change). */
+export function commitAll(root: string, message: string): string {
+  gitIn(root, ["add", "-A"]);
+  gitIn(root, ["commit", "-q", "-m", message]);
+  return gitIn(root, ["rev-parse", "HEAD"]);
 }
 
 /** The result of one `verify` run. */

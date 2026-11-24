@@ -16,6 +16,16 @@ export const UNMAPPED_ROOTS = [
   "backend/app/autopilot",
 ];
 
+/** A `files` entry as it is compared: no trailing slashes, normalized. */
+export function claimOf(path: string): string {
+  return normalize(path).replace(/[\\/]+$/, "");
+}
+
+/** Whether a file (relative to herald's root, `/`-separated) is claimed: equal to a claim, or inside a folder claim. */
+export function isClaimed(rel: string, claims: string[]): boolean {
+  return claims.some((c) => rel === c || rel.startsWith(`${c}/`));
+}
+
 /** A pytest id without its `[...]` parametrize suffix. */
 function bareId(id: string): string {
   return id.replace(/\[.*\]$/, "");
@@ -61,7 +71,7 @@ export function gapsOf(features: Feature[], known: string[] = []): string[] {
  * its path; the files it would have held are simply not listed.
  */
 export function unmappedOf(root: string, features: Feature[]): { unmapped: string[]; problems: string[] } {
-  const claims = features.flatMap((f) => f.files).map((c) => normalize(c).replace(/[\\/]+$/, ""));
+  const claims = features.flatMap((f) => f.files).map(claimOf);
   const unmapped: string[] = [];
   const problems: string[] = [];
   for (const dir of UNMAPPED_ROOTS) {
@@ -69,7 +79,7 @@ export function unmappedOf(root: string, features: Feature[]): { unmapped: strin
     if (!existsSync(abs)) continue;
     for (const file of filesUnder(root, abs, problems)) {
       const rel = relative(root, file).split(sep).join("/");
-      if (!claims.some((c) => rel === c || rel.startsWith(`${c}/`))) unmapped.push(rel);
+      if (!isClaimed(rel, claims)) unmapped.push(rel);
     }
   }
   return { unmapped: unmapped.sort(), problems };

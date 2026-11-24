@@ -7,6 +7,7 @@ import { mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { changedLines, changedSelection, writeChangedLog } from "./changed.ts";
 import type { Check, CheckResult } from "./check.ts";
 import { evidenceDir, writeLog, writeSummary } from "./evidence.ts";
 import { killAllNow } from "./launch.ts";
@@ -69,6 +70,9 @@ async function main(): Promise<number> {
   try {
     const dir = evidenceDir(process.env);
     const env = cleanEnv(process.env, runDir, writeStubs(runDir));
+    const changed = changedSelection(ROOT, env);
+    writeChangedLog(dir, changed);
+    for (const line of changedLines(changed)) console.log(line);
     const before = trackedStatus(ROOT, env);
     const results: CheckResult[] = [];
     for (const c of checks) results.push(await c.run({ root: ROOT, env, evidenceDir: dir, full }));
@@ -80,7 +84,7 @@ async function main(): Promise<number> {
     }
     const warning = writeTrackedChanges(before, after, dir);
     if (warning) console.log(warning);
-    writeSummary(dir, results, exitCode);
+    writeSummary(dir, results, exitCode, changed);
     console.log(`evidence: ${dir}`);
     return exitCode;
   } finally {
