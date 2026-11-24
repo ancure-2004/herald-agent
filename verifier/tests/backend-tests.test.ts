@@ -56,3 +56,11 @@ test("a listed test that no longer fails exits 0 and prints the remove-it line",
   assert.match(r.stdout, /fixed: test_x\.py::test_gone; remove it from verifier\/known-failures\.txt/);
   assert.equal(backendStatus(r.evidence as string), "pass");
 });
+
+test("pytest exit 2 (collection error) fails the check and exits 1", () => {
+  const root = makeFixture({ typecheck: "exit 0", pytest: 'echo "ERROR collecting test_x.py"; exit 2' });
+  const r = runVerify(root);
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /backend-tests: fail/);
+  assert.equal(backendStatus(r.evidence as string), "fail");
+});
