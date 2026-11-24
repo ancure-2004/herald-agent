@@ -91,3 +91,15 @@ test("a backend that crashes on start fails app-health with exit 1, shows its er
   assert.match(r.stdout, /fake server: startup error: boom/);
   assert.ok(gone(readRecord(root, "frontend").pid), "the frontend was stopped too");
 });
+
+test("a frontend that never answers fails app-health within its limit, and both servers are stopped", () => {
+  const root = makeFixture({ typecheck: "exit 0", next: "hang" });
+  const started = Date.now();
+  const r = runVerify(root, [], { VERIFY_FRONTEND_READY_SECONDS: "2" });
+  const seconds = (Date.now() - started) / 1000;
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /app-health: fail/);
+  assert.ok(seconds < 30, `finished in ${seconds} s`);
+  assert.ok(gone(readRecord(root, "backend").pid), "the backend was stopped");
+  assert.ok(gone(readRecord(root, "frontend").pid), "the frontend was stopped");
+});
