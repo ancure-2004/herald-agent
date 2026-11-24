@@ -38,3 +38,11 @@ test("an unlisted ERROR line (a set-up crash) with exit 1 fails e2e, and the mes
   assert.match(r.stdout, /^e2e: fail \(unlisted failure: tests\/e2e\/x\.py::test_a[ ,|)]/m);
   assert.equal(e2eStatus(r.evidence as string), "fail");
 });
+
+test("an unlisted SKIPPED line with exit 0 still fails e2e (pytest exits 0 when only skips), and the message names it", () => {
+  const root = makeFixture({ typecheck: "exit 0", e2e: 'echo "SKIPPED [1] tests/e2e/x.py:12: pending"; exit 0' });
+  const r = runVerify(root);
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /^e2e: fail \(unlisted failure: tests\/e2e\/x\.py:12[ ,|)]/m);
+  assert.equal(e2eStatus(r.evidence as string), "fail");
+});

@@ -14,16 +14,27 @@ export const VENV_SETUP = 'cd backend && python3 -m venv .venv && .venv/bin/pip 
 export type PytestVerdict = { status: "pass" | "fail"; message: string };
 
 /**
- * The ids pytest named on its summary lines, once each. A `FAILED <id> - <reason>`
- * or `ERROR <id> - <reason>` line names the id before the first ` - `; a set-up
- * crash (an ERROR with no test id) names its file the same way.
+ * The id a summary line names, or undefined for any other line. A `FAILED <id> -
+ * <reason>` or `ERROR <id> - <reason>` line names the id before the first ` - `;
+ * a set-up crash (an ERROR with no test id) names its file the same way. A
+ * `SKIPPED [n] path:line: reason` line (pytest's `-rs`, with the count in
+ * brackets) names its location `path:line`, the text before the first `: `,
+ * because a skipped test has no id in the summary. Keep that location in the list.
  */
+function summaryId(line: string): string | undefined {
+  if (line.startsWith("SKIPPED ") && line.slice("SKIPPED ".length).startsWith("[")) {
+    const rest = line.slice("SKIPPED ".length).replace(/^\[\d+\]\s*/, "");
+    return rest.split(": ")[0].trim();
+  }
+  if (!line.startsWith("FAILED ") && !line.startsWith("ERROR ") && !line.startsWith("SKIPPED ")) return undefined;
+  const rest = line.slice(line.indexOf(" ") + 1);
+  const dash = rest.indexOf(" - ");
+  return (dash < 0 ? rest : rest.slice(0, dash)).trim();
+}
+
+/** The ids of every test that is not passing, as its summary lines name them, once each. */
 function nonPassingIds(output: string): string[] {
-  const ids = output.split("\n").filter((l) => l.startsWith("FAILED ") || l.startsWith("ERROR ")).map((l) => {
-    const rest = l.slice(l.indexOf(" ") + 1);
-    const dash = rest.indexOf(" - ");
-    return (dash < 0 ? rest : rest.slice(0, dash)).trim();
-  });
+  const ids = output.split("\n").map(summaryId).filter((id): id is string => id !== undefined && id !== "");
   return [...new Set(ids)];
 }
 
