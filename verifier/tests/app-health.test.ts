@@ -103,3 +103,21 @@ test("a frontend that never answers fails app-health within its limit, and both 
   assert.ok(gone(readRecord(root, "backend").pid), "the backend was stopped");
   assert.ok(gone(readRecord(root, "frontend").pid), "the frontend was stopped");
 });
+
+test("a missing backend/.venv/bin/uvicorn exits 2 and names the venv setup; no server starts", () => {
+  const root = makeFixture({ typecheck: "exit 0", uvicorn: "missing" });
+  const r = runVerify(root);
+  assert.equal(r.code, 2, r.stdout + r.stderr);
+  assert.match(r.stdout, /app-health: could-not-run/);
+  assert.match(r.stdout, /cd backend && python3 -m venv \.venv/);
+  assert.equal(exists(recordPath(root, "frontend")), false, "no frontend started");
+});
+
+test("a missing frontend/node_modules/.bin/next exits 2 and names `cd frontend && npm ci`; no server starts", () => {
+  const root = makeFixture({ typecheck: "exit 0", next: "missing" });
+  const r = runVerify(root);
+  assert.equal(r.code, 2, r.stdout + r.stderr);
+  assert.match(r.stdout, /app-health: could-not-run/);
+  assert.match(r.stdout, /cd frontend && npm ci/);
+  assert.equal(exists(recordPath(root, "backend")), false, "no backend started");
+});
