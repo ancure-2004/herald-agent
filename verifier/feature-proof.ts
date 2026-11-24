@@ -9,6 +9,7 @@ import { join } from "node:path";
 import type { Proof } from "./feature-map.ts";
 import { errorText, kindOf } from "./feature-fs.ts";
 import { isRecord, isText } from "./feature-shape.ts";
+import { definesTest, parseTestId } from "./pytest-id.ts";
 
 /** `proof`: may be empty. Each item is `{ test, covers }`; the good ones are returned. */
 export function checkProofs(root: string, value: unknown, subIds: string[], bad: (m: string) => void): Proof[] {
@@ -46,9 +47,9 @@ function checkCovers(value: unknown, at: string, subIds: string[], bad: (m: stri
   return ids;
 }
 
-/** A pytest id: `path` must be a file; `path::func` also needs `def func(` (or `async def func(`) in it. */
+/** A pytest id: `path` must be a file; a name after `::` must be defined in it (see pytest-id.ts). */
 function checkTest(root: string, at: string, test: string, bad: (m: string) => void): void {
-  const [file, ...names] = test.split("::");
+  const { file, names } = parseTestId(test);
   const kind = kindOf(join(root, file));
   if ("error" in kind) {
     bad(`${at} test "${test}": ${file} cannot be read: ${kind.error}`);
@@ -59,8 +60,8 @@ function checkTest(root: string, at: string, test: string, bad: (m: string) => v
     return;
   }
   if (names.length === 0) return;
-  const func = names[names.length - 1];
-  if (func === "") {
+  const last = names[names.length - 1];
+  if (last === "") {
     bad(`${at} test "${test}" names no function after ::`);
     return;
   }
@@ -71,5 +72,5 @@ function checkTest(root: string, at: string, test: string, bad: (m: string) => v
     bad(`${at} test "${test}": ${file} cannot be read: ${errorText(error)}`);
     return;
   }
-  if (!source.includes(`def ${func}(`)) bad(`${at} test "${test}": ${file} has no def ${func}(`);
+  if (!definesTest(source, names)) bad(`${at} test "${test}": ${file} has no def ${last}( or class ${last}`);
 }
