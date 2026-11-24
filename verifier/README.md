@@ -6,7 +6,7 @@ Runs herald's checks against a clean worktree and writes Evidence. Start it from
 ./verify
 ```
 
-It takes no options; any argument prints a usage line and exits 2.
+Its only option is `--full` (every journey, see "Journeys" below). Any other argument prints a usage line and exits 2.
 
 ## Exit codes
 
@@ -34,6 +34,7 @@ Each check is one file in `checks/` exporting `check` (a name and a run function
 - `e2e`: `backend/.venv/bin/python tests/e2e/runner.py -rfEs -pno:cacheprovider` in the root, under the same venv (without it the check cannot run, and it names the same setup command). The same rule as `backend-tests`, against the same list. `E2E_BASE_URL` never reaches it (it is not on the clean environment's list), so E2E cannot run against a live server.
 
 - `feature-map`: reads `verifier/feature-map.json` and checks every entry is well formed and its files and proof tests exist. Reads files only; starts no program. Details under "Feature map" below.
+- `journeys`: runs herald's journeys (`verifier/journeys/<feature id>.journey.ts`) in headless Google Chrome with Playwright Test, against herald the Verifier starts itself (the same launch as `app-health`, in `herald.ts`). Details under "Journeys" below.
 
 ### Launching herald (`app-health`)
 
@@ -64,6 +65,41 @@ Every check runs with `PATH` starting at a stub folder, `stub-bin/`, inside the 
 
 `git status --porcelain` runs before and after the checks. If the two outputs differ, `verify` prints `warning: checks changed tracked files: <paths>` and writes the differing lines to `tracked-changes.txt` in Evidence. This is a warning only: the exit code does not change and nothing is restored. Outside a git repo the watch is skipped.
 
+## Fast set and `--full`
+
+`./verify` is the fast set: every check runs as above, but `journeys` runs only the journeys of the changed features. `./verify --full` runs every journey file. The other checks behave the same in both modes.
+
+## Changed features
+
+Before the checks run, `verify` works out what the branch changed:
+
+- The base is `VERIFY_BASE` when it is set (a commit or ref), else `git merge-base HEAD main`.
+- The changed files are `git diff --name-only <base>` (committed and uncommitted changes together) plus untracked files that git does not ignore.
+- A changed file under `frontend/` or `backend/` belongs to every feature whose `files` claim it (a folder claims everything inside, as in the Feature map).
+- A changed file under `frontend/` or `backend/` that no feature claims (shared code, or an unmapped file) makes **every** feature changed. The reason names the first such file, and `changed.log` lists them all.
+- A change anywhere else (`docs/`, `tests/`, `verifier/`, the root) selects no feature.
+- With no base (a bad `VERIFY_BASE`, no `main`, or no git repository), every feature is changed, and the reason starts `no base:`.
+
+The output prints `changed files: <n>` with each file, then `changed features: <ids>`, `none`, or `all features: <reason>`. `summary.json` has the same under `changed`, and `changed.log` in Evidence has the full lists. The run writes nothing into the repository, so these lists are never polluted by the Verifier itself.
+
+## Journeys
+
+A journey drives herald the way the Master does and proves the result from a second view. One file per feature: `verifier/journeys/<feature id>.journey.ts`, named after the feature's map id (`global.lead-add.journey.ts`). A journey belongs to the feature with that id.
+
+- Fast mode: the journeys of the changed features. With none (or none changed to a feature that has a journey), the check passes with `journeys: pass (no changed feature has a journey)` and starts no herald. Every changed feature with no journey is simply not run.
+- `--full`: every file in `verifier/journeys/`. With none, it passes with `no journey exists`.
+- Herald: started on free ports as in "Launching herald", for this check alone (a second start, with its logs in `journeys/`), and stopped pass or fail.
+- Playwright runs `verifier/node_modules/.bin/playwright test <files> --config verifier/playwright.config.ts` with the clean environment plus `VERIFY_BASE_URL` (the Verifier's own herald's frontend), `VERIFY_JOURNEY_DIR` and `VERIFY_CHROME`. Headless, one worker, in the system's Google Chrome (`/usr/bin/google-chrome` unless `VERIFY_CHROME` names another binary).
+- Outcome: all journeys pass means pass. A failing journey fails the check (exit 1); the message names each failing journey line (`N) <file:line> › <title>`) and its first error line. The full output follows in `journeys.log`.
+- Cannot run (exit 2): `verifier/node_modules/@playwright/test` missing, which names the setup command `cd verifier && npm install`, or no Chrome at the path. Nothing is downloaded; the browser is the system's Chrome.
+- Evidence: `journeys/report/` (Playwright's HTML report), `journeys/results/` (a screenshot per journey, and a trace for a failed one).
+
+Journeys are for the Verifier only: `verifier/tsconfig.json` leaves `journeys/` and `playwright.config.ts` out of the typecheck, so `npm test` passes before the package is installed.
+
+### Writing a journey
+
+To come (the first journey and this guide land with the next slice).
+
 ## Feature map
 
 `verifier/feature-map.json` maps herald's features: how a user reaches each one, which files make it up, and which tests prove it. It is plain JSON, so a Worker can edit it without running code. The top level is `{ "features": [ entry, ... ] }`. Each entry has:
@@ -75,7 +111,7 @@ Every check runs with `PATH` starting at a stub folder, `stub-bin/`, inside the 
 - `handles`: stable labels a journey should use, such as aria-labels (may be empty).
 - `endState`: the visible result that proves the feature works (non-empty).
 - `gotchas`: traps for whoever touches the feature (may be empty).
-- `proof`: `{ "test", "covers" }` items (may be empty). `test` is a pytest id: `path`, whose file must exist, or `path::name`, whose file must define `def name(` or `async def name(`. `path::Class::name` looks for `name` inside `class Class`; `path::Class` accepts a `class Class` line. Commented-out lines do not count, and a `[...]` parametrize suffix is dropped before the lookup. `covers` lists one or more of this entry's own sub-feature ids.
+- `proof`: `{ "test", "covers" }` items (may be empty). `test` is a pytest id: `path`, whose file must exist, or `path::name`, whose file must define `def name(` or `async def name(`. A journey proof is `verifier/journeys/<file>.journey.ts::<title>`: the file must exist under `verifier/journeys/`, and define a test with that title (`test("<title>"` or `test('<title>'`). A journey proof is never a known failure. `path::Class::name` looks for `name` inside `class Class`; `path::Class` accepts a `class Class` line. Commented-out lines do not count, and a `[...]` parametrize suffix is dropped before the lookup. `covers` lists one or more of this entry's own sub-feature ids.
 
 ```json
 {
@@ -107,8 +143,10 @@ Every check runs with `PATH` starting at a stub folder, `stub-bin/`, inside the 
 Each run writes to `VERIFY_EVIDENCE_DIR` if set, else to a new temp folder:
 
 - `<check>.log`: command, status, exit code, duration and full output.
-- `summary.json`: each check's name, status (`pass`, `fail` or `could-not-run`), exit code and duration, plus the overall exit code.
+- `summary.json`: each check's name, status (`pass`, `fail` or `could-not-run`), exit code and duration, the `changed` object (base, files, features, `allFeatures`, reason), plus the overall exit code.
 - `backend.log`, `frontend.log`: the servers started by `app-health` (see "Launching herald"); `app-health.log` lists each request and its status.
+- `changed.log`: the base, every changed file, the changed features, and any shared file that made every feature changed (see "Changed features").
+- `journeys.log` and `journeys/`: the journeys check's output, its herald's logs, Playwright's report and results (see "Journeys").
 - `tracked-changes.txt`: only when the checks changed tracked files; the differing `git status` lines.
 
 The last stdout line is `evidence: <absolute path>`. Evidence survives the database cleanup.
@@ -119,4 +157,4 @@ The last stdout line is `evidence: <absolute path>`. Evidence survives the datab
 cd verifier && npm ci && npm test
 ```
 
-`npm test` typechecks the Verifier and runs the Seam tests in `tests/`. The tests copy `verify` and `verifier/` into a fixture folder, which also gets fake `backend/.venv/bin/pytest` and `backend/.venv/bin/python` scripts the test controls, and assert only on exit codes, stdout and Evidence files. They never run herald's real suite.
+`npm test` typechecks the Verifier and runs the Seam tests in `tests/`. The journeys check needs `cd verifier && npm install` before it can run a real journey; the Seam tests use a fake Playwright and never need the package. The tests copy `verify` and `verifier/` into a fixture folder, which also gets fake `backend/.venv/bin/pytest` and `backend/.venv/bin/python` scripts the test controls, and assert only on exit codes, stdout and Evidence files. They never run herald's real suite.
