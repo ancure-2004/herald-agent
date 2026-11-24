@@ -18,7 +18,14 @@ from sqlalchemy.pool import StaticPool
 
 from app.db.session import Base, get_db
 from app.main import app
-from app.seed import seed_initial_data
+import app.seed as production_seed
+from backend.mock_seed import seed_initial_data as mock_seed_initial_data
+
+# In tests, monkeypatch app.seed.seed_initial_data to mock_seed_initial_data
+# so that any test calling seed_initial_data receives the full legacy fixture data
+# while production app/seed.py remains completely clean and unpolluted.
+production_seed.seed_initial_data = mock_seed_initial_data
+seed_initial_data = mock_seed_initial_data
 
 
 class LeadDetailResponse:
@@ -117,6 +124,11 @@ def dental_lead(client: E2EClientWrapper) -> Dict[str, Any]:
     if leads and len(leads) > 0:
         return leads[0]
 
+    hustles_res = client.get("/api/hustles")
+    assert hustles_res.status_code == 200, f"Failed to list hustles: {hustles_res.text}"
+    hustles = hustles_res.json()
+    hustle_id = hustles[0]["id"] if hustles else 1
+
     new_lead = {
         "name": "Dr. Grover Dental Care",
         "doctor_name": "Dr. Rohit Grover",
@@ -124,6 +136,7 @@ def dental_lead(client: E2EClientWrapper) -> Dict[str, Any]:
         "city": "Delhi NCR",
         "primary_phone": "+919811002233",
         "preferred_channel": "whatsapp",
+        "hustle_id": hustle_id,
     }
     create_res = client.post("/api/leads", json=new_lead)
     assert create_res.status_code in (200, 201), f"Failed to create test lead: {create_res.text}"
