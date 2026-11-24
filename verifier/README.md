@@ -68,14 +68,14 @@ Every check runs with `PATH` starting at a stub folder, `stub-bin/`, inside the 
 
 `verifier/feature-map.json` maps herald's features: how a user reaches each one, which files make it up, and which tests prove it. It is plain JSON, so a Worker can edit it without running code. The top level is `{ "features": [ entry, ... ] }`. Each entry has:
 
-- `id`: unique across the map, surface-prefixed (`management.board`). `name`: a non-empty string.
+- `id`: unique across the map, `<surface>.<feature>` (`management.board`). The surfaces are `management`, `cockpit` and `global` (reached from anywhere, such as Sprint, the command palette or Autopilot). Settings is its own surface with one entry, whose id is just `settings`. `name`: a non-empty string.
 - `reach`: every way in, one per line (at least one), e.g. `"Management sidebar -> Kanban Board"`.
-- `files`: files or folders that make up the feature (at least one; each must exist). A folder claims every file inside it.
+- `files`: files or folders that make up the feature (at least one; each must exist). Paths are relative to herald and inside it; absolute paths, paths outside it, and `.` (the root itself) are breaks. A folder claims every file inside it.
 - `subFeatures`: `{ "id", "what" }` (at least one). Sub-feature ids are unique across the whole map.
 - `handles`: stable labels a journey should use, such as aria-labels (may be empty).
 - `endState`: the visible result that proves the feature works (non-empty).
 - `gotchas`: traps for whoever touches the feature (may be empty).
-- `proof`: `{ "test", "covers" }` items (may be empty). `test` is a pytest id: `path`, whose file must exist, or `path::func`, whose file must define `def func(`. For `path::Class::func` the last part is checked. `covers` lists one or more of this entry's own sub-feature ids.
+- `proof`: `{ "test", "covers" }` items (may be empty). `test` is a pytest id: `path`, whose file must exist, or `path::name`, whose file must define `def name(` or `async def name(`. `path::Class::name` looks for `name` inside `class Class`; `path::Class` accepts a `class Class` line. Commented-out lines do not count, and a `[...]` parametrize suffix is dropped before the lookup. `covers` lists one or more of this entry's own sub-feature ids.
 
 ```json
 {
@@ -98,9 +98,9 @@ Every check runs with `PATH` starting at a stub folder, `stub-bin/`, inside the 
 
 **To add a feature:** add an entry with each field above, point `files` at real paths, and add a proof only where an existing test really checks that sub-feature. A sub-feature with no proof is a gap, which is reported, not failed.
 
-**What fails (exit 1):** the file is missing or does not parse, the top level is wrong, or any entry breaks a rule. The `feature-map` line names every break, with the entry `id` and the bad field, path or test. Renaming a feature file or a proof test without updating the map fails here.
+**What fails (exit 1):** the file is missing or does not parse, the top level is wrong, or any entry breaks a rule. The `feature-map` line names every break, with the entry `id` and the bad field, path or test. A list item is named by its number (`files[2]`, `proof[1] covers[3]`). An unreadable map, feature folder or proof file is a break too: exit 1, never a crash (exit 2). Renaming a feature file or a proof test without updating the map fails here.
 
-**What is only reported:** gaps (sub-features no proof covers) and unmapped files (files under `frontend/src/features/`, `backend/app/api/v1/routes/`, `backend/app/services/` or `backend/app/autopilot/` that no entry claims; `__init__.py`, `*.pyc` and `__pycache__` are skipped). Both are listed with their counts in `feature-map.log` and never change the status.
+**What is only reported:** gaps (sub-features no proof covers) and unmapped files (files under `frontend/src/features/`, `backend/app/api/v1/routes/`, `backend/app/services/` or `backend/app/autopilot/` that no entry claims; `__init__.py`, `*.pyc` and `__pycache__` are skipped). Both are listed with their counts in `feature-map.log` and never change the status. Symlinks under the feature roots are neither followed nor counted: the unmapped scan skips them. A `files` entry may name a symlink; it is checked by what it points to.
 
 ## Evidence
 
