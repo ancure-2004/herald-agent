@@ -65,8 +65,11 @@ export function judgePytest(root: string, status: number | string, output: strin
   if (status === 1 && failed.length === 0) {
     return { status: "fail", message: "pytest exited 1 but named no failing test" };
   }
+  /** Listed tests that still fail, shown so nobody has to dig them out of the log (ticket 04). */
+  const stillFailing = known.filter((id) => failed.includes(id));
+  const still = stillFailing.length > 0 ? [`still failing (listed): ${stillFailing.join(", ")}`] : [];
   if (unlisted.length > 0) {
-    return { status: "fail", message: [`unlisted failure: ${unlisted.join(", ")}`, ...fixed].join(" | ") };
+    return { status: "fail", message: [`unlisted failure: ${unlisted.join(", ")}`, ...still, ...fixed].join(" | ") };
   }
-  return { status: "pass", message: fixed.join(" | ") };
+  return { status: "pass", message: [...still, ...fixed].join(" | ") };
 }

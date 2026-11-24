@@ -55,7 +55,7 @@ test("listed FAILED, ERROR and SKIPPED ids only (exit 1) pass e2e", () => {
   const root = makeFixture({ typecheck: "exit 0", files, e2e });
   const r = runVerify(root);
   assert.equal(r.code, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /^e2e: pass$/m);
+  assert.match(r.stdout, /^e2e: pass \(still failing \(listed\): tests\/e2e\/a\.py::t1, tests\/e2e\/a\.py::t2, tests\/e2e\/a\.py:12\)$/m);
   assert.equal(e2eStatus(r.evidence as string), "pass");
 });
 
@@ -87,4 +87,18 @@ test("each check reports as fixed only its own listed tests, not the other check
   assert.doesNotMatch(line("e2e"), /test_backend_listed/);
   assert.match(line("backend-tests"), /fixed: test_y\.py::test_backend_listed/);
   assert.doesNotMatch(line("backend-tests"), /test_e2e_listed/);
+});
+
+test("a listed test that still fails is shown on its check's line, and the check still passes", () => {
+  const list = "tests/e2e/x.py::test_known  # rq\n";
+  const root = makeFixture({
+    typecheck: "exit 0",
+    e2e: 'echo "FAILED tests/e2e/x.py::test_known - needs a real model"; exit 1',
+    files: { "verifier/known-failures.txt": list },
+  });
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  const line = r.stdout.split("\n").find((l) => l.startsWith("e2e: ")) ?? "";
+  assert.match(line, /^e2e: pass \(still failing \(listed\): tests\/e2e\/x\.py::test_known\)/);
+  assert.doesNotMatch(r.stdout.split("\n").find((l) => l.startsWith("backend-tests: ")) ?? "", /still failing/);
 });
