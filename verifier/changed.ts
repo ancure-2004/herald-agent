@@ -3,7 +3,8 @@
  * (committed, uncommitted and untracked), and the Feature map features those
  * files belong to. A changed file under frontend/ or backend/ that no feature
  * claims makes every feature changed, since shared code can break anything;
- * a change anywhere else (docs/, tests/, verifier/) selects no feature. With
+ * a change anywhere else (docs/, tests/) selects no feature, except a journey
+ * file (verifier/journeys/<id>.journey.ts), which selects the feature <id>. With
  * no base to compare with, every feature is changed and the reason says why.
  */
 import { spawnSync } from "node:child_process";
@@ -24,6 +25,9 @@ export type Changed = {
 
 /** The folders whose changes can touch the app; a change elsewhere selects nothing. */
 const APP_ROOTS = ["frontend/", "backend/"];
+
+/** A journey file, `verifier/journeys/<feature id>.journey.ts`: its capture is the feature id it selects. */
+const JOURNEY_FILE = /^verifier\/journeys\/(.+)\.journey\.ts$/;
 
 /** The first non-blank line of a text, trimmed; "" when it has none. */
 function firstLine(text: string): string {
@@ -64,6 +68,8 @@ export function classify(files: string[], features: Feature[]): { features: stri
   const picked = new Set<string>();
   const unclaimed: string[] = [];
   for (const file of files) {
+    const journey = JOURNEY_FILE.exec(file)?.[1];
+    if (journey !== undefined && features.some((f) => f.id === journey)) picked.add(journey);
     if (!APP_ROOTS.some((root) => file.startsWith(root))) continue;
     const owners = features.filter((f) => isClaimed(file, f.files.map(claimOf)));
     if (owners.length === 0) unclaimed.push(file);

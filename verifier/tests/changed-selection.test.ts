@@ -70,6 +70,14 @@ test("without VERIFY_BASE the base is the merge-base with main, so a commit on m
   assert.deepEqual(changedOf(r.evidence).features, []);
 });
 
+test("a changed journey file selects the feature its name gives, so editing a journey runs it in the fast set", () => {
+  const root = gitFixture();
+  put(root, "verifier/journeys/demo.journey.ts", "// journey\n");
+  const r = runVerify(root);
+  assert.deepEqual(changedOf(r.evidence).features, ["demo"]);
+  assert.equal(changedOf(r.evidence).allFeatures, false);
+});
+
 test("a change only under docs/, tests/ or verifier/ selects no feature", () => {
   const root = gitFixture();
   put(root, "docs/notes.md");
