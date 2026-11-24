@@ -4,6 +4,8 @@
  */
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { cleanup, makeFixture, readEvidence, runVerify } from "./fixture.ts";
 
 after(cleanup);
@@ -45,4 +47,32 @@ test("an unlisted SKIPPED line with exit 0 still fails e2e (pytest exits 0 when 
   assert.equal(r.code, 1, r.stdout + r.stderr);
   assert.match(r.stdout, /^e2e: fail \(unlisted failure: tests\/e2e\/x\.py:12[ ,|)]/m);
   assert.equal(e2eStatus(r.evidence as string), "fail");
+});
+
+test("listed FAILED, ERROR and SKIPPED ids only (exit 1) pass e2e", () => {
+  const files = { "verifier/known-failures.txt": "tests/e2e/a.py::t1  # rq-test\ntests/e2e/a.py::t2  # rq-test\ntests/e2e/a.py:12  # rq-test\n" };
+  const e2e = 'echo "FAILED tests/e2e/a.py::t1 - x"; echo "ERROR tests/e2e/a.py::t2 - boom"; echo "SKIPPED [1] tests/e2e/a.py:12: pending"; exit 1';
+  const root = makeFixture({ typecheck: "exit 0", files, e2e });
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^e2e: pass$/m);
+  assert.equal(e2eStatus(r.evidence as string), "pass");
+});
+
+test("a listed id that passed prints the remove-it line and exits 0", () => {
+  const files = { "verifier/known-failures.txt": "tests/e2e/x.py::test_gone  # rq-test\n" };
+  const root = makeFixture({ typecheck: "exit 0", files, e2e: 'echo "1 passed"; exit 0' });
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^e2e: pass \(fixed: tests\/e2e\/x\.py::test_gone; remove it from verifier\/known-failures\.txt\)$/m);
+  assert.equal(e2eStatus(r.evidence as string), "pass");
+});
+
+test("E2E_BASE_URL set by the caller never reaches the E2E runner", () => {
+  const root = makeFixture({ typecheck: "exit 0", e2e: "env > e2e-env.txt; echo \"1 passed\"; exit 0" });
+  const r = runVerify(root, [], { E2E_BASE_URL: "http://127.0.0.1:9" });
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  const dump = readFileSync(join(root, "e2e-env.txt"), "utf8");
+  assert.match(dump, /^PATH=/m, "the runner did run and dumped its environment");
+  assert.doesNotMatch(dump, /E2E_BASE_URL/);
 });
