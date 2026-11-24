@@ -1,0 +1,631 @@
+{
+  "features": [
+    {
+      "id": "management.overview",
+      "name": "Overview",
+      "reach": [
+        "Management sidebar → Overview",
+        "Header Management pill → Overview (the default screen on load)",
+        "Cmd+K → Executive Dashboard"
+      ],
+      "files": [
+        "frontend/src/features/dashboard"
+      ],
+      "subFeatures": [
+        { "id": "overview.stats", "what": "Stat tiles for Total Clinics, In Outreach, Needs Follow-Up and Walkthroughs Ready" },
+        { "id": "overview.activity", "what": "Recent Activity and Upcoming Follow-Ups lists" },
+        { "id": "overview.add-lead", "what": "Add Lead button opens the new-lead form" }
+      ],
+      "handles": [
+        "Overview",
+        "Add Lead",
+        "Total Clinics",
+        "Needs Follow-Up",
+        "Upcoming Follow-Ups",
+        "Recent Activity"
+      ],
+      "endState": "The four stat tiles show clinic counts from the lead data, the Recent Activity and Upcoming Follow-Ups lists fill in, and Add Lead opens the new-lead form.",
+      "gotchas": [],
+      "proof": []
+    },
+    {
+      "id": "management.inbox",
+      "name": "Inbox / WhatsApp",
+      "reach": [
+        "Management sidebar → Inbox / WhatsApp",
+        "Kanban Board → lead card → Chat button (title 'Open WhatsApp chat')",
+        "Cockpit attention cards → Open Inbox"
+      ],
+      "files": [
+        "frontend/src/features/inbox",
+        "frontend/src/features/modals/LogReplyModal.tsx",
+        "backend/app/api/v1/routes/messages.py",
+        "backend/app/services/message_service.py",
+        "backend/app/services/ai_service.py",
+        "backend/app/services/rag_service.py"
+      ],
+      "subFeatures": [
+        { "id": "inbox.thread", "what": "Read a clinic's WhatsApp conversation and see messages appended to it" },
+        { "id": "inbox.send-message", "what": "Send a WhatsApp message to a clinic; with Autopilot off it opens a wa.me link and is logged as Sent Manually" },
+        { "id": "inbox.reply-suggestions", "what": "Generate three AI reply suggestions for the conversation" },
+        { "id": "inbox.channel-rule", "what": "Dental clinics are WhatsApp-only; SMS, email and Instagram are refused" },
+        { "id": "inbox.log-reply", "what": "Log a customer's reply by hand (Log Customer Reply), which marks the lead Replied and runs AI" }
+      ],
+      "handles": [
+        "WhatsApp Inbox",
+        "Back to conversations",
+        "Generate Suggestions",
+        "Log Customer Reply",
+        "Log Call",
+        "Open WhatsApp",
+        "Sent Manually"
+      ],
+      "endState": "Opening a clinic shows its thread; a sent message appears in the thread as Queued or Sent Manually; Generate Suggestions shows three replies; after Log Customer Reply the lead shows as Replied on the Kanban Board.",
+      "gotchas": [
+        "Log Call and Log Customer Reply sit side by side in the thread header; on narrow screens the reply button reads 'Log Reply'.",
+        "With Autopilot off, a send returns a wa.me link and is logged as Sent Manually; nothing is sent by the bot."
+      ],
+      "proof": [
+        { "test": "tests/e2e/tier1_feature_coverage/test_f3_messaging_and_dispatch.py::test_post_lead_message_creates_record", "covers": ["inbox.thread"] },
+        { "test": "tests/e2e/tier1_feature_coverage/test_f3_messaging_and_dispatch.py::test_dispatch_automation_off_generates_wame_link", "covers": ["inbox.send-message"] },
+        { "test": "tests/e2e/tier1_feature_coverage/test_f4_manual_reply_and_suggestions.py::test_ai_reply_suggestions_three_options_payload", "covers": ["inbox.reply-suggestions"] },
+        { "test": "tests/e2e/tier1_feature_coverage/test_f2_leads_and_channels.py::test_dental_clinic_channel_whatsapp_only", "covers": ["inbox.channel-rule"] },
+        { "test": "tests/e2e/tier3_cross_feature/test_pairwise_interactions.py::test_cross_channel_invariant_blocks_non_whatsapp_outreach", "covers": ["inbox.channel-rule"] },
+        { "test": "tests/e2e/tier1_feature_coverage/test_f4_manual_reply_and_suggestions.py::test_manual_reply_logging_updates_lead_status", "covers": ["inbox.log-reply"] }
+      ]
+    },
+    {
+      "id": "management.board",
+      "name": "Kanban Board",
+      "reach": [
+        "Management sidebar → Kanban Board",
+        "Management sidebar → Kanban Board → All Active Pipeline",
+        "Management sidebar → Kanban Board → Review Tray (Ready)",
+        "Management sidebar → Kanban Board → Due Today & Overdue",
+        "Management sidebar → Kanban Board → Hot Demo Viewers",
+        "Management sidebar → Kanban Board → Active Replies",
+        "Management sidebar → Kanban Board → Archived & DNC",
+        "Cmd+K → Pipeline Kanban Board"
+      ],
+      "files": [
+        "frontend/src/features/board",
+        "backend/app/api/v1/routes/leads.py",
+        "backend/app/services/lead_service.py",
+        "backend/app/api/v1/routes/tracking.py",
+        "backend/app/services/tracking_service.py"
+      ],
+      "subFeatures": [
+        { "id": "board.smart-views", "what": "Six saved views under Kanban Board: All Active Pipeline, Review Tray (Ready), Due Today & Overdue, Hot Demo Viewers, Active Replies, Archived & DNC" },
+        { "id": "board.drag-stage", "what": "Drag a lead card into another stage column" },
+        { "id": "board.archive", "what": "Archive a lead so it leaves the active board" },
+        { "id": "board.batch", "what": "Assign unbatched early-stage leads into batches" },
+        { "id": "board.filter", "what": "Filter the board by text (Filter board, or the / key)" }
+      ],
+      "handles": [
+        "Kanban Board",
+        "Filter board",
+        "Assign unbatched leads into batches",
+        "Open WhatsApp chat",
+        "Log raw call & generate AI notes",
+        "Refresh archived leads",
+        "All Active Pipeline",
+        "Review Tray (Ready)",
+        "Due Today & Overdue",
+        "Hot Demo Viewers",
+        "Active Replies",
+        "Archived & DNC"
+      ],
+      "endState": "Each stage column lists its leads; after a drag and a reload the card sits in the new column; a smart view shows only its matching leads; an archived lead is gone from the columns and appears only under Archived & DNC.",
+      "gotchas": [
+        "Archived and do-not-contact leads are hidden from the active views and show only under Archived & DNC."
+      ],
+      "proof": [
+        { "test": "tests/e2e/tier1_feature_coverage/test_f7_cockpit_and_pipeline.py::test_lead_stage_transition_flow", "covers": ["board.drag-stage"] },
+        { "test": "tests/e2e/tier3_cross_feature/test_pairwise_interactions.py::test_cross_archive_lead_removes_from_pipeline_and_cockpit", "covers": ["board.archive"] }
+      ]
+    },
+    {
+      "id": "management.table",
+      "name": "Leads Table",
+      "reach": [
+        "Management sidebar → Leads Table",
+        "Cmd+K → Full Leads Table"
+      ],
+      "files": [
+        "frontend/src/features/table",
+        "backend/app/api/v1/routes/leads.py",
+        "backend/app/services/lead_service.py"
+      ],
+      "subFeatures": [
+        { "id": "table.list", "what": "All active leads in one table with locality, stage and next step" },
+        { "id": "table.bulk-stage", "what": "Select leads and move them together to a stage (Move to Stage...)" },
+        { "id": "table.filters", "what": "Filter the table (Filter table, or the / key) and reset the filters" }
+      ],
+      "handles": [
+        "Leads Table",
+        "Filter table (/)",
+        "Select all leads",
+        "Move selected leads to stage",
+        "Move to Stage...",
+        "Reset"
+      ],
+      "endState": "The table lists the active leads; after selecting rows and choosing Move to Stage..., the moved leads show their new stage.",
+      "gotchas": [
+        "The leads API leaves archived leads out unless include_archived is set, so an archived lead does not show in the default list."
+      ],
+      "proof": [
+        { "test": "tests/e2e/tier1_feature_coverage/test_f2_leads_and_channels.py::test_leads_list_returns_active_clinics", "covers": ["table.list"] }
+      ]
+    },
+    {
+      "id": "management.calls",
+      "name": "Call Briefs",
+      "reach": [
+        "Management sidebar → Call Briefs",
+        "Kanban Board → lead card → Call (title 'Log raw call & generate AI notes')",
+        "Lead Detail → Log Call",
+        "Inbox → Log Call",
+        "Cockpit attention cards → Log Call"
+      ],
+      "files": [
+        "frontend/src/features/calls",
+        "frontend/src/features/modals/LogCallModal.tsx",
+        "backend/app/api/v1/routes/leads.py",
+        "backend/app/services/call_service.py",
+        "backend/app/services/ai_service.py",
+        "backend/app/services/rag_service.py"
+      ],
+      "subFeatures": [
+        { "id": "calls.brief", "what": "Pre-call brief for a clinic: talking points, objections and past commitments" },
+        { "id": "calls.log-call", "what": "Log a call conversation against a clinic (Log Call)" },
+        { "id": "calls.structured-notes", "what": "The AI turns a logged call into five sections: summary, interests, objections, commitments and next steps" }
+      ],
+      "handles": [
+        "Call Briefs",
+        "Generate Call Brief",
+        "Force regenerate brief",
+        "Copy brief",
+        "Log Call Conversation",
+        "Log & Structure Call",
+        "Open universal Lead Card drawer"
+      ],
+      "endState": "Choosing a clinic shows its brief; after Log & Structure Call the call is listed with its summary, interests, objections, commitments and next steps.",
+      "gotchas": [
+        "Force regenerate brief calls the AI again; the brief is otherwise kept until it is invalidated."
+      ],
+      "proof": [
+        { "test": "tests/e2e/tier1_feature_coverage/test_f5_calls_and_briefs.py::test_call_prep_brief_endpoint_structure", "covers": ["calls.brief"] },
+        { "test": "tests/e2e/tier1_feature_coverage/test_f5_calls_and_briefs.py::test_log_raw_call_transcript_success", "covers": ["calls.log-call"] },
+        { "test": "tests/e2e/tier1_feature_coverage/test_f5_calls_and_briefs.py::test_call_notes_structured_five_sections", "covers": ["calls.structured-notes"] }
+      ]
+    },
+    {
+      "id": "cockpit.attention",
+      "name": "Attention & Velocity",
+      "reach": [
+        "Header 'Cockpit' pill → Sidebar 'Attention & Velocity' (the default Cockpit tab)",
+        "Keyboard 1 on the Cockpit surface"
+      ],
+      "files": [
+        "frontend/src/features/cockpit/AutopilotCockpitView.tsx",
+        "frontend/src/features/cockpit/CockpitOverviewDashboard.tsx",
+        "frontend/src/features/cockpit/AttentionVelocityDashboard.tsx",
+        "frontend/src/features/cockpit/CockpitSupervisorBar.tsx",
+        "frontend/src/features/cockpit/NodeInspectionDrawer.tsx",
+        "frontend/src/features/cockpit/PipelineNodeNetwork.tsx",
+        "frontend/src/features/cockpit/types.ts",
+        "frontend/src/features/cockpit/DesignTokens.ts",
+        "backend/app/api/v1/routes/pipeline.py",
+        "backend/app/api/v1/routes/events.py",
+        "backend/app/api/v1/routes/jobs.py",
+        "backend/app/services/cockpit_service.py",
+        "backend/app/services/cache_manager.py",
+        "backend/app/services/event_bus.py",
+        "backend/app/services/sse_publisher.py",
+        "backend/app/services/job_queue.py",
+        "backend/app/autopilot/runs",
+        "backend/app/autopilot/orchestrator.py"
+      ],
+      "subFeatures": [
+        { "id": "attention.cards", "what": "Four attention lists: follow-ups due, unreplied inbound messages, today's actions, call preparation" },
+        { "id": "attention.velocity", "what": "Velocity view of how fast leads move through the pipeline" },
+        { "id": "attention.pipeline-state", "what": "Six-step pipeline status: Discovery, Verification, Deep Research, Next.js Build, Walkthrough, Review Tray" },
+        { "id": "attention.live-logs", "what": "Live event stream and terminal logs from the running work" },
+        { "id": "attention.supervisor", "what": "Supervisor bar showing whether Autopilot is running, with Emergency abort" }
+      ],
+      "handles": [
+        "Attention & Velocity",
+        "Emergency abort",
+        "Open Call Brief",
+        "Open Inbox",
+        "Open Outreach Hub"
+      ],
+      "endState": "The four attention lists show leads needing action; the supervisor bar says whether Autopilot is running; the pipeline shows the six steps with their status.",
+      "gotchas": [
+        "Keys 1-4 switch Cockpit tabs only when focus is not in a text field, and they do nothing while the Outreach tab is open.",
+        "Emergency abort (on the supervisor bar) halts all scraping, probes and video recording workers, not just the tab you are on."
+      ],
+      "proof": [
+        { "test": "tests/e2e/tier1_feature_coverage/test_f7_cockpit_and_pipeline.py::test_cockpit_attention_four_dashboards_presence", "covers": ["attention.cards"] },
+        { "test": "tests/backend/test_autopilot_cockpit.py::test_get_cockpit_state_endpoint", "covers": ["attention.pipeline-state"] },
+        { "test": "tests/backend/test_events.py::test_terminal_logs_endpoint", "covers": ["attention.live-logs"] },
+        { "test": "tests/backend/test_events.py::test_sse_stream_initial_handshake", "covers": ["attention.live-logs"] }
+      ]
+    },
+    {
+      "id": "cockpit.discovery",
+      "name": "Discovery Engine",
+      "reach": [
+        "Header 'Cockpit' pill → Sidebar 'Discovery Engine'",
+        "Keyboard 2 on the Cockpit surface"
+      ],
+      "files": [
+        "frontend/src/features/cockpit/discovery",
+        "backend/app/autopilot/discovery",
+        "backend/app/autopilot/search",
+        "backend/app/autopilot/verification",
+        "backend/app/autopilot/config",
+        "backend/app/autopilot/utils",
+        "backend/app/autopilot/quota.py",
+        "backend/app/autopilot/log_tags.py",
+        "backend/app/autopilot/types.py",
+        "backend/app/api/v1/routes/agents.py",
+        "backend/app/services/agent_service.py",
+        "backend/app/api/v1/routes/pipeline.py"
+      ],
+      "subFeatures": [
+        { "id": "discovery.run", "what": "Start Lead Discovery: search a locality for dental clinics and stage the ones that qualify" },
+        { "id": "discovery.sources", "what": "Tiered source waterfall (Google Places, Practo, local pool, web search) that moves on when a source's quota is spent" },
+        { "id": "discovery.filters", "what": "Keeps clinics with a WhatsApp-capable mobile and no own website, and drops duplicates" },
+        { "id": "discovery.verify", "what": "Website check: a clinic counts as having its own site only if it is not a directory or news result" }
+      ],
+      "handles": [
+        "Discovery Engine",
+        "Start Lead Discovery",
+        "Stop Discovery",
+        "Discovery Yield",
+        "Discovered Details",
+        "Discovery Assessment"
+      ],
+      "endState": "After Start Lead Discovery, newly staged clinics appear in the discovery table with a verification badge, and the discovery console lists the run's log lines.",
+      "gotchas": [
+        "Key 2 switches to this tab only when focus is not in a text field."
+      ],
+      "proof": [
+        { "test": "tests/e2e/tier1_feature_coverage/test_f6_terminal_logs_and_discovery.py::test_lead_discovery_trigger_endpoint", "covers": ["discovery.run"] },
+        { "test": "tests/backend/test_autopilot_discovery_phase1.py::test_discover_api_endpoint", "covers": ["discovery.run"] },
+        { "test": "tests/backend/test_autopilot_discovery_phase1.py::test_whatsapp_phone_validation_valid_mobiles", "covers": ["discovery.filters"] },
+        { "test": "tests/backend/test_autopilot_discovery_phase1.py::test_fast_website_filter_allows_empty_and_aggregators", "covers": ["discovery.filters"] },
+        { "test": "tests/backend/test_quota_guard.py::test_waterfall_skips_google_on_quota_and_falls_through_to_local_pool", "covers": ["discovery.sources"] },
+        { "test": "tests/backend/test_website_check.py::test_website_check_directory_only_yields_no_site", "covers": ["discovery.verify"] },
+        { "test": "tests/backend/test_website_check.py::test_website_check_unrelated_news_site_ignored", "covers": ["discovery.verify"] }
+      ]
+    },
+    {
+      "id": "cockpit.factory",
+      "name": "Demo Factory",
+      "reach": [
+        "Header 'Cockpit' pill → Sidebar 'Demo Factory'",
+        "Keyboard 3 on the Cockpit surface",
+        "Cmd+K → Run Stock Refill Batch (starts the full pipeline)"
+      ],
+      "files": [
+        "frontend/src/features/cockpit/demo-factory",
+        "backend/app/autopilot/build",
+        "backend/app/autopilot/recording",
+        "backend/app/autopilot/research",
+        "backend/app/autopilot/pipelines",
+        "backend/app/autopilot/adapters",
+        "backend/app/services/clinic_package_service.py",
+        "backend/app/api/v1/routes/pipeline.py",
+        "backend/app/api/v1/routes/hustles.py"
+      ],
+      "subFeatures": [
+        { "id": "factory.build-batch", "what": "Build a batch: staged clinics become demo packages marked DEMO_READY" },
+        { "id": "factory.preview", "what": "Preview a demo at phone and desktop sizes in the multi-device drawer" },
+        { "id": "factory.re-batch", "what": "Re-Batch Stock: re-split the staged clinics into batches" },
+        { "id": "factory.recordings", "what": "Re-record walkthroughs and retry failed or pending videos" },
+        { "id": "factory.refill", "what": "Run Stock Refill Batch: the seven-step pipeline from discovery to the Review Tray" }
+      ],
+      "handles": [
+        "Demo Factory",
+        "Re-Batch Stock",
+        "Re-record walkthroughs",
+        "Retry Failed/Pending Videos",
+        "Test All Live Links"
+      ],
+      "endState": "After a build, the batch lists its clinics as DEMO_READY, each with a preview link that opens the demo; a failed video shows a retry action.",
+      "gotchas": [
+        "Run Stock Refill Batch (Cmd+K) calls the refill route, which runs the whole pipeline, not only the build."
+      ],
+      "proof": [
+        { "test": "tests/backend/test_autopilot_demo_factory_phase2.py::test_build_batch_api_endpoint_synchronous", "covers": ["factory.build-batch"] }
+      ]
+    },
+    {
+      "id": "cockpit.outreach",
+      "name": "Outreach Automation",
+      "reach": [
+        "Header 'Cockpit' pill → Sidebar 'Outreach Automation'",
+        "Keyboard 4 on the Cockpit surface"
+      ],
+      "files": [
+        "frontend/src/features/cockpit/OutreachHubSubpage.tsx",
+        "frontend/src/features/cockpit/outreach",
+        "frontend/src/features/cockpit/mockData.ts",
+        "backend/app/api/v1/routes/messages.py",
+        "backend/app/api/v1/routes/agents.py",
+        "backend/app/services/agent_service.py",
+        "backend/app/services/pipeline_service.py",
+        "backend/app/autopilot/adapters/outreach.py",
+        "backend/app/api/v1/routes/pipeline.py"
+      ],
+      "subFeatures": [
+        { "id": "outreach.queue", "what": "Dispatch queue of WhatsApp messages; with automation on, sends queue for the WhatsApp sender" },
+        { "id": "outreach.mark-sent", "what": "Mark a clinic's message sent or unsent by hand" },
+        { "id": "outreach.safety", "what": "Safety brakes: no double send to the same step, a STOP reply sets Do-Not-Contact, and quota gauges and caps" },
+        { "id": "outreach.closer", "what": "Run the Closer agent" }
+      ],
+      "handles": [
+        "Outreach queue is empty",
+        "Sending Mailbox",
+        "Send Now",
+        "Copy Video File",
+        "Start WA Automation",
+        "Stop WA Automation",
+        "Save Messages",
+        "Reset to Default"
+      ],
+      "endState": "The queue lists the pending clinic messages; Send Now or the automation moves a message to Sent Manually or Sent; Stop WA Automation halts the sending.",
+      "gotchas": [
+        "Keys 1-4 do not switch tabs while Outreach is open.",
+        "A clinic that replies STOP is set to Do-Not-Contact; later sends to it are refused with HTTP 403."
+      ],
+      "proof": [
+        { "test": "tests/backend/test_crm_rules.py::test_outbox_safety_no_double_send_and_stop_reply_dnc", "covers": ["outreach.safety"] },
+        { "test": "tests/e2e/tier1_feature_coverage/test_f3_messaging_and_dispatch.py::test_dispatch_automation_on_queues_message", "covers": ["outreach.queue"] }
+      ]
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "reach": [
+        "Profile menu (bottom of the sidebar, title 'Captain Profile & Settings') → Settings",
+        "Keyboard ⌘, (Ctrl+, on Windows and Linux)",
+        "Cmd+K → a Settings section (e.g. Quotas & Safety Caps)"
+      ],
+      "files": [
+        "frontend/src/features/settings",
+        "frontend/src/api/settingsApi.ts",
+        "backend/app/api/v1/routes/hustles.py",
+        "backend/app/api/v1/routes/messages.py",
+        "backend/app/services/hustle_service.py",
+        "backend/app/services/ai_service.py",
+        "backend/app/autopilot/settings.py",
+        "backend/mcp_server.py"
+      ],
+      "subFeatures": [
+        { "id": "settings.blueprint", "what": "Hustle & Blueprint: the side hustles, their autonomy mode, delivery steps and target deal value" },
+        { "id": "settings.waterfall", "what": "Discovery Waterfall: the four discovery tiers and their search queries, with fallback routing" },
+        { "id": "settings.quotas", "what": "Quotas & Safety Caps: daily channel limits, batch size and a dry-run safety simulation" },
+        { "id": "settings.mcp", "what": "MCP & AI Provider: AI provider keys (Gemini, Groq) and the MCP server" },
+        { "id": "settings.appearance", "what": "Appearance & UI: theme, reduced motion and table density" },
+        { "id": "settings.profile", "what": "Operator Profile: name, monogram and message sign-off" }
+      ],
+      "handles": [
+        "Settings",
+        "Close settings",
+        "Hustle & Blueprint",
+        "Discovery Waterfall",
+        "Quotas & Safety Caps",
+        "MCP & AI Provider",
+        "Appearance & UI",
+        "Operator Profile",
+        "Registered MCP Tools"
+      ],
+      "endState": "The modal opens on a section; a saved AI provider key shows as configured; a changed operator name shows in the sidebar account card.",
+      "gotchas": [
+        "Two Settings screens exist. Users reach the modal (⌘, or the profile menu). The page in features/settings/HustleSettingsView.tsx renders only when activeTab is 'settings', and nothing sets that tab, so it is unreachable and the sidebar's Settings list never shows.",
+        "The sidebar calls the MCP section 'MCP & Integrations'; the modal calls it 'MCP & AI Provider'.",
+        "The Registered MCP Tools list is a hardcoded array (REAL_MCP_TOOLS in SettingsModal.tsx), not read from backend/mcp_server.py, so it can drift from the server."
+      ],
+      "proof": [
+        { "test": "tests/e2e/tier1_feature_coverage/test_f1_health_and_model_discipline.py::test_active_hustles_listing", "covers": ["settings.blueprint"] },
+        { "test": "tests/backend/test_quota_guard.py::test_quota_guard_soft_limit_enforcement", "covers": ["settings.quotas"] },
+        { "test": "tests/backend/test_ai_features_phase1.py::test_ai_settings_endpoints", "covers": ["settings.mcp"] }
+      ]
+    },
+    {
+      "id": "sprint",
+      "name": "Evening Sprint",
+      "reach": [
+        "Profile menu (bottom of the sidebar) → Day Schedule",
+        "Cmd+K → Evening Sprint Mode"
+      ],
+      "files": [
+        "frontend/src/features/sprint",
+        "backend/app/api/v1/routes/hustles.py",
+        "backend/app/services/hustle_service.py"
+      ],
+      "subFeatures": [
+        { "id": "sprint.plan", "what": "Ranked list of tasks by expected value per minute, fitted to a minutes budget" },
+        { "id": "sprint.open-lead", "what": "Click a task row to open that clinic's Lead Card" }
+      ],
+      "handles": [
+        "Ranked by EV / minute",
+        "Probability-weighted yield",
+        "Day Schedule",
+        "Evening Sprint Mode"
+      ],
+      "endState": "A ranked list of clinics with minutes per row, the total stays within the budget, and clicking a row opens that clinic's Lead Card.",
+      "gotchas": [
+        "The sidebar has no Sprint entry; it sits in the profile menu under the label 'Day Schedule'.",
+        "Day mode (normal, away, off) has an API and a context action but no control in the UI, so the app cannot set it."
+      ],
+      "proof": [
+        { "test": "tests/backend/test_hustles_and_sprint.py::test_hustles_list_and_sprint", "covers": ["sprint.plan"] }
+      ]
+    },
+    {
+      "id": "palette",
+      "name": "Command Palette (Cmd+K)",
+      "reach": [
+        "Cmd+K or Ctrl+K on any screen",
+        "Header search bar ('Search clinics, doctors, settings, actions...')"
+      ],
+      "files": [
+        "frontend/src/features/modals/CommandPaletteModal.tsx",
+        "frontend/src/components/layout/Header.tsx"
+      ],
+      "subFeatures": [
+        { "id": "palette.search", "what": "Find clinics and doctors by name, and filter by All, Clinics, Doctors, Actions or Settings" },
+        { "id": "palette.nav", "what": "Jump to Pipeline Kanban Board, Full Leads Table, Executive Dashboard or Evening Sprint Mode" },
+        { "id": "palette.actions", "what": "Run actions: + Add New Lead, Run Stock Refill Batch, Verify Demo Previews & Sync" },
+        { "id": "palette.settings", "what": "Open a Settings section in the Settings modal" }
+      ],
+      "handles": [
+        "Search clinics, doctors, settings, actions...",
+        "Open Command Palette (Cmd+K)",
+        "Clear query",
+        "Remove from history"
+      ],
+      "endState": "A dialog opens over the page; typing filters the results; Enter runs the chosen item and closes the dialog.",
+      "gotchas": [
+        "Cmd+K toggles the palette (pressing it again closes it), and Escape closes it too.",
+        "Settings items open the Settings modal, not the Settings tab."
+      ],
+      "proof": []
+    },
+    {
+      "id": "lead.add",
+      "name": "Add New Lead",
+      "reach": [
+        "Cmd+K → + Add New Lead",
+        "Overview → Add Lead"
+      ],
+      "files": [
+        "frontend/src/features/modals/AddLeadModal.tsx",
+        "backend/app/api/v1/routes/leads.py",
+        "backend/app/services/lead_service.py"
+      ],
+      "subFeatures": [
+        { "id": "lead.add-form", "what": "Register a clinic: doctor name, primary phone, locality or city, Instagram handle and the first next step" }
+      ],
+      "handles": [
+        "Add New Clinic Lead",
+        "Doctor Name",
+        "Primary Phone",
+        "Locality / City",
+        "Instagram Handle",
+        "Initial Mandatory Next Step"
+      ],
+      "endState": "After saving, the new clinic shows up in the Leads Table after a refresh.",
+      "gotchas": [
+        "A clinic name is required (the form says 'Clinic / Lead name is required'), and the first next step is a required field."
+      ],
+      "proof": []
+    },
+    {
+      "id": "lead.detail",
+      "name": "Lead Detail",
+      "reach": [
+        "Kanban Board → click a lead card",
+        "Leads Table → click a row",
+        "Calls → Open universal Lead Card drawer",
+        "Cmd+K → a clinic name",
+        "Evening Sprint → click a task row",
+        "Cockpit attention cards → click a card"
+      ],
+      "files": [
+        "frontend/src/features/modals/LeadDetailModal.tsx",
+        "backend/app/api/v1/routes/leads.py",
+        "backend/app/services/lead_service.py"
+      ],
+      "subFeatures": [
+        { "id": "lead.detail-view", "what": "Lead Card: the clinic's facts, stage and history" },
+        { "id": "lead.recording", "what": "Watch or download the demo walkthrough video" }
+      ],
+      "handles": [
+        "Close drawer",
+        "Log Call",
+        "Open WhatsApp",
+        "Jump to WhatsApp",
+        "Focus Call Form"
+      ],
+      "endState": "The drawer shows the clinic name and stage; once a walkthrough exists its video plays; Close drawer returns to the screen.",
+      "gotchas": [
+        "Until a walkthrough exists the recording endpoint returns 404, so the card has no video."
+      ],
+      "proof": [
+        { "test": "tests/e2e/tier1_feature_coverage/test_f2_leads_and_channels.py::test_lead_detail_lookup_by_id", "covers": ["lead.detail-view"] },
+        { "test": "tests/backend/test_lead_recording.py::test_lead_recording_endpoints", "covers": ["lead.recording"] }
+      ]
+    },
+    {
+      "id": "assistant",
+      "name": "Ask & Do AI",
+      "reach": [
+        "Floating 'Ask & Do AI' button, bottom right (Management surface only)"
+      ],
+      "files": [
+        "frontend/src/features/modals/AssistantDrawer.tsx",
+        "frontend/src/features/modals/AssistantChatDrawer.tsx",
+        "frontend/src/features/modals/ProblemReportModal.tsx",
+        "backend/app/api/v1/routes/assistant.py",
+        "backend/app/services/assistant_service.py",
+        "backend/app/services/agent_tools.py",
+        "backend/app/services/ai_service.py",
+        "backend/app/services/rag_service.py"
+      ],
+      "subFeatures": [
+        { "id": "assistant.ask", "what": "Ask a question or ask it to act: find clinics, move a lead's stage, draft a message" },
+        { "id": "assistant.problem-report", "what": "Problem report modal: captures a diagnostic brief for a bug report" }
+      ],
+      "handles": [
+        "Ask & Do AI",
+        "Capture Diagnostic Problem Brief"
+      ],
+      "endState": "The drawer answers in text and lists the actions it executed; a clinic named in the answer can be opened.",
+      "gotchas": [
+        "The drawer is not rendered on the Cockpit surface, so the assistant is unavailable there.",
+        "Nothing in the frontend opens the problem report modal (no code sets it open), so assistant.problem-report cannot be reached yet."
+      ],
+      "proof": [
+        { "test": "tests/backend/test_ai_features_phase4.py::test_ask_do_endpoint_agentic_loop_and_citations", "covers": ["assistant.ask"] }
+      ]
+    },
+    {
+      "id": "autopilot",
+      "name": "Autopilot toggle",
+      "reach": [
+        "Sidebar 'Toggle Autopilot' icon (collapsed and expanded sidebar)",
+        "Sidebar Autopilot card → Pause / Enable button"
+      ],
+      "files": [
+        "frontend/src/components/layout/Sidebar.tsx",
+        "frontend/src/api/settingsApi.ts",
+        "backend/app/api/v1/routes/messages.py"
+      ],
+      "subFeatures": [
+        { "id": "autopilot.toggle", "what": "Turn global automation on or off; the dot is emerald for Autopilot Active and amber for Autopilot Paused" },
+        { "id": "autopilot.send-effect", "what": "With automation on, sends queue for the WhatsApp sender; with it off, they open a wa.me link" }
+      ],
+      "handles": [
+        "Toggle Autopilot",
+        "Autopilot Active",
+        "Autopilot Paused",
+        "Pause",
+        "Enable"
+      ],
+      "endState": "The sidebar dot turns emerald with 'Outreach & guards live' when Autopilot is active, or amber with 'Manual review mode' when paused; sends then queue or open wa.me as described.",
+      "gotchas": [
+        "The toggle changes only the outreach automation setting. Stopping running discovery, build or recording work is done by the Cockpit's Stop and Emergency abort (/api/autopilot/stop)."
+      ],
+      "proof": [
+        { "test": "tests/backend/test_milestone2_services.py::test_automation_settings_endpoints", "covers": ["autopilot.toggle"] },
+        { "test": "tests/e2e/tier3_cross_feature/test_pairwise_interactions.py::test_cross_automation_toggle_off_wame_and_manual_status", "covers": ["autopilot.send-effect"] },
+        { "test": "tests/e2e/tier3_cross_feature/test_pairwise_interactions.py::test_cross_automation_toggle_on_queues_and_logs_outreach", "covers": ["autopilot.send-effect"] }
+      ]
+    }
+  ]
+}
