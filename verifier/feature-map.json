@@ -436,7 +436,7 @@
       ]
     },
     {
-      "id": "sprint",
+      "id": "global.sprint",
       "name": "Evening Sprint",
       "reach": [
         "Profile menu (bottom of the sidebar) → Day Schedule",
@@ -467,7 +467,7 @@
       ]
     },
     {
-      "id": "palette",
+      "id": "global.palette",
       "name": "Command Palette (Cmd+K)",
       "reach": [
         "Cmd+K or Ctrl+K on any screen",
@@ -497,7 +497,7 @@
       "proof": []
     },
     {
-      "id": "lead.add",
+      "id": "global.lead-add",
       "name": "Add New Lead",
       "reach": [
         "Cmd+K → + Add New Lead",
@@ -526,7 +526,7 @@
       "proof": []
     },
     {
-      "id": "lead.detail",
+      "id": "global.lead-detail",
       "name": "Lead Detail",
       "reach": [
         "Kanban Board → click a lead card",
@@ -562,7 +562,7 @@
       ]
     },
     {
-      "id": "assistant",
+      "id": "global.assistant",
       "name": "Ask & Do AI",
       "reach": [
         "Floating 'Ask & Do AI' button, bottom right (Management surface only)"
@@ -595,7 +595,7 @@
       ]
     },
     {
-      "id": "autopilot",
+      "id": "global.autopilot",
       "name": "Autopilot toggle",
       "reach": [
         "Sidebar 'Toggle Autopilot' icon (collapsed and expanded sidebar)",
