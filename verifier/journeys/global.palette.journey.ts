@@ -7,7 +7,6 @@
 import { expect, test } from "@playwright/test";
 
 test("jump between screens from Cmd+K", async ({ page }, testInfo) => {
-  test.setTimeout(300_000);
   const palette = page.getByRole("dialog");
   const paletteInput = page.getByPlaceholder("Type a command or search clinics, doctors, settings...");
   const leadsTable = page.getByRole("button", { name: "Leads Table", exact: true });
