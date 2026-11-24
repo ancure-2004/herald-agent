@@ -1,6 +1,7 @@
 /**
  * Safety before any check runs: refuse where live data could be touched, and
- * hand each check a clean environment and a throwaway database.
+ * hand each check a clean environment, a throwaway database, and stubs that
+ * refuse in place of paid AI commands (agy, gemini, claude).
  */
 import { existsSync, lstatSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

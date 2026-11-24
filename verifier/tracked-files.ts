@@ -26,7 +26,7 @@ export function changedLines(before: string[], after: string[]): string[] {
  * `tracked-changes.txt` in the Evidence folder and return the warning to print.
  * Returns no warning when either snapshot is missing or nothing differs.
  */
-export function trackedWarning(before: string[] | undefined, after: string[] | undefined, dir: string): string | undefined {
+export function writeTrackedChanges(before: string[] | undefined, after: string[] | undefined, dir: string): string | undefined {
   if (!before || !after) return undefined;
   const lines = changedLines(before, after);
   if (lines.length === 0) return undefined;

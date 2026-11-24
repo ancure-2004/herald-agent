@@ -2,6 +2,8 @@
 # does not fail the backend-tests check. The list only shrinks: remove a line
 # once its test passes, and never add one (the Gate enforces this from Day 3).
 # Each line: a pytest test id, then the Request it belongs to.
+# Tests that need a real AI model fail here by design: verify stubs agy, so they
+# can't spend quota (they passed before only by calling the real agy).
 test_ai_features_phase3.py::test_embedding_service_lazy_load_and_unload  # rq-herald-backend-tests-on-main-in-a-clean-48
 test_autopilot_discovery_phase1_fixes.py::test_google_quota_429_circuit_breaker  # rq-herald-backend-tests-on-main-in-a-clean-48
 test_autopilot_discovery_phase1_fixes.py::test_local_pool_locality_tagging_and_filtering  # rq-herald-backend-tests-on-main-in-a-clean-48
@@ -9,3 +11,6 @@ test_events.py::test_terminal_logs_endpoint  # rq-herald-backend-tests-on-main-i
 test_milestone2_services.py::test_manual_reply_stop_activates_dnc_and_clears_needs_followup  # rq-herald-backend-tests-on-main-in-a-clean-48
 test_milestone4_ui_invariants_challenger.py::test_call_prep_brief_synthesis_endpoint  # rq-herald-backend-tests-on-main-in-a-clean-48 rq-herald-backend-tests-call-the-real-agy-c-5b
 test_milestone7_adversarial_challenger.py::test_live_sync_all_four_cockpit_endpoints  # rq-herald-backend-tests-on-main-in-a-clean-48
+test_mcp_server.py::test_mcp_log_call_and_activity  # rq-herald-backend-tests-call-the-real-agy-c-5b
+test_milestone4_ui_invariants_challenger.py::test_manual_reply_logging_multiline_paste_and_suggestions  # rq-herald-backend-tests-call-the-real-agy-c-5b
+test_milestone4_ui_invariants_challenger.py::test_calls_logging_structures_five_sections  # rq-herald-backend-tests-call-the-real-agy-c-5b
