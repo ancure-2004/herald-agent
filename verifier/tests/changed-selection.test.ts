@@ -70,6 +70,16 @@ test("without VERIFY_BASE the base is the merge-base with main, so a commit on m
   assert.deepEqual(changedOf(r.evidence).features, []);
 });
 
+test("a renamed file lists its old path too, so the old folder's feature is changed as well", () => {
+  const root = gitFixture({ "frontend/src/features/demo/old.tsx": "export const a = 1;\n" });
+  const base = gitIn(root, ["rev-parse", "HEAD"]);
+  gitIn(root, ["mv", "frontend/src/features/demo/old.tsx", "frontend/src/features/demo/new.tsx"]);
+  commitAll(root, "rename");
+  const r = runVerify(root, [], { VERIFY_BASE: base });
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.deepEqual(changedOf(r.evidence).files, ["frontend/src/features/demo/new.tsx", "frontend/src/features/demo/old.tsx"]);
+});
+
 test("a changed journey file selects the feature its name gives, so editing a journey runs it in the fast set", () => {
   const root = gitFixture();
   put(root, "verifier/journeys/demo.journey.ts", "// journey\n");

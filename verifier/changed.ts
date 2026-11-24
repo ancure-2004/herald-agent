@@ -55,7 +55,7 @@ function baseOf(root: string, env: Record<string, string>): { base: string } | {
 
 /** The changed files against `base`: the diff of the working tree (committed and uncommitted), plus untracked files; sorted, or the git error. */
 function filesSince(root: string, env: Record<string, string>, base: string): { ok: true; files: string[] } | { ok: false; error: string } {
-  const diff = git(root, env, ["diff", "-z", "--name-only", base]);
+  const diff = git(root, env, ["diff", "-z", "--name-only", "--no-renames", base]);
   if (!diff.ok) return diff;
   const untracked = git(root, env, ["ls-files", "-z", "--others", "--exclude-standard"]);
   if (!untracked.ok) return untracked;
