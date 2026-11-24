@@ -28,3 +28,21 @@ test("agy, gemini and claude are stubs that refuse at once, found first on PATH,
     assert.equal(exists(dirname(path)), false, `the stub folder is removed after the run: ${dirname(path)}`);
   }
 });
+
+/** Run git in a fixture with a fixed identity; fails the test if git fails. */
+function git(root: string, ...args: string[]): void {
+  const r = spawnSync("git", ["-c", "user.name=verify", "-c", "user.email=verify@example.invalid", ...args], { cwd: root, encoding: "utf8" });
+  assert.equal(r.status, 0, r.stderr);
+}
+
+test("a check that changes a tracked file prints the warning, writes tracked-changes.txt, and keeps exit 0", () => {
+  const root = makeFixture({ typecheck: "exit 0", pytest: 'echo "1 passed" && echo two >> ../data.txt && exit 0', files: { "data.txt": "one\n" } });
+  git(root, "init", "-q");
+  git(root, "add", "-A");
+  git(root, "commit", "-q", "-m", "fixture");
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^warning: checks changed tracked files: data\.txt$/m);
+  assert.ok(r.evidence, "last stdout line is `evidence: <path>`");
+  assert.match(readEvidence(r.evidence, "tracked-changes.txt"), /data\.txt/);
+});

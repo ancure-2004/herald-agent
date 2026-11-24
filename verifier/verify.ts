@@ -9,6 +9,7 @@ import { pathToFileURL } from "node:url";
 import type { Check, CheckResult } from "./check.ts";
 import { evidenceDir, writeLog, writeSummary } from "./evidence.ts";
 import { cleanEnv, refusals, writeStubs } from "./safety.ts";
+import { trackedStatus, trackedWarning } from "./tracked-files.ts";
 
 /** The herald root: the folder holding `verify`, the parent of verifier/. */
 const ROOT = join(import.meta.dirname, "..");
@@ -63,13 +64,17 @@ async function main(): Promise<number> {
   const runDir = mkdtempSync(join(tmpdir(), "verify-run-"));
   try {
     const env = cleanEnv(process.env, runDir, writeStubs(runDir));
+    const before = trackedStatus(ROOT, env);
     const results = checks.map((c) => c.run({ root: ROOT, env }));
+    const after = trackedStatus(ROOT, env);
     const exitCode = exitCodeFor(results);
     const dir = evidenceDir(process.env);
     for (const r of results) {
       writeLog(dir, r);
       report(r);
     }
+    const warning = trackedWarning(before, after, dir);
+    if (warning) console.log(warning);
     writeSummary(dir, results, exitCode);
     console.log(`evidence: ${dir}`);
     return exitCode;
