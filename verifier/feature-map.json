@@ -494,7 +494,9 @@
         "Cmd+K toggles the palette (pressing it again closes it), and Escape closes it too.",
         "Settings items open the Settings modal, not the Settings tab."
       ],
-      "proof": []
+      "proof": [
+        { "test": "verifier/journeys/global.palette.journey.ts::jump between screens from Cmd+K", "covers": ["palette.nav"] }
+      ]
     },
     {
       "id": "global.lead-add",
