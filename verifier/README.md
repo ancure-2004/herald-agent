@@ -33,6 +33,8 @@ Each check is one file in `checks/` exporting `check` (a name and a run function
 - `app-health`: starts herald's backend and frontend itself, on two free ports (never 8000, 3000 or 3001), and checks they answer. It needs `backend/.venv/bin/uvicorn` (the venv setup above) and `frontend/node_modules/.bin/next` (`cd frontend && npm ci`); without either it cannot run. Details under "Launching herald" below.
 - `e2e`: `backend/.venv/bin/python tests/e2e/runner.py -rfEs -pno:cacheprovider` in the root, under the same venv (without it the check cannot run, and it names the same setup command). The same rule as `backend-tests`, against the same list. `E2E_BASE_URL` never reaches it (it is not on the clean environment's list), so E2E cannot run against a live server.
 
+- `feature-map`: reads `verifier/feature-map.json` and checks every entry is well formed and its files and proof tests exist. Reads files only; starts no program. Details under "Feature map" below.
+
 ### Launching herald (`app-health`)
 
 Both servers are started as herald runs them, with the same clean environment as the other checks (throwaway database, stubs), plus:
@@ -61,6 +63,44 @@ Every check runs with `PATH` starting at a stub folder, `stub-bin/`, inside the 
 ### Tracked-file warning
 
 `git status --porcelain` runs before and after the checks. If the two outputs differ, `verify` prints `warning: checks changed tracked files: <paths>` and writes the differing lines to `tracked-changes.txt` in Evidence. This is a warning only: the exit code does not change and nothing is restored. Outside a git repo the watch is skipped.
+
+## Feature map
+
+`verifier/feature-map.json` maps herald's features: how a user reaches each one, which files make it up, and which tests prove it. It is plain JSON, so a Worker can edit it without running code. The top level is `{ "features": [ entry, ... ] }`. Each entry has:
+
+- `id`: unique across the map, surface-prefixed (`management.board`). `name`: a non-empty string.
+- `reach`: every way in, one per line (at least one), e.g. `"Management sidebar -> Kanban Board"`.
+- `files`: files or folders that make up the feature (at least one; each must exist). A folder claims every file inside it.
+- `subFeatures`: `{ "id", "what" }` (at least one). Sub-feature ids are unique across the whole map.
+- `handles`: stable labels a journey should use, such as aria-labels (may be empty).
+- `endState`: the visible result that proves the feature works (non-empty).
+- `gotchas`: traps for whoever touches the feature (may be empty).
+- `proof`: `{ "test", "covers" }` items (may be empty). `test` is a pytest id: `path`, whose file must exist, or `path::func`, whose file must define `def func(`. For `path::Class::func` the last part is checked. `covers` lists one or more of this entry's own sub-feature ids.
+
+```json
+{
+  "id": "management.board",
+  "name": "Kanban Board",
+  "reach": ["Management sidebar -> Kanban Board", "Cmd+K -> Board"],
+  "files": ["frontend/src/features/board", "backend/app/services/lead_service.py"],
+  "subFeatures": [
+    { "id": "board.drag-stage", "what": "drag a card to another column" },
+    { "id": "board.smart-views", "what": "the six smart views" }
+  ],
+  "handles": ["Kanban Board"],
+  "endState": "the card shows in the new column after reload",
+  "gotchas": ["Cockpit keys 1-4 mean something else inside Outreach"],
+  "proof": [
+    { "test": "tests/e2e/tier1_feature_coverage/test_f2_leads_and_channels.py::test_leads_list_returns_active_clinics", "covers": ["board.smart-views"] }
+  ]
+}
+```
+
+**To add a feature:** add an entry with each field above, point `files` at real paths, and add a proof only where an existing test really checks that sub-feature. A sub-feature with no proof is a gap, which is reported, not failed.
+
+**What fails (exit 1):** the file is missing or does not parse, the top level is wrong, or any entry breaks a rule. The `feature-map` line names every break, with the entry `id` and the bad field, path or test. Renaming a feature file or a proof test without updating the map fails here.
+
+**What is only reported:** gaps (sub-features no proof covers) and unmapped files (files under `frontend/src/features/`, `backend/app/api/v1/routes/`, `backend/app/services/` or `backend/app/autopilot/` that no entry claims; `__init__.py`, `*.pyc` and `__pycache__` are skipped). Both are listed with their counts in `feature-map.log` and never change the status.
 
 ## Evidence
 
