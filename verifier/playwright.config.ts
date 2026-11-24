@@ -14,6 +14,8 @@ export default defineConfig({
   testDir: "journeys",
   testMatch: "*.journey.ts",
   workers: 1,
+  /** Each expect waits this long: under `next dev` a route is compiled the first time it is opened. */
+  expect: { timeout: 30_000 },
   reporter: [["list"], ["html", { open: "never", outputFolder: join(evidence, "report") }]],
   outputDir: join(evidence, "results"),
   use: {
