@@ -76,25 +76,25 @@ test("a sub-feature id used by two entries fails, and the line names it", () => 
   const other = { ...GOOD_ENTRY, id: "cockpit", subFeatures: [{ id: "board.drag", what: "same id" }], proof: [] };
   const r = runMap(map(GOOD_ENTRY, other));
   assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /cockpit: sub-feature "board\.drag" is used more than once/);
+  assert.match(featureLine(r.stdout), /cockpit: subFeatures\[1\] "board\.drag" is used more than once in the map/);
 });
 
 test("a listed file that does not exist fails, and the line names the path", () => {
   const r = runMap(map({ ...GOOD_ENTRY, files: ["frontend/src/features/gone.tsx"] }));
   assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /board: files path "frontend\/src\/features\/gone\.tsx" does not exist/);
+  assert.match(featureLine(r.stdout), /board: files\[1\] "frontend\/src\/features\/gone\.tsx" does not exist/);
 });
 
 test("a proof whose test file is missing fails, and the line names the test", () => {
   const r = runVerify(makeFixture({ typecheck: "exit 0", featureMap: map(GOOD_ENTRY) }));
   assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /board: proof test file "tests\/backend\/test_board\.py" does not exist/);
+  assert.match(featureLine(r.stdout), /board: proof\[1\] test file "tests\/backend\/test_board\.py" does not exist/);
 });
 
 test("a proof naming a function the file does not define fails, and the line names the test id", () => {
   const r = runMap(map({ ...GOOD_ENTRY, proof: [{ test: "tests/backend/test_board.py::test_renamed", covers: ["board.drag"] }] }));
   assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /board: proof test "tests\/backend\/test_board\.py::test_renamed": .*no def test_renamed\(/);
+  assert.match(featureLine(r.stdout), /board: proof\[1\] test "tests\/backend\/test_board\.py::test_renamed": .*no def test_renamed\(/);
 });
 
 test("a proof covering another entry's sub-feature fails, and the line names it", () => {
@@ -102,7 +102,7 @@ test("a proof covering another entry's sub-feature fails, and the line names it"
   const bad = { ...GOOD_ENTRY, proof: [{ test: "tests/backend/test_board.py::test_drag", covers: ["cockpit.x"] }] };
   const r = runMap(map(bad, foreign));
   assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(featureLine(r.stdout), /board: proof "tests\/backend\/test_board\.py::test_drag" covers "cockpit\.x", which is not one of this entry's sub-features/);
+  assert.match(featureLine(r.stdout), /board: proof\[1\] covers\[1\] "cockpit\.x" is not one of this entry's sub-features/);
 });
 
 test("a missing map fails with exit 1 (not 2), and the line says it is missing", () => {
@@ -124,8 +124,8 @@ test("several breaks in several entries are all listed, on the line and in the l
   assert.equal(r.code, 1, r.stdout + r.stderr);
   const line = featureLine(r.stdout);
   assert.match(line, /board: reach must list at least 1 item/);
-  assert.match(line, /board: proof test "tests\/backend\/test_board\.py::test_gone": .*no def test_gone\(/);
-  assert.match(line, /cockpit: files path "frontend\/src\/features\/nope" does not exist/);
+  assert.match(line, /board: proof\[1\] test "tests\/backend\/test_board\.py::test_gone": .*no def test_gone\(/);
+  assert.match(line, /cockpit: files\[1\] "frontend\/src\/features\/nope" does not exist/);
   assert.match(featureLog(r.evidence), /board: reach must list/);
 });
 
@@ -181,4 +181,41 @@ test("the Breaks section comes first in the report, so a fail's shown lines incl
   const log = featureLog(r.evidence);
   assert.ok(log.indexOf("Breaks (1)") < log.indexOf("features: 1"), "Breaks comes before the feature counts");
   assert.ok(log.indexOf("Breaks (1)") < log.indexOf("Gaps ("), "Breaks comes before the gaps");
+});
+
+test("a non-text item in covers is a break of its own, named by its item number", () => {
+  const r = runMap(map({ ...GOOD_ENTRY, proof: [{ test: "tests/backend/test_board.py::test_drag", covers: ["board.drag", 3, null, ""] }] }));
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  const line = featureLine(r.stdout);
+  assert.match(line, /board: proof\[1\] covers\[2\] must be a non-empty sub-feature id/);
+  assert.match(line, /board: proof\[1\] covers\[3\] must be a non-empty sub-feature id/);
+  assert.match(line, /board: proof\[1\] covers\[4\] must be a non-empty sub-feature id/);
+});
+
+test("a bad proof item is named by its item number", () => {
+  const r = runMap(map({ ...GOOD_ENTRY, proof: [GOOD_ENTRY.proof[0], "not an object"] }));
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(featureLine(r.stdout), /board: proof\[2\] must be \{ test, covers \} with a non-empty test/);
+});
+
+test("a bad sub-feature item is named by its item number", () => {
+  const r = runMap(map({ ...GOOD_ENTRY, subFeatures: [GOOD_ENTRY.subFeatures[0], { id: "", what: "x" }] }));
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(featureLine(r.stdout), /board: subFeatures\[2\] must be \{ id, what \} with non-empty text/);
+});
+
+test("a bad file item is named by its item number, and an empty one is a break", () => {
+  const r = runMap(map({ ...GOOD_ENTRY, files: ["frontend/src/features/demo", ""] }));
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(featureLine(r.stdout), /board: files\[2\] must be a non-empty path/);
+});
+
+test("a files path that is absolute, outside herald, or the root itself is a break", () => {
+  const r = runMap(map({ ...GOOD_ENTRY, files: ["/etc/hosts", "../elsewhere", ".", "./", "frontend/src/features/demo"] }));
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  const line = featureLine(r.stdout);
+  assert.match(line, /board: files\[1\] "\/etc\/hosts" must be a path inside herald/);
+  assert.match(line, /board: files\[2\] "\.\.\/elsewhere" must be a path inside herald/);
+  assert.match(line, /board: files\[3\] "\." must be a path inside herald/);
+  assert.match(line, /board: files\[4\] "\.\/" must be a path inside herald/);
 });

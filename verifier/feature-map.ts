@@ -6,7 +6,8 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { checkEntry, isRecord, type Seen } from "./feature-entry.ts";
+import { checkEntry, type Seen } from "./feature-entry.ts";
+import { isRecord } from "./feature-shape.ts";
 
 /** The map's path, relative to herald's root. */
 export const MAP_FILE = "verifier/feature-map.json";
