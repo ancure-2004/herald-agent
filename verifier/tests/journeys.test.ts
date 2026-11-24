@@ -178,6 +178,20 @@ test("a failing journey fails the check with exit 1, and the message names the j
   assert.match(r.stdout, /Error: expect\(locator\)\.toBeVisible\(\) failed/);
 });
 
+test("an empty VERIFY_CHROME means the default Chrome, not an empty path", () => {
+  const root = journeyFixture();
+  changeDemo(root);
+  const r = journeyRun(root, [], { VERIFY_CHROME: "" });
+  const defaultChrome = "/usr/bin/google-chrome";
+  if (exists(defaultChrome)) {
+    assert.equal(r.code, 0, r.stdout + r.stderr);
+    assert.equal(playwrightRecord(root).env.get("VERIFY_CHROME"), defaultChrome);
+  } else {
+    assert.equal(r.code, 2, r.stdout + r.stderr);
+    assert.match(r.stdout, /Google Chrome is missing at \/usr\/bin\/google-chrome/);
+  }
+});
+
 test("a herald that crashes on start fails the journeys with the server's log tail in the check's output", () => {
   const root = makeFixture({ typecheck: "exit 0", git: true, files: JOURNEYS, playwright: PASSING, uvicorn: "crash" });
   changeDemo(root);

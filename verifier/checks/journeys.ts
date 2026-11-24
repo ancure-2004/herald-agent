@@ -150,7 +150,7 @@ async function run(ctx: CheckContext): Promise<CheckResult> {
   if (!existsSync(join(ctx.root, PLAYWRIGHT_PACKAGE)) || !existsSync(join(ctx.root, PLAYWRIGHT))) {
     return { ...base, status: "could-not-run", exitCode: null, output: "", message: `@playwright/test is missing; run: ${SETUP}` };
   }
-  const chrome = ctx.env.VERIFY_CHROME ?? DEFAULT_CHROME;
+  const chrome = ctx.env.VERIFY_CHROME || DEFAULT_CHROME;
   if (!existsSync(chrome)) {
     return { ...base, status: "could-not-run", exitCode: null, output: "", message: `Google Chrome is missing at ${chrome}; install it or set VERIFY_CHROME` };
   }
