@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { cleanup, exists, makeFixture, playwrightRecordPath, readRecord, runVerify, tempDir, type RunResult } from "./fixture.ts";
+import { cleanup, exists, makeFixture, playwrightRecordPath, readEvidence, readRecord, runVerify, tempDir, type RunResult } from "./fixture.ts";
 
 after(cleanup);
 
@@ -176,6 +176,17 @@ test("a failing journey fails the check with exit 1, and the message names the j
   assert.match(r.stdout, /^journeys: fail/m);
   assert.match(r.stdout, /verifier\/journeys\/demo\.journey\.ts:4:5 › demo › adds a lead/);
   assert.match(r.stdout, /Error: expect\(locator\)\.toBeVisible\(\) failed/);
+});
+
+test("a herald that crashes on start fails the journeys with the server's log tail in the check's output", () => {
+  const root = makeFixture({ typecheck: "exit 0", git: true, files: JOURNEYS, playwright: PASSING, uvicorn: "crash" });
+  changeDemo(root);
+  const r = journeyRun(root);
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /^journeys: fail \(backend crashed on start\)$/m);
+  const output = readEvidence(r.evidence ?? "", "journeys.log");
+  assert.match(output, /^--- last 20 lines of backend\.log ---$/m);
+  assert.match(output, /fake server: startup error: boom/);
 });
 
 test("a failing journey's message names the failing step, from Playwright's header", () => {

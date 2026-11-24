@@ -5,11 +5,8 @@
  * crash on start or a readiness timeout fails (exit 1), with the server's log tail.
  */
 import type { Check, CheckContext, CheckResult } from "../check.ts";
-import { heraldMissing, launchHerald, readyLimits, stopHerald, type Failure, type HeraldPorts } from "../herald.ts";
-import { logTail, type Server } from "../launch.ts";
-
-/** How many lines of a failing server's log are shown. */
-const TAIL_LINES = 20;
+import { failureOutput, heraldMissing, launchHerald, readyLimits, stopHerald, type Failure, type HeraldPorts } from "../herald.ts";
+import type { Server } from "../launch.ts";
 
 /** The app-health check, run with the clean environment in ctx. */
 async function run(ctx: CheckContext): Promise<CheckResult> {
@@ -33,11 +30,7 @@ async function run(ctx: CheckContext): Promise<CheckResult> {
     return { ...base, status: "could-not-run", exitCode: null, output: "", message: "no free port on 127.0.0.1" };
   }
   if (launch.failure) {
-    const { failure } = launch;
-    const logName = `${failure.server.name}.log`;
-    const tail = logTail(failure.server.logPath, TAIL_LINES);
-    const output = [failure.message, `--- last ${TAIL_LINES} lines of ${logName} ---`, ...tail, "--- requests ---", ...notes].join("\n");
-    return { ...base, durationMs, status: "fail", exitCode: 1, output, message: failure.message };
+    return { ...base, durationMs, status: "fail", exitCode: 1, output: failureOutput(launch.failure, notes), message: launch.failure.message };
   }
   if (!freed) {
     const message = `a port was still in use after stopping (${launch.ports.backend}, ${launch.ports.frontend})`;

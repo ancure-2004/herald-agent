@@ -7,11 +7,14 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { CheckContext } from "./check.ts";
-import { ended, freePort, startServer, stopServer, waitReady, type Server } from "./launch.ts";
+import { ended, freePort, logTail, startServer, stopServer, waitReady, type Server } from "./launch.ts";
 import { VENV_SETUP } from "./pytest-check.ts";
 
 /** herald's usual ports (start.sh, the demo engine); the Verifier never takes them. */
 const RESERVED_PORTS = [8000, 3000, 3001];
+
+/** How many lines of a failing server's log are shown in a failed check's output. */
+const TAIL_LINES = 20;
 
 /** How many free ports are asked for before giving up. */
 const PORT_TRIES = 20;
@@ -27,6 +30,13 @@ export type Failure = { server: Server; message: string };
 
 /** What the launch produced: the ports (none when no free port was found) and the failure, if a server never answered. */
 export type Launch = { ports?: HeraldPorts; failure?: Failure };
+
+/** A failed launch's output: its message, the failing server's last log lines, then the requests made (`notes`). */
+export function failureOutput(failure: Failure, notes: string[]): string {
+  const logName = `${failure.server.name}.log`;
+  const tail = logTail(failure.server.logPath, TAIL_LINES);
+  return [failure.message, `--- last ${TAIL_LINES} lines of ${logName} ---`, ...tail, "--- requests ---", ...notes].join("\n");
+}
 
 /** A free port, other than the reserved ones and any already `taken`; undefined when none is found. */
 async function pickPort(taken: number[]): Promise<number | undefined> {

@@ -11,7 +11,7 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import type { Check, CheckContext, CheckResult } from "../check.ts";
-import { heraldMissing, launchHerald, readyLimits, stopHerald, type HeraldPorts, type Launch } from "../herald.ts";
+import { failureOutput, heraldMissing, launchHerald, readyLimits, stopHerald, type HeraldPorts, type Launch } from "../herald.ts";
 import { signalChildGroup, trackGroup, type Server } from "../launch.ts";
 import { readOutcomes, summarize } from "../journey-results.ts";
 
@@ -173,7 +173,7 @@ async function run(ctx: CheckContext): Promise<CheckResult> {
   }
   const durationMs = Date.now() - started;
   if (!launch.ports) return { ...base, status: "could-not-run", exitCode: null, output: "", message: "no free port on 127.0.0.1" };
-  if (launch.failure) return { ...base, durationMs, status: "fail", exitCode: 1, output: notes.join("\n"), message: launch.failure.message };
+  if (launch.failure) return { ...base, durationMs, status: "fail", exitCode: 1, output: failureOutput(launch.failure, notes), message: launch.failure.message };
   if (!ran) return { ...base, durationMs, status: "could-not-run", exitCode: null, output: notes.join("\n"), message: "herald answered but playwright did not run" };
   const result = verdict({ ...base, durationMs }, ran, join(evidence, RESULTS_FILE), notes);
   if (result.status === "fail" || freed) return result;
