@@ -5,6 +5,7 @@
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
+import { connect } from "node:net";
 import { cleanup, exists, makeFixture, readRecord, runVerify } from "./fixture.ts";
 
 after(cleanup);
@@ -44,4 +45,40 @@ test("backend and frontend get their free ports, the CORS and API addresses, tel
   assert.ok(backend.env.DATABASE_URL?.startsWith("sqlite:///"), String(backend.env.DATABASE_URL));
   assert.ok(backend.env.DATABASE_URL?.endsWith("/verify.db"), String(backend.env.DATABASE_URL));
   assert.equal(frontend.env.DATABASE_URL, backend.env.DATABASE_URL);
+});
+
+/** True when nothing accepts a connection on 127.0.0.1 at `port` (the connect is refused). */
+function refused(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = connect({ host: "127.0.0.1", port });
+    socket.once("connect", () => {
+      socket.destroy();
+      resolve(false);
+    });
+    socket.once("error", (error: NodeJS.ErrnoException) => resolve(error.code === "ECONNREFUSED"));
+  });
+}
+
+/** True when the process with this PID no longer exists. */
+function gone(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return false;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === "ESRCH";
+  }
+}
+
+test("after the run both servers are gone and their ports accept no connection", async () => {
+  const root = makeFixture({ typecheck: "exit 0" });
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  const backend = readRecord(root, "backend");
+  const frontend = readRecord(root, "frontend");
+  assert.ok(gone(backend.pid), `backend pid ${backend.pid} is gone`);
+  assert.ok(gone(frontend.pid), `frontend pid ${frontend.pid} is gone`);
+  const backendPort = Number(argAfter(backend.argv, "--port"));
+  const frontendPort = Number(argAfter(frontend.argv, "--port"));
+  assert.equal(await refused(backendPort), true, `backend port ${backendPort} refuses`);
+  assert.equal(await refused(frontendPort), true, `frontend port ${frontendPort} refuses`);
 });
