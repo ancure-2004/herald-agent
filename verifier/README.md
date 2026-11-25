@@ -35,6 +35,7 @@ Each check is one file in `checks/` exporting `check` (a name and a run function
 
 - `feature-map`: reads `verifier/feature-map.json` and checks every entry is well formed and its files and proof tests exist. Reads files only; starts no program. Details under "Feature map" below.
 - `journeys`: runs herald's journeys (`verifier/journeys/<feature id>.journey.ts`) in headless Google Chrome with Playwright Test, against herald the Verifier starts itself (the same launch as `app-health`, in `herald.ts`). Details under "Journeys" below.
+- `load`: `--full` only. Generates fake data into a throwaway database, starts herald on it, and times the main backend calls and two screens against fixed limits. Details under "Load check" below.
 
 ### Launching herald (`app-health`)
 
@@ -109,6 +110,35 @@ Journeys and `playwright.config.ts` are typechecked with the rest of `verifier/`
 - Never weaken a journey to pass. A herald bug parks the journey with `test.fixme` and a one-line comment naming the Backlog Request id; unpark it when the bug is fixed. A missing precondition (such as seed data) becomes a gotcha in the map.
 - Run with `./verify --full` (every journey) or `./verify` (the changed features' journeys). A journey proof in the map is `verifier/journeys/<file>.ts::<test title>`.
 - Evidence under `journeys/`: `report/` (Playwright's HTML report), `results/` (a screenshot per test, a trace for a failed one).
+
+## Load check
+
+`./verify --full` also runs `load`. Plain `./verify` never does: it passes with `skipped (only with --full)` and starts nothing.
+
+- Data: `verifier/seed/generate.py` fills a new SQLite database with invented data (names like `Verifier Clinic 0042`, phones like `+91 90000 00042`), using herald's own models and seed data. The default is 2,000 leads (`LEADS`), seed 42 (`SEED`), in `verifier/load-limits.ts`. The same seed gives the same database, so timings compare fairly. Nothing is copied from the Master's database.
+- Run: `backend/.venv/bin/python verifier/seed/generate.py <a path> --leads <N> --seed <S>` prints each table's row count. The path must be inside a temp folder (the check uses the run's own folder). Running it by hand is for checking the generator: point it at `/tmp/x.db`.
+- Herald: started on that database (`DATABASE_URL`), as `app-health` starts it, and stopped pass or fail. Its logs are in Evidence's `load/` folder, with the generator's output in `load.log`.
+- Calls: five GETs, each after one warm-up that is not counted, each timed to the end of its body. Every call is a GET the main screens make (the list in `load-limits.ts`, with the frontend line that makes it): the leads list (also the Kanban board's data), cockpit state, attention lists, inbox threads (lead 1's messages), call briefs (lead 1's calls). The call brief GET itself is not used: it calls an AI on a cache miss.
+- Screens: headless Chrome, the Overview and the Leads Table (`verifier/load/screens.load.ts`). Each is loaded once (not timed), then loaded again and timed; a load ends when its marker shows and no `/api` request is in flight.
+
+Each call and screen gets one result from its median (calls: 5 timings; screens: 1):
+
+| Result | Rule | Effect |
+|--------|------|--------|
+| fast | median within the target | none |
+| slow | median over the target, every try answered within the hard limit | listed under `slow:` in the status line, with its median; passes |
+| broken | a try with no answer by the hard limit, a non-2xx answer, or a screen not loaded in time | `load` fails (exit 1), naming it |
+
+| | Target | Hard limit |
+|---|---|---|
+| backend call | 500 ms | 10 s |
+| screen | 5 s | 30 s |
+
+Other outcomes: a missing `backend/.venv/bin/python`, `@playwright/test` (`cd verifier && npm install`), Chrome, or herald's install cannot run (exit 2). A generator that exits non-zero fails (exit 1) with its output, since a change to herald's models can cause that.
+
+Evidence: `load.log` has the generator's output, then every call and screen sorted slowest first, each with its result, its timings and its median.
+
+The numbers live in `verifier/load-limits.ts`. `VERIFY_LOAD_LIMITS_SCALE` multiplies every target and hard limit; the Seam tests use it to shrink them, and a real run never sets it.
 
 ## Feature map
 
