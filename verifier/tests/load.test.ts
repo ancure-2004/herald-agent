@@ -155,6 +155,15 @@ test("a call that answers with a non-2xx status is broken: the check fails and n
   assert.match(r.stdout, /^load: fail \(broken: GET \/api\/leads\/1\/messages \(HTTP 500\); 6 fast, 0 slow\)$/m);
 });
 
+test("a broken call fails the check even when the screens left no timings: the call is named, and the screens problem is in the output", () => {
+  const root = loadFixture({ playwright: 'rm -f "$VERIFY_LOAD_DIR/screens.json"; exit 1' });
+  setRoutes(root, { "/api/leads/1/messages": { status: 500 } });
+  const r = fullRun(root);
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /^load: fail \(broken: GET \/api\/leads\/1\/messages \(HTTP 500\); 4 fast, 0 slow\)$/m);
+  assert.match(loadLog(r.evidence).join("\n"), /playwright wrote no screen timings/);
+});
+
 test("a screen that loads past its hard limit is broken; a slow screen is reported and passes", () => {
   const broken = loadFixture({ playwright: screensFake([{ screen: "Management Overview", ms: 10 }, { screen: "Leads Table", ms: 3500 }]) });
   const rb = fullRun(broken);

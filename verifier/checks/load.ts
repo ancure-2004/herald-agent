@@ -103,7 +103,7 @@ async function measure(ctx: CheckContext, dir: string, db: string, limits: LoadL
   return { launch, rows, problem, playwrightOutput, freed, notes };
 }
 
-/** The check's outcome for a finished measurement: a herald that did not start fails, a missing port or screen problem cannot run, a port still in use fails, and any broken call or screen fails. */
+/** The check's outcome for a finished measurement, in this order: a herald that did not start fails, a missing port cannot run, any broken call or screen fails (even when the screens left no timings), a port still in use fails, and a screen problem cannot run. */
 function verdict(base: { name: string; command: string }, started: number, genOutput: string, m: Measure): CheckResult {
   const lines = [genOutput.trimEnd(), "--- calls and screens, slowest first (the warm-up is not timed) ---", ...evidenceLines(m.rows)];
   if (m.problem) lines.push(`--- screens could not run: ${m.problem} ---`, m.playwrightOutput);
@@ -120,10 +120,10 @@ function verdict(base: { name: string; command: string }, started: number, genOu
   });
   if (m.launch.failure) return stop("fail", 1, m.launch.failure.message);
   if (!m.launch.ports) return stop("could-not-run", null, "no free port on 127.0.0.1");
-  if (m.problem) return stop("could-not-run", null, m.problem);
+  if (m.rows.some((r) => r.outcome === "broken")) return stop("fail", 1, summary(m.rows));
   if (!m.freed) return stop("fail", 1, `a port was still in use after stopping (${m.launch.ports.backend}, ${m.launch.ports.frontend})`);
-  const failed = m.rows.some((r) => r.outcome === "broken");
-  return stop(failed ? "fail" : "pass", failed ? 1 : 0, summary(m.rows));
+  if (m.problem) return stop("could-not-run", null, m.problem);
+  return stop("pass", 0, summary(m.rows));
 }
 
 /** The load check, run with the clean environment in ctx. */
