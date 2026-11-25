@@ -118,6 +118,24 @@ describe("fake-data generator", { skip: SKIP }, () => {
     conn.close();
   });
 
+  test("lead 1 is the busy lead: 12 messages, 3 calls, 2 commitments and 5 facts, whatever the seed", () => {
+    for (const seed of ["7", "8"]) {
+      const db = join(tempDir(), `busy-${seed}.db`);
+      assert.equal(gen(db, ["--leads", "50", "--seed", seed]).status, 0);
+      const conn = open(db);
+      const row = conn
+        .prepare(
+          `SELECT (SELECT COUNT(*) FROM messages WHERE lead_id = 1) AS msgs,
+                  (SELECT COUNT(*) FROM calls WHERE lead_id = 1) AS calls,
+                  (SELECT COUNT(*) FROM commitments WHERE lead_id = 1) AS commitments,
+                  (SELECT COUNT(*) FROM lead_facts WHERE lead_id = 1) AS facts`,
+        )
+        .get() as Record<string, number>;
+      conn.close();
+      assert.deepEqual({ ...row }, { msgs: 12, calls: 3, commitments: 2, facts: 5 }, `seed ${seed}`);
+    }
+  });
+
   test("the same seed twice gives identical contents", () => {
     const dir = tempDir();
     const a = join(dir, "a.db");

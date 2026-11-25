@@ -16,6 +16,7 @@ from app.services.lead_service import sync_lead_stage_and_status
 
 import fake_global as fg
 import fake_rows as fr
+import fake_values as fv
 
 BASE = datetime(2026, 11, 1, 9, 0, tzinfo=timezone.utc)
 BATCH = 500
@@ -49,20 +50,20 @@ def _fill(db, rng, hustle, stages, leads):
             created = BASE + timedelta(minutes=n * 5 + rng.randint(0, 4))
             lead = fr.make_lead(rng, n, hustle_id, stage, created)
             sync_lead_stage_and_status(db, lead, stage)
-            batch.append((lead, stage, created))
-        db.add_all([lead for lead, _, _ in batch])
+            batch.append((lead, stage, created, n == fv.BUSY_LEAD))
+        db.add_all([lead for lead, _, _, _ in batch])
         db.flush()
 
         children = []
         with_package = []
-        for lead, stage, created in batch:
-            children += fr.make_facts(rng, lead, created)
+        for lead, stage, created, busy in batch:
+            children += fr.make_facts(rng, lead, created, busy)
             package = fr.make_package(rng, lead, stage, created)
             if package is not None:
                 children.append(package)
-            children += fr.make_messages(rng, lead, created)
-            children += fr.make_calls(rng, lead, created)
-            children += fr.make_commitments(rng, lead, created)
+            children += fr.make_messages(rng, lead, created, busy)
+            children += fr.make_calls(rng, lead, created, busy)
+            children += fr.make_commitments(rng, lead, created, busy)
             children += fr.make_outbox(rng, lead, hustle_id, created)
             log = fg.make_log(rng, lead, hustle_id, created)
             if log is not None:

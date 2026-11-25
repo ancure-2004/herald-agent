@@ -78,9 +78,9 @@ def _fact_value(rng, field, lead):
     return "answers on WhatsApp"
 
 
-def make_facts(rng, lead, created):
-    """Two to five facts per lead, each field at most once."""
-    fields = rng.sample(fv.FACT_FIELDS, rng.randint(2, 5))
+def make_facts(rng, lead, created, busy=False):
+    """Two to five facts per lead (five for the busy lead), each field at most once."""
+    fields = rng.sample(fv.FACT_FIELDS, fv.BUSY_FACTS if busy else rng.randint(2, 5))
     facts = []
     for field in fields:
         facts.append(
@@ -126,11 +126,11 @@ def make_package(rng, lead, stage, created):
     )
 
 
-def make_messages(rng, lead, created):
-    """Zero to twelve messages, in time order."""
+def make_messages(rng, lead, created, busy=False):
+    """Zero to twelve messages, in time order (twelve for the busy lead)."""
     messages = []
     at = created
-    for _ in range(rng.randint(0, 12)):
+    for _ in range(fv.BUSY_MESSAGES if busy else rng.randint(0, 12)):
         at = at + timedelta(hours=rng.randint(1, 72))
         if rng.random() < 0.4:
             channel, direction, text, status = "whatsapp", "inbound", rng.choice(fv.IN_TEXTS), "delivered"
@@ -154,11 +154,11 @@ def make_messages(rng, lead, created):
     return messages
 
 
-def make_calls(rng, lead, created):
-    """Zero to three call logs."""
+def make_calls(rng, lead, created, busy=False):
+    """Zero to three call logs (three for the busy lead)."""
     calls = []
     at = created
-    for _ in range(rng.randint(0, 3)):
+    for _ in range(fv.BUSY_CALLS if busy else rng.randint(0, 3)):
         at = at + timedelta(days=rng.randint(1, 5))
         calls.append(
             Call(
@@ -178,10 +178,10 @@ def make_calls(rng, lead, created):
     return calls
 
 
-def make_commitments(rng, lead, created):
-    """Zero to two commitments."""
+def make_commitments(rng, lead, created, busy=False):
+    """Zero to two commitments (two for the busy lead)."""
     commitments = []
-    for _ in range(rng.randint(0, 2)):
+    for _ in range(fv.BUSY_COMMITMENTS if busy else rng.randint(0, 2)):
         commitments.append(
             Commitment(
                 lead_id=lead.id,

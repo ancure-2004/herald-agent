@@ -16,7 +16,10 @@ export type CallSpec = { label: string; path: string; source: string; limits: Li
 /** A screen the load check times in headless Chrome, by its name in herald's sidebar. */
 export type ScreenSpec = { label: string; limits: Limits };
 
-/** The fake data: how many leads the generator makes, and its seed (same seed, same database). */
+/**
+ * The fake data: how many leads the generator makes, and its seed (same seed, same database).
+ * Lead 1 is always the busy lead (12 messages, 3 calls, 2 commitments, 5 facts), so the inbox and call-brief calls time real rows.
+ */
 export const LEADS = 2000;
 export const SEED = 42;
 

@@ -18,6 +18,12 @@ NEXT_ACTIONS = [
     "Check the outbox approval",
     "Wait for the clinic's reply",
 ]
+# Lead 1 is always the busy lead: the maximum of every child count, so the inbox and call briefs the load check times have data.
+BUSY_LEAD = 1
+BUSY_MESSAGES = 12
+BUSY_CALLS = 3
+BUSY_COMMITMENTS = 2
+BUSY_FACTS = 5
 FACT_FIELDS = ["google_rating", "review_count", "doctor_name", "operating_hours", "website_check", "phone_verification"]
 FACT_SOURCES = ["search", "Discovery Phone Validator", "Tier 1: Google Places API"]
 IN_TEXTS = [
