@@ -30,6 +30,15 @@ function gone(pid: number): boolean {
   }
 }
 
+/** True once the process is gone, polling for up to two seconds: a SIGKILL is delivered asynchronously. */
+async function goneSoon(pid: number): Promise<boolean> {
+  for (let i = 0; i < 40; i++) {
+    if (gone(pid)) return true;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  return gone(pid);
+}
+
 /** A sh body that starts `sleep 300` in the background, writes its PID to `pidFile`, then runs `rest`. */
 function withChild(pidFile: string, rest: string): string {
   return `sleep 300 & echo $! > "${pidFile}"; ${rest}`;
@@ -45,12 +54,12 @@ test("a program that exits leaves no child of its own behind", async () => {
   const ran = await runProgram("/bin/sh", ["-c", withChild(pidFile, "exit 0")], tempDir("journey-cwd-"), ENV, 10_000);
   assert.equal(ran.code, 0);
   assert.equal(ran.timedOut, false);
-  assert.ok(gone(childPid(pidFile)), "the background child is gone once the program exited");
+  assert.ok(await goneSoon(childPid(pidFile)), "the background child is gone once the program exited");
 });
 
 test("a program that hangs is killed at the time limit, and its child with it", async () => {
   const pidFile = join(tempDir("journey-hang-"), "child.pid");
   const ran = await runProgram("/bin/sh", ["-c", withChild(pidFile, "sleep 300")], tempDir("journey-cwd-"), ENV, 1_000);
   assert.equal(ran.timedOut, true);
-  assert.ok(gone(childPid(pidFile)), "the background child is gone after the time limit");
+  assert.ok(await goneSoon(childPid(pidFile)), "the background child is gone after the time limit");
 });
