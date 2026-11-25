@@ -75,7 +75,7 @@ async function main(): Promise<number> {
     for (const line of changedLines(changed)) console.log(line);
     const before = trackedStatus(ROOT, env);
     const results: CheckResult[] = [];
-    for (const c of checks) results.push(await c.run({ root: ROOT, env, evidenceDir: dir, full, changed }));
+    for (const c of checks) results.push(await c.run({ root: ROOT, env, evidenceDir: dir, runDir, full, changed }));
     const after = trackedStatus(ROOT, env);
     const exitCode = exitCodeFor(results);
     for (const r of results) {

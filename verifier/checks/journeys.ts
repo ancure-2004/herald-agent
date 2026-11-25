@@ -23,13 +23,13 @@ const SUFFIX = ".journey.ts";
 const RESULTS_FILE = "results.json";
 
 /** The Playwright Test package and its program, installed by `cd verifier && npm install`. */
-const PLAYWRIGHT_PACKAGE = "verifier/node_modules/@playwright/test";
-const PLAYWRIGHT = "verifier/node_modules/.bin/playwright";
+export const PLAYWRIGHT_PACKAGE = "verifier/node_modules/@playwright/test";
+export const PLAYWRIGHT = "verifier/node_modules/.bin/playwright";
 const CONFIG = "verifier/playwright.config.ts";
-const SETUP = "cd verifier && npm install";
+export const SETUP = "cd verifier && npm install";
 
 /** Where Google Chrome is expected; VERIFY_CHROME overrides it (the tests use this). */
-const DEFAULT_CHROME = "/usr/bin/google-chrome";
+export const DEFAULT_CHROME = "/usr/bin/google-chrome";
 
 /** How long the whole Playwright run may take before it is killed. */
 const TIMEOUT_MS = 15 * 60 * 1000;
@@ -70,7 +70,7 @@ export function failureLines(output: string): string[] {
 }
 
 /** The outcome of one program run: its exit code (null when it was killed or never started), its output, and whether the time limit killed it. */
-type Ran = { code: number | null; output: string; timedOut: boolean };
+export type Ran = { code: number | null; output: string; timedOut: boolean };
 
 /**
  * Run a program in `cwd` with `env`, collecting its output. It leads its own

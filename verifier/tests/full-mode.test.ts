@@ -4,6 +4,7 @@
  */
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
+import { join } from "node:path";
 import { cleanup, makeFixture, runVerify } from "./fixture.ts";
 
 after(cleanup);
@@ -17,8 +18,9 @@ export const check: Check = {
 `;
 
 test("./verify --full is accepted, and the check sees full mode", () => {
-  const root = makeFixture({ typecheck: "exit 0", files: { "verifier/checks/zz-mode.ts": MODE_CHECK } });
-  const r = runVerify(root, ["--full"]);
+  /** --full also runs the load check, which needs Playwright and Chrome: a fake pair, so the run passes. */
+  const root = makeFixture({ typecheck: "exit 0", files: { "verifier/checks/zz-mode.ts": MODE_CHECK }, playwright: "exit 0" });
+  const r = runVerify(root, ["--full"], { VERIFY_CHROME: join(root, "fake-chrome") });
   assert.equal(r.code, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /^mode: pass \(full=true\)$/m);
 });
