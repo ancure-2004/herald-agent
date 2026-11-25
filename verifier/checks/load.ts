@@ -5,8 +5,8 @@
  * screens against the limits in verifier/load-limits.ts. Each one is fast or
  * slow (slow passes, and is named with its median) or broken (no answer by the
  * hard limit, or a non-2xx answer: the check fails). A missing venv, Playwright,
- * Chrome or herald install cannot run (exit 2); a generator that exits non-zero
- * fails. herald is stopped on every path, pass or fail.
+ * Chrome or herald install, or a generator that refuses (exit 2), cannot run (exit 2);
+ * a generator that fails (exit 1) fails. herald is stopped on every path, pass or fail.
  */
 import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
@@ -145,6 +145,10 @@ async function run(ctx: CheckContext): Promise<CheckResult> {
   mkdirSync(dir, { recursive: true });
   const db = join(ctx.runDir, DB_FILE);
   const generated = await generate(ctx, limits, db);
+  if (generated.code === 2 && !generated.timedOut) {
+    const reason = generated.output.split("\n").filter((l) => l.trim() !== "").pop()?.replace(/^refused: /, "") ?? "no reason given";
+    return { ...base, durationMs: Date.now() - started, status: "could-not-run", exitCode: null, output: generated.output, message: `the generator refused: ${reason}` };
+  }
   if (generated.code !== 0 || generated.timedOut) {
     const reason = generated.timedOut ? "timed out" : `exited with ${generated.code ?? "no code"}`;
     return { ...base, durationMs: Date.now() - started, status: "fail", exitCode: 1, output: generated.output, message: `the generator ${reason}` };

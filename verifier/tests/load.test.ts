@@ -175,6 +175,14 @@ test("a generator that exits 1 fails the check with its output, and herald never
   assert.equal(loadHerald(r.evidence), false, "herald did not start for the load check");
 });
 
+test("a generator that refuses (exit 2) makes the load check could-not-run (exit 2) with its refusal line; herald never starts", () => {
+  const root = loadFixture({ generator: 'echo "refused: the path is not inside the temp folder (/tmp)" >&2; exit 2' });
+  const r = fullRun(root);
+  assert.equal(r.code, 2, r.stdout + r.stderr);
+  assert.match(r.stdout, /^load: could-not-run \(the generator refused: the path is not inside the temp folder \(\/tmp\)\)$/m);
+  assert.equal(loadHerald(r.evidence), false, "herald did not start for the load check");
+});
+
 test("no backend venv: the load check cannot run (exit 2), names the venv setup, and starts nothing", () => {
   const root = loadFixture({ noVenv: true });
   const r = fullRun(root);
