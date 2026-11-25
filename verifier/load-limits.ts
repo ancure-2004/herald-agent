@@ -46,7 +46,7 @@ export const SCREENS: string[] = ["Management Overview", "Leads Table"];
 export type LoadLimits = { leads: number; seed: number; calls: CallSpec[]; screens: ScreenSpec[] };
 
 /** The scale from VERIFY_LOAD_LIMITS_SCALE: a positive number, else 1 (unset or not a positive number). */
-function scale(env: Record<string, string | undefined>): number {
+export function scale(env: Record<string, string | undefined>): number {
   const value = Number(env.VERIFY_LOAD_LIMITS_SCALE);
   return env.VERIFY_LOAD_LIMITS_SCALE !== undefined && Number.isFinite(value) && value > 0 ? value : 1;
 }
@@ -65,4 +65,10 @@ export function loadLimits(env: Record<string, string | undefined>): LoadLimits 
     calls: CALLS.map((call) => ({ ...call, limits: scaled(call.limits, factor) })),
     screens: SCREENS.map((label) => ({ label, limits: scaled(SCREEN_LIMITS, factor) })),
   };
+}
+
+/** The note a scaled run carries (the check's message and load.log): empty when the scale in effect is 1. */
+export function limitsNote(env: Record<string, string | undefined>): string {
+  const factor = scale(env);
+  return factor === 1 ? "" : `limits scaled ×${factor} (test setting)`;
 }

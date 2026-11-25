@@ -15,7 +15,7 @@ import { failureOutput, heraldMissing, launchHerald, readyLimits, stopHerald, ty
 import type { Server } from "../launch.ts";
 import { DEFAULT_CHROME, PLAYWRIGHT, PLAYWRIGHT_PACKAGE, runProgram, SETUP, type Ran } from "./journeys.ts";
 import { VENV_SETUP } from "../pytest-check.ts";
-import { loadLimits, type LoadLimits } from "../load-limits.ts";
+import { limitsNote, loadLimits, type LoadLimits } from "../load-limits.ts";
 import { measureCall } from "../load/calls.ts";
 import { evidenceLines, judge, summary, type Measured, type Try } from "../load/judge.ts";
 
@@ -126,8 +126,15 @@ function verdict(base: { name: string; command: string }, started: number, genOu
   return stop("pass", 0, summary(m.rows));
 }
 
-/** The load check, run with the clean environment in ctx. */
+/** The load check, run with the clean environment in ctx; a scaled run (VERIFY_LOAD_LIMITS_SCALE) names its scale in the message and in the output (load.log). */
 async function run(ctx: CheckContext): Promise<CheckResult> {
+  const result = await runMeasured(ctx);
+  const note = limitsNote(ctx.env);
+  return note ? { ...result, message: `${result.message}; ${note}`, output: `${result.output}\n${note}` } : result;
+}
+
+/** The load check's outcome before the scale note is added. */
+async function runMeasured(ctx: CheckContext): Promise<CheckResult> {
   const base = { name: "load", command: `${PYTHON} ${GENERATOR} <db>; playwright test ${SCREEN_SPEC}`, durationMs: 0 };
   if (!ctx.full) return { ...base, status: "pass", exitCode: 0, output: "", message: "skipped (only with --full)" };
   const started = Date.now();

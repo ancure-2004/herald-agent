@@ -4,7 +4,7 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { loadLimits } from "../load-limits.ts";
+import { limitsNote, loadLimits } from "../load-limits.ts";
 
 test("the real limits: 2000 leads with seed 42; calls target 500 ms and hard 10 s; screens target 5 s and hard 30 s", () => {
   const limits = loadLimits({});
@@ -35,4 +35,10 @@ test("every call is a GET path under /api/ with a source line in the frontend", 
   for (const call of loadLimits({}).calls) {
     assert.match(call.source, /^frontend\/src\/.*:\d+$|^frontend\/src\/.*\(reads/, call.source);
   }
+});
+
+test("limitsNote names a scale other than 1 as a test setting; it is empty at 1 or unset", () => {
+  assert.equal(limitsNote({ VERIFY_LOAD_LIMITS_SCALE: "0.1" }), "limits scaled ×0.1 (test setting)");
+  assert.equal(limitsNote({ VERIFY_LOAD_LIMITS_SCALE: "1" }), "");
+  assert.equal(limitsNote({}), "");
 });

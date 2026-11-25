@@ -71,6 +71,14 @@ function loadLog(evidence: string | undefined): string[] {
   return readFileSync(join(evidence ?? "", "load.log"), "utf8").split("\n");
 }
 
+test("a scaled run (VERIFY_LOAD_LIMITS_SCALE) says so in the message and in load.log", () => {
+  const root = loadFixture();
+  const r = fullRun(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^load: pass \(7 fast, 0 slow; limits scaled ×0\.1 \(test setting\)\)$/m);
+  assert.ok(loadLog(r.evidence).includes("limits scaled ×0.1 (test setting)"), "load.log names the scaling");
+});
+
 test("plain ./verify skips the load check: pass with the skip message, and no generator or herald starts for it", () => {
   const root = makeFixture({ typecheck: "exit 0" });
   const r = runVerify(root);
@@ -83,7 +91,7 @@ test("--full with every call and screen fast: pass, the counts, the generator's 
   const root = loadFixture();
   const r = fullRun(root);
   assert.equal(r.code, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /^load: pass \(7 fast, 0 slow\)$/m);
+  assert.match(r.stdout, /^load: pass \(7 fast, 0 slow; limits scaled ×0\.1 \(test setting\)\)$/m);
   const gen = readGenerator(root);
   const args = gen.filter((l) => l.startsWith("arg ")).map((l) => l.slice("arg ".length));
   assert.equal(args[0], "verifier/seed/generate.py", gen.join(" | "));
@@ -125,7 +133,7 @@ test("a slow call (over its target, answered in time) passes and is named with i
   setRoutes(root, { "/api/leads": { delayMs: 200 } });
   const r = fullRun(root);
   assert.equal(r.code, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /^load: pass \(6 fast, 1 slow; slow: GET \/api\/leads\?hustle_id=1&smart_view=all_active \d+ ms \(target 0\.05 s\)\)$/m);
+  assert.match(r.stdout, /^load: pass \(6 fast, 1 slow; slow: GET \/api\/leads\?hustle_id=1&smart_view=all_active \d+ ms \(target 0\.05 s\); limits scaled ×0\.1 \(test setting\)\)$/m);
 });
 
 test("the slow call is listed slowest first in Evidence", () => {
@@ -143,7 +151,7 @@ test("a call that answers past its hard limit is broken: the check fails, names 
   setRoutes(root, { "/api/cockpit/attention": { delayMs: 3000 } });
   const r = fullRun(root);
   assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(r.stdout, /^load: fail \(broken: GET \/api\/cockpit\/attention\?hustle_id=1 \(no answer within 1 s\); 6 fast, 0 slow\)$/m);
+  assert.match(r.stdout, /^load: fail \(broken: GET \/api\/cockpit\/attention\?hustle_id=1 \(no answer within 1 s\); 6 fast, 0 slow; limits scaled ×0\.1 \(test setting\)\)$/m);
   assert.ok(gone(readRecord(root, "backend").pid), "herald was stopped");
 });
 
@@ -152,7 +160,7 @@ test("a call that answers with a non-2xx status is broken: the check fails and n
   setRoutes(root, { "/api/leads/1/messages": { status: 500 } });
   const r = fullRun(root);
   assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(r.stdout, /^load: fail \(broken: GET \/api\/leads\/1\/messages \(HTTP 500\); 6 fast, 0 slow\)$/m);
+  assert.match(r.stdout, /^load: fail \(broken: GET \/api\/leads\/1\/messages \(HTTP 500\); 6 fast, 0 slow; limits scaled ×0\.1 \(test setting\)\)$/m);
 });
 
 test("a broken call fails the check even when the screens left no timings: the call is named, and the screens problem is in the output", () => {
@@ -160,7 +168,7 @@ test("a broken call fails the check even when the screens left no timings: the c
   setRoutes(root, { "/api/leads/1/messages": { status: 500 } });
   const r = fullRun(root);
   assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(r.stdout, /^load: fail \(broken: GET \/api\/leads\/1\/messages \(HTTP 500\); 4 fast, 0 slow\)$/m);
+  assert.match(r.stdout, /^load: fail \(broken: GET \/api\/leads\/1\/messages \(HTTP 500\); 4 fast, 0 slow; limits scaled ×0\.1 \(test setting\)\)$/m);
   assert.match(loadLog(r.evidence).join("\n"), /playwright wrote no screen timings/);
 });
 
@@ -168,18 +176,18 @@ test("a screen that loads past its hard limit is broken; a slow screen is report
   const broken = loadFixture({ playwright: screensFake([{ screen: "Management Overview", ms: 10 }, { screen: "Leads Table", ms: 3500 }]) });
   const rb = fullRun(broken);
   assert.equal(rb.code, 1, rb.stdout + rb.stderr);
-  assert.match(rb.stdout, /^load: fail \(broken: Leads Table screen \(answered after 3 s\); 6 fast, 0 slow\)$/m);
+  assert.match(rb.stdout, /^load: fail \(broken: Leads Table screen \(answered after 3 s\); 6 fast, 0 slow; limits scaled ×0\.1 \(test setting\)\)$/m);
   const slow = loadFixture({ playwright: screensFake([{ screen: "Management Overview", ms: 1000 }, { screen: "Leads Table", ms: 10 }]) });
   const rs = fullRun(slow);
   assert.equal(rs.code, 0, rs.stdout + rs.stderr);
-  assert.match(rs.stdout, /^load: pass \(6 fast, 1 slow; slow: Management Overview screen 1 s \(target 0\.5 s\)\)$/m);
+  assert.match(rs.stdout, /^load: pass \(6 fast, 1 slow; slow: Management Overview screen 1 s \(target 0\.5 s\); limits scaled ×0\.1 \(test setting\)\)$/m);
 });
 
 test("a generator that exits 1 fails the check with its output, and herald never starts", () => {
   const root = loadFixture({ generator: 'echo "model changed: no such column" >&2; exit 1' });
   const r = fullRun(root);
   assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(r.stdout, /^load: fail \(the generator exited with 1\)$/m);
+  assert.match(r.stdout, /^load: fail \(the generator exited with 1; limits scaled ×0\.1 \(test setting\)\)$/m);
   assert.match(r.stdout, /model changed: no such column/);
   assert.equal(loadHerald(r.evidence), false, "herald did not start for the load check");
 });
@@ -188,7 +196,7 @@ test("a generator that refuses (exit 2) makes the load check could-not-run (exit
   const root = loadFixture({ generator: 'echo "refused: the path is not inside the temp folder (/tmp)" >&2; exit 2' });
   const r = fullRun(root);
   assert.equal(r.code, 2, r.stdout + r.stderr);
-  assert.match(r.stdout, /^load: could-not-run \(the generator refused: the path is not inside the temp folder \(\/tmp\)\)$/m);
+  assert.match(r.stdout, /^load: could-not-run \(the generator refused: the path is not inside the temp folder \(\/tmp\); limits scaled ×0\.1 \(test setting\)\)$/m);
   assert.equal(loadHerald(r.evidence), false, "herald did not start for the load check");
 });
 
@@ -205,7 +213,7 @@ test("no @playwright/test installed: the load check cannot run (exit 2) before a
   const root = makeFixture({ typecheck: "exit 0" });
   const r = fullRun(root);
   assert.equal(r.code, 2, r.stdout + r.stderr);
-  assert.match(r.stdout, /^load: could-not-run \(@playwright\/test is missing; run: cd verifier && npm install\)$/m);
+  assert.match(r.stdout, /^load: could-not-run \(@playwright\/test is missing; run: cd verifier && npm install; limits scaled ×0\.1 \(test setting\)\)$/m);
   assert.deepEqual(readGenerator(root), []);
 });
 
@@ -220,7 +228,7 @@ test("the screens' run leaves no timings: the load check cannot run (exit 2), an
   const root = loadFixture({ playwright: 'rm -f "$VERIFY_LOAD_DIR/screens.json"; exit 1' });
   const r = fullRun(root);
   assert.equal(r.code, 2, r.stdout + r.stderr);
-  assert.match(r.stdout, /^load: could-not-run \(playwright wrote no screen timings \(exit 1\)\)$/m);
+  assert.match(r.stdout, /^load: could-not-run \(playwright wrote no screen timings \(exit 1\); limits scaled ×0\.1 \(test setting\)\)$/m);
   assert.ok(gone(readRecord(root, "backend").pid), "herald was stopped");
 });
 
@@ -228,6 +236,6 @@ test("herald that crashes on start fails the load check, names the crash, and le
   const root = loadFixture({ uvicorn: "crash" });
   const r = fullRun(root);
   assert.equal(r.code, 1, r.stdout + r.stderr);
-  assert.match(r.stdout, /^load: fail \(backend crashed on start\)$/m);
+  assert.match(r.stdout, /^load: fail \(backend crashed on start; limits scaled ×0\.1 \(test setting\)\)$/m);
   assert.ok(gone(readRecord(root, "frontend").pid), "the frontend was stopped too");
 });
