@@ -28,6 +28,9 @@ const PASSING_PYTEST = 'echo "1 passed"; exit 0';
 /** The fake E2E runner a fixture gets unless a test says otherwise: one passing test. */
 const PASSING_E2E = 'echo "1 passed"; exit 0';
 
+/** The fake data generator a fixture gets unless a test says otherwise: prints a row count, exits 0. */
+const PASSING_GENERATOR = 'echo "leads 3"; exit 0';
+
 /** The feature map a fixture gets unless a test says otherwise: one entry whose folder the fixture makes. */
 const DEFAULT_FEATURE_MAP = JSON.stringify(
   {
@@ -77,6 +80,11 @@ export type FixtureOptions = {
   nodeModules?: boolean;
   pytest?: string;
   e2e?: string;
+  /**
+   * The sh body run in place of verifier/seed/generate.py (the fake python runs
+   * it for any `*generate.py` argument; its arguments are recorded). Default: prints a row count, exits 0.
+   */
+  generator?: string;
   noVenv?: boolean;
   uvicorn?: FakeMode;
   next?: FakeMode;
@@ -91,6 +99,9 @@ export type FixtureOptions = {
    * Install a fake Playwright (verifier/node_modules/.bin/playwright and the
    * @playwright/test folder) that records its arguments and environment, then
    * runs this sh body; also a fake Chrome file at `fake-chrome`. Absent: not installed.
+   * A run of the load check's screens spec (its arguments name screens.load.ts)
+   * is recorded apart (playwrightLoadRecordPath) and first writes both screens
+   * as fast (screens.json in VERIFY_LOAD_DIR), so the body may overwrite or remove that.
    */
   playwright?: string;
 };
@@ -102,6 +113,31 @@ function placeFake(path: string, root: string, mode: FakeMode, record: string): 
   writeFileSync(path, script, { mode: 0o755 });
 }
 
+/** Where the fake python records the arguments and DATABASE_URL of each generator run: one `arg <value>` line each. */
+export function generatorRecordPath(root: string): string {
+  return join(`${root}-records`, "generator.txt");
+}
+
+/** The fake backend/.venv/bin/python: a `*generate.py` run records its arguments and runs the generator body; anything else is the E2E runner body. */
+function pythonFake(root: string, opts: FixtureOptions): string {
+  const record = `{ for a in "$@"; do echo "arg $a"; done; echo "env DATABASE_URL=$DATABASE_URL"; } > "${generatorRecordPath(root)}"`;
+  return `#!/bin/sh\ncase "$1" in *generate.py)\n${record}\n${opts.generator ?? PASSING_GENERATOR}\n;;\n*)\n${opts.e2e ?? PASSING_E2E}\n;;\nesac\n`;
+}
+
+/** The lines a fake generator run recorded (see generatorRecordPath). */
+export function readGenerator(root: string): string[] {
+  if (!existsSync(generatorRecordPath(root))) return [];
+  return readFileSync(generatorRecordPath(root), "utf8").split("\n").filter((l) => l !== "");
+}
+
+/**
+ * Set the delays and statuses the fake herald's paths answer with (routes.json
+ * beside the records; the backend's fake reads it on every request).
+ */
+export function setRoutes(root: string, routes: Record<string, { delayMs?: number; status?: number }>): void {
+  writeFileSync(join(`${root}-records`, "routes.json"), JSON.stringify(routes));
+}
+
 /** A fixture herald-shaped folder: `verify`, `verifier/` (no node_modules, no tests), `frontend/` and `backend/`. */
 export function makeFixture(opts: FixtureOptions): string {
   const root = tempDir("verify-fixture-");
@@ -111,7 +147,7 @@ export function makeFixture(opts: FixtureOptions): string {
   cpSync(join(REAL_ROOT, "verifier"), join(root, "verifier"), {
     recursive: true,
     /** herald's real journeys stay out: a fixture has its own features, and no Playwright install. */
-    filter: (src) => !/[\\/](node_modules|tests|journeys)$/.test(src),
+    filter: (src) => !/[\\/](node_modules|tests|journeys|seed)$/.test(src),
   });
   cpSync(join(import.meta.dirname, "fake-server.mjs"), join(root, "fake-server.mjs"));
   mkdirSync(join(root, "frontend"));
@@ -125,7 +161,7 @@ export function makeFixture(opts: FixtureOptions): string {
     const bin = join(root, "backend", ".venv", "bin");
     mkdirSync(bin, { recursive: true });
     writeFileSync(join(bin, "pytest"), `#!/bin/sh\n${opts.pytest ?? PASSING_PYTEST}\n`, { mode: 0o755 });
-    writeFileSync(join(bin, "python"), `#!/bin/sh\n${opts.e2e ?? PASSING_E2E}\n`, { mode: 0o755 });
+    writeFileSync(join(bin, "python"), pythonFake(root, opts), { mode: 0o755 });
     placeFake(join(bin, "uvicorn"), root, opts.uvicorn ?? "healthy", recordPath(root, "backend"));
   }
   const mapPath = join(root, "verifier", "feature-map.json");
@@ -134,6 +170,8 @@ export function makeFixture(opts: FixtureOptions): string {
   const knownPath = join(root, "verifier", "known-failures.txt");
   if (opts.knownFailures === null) rmSync(knownPath, { force: true });
   else if (opts.knownFailures !== undefined) writeFileSync(knownPath, opts.knownFailures);
+  mkdirSync(join(root, "verifier", "seed"), { recursive: true });
+  writeFileSync(join(root, "verifier", "seed", "generate.py"), "# fake data generator for the Seam tests\n");
   mkdirSync(join(root, "frontend", "src", "features", "demo"), { recursive: true });
   writeFileSync(join(root, "frontend", "src", "features", "demo", "index.tsx"), "export {};\n");
   for (const [path, text] of Object.entries(opts.files ?? {})) {
@@ -148,10 +186,18 @@ export function makeFixture(opts: FixtureOptions): string {
   return root;
 }
 
-/** Where the fake Playwright writes its record: one `arg <value>` or `env <NAME=value>` line per item. */
+/** Where the fake Playwright writes its record of the journeys: one `arg <value>` or `env <NAME=value>` line per item. */
 export function playwrightRecordPath(root: string): string {
   return join(`${root}-records`, "playwright.txt");
 }
+
+/** Where the fake Playwright records the load check's screens run (the same format as playwrightRecordPath). */
+export function playwrightLoadRecordPath(root: string): string {
+  return join(`${root}-records`, "playwright-load.txt");
+}
+
+/** The screens' timings a fake Playwright writes by default: both screens fast. */
+const FAST_SCREENS = '[{"screen":"Management Overview","ms":10,"ok":true},{"screen":"Leads Table","ms":10,"ok":true}]';
 
 /** Install the fake Playwright and its fake Chrome into a fixture (see FixtureOptions.playwright). */
 function placePlaywright(root: string, body: string): void {
@@ -159,7 +205,12 @@ function placePlaywright(root: string, body: string): void {
   mkdirSync(join(modules, "@playwright", "test"), { recursive: true });
   writeFileSync(join(modules, "@playwright", "test", "package.json"), '{"name":"@playwright/test"}\n');
   mkdirSync(join(modules, ".bin"), { recursive: true });
-  const record = `{ for a in "$@"; do echo "arg $a"; done; env | sed 's/^/env /'; } > "${playwrightRecordPath(root)}"`;
+  const dir = `${root}-records`;
+  const record = [
+    `f="${dir}/playwright.txt"`,
+    `case "$*" in *screens.load.ts*) f="${dir}/playwright-load.txt"; mkdir -p "$VERIFY_LOAD_DIR"; printf '%s' '${FAST_SCREENS}' > "$VERIFY_LOAD_DIR/screens.json";; esac`,
+    `{ for a in "$@"; do echo "arg $a"; done; env | sed 's/^/env /'; } > "$f"`,
+  ].join("; ");
   writeFileSync(join(modules, ".bin", "playwright"), `#!/bin/sh\n${record}\n${body}\n`, { mode: 0o755 });
   writeFileSync(join(root, "fake-chrome"), "chrome\n", { mode: 0o755 });
 }
