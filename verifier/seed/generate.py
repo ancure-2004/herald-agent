@@ -9,6 +9,7 @@ arguments (reason on stderr). Exits 1 when herald's models fail, e.g. after a mo
 import argparse
 import os
 import sys
+import tempfile
 import traceback
 from pathlib import Path
 
@@ -16,7 +17,6 @@ SEED_DIR = Path(__file__).resolve().parent
 REPO = SEED_DIR.parents[1]
 BACKEND = REPO / "backend"
 REFUSED_NAME = "personal_os.db"
-ALLOW_ANY = "VERIFY_SEED_ALLOW_ANY"
 MIN_LEADS = 9  # herald's seed makes nine stages; build_db checks the real count too
 MAX_LEADS = 99999  # the phone number format has five digits
 
@@ -28,12 +28,15 @@ def refuse(reason: str) -> None:
 
 
 def checked_path(raw: str) -> Path:
-    """The target file, or a refusal: never the live database, never inside the repo, never over data."""
+    """The target file, or a refusal: never the live database, only inside the system temp folder, never inside the repo, never over data."""
     path = Path(raw).expanduser().resolve()
+    temp = Path(tempfile.gettempdir()).resolve()
     if path.name.lower() == REFUSED_NAME:
         refuse(f"{REFUSED_NAME} is the Master's live database")
-    if os.environ.get(ALLOW_ANY) != "1" and (path == REPO or REPO in path.parents):
+    if path == REPO or REPO in path.parents:
         refuse("the path is inside the herald repo")
+    if path != temp and temp not in path.parents:
+        refuse(f"the path is not inside the temp folder ({temp})")
     if path.is_dir():
         refuse("the path is a folder")
     if path.is_file() and path.stat().st_size > 0:

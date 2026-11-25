@@ -5,7 +5,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, test } from "node:test";
 import assert from "node:assert/strict";
@@ -29,12 +29,11 @@ after(() => {
   for (const dir of made) rmSync(dir, { recursive: true, force: true });
 });
 
-/** Runs the generator as a program, without the allow-any escape hatch. */
-/** A refusal is exit 2 with a reason, not Python failing to find the script. */
-function assertRefused(r: { status: number | null; stderr: string }): void {
+/** A refusal is exit 2 with its reason on stderr, not Python failing to find the script. (Leads 9 is the least herald accepts, so a path test is not refused for leads.) */
+function assertRefused(r: { status: number | null; stderr: string }, reason: RegExp): void {
   assert.equal(r.status, 2, r.stderr);
   assert.doesNotMatch(r.stderr, /can't open file|No such file/);
-  assert.ok(r.stderr.trim().length > 0, "a one-line reason on stderr");
+  assert.match(r.stderr, reason, "the reason for the refusal, on stderr");
 }
 
 function gen(db: string, args: string[] = []) {
@@ -147,25 +146,47 @@ describe("fake-data generator", { skip: SKIP }, () => {
 
   test("refuses a file named personal_os.db (exit 2, nothing created)", () => {
     const db = join(tempDir(), "personal_os.db");
-    const r = gen(db, ["--leads", "5"]);
-    assertRefused(r);
+    const r = gen(db, ["--leads", "9"]);
+    assertRefused(r, /live database/);
     assert.equal(existsSync(db), false);
   });
 
   test("refuses a path inside the herald repo (exit 2, no file created)", () => {
     const db = join(REPO, "verifier", "seed", "x.db");
-    const r = gen(db, ["--leads", "5"]);
-    assertRefused(r);
+    const r = gen(db, ["--leads", "9"]);
+    assertRefused(r, /inside the herald repo/);
     assert.equal(existsSync(db), false);
     assert.equal(existsSync(`${db}-wal`), false);
+  });
+
+  test("refuses a path outside the system temp folder, even under the home folder (exit 2, no file created)", () => {
+    const db = join(homedir(), `seed-gen-refused-${process.pid}-${Date.now()}.db`);
+    try {
+      const r = gen(db, ["--leads", "9"]);
+      assertRefused(r, /temp folder/);
+      assert.equal(existsSync(db), false);
+    } finally {
+      rmSync(db, { force: true });
+    }
+  });
+
+  test("VERIFY_SEED_ALLOW_ANY no longer lets a path outside the temp folder through (exit 2, no file created)", () => {
+    const db = join(homedir(), `seed-gen-bypass-${process.pid}-${Date.now()}.db`);
+    try {
+      const r = spawnSync(PY, [GEN, db, "--leads", "9"], { encoding: "utf8", env: { ...process.env, VERIFY_SEED_ALLOW_ANY: "1" }, timeout: 120_000 });
+      assertRefused(r, /temp folder/);
+      assert.equal(existsSync(db), false);
+    } finally {
+      rmSync(db, { force: true });
+    }
   });
 
   test("refuses an existing non-empty file (exit 2, file unchanged)", () => {
     const db = join(tempDir(), "taken.db");
     const original = Buffer.from("this file is not a database and must stay as it is");
     writeFileSync(db, original);
-    const r = gen(db, ["--leads", "5"]);
-    assertRefused(r);
+    const r = gen(db, ["--leads", "9"]);
+    assertRefused(r, /not empty/);
     assert.deepEqual(readFileSync(db), original);
   });
 
