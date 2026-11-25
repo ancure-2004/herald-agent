@@ -119,7 +119,7 @@ Journeys and `playwright.config.ts` are typechecked with the rest of `verifier/`
 - Run: `backend/.venv/bin/python verifier/seed/generate.py <a path> --leads <N> --seed <S>` prints each table's row count. The generator refuses (exit 2) any path outside the system temp folder (`tempfile.gettempdir()`), any path inside the herald repo, a file named `personal_os.db`, and an existing non-empty file. The check uses the run's own temp folder. Running it by hand is for checking the generator: point it at a file in the temp folder, such as `/tmp/x.db`.
 - Herald: started on that database (`DATABASE_URL`), as `app-health` starts it, and stopped pass or fail. Its logs are in Evidence's `load/` folder, with the generator's output in `load.log`.
 - Calls: five GETs, each after one warm-up that is not counted, each timed to the end of its body. Every call is a GET the main screens make (the list in `load-limits.ts`, with the frontend line that makes it): the leads list (also the Kanban board's data), cockpit state, attention lists, inbox threads (lead 1's messages), call briefs (lead 1's calls). The call brief GET itself is not used: it calls an AI on a cache miss.
-- Screens: headless Chrome, the Overview and the Leads Table (`verifier/load/screens.load.ts`). Each is loaded once (not timed), then loaded again and timed; a load ends when its marker shows and no `/api` request is in flight.
+- Screens: headless Chrome, the Overview and the Leads Table (`verifier/load/screens.load.ts`). Each is loaded once (the warm-up, not timed), then loaded again and timed. The Overview's time runs from its navigation; the Leads Table's from the click on the sidebar's Leads Table button (the Overview is loaded first, untimed). A timed load ends at the later of two moments: its marker shows, and the last `/api` request in flight finishes. The 500 ms quiet window is waited for, not counted. A screen's time is written after that screen, so a Playwright timeout keeps the earlier one.
 
 Each call and screen gets one result from its median (calls: 5 timings; screens: 1):
 
@@ -127,7 +127,7 @@ Each call and screen gets one result from its median (calls: 5 timings; screens:
 |--------|------|--------|
 | fast | median within the target | none |
 | slow | median over the target, every try answered within the hard limit | listed under `slow:` in the status line, with its median; passes |
-| broken | a try with no answer by the hard limit, a non-2xx answer, or a screen not loaded in time | `load` fails (exit 1), naming it |
+| broken | a try with no answer by the hard limit, a non-2xx answer, a screen not loaded in time, a screen whose warm-up failed (`broken (warm-up)`), or a screen with no timing after a Playwright timeout | `load` fails (exit 1), naming it; a broken call fails it even when the screens could not run |
 
 | | Target | Hard limit |
 |---|---|---|
