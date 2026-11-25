@@ -172,6 +172,21 @@ test("a broken call fails the check even when the screens left no timings: the c
   assert.match(loadLog(r.evidence).join("\n"), /playwright wrote no screen timings/);
 });
 
+test("a screen whose warm-up failed is broken (warm-up), and the check fails", () => {
+  const root = loadFixture({ playwright: screensFake([{ screen: "Management Overview", ms: 10 }, { screen: "Leads Table", ms: 0, ok: false, error: "warm-up failed: timeout" }]) });
+  const r = fullRun(root);
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /^load: fail \(broken: Leads Table screen \(warm-up failed: timeout\); 6 fast, 0 slow; limits scaled ×0\.1 \(test setting\)\)$/m);
+});
+
+test("Playwright timed out before the second screen: that screen is broken (no answer), not a could-not-run", () => {
+  const timedOut = 'printf \'%s\' \'[{"screen":"Management Overview","ms":10,"ok":true}]\' > "$VERIFY_LOAD_DIR/screens.json"; echo "Test timeout of 400000ms exceeded."; exit 1';
+  const root = loadFixture({ playwright: timedOut });
+  const r = fullRun(root);
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /^load: fail \(broken: Leads Table screen \(no answer within 3 s\); 6 fast, 0 slow; limits scaled ×0\.1 \(test setting\)\)$/m);
+});
+
 test("a screen that loads past its hard limit is broken; a slow screen is reported and passes", () => {
   const broken = loadFixture({ playwright: screensFake([{ screen: "Management Overview", ms: 10 }, { screen: "Leads Table", ms: 3500 }]) });
   const rb = fullRun(broken);

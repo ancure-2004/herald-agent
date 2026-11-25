@@ -33,8 +33,9 @@ export function timing(ms: number): string {
   return ms < 1000 ? `${Math.round(ms)} ms` : sec(ms);
 }
 
-/** Why a try got no usable answer: no answer by the hard limit, another error, or a non-2xx status. Undefined when the try is fine. */
+/** Why a try got no usable answer: no answer by the hard limit, a warm-up that failed (`warm-up failed: ...`), another error, or a non-2xx status. Undefined when the try is fine. */
 function problemOf(t: Try, limits: Limits): string | undefined {
+  if (t.status === undefined && t.reason?.startsWith("warm-up")) return t.reason;
   if (t.status === undefined) return t.reason === "timeout" ? `no answer within ${sec(limits.hardMs)}` : `no answer (${t.reason ?? "error"})`;
   if (t.status < 200 || t.status >= 300) return `HTTP ${t.status}`;
   if (t.ms > limits.hardMs) return `answered after ${sec(limits.hardMs)}`;

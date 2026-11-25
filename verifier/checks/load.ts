@@ -44,7 +44,14 @@ function generate(ctx: CheckContext, limits: LoadLimits, db: string): Promise<Ra
   return runProgram(join(ctx.root, PYTHON), [GENERATOR, db, "--leads", String(limits.leads), "--seed", String(limits.seed)], ctx.root, env);
 }
 
-/** The screens' timings, judged: one try per screen. A missing or unreadable file, or a screen with no timing, is a problem (the screens could not run). */
+/** Playwright's message when a test runs past its timeout (the screens' spec has one test; its timeout is in load/playwright.load.config.ts). */
+const PLAYWRIGHT_TIMEOUT = /Test timeout of \d+ms exceeded/;
+
+/**
+ * The screens' timings, judged: one try per screen. A screen with a timing is judged as it is. A screen
+ * with no timing is broken (no answer) when Playwright timed out, and otherwise means the screens could
+ * not run; so is a missing or unreadable file when Playwright did not time out.
+ */
 async function timeScreens(
   ctx: CheckContext,
   dir: string,
@@ -56,20 +63,29 @@ async function timeScreens(
   rmSync(file, { force: true });
   const env = { ...ctx.env, VERIFY_BASE_URL: `http://127.0.0.1:${frontend}`, VERIFY_LOAD_DIR: dir, VERIFY_CHROME: chrome };
   const ran = await runProgram(join(ctx.root, PLAYWRIGHT), ["test", SCREEN_SPEC, "--config", SCREEN_CONFIG], ctx.root, env);
+  const timedOut = ran.timedOut || PLAYWRIGHT_TIMEOUT.test(ran.output);
   const fail = (problem: string) => ({ rows: [], problem, output: ran.output });
-  if (!existsSync(file)) return fail(ran.timedOut ? "playwright timed out" : `playwright wrote no screen timings (exit ${ran.code ?? "none"})`);
-  let timings: ScreenTiming[];
-  try {
-    timings = JSON.parse(readFileSync(file, "utf8")) as ScreenTiming[];
-  } catch {
-    return fail(`unreadable screen timings in ${SCREENS_FILE}`);
+  let timings: ScreenTiming[] = [];
+  if (existsSync(file)) {
+    try {
+      timings = JSON.parse(readFileSync(file, "utf8")) as ScreenTiming[];
+    } catch {
+      return fail(`unreadable screen timings in ${SCREENS_FILE}`);
+    }
+  } else if (!timedOut) {
+    return fail(`playwright wrote no screen timings (exit ${ran.code ?? "none"})`);
   }
   const rows: Measured[] = [];
   for (const screen of limits.screens) {
     const found = timings.find((t) => t.screen === screen.label);
-    if (!found) return fail(`no timing for the ${screen.label} screen`);
-    const tries: Try[] = [{ ms: found.ms, status: found.ok ? 200 : undefined, reason: found.error }];
-    rows.push(judge({ label: `${screen.label} screen`, limits: screen.limits, tries }));
+    if (found) {
+      const tries: Try[] = [{ ms: found.ms, status: found.ok ? 200 : undefined, reason: found.error }];
+      rows.push(judge({ label: `${screen.label} screen`, limits: screen.limits, tries }));
+    } else if (timedOut) {
+      rows.push(judge({ label: `${screen.label} screen`, limits: screen.limits, tries: [{ ms: screen.limits.hardMs, reason: "timeout" }] }));
+    } else {
+      return fail(`no timing for the ${screen.label} screen`);
+    }
   }
   return { rows, output: ran.output };
 }
