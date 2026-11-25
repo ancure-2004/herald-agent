@@ -1,0 +1,104 @@
+/**
+ * Seam tests for the `feature-map` check, part 5: a journey proof
+ * (`verifier/journeys/<file>.ts::<title>`) is valid when its file exists under
+ * verifier/journeys/ and defines a test with that title; it is never a known
+ * failure, so it always covers its sub-feature.
+ */
+import { after, test } from "node:test";
+import assert from "node:assert/strict";
+import { cleanup, makeFixture, runVerify } from "./fixture.ts";
+import { GOOD_ENTRY, featureLine, featureLog, map } from "./feature-map-helpers.ts";
+
+after(cleanup);
+
+/** A journey file's text: one test with the given title, written the way Playwright tests are. */
+const journey = (title: string, quote = '"') => `import { test } from "@playwright/test";\n\ntest(${quote}${title}${quote}, async () => {});\n`;
+
+/**
+ * Run verify with the board entry proven by `proofTest`, and the given journey
+ * file (null: no file) and known-failures text. Only the feature-map line is
+ * asserted: the journeys check may be could-not-run here, as no Playwright is installed.
+ */
+function run(proofTest: string, file: string | null, known?: string | null) {
+  const entry = { ...GOOD_ENTRY, proof: [{ test: proofTest, covers: ["board.drag"] }] };
+  const files: Record<string, string> = file === null ? {} : { "verifier/journeys/board.journey.ts": file };
+  return runVerify(makeFixture({ typecheck: "exit 0", featureMap: map(entry), knownFailures: known, files }));
+}
+
+test("a journey proof whose file defines the title (double quotes) passes, and leaves no gap", () => {
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", journey("adds a lead"));
+  assert.match(featureLine(r.stdout), /^feature-map: pass/, r.stdout);
+  assert.match(featureLog(r.evidence), /^Gaps \(0\)/m);
+});
+
+test("single quotes around the title count too", () => {
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", journey("adds a lead", "'"));
+  assert.match(featureLine(r.stdout), /^feature-map: pass/, r.stdout);
+});
+
+test("a journey proof whose title the file does not define is a break that names the proof", () => {
+  const r = run("verifier/journeys/board.journey.ts::removes a lead", journey("adds a lead"));
+  assert.match(featureLine(r.stdout), /board: proof\[1\] test ".*::removes a lead": .*has no test "removes a lead"/);
+});
+
+test("a journey proof whose file does not exist is a break", () => {
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", null);
+  assert.match(featureLine(r.stdout), /proof\[1\] test file "verifier\/journeys\/board\.journey\.ts" does not exist/);
+});
+
+test("a journey proof outside verifier/journeys/ is a break", () => {
+  const r = run("tests/journeys/board.journey.ts::adds a lead", journey("adds a lead"));
+  assert.match(featureLine(r.stdout), /proof\[1\] test file "tests\/journeys\/board\.journey\.ts" must be under verifier\/journeys\//);
+});
+
+/** Run verify with the board entry proven by `proofTest`, and the given journey files (path to text). */
+function runFiles(proofTest: string, files: Record<string, string>) {
+  const entry = { ...GOOD_ENTRY, proof: [{ test: proofTest, covers: ["board.drag"] }] };
+  return runVerify(makeFixture({ typecheck: "exit 0", featureMap: map(entry), files }));
+}
+
+test("a journey proof whose file is another feature's journey is a break: the file must be the entry's own", () => {
+  const r = runFiles("verifier/journeys/other.journey.ts::adds a lead", { "verifier/journeys/other.journey.ts": journey("adds a lead") });
+  assert.match(featureLine(r.stdout), /proof\[1\] test file "verifier\/journeys\/other\.journey\.ts" must be verifier\/journeys\/board\.journey\.ts/);
+});
+
+test("a journey proof whose path climbs out of verifier/journeys/ with .. is a break, even when the file exists", () => {
+  const r = runFiles("verifier/journeys/../journeys/board.journey.ts::adds a lead", {
+    "verifier/journeys/board.journey.ts": journey("adds a lead"),
+  });
+  assert.match(featureLine(r.stdout), /proof\[1\] test file ".*\.\..*" must be verifier\/journeys\/board\.journey\.ts/);
+});
+
+test("a title only in a // comment is not a test: a break", () => {
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", '// test("adds a lead", async () => {});\n');
+  assert.match(featureLine(r.stdout), /proof\[1\] test ".*::adds a lead": .*has no test "adds a lead"/);
+});
+
+test("a test.fixme with the title is never a proof: a break", () => {
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", 'test.fixme("adds a lead", async () => {});\n');
+  assert.match(featureLine(r.stdout), /has no test "adds a lead"/);
+});
+
+test("a test whose body calls test.skip( is not a proof: a break", () => {
+  const body = 'test("adds a lead", async () => {\n  test.skip(true, "parked");\n});\n';
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", body);
+  assert.match(featureLine(r.stdout), /has no test "adds a lead"/);
+});
+
+test("an indented test inside a describe is still a proof", () => {
+  const body = 'describe("board", () => {\n  test("adds a lead", async () => {});\n});\n';
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", body);
+  assert.match(featureLine(r.stdout), /^feature-map: pass/, r.stdout);
+});
+
+test("a test.skip in a later test does not refuse an earlier test", () => {
+  const body = 'test("adds a lead", async () => {});\ntest("removes a lead", async () => {\n  test.skip(true, "parked");\n});\n';
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", body);
+  assert.match(featureLine(r.stdout), /^feature-map: pass/, r.stdout);
+});
+
+test("a journey proof on known-failures.txt still covers its sub-feature: journeys are never known failures", () => {
+  const r = run("verifier/journeys/board.journey.ts::adds a lead", journey("adds a lead"), "verifier/journeys/board.journey.ts::adds a lead\n");
+  assert.match(featureLine(r.stdout), /^feature-map: pass/, r.stdout);
+  assert.match(featureLog(r.evidence), /^Gaps \(0\)/m);
+});
