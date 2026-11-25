@@ -14,8 +14,11 @@ export default defineConfig({
   testDir: import.meta.dirname,
   testMatch: "*.load.ts",
   workers: 1,
-  /** Four loads, each at most its hard limit (30 s), plus the first compile: well inside this. */
-  timeout: 300_000,
+  /**
+   * Worst case: the Overview (a warm-up of 120 s, then a timed load of 30 s) and the Leads Table (the same, plus an untimed
+   * Overview load of 30 s): 330 s. The screens file is written after each screen, so a timeout keeps the earlier one.
+   */
+  timeout: 400_000,
   reporter: [["list"]],
   outputDir: join(evidence, "results"),
   use: {
