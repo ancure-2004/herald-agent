@@ -89,6 +89,24 @@ def _isolate_recorder_dir(monkeypatch, tmp_path):
     monkeypatch.setattr(BatchRecorderAdapter, "__init__", _isolated_init)
 
 
+@pytest.fixture(autouse=True)
+def _sync_message_worker_threads(monkeypatch):
+    """Run message_service background threads synchronously so they never race TestClient teardown."""
+    import app.services.message_service as msg_svc
+
+    class _SyncThread:
+        def __init__(self, target=None, args=(), kwargs=None, daemon=None):
+            self._target = target
+            self._args = args
+            self._kwargs = kwargs or {}
+
+        def start(self):
+            if self._target is not None:
+                self._target(*self._args, **self._kwargs)
+
+    monkeypatch.setattr(msg_svc.threading, "Thread", _SyncThread)
+
+
 @pytest.fixture()
 def client(monkeypatch):
     import app.db.session as dbsession
@@ -118,3 +136,4 @@ def client(monkeypatch):
     with c:
         yield c
     app.dependency_overrides.clear()
+    test_engine.dispose()
