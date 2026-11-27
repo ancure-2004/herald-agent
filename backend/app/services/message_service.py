@@ -671,7 +671,7 @@ class MessageService:
             if lost_stage:
                 lead.stage_id = lost_stage.id
             for ob in lead.outbox_items:
-                if ob.status in ("pending_approval", "queued"):
+                if ob.status in ("pending", "pending_approval", "queued"):
                     ob.status = "blocked"
                     ob.error_message = "Blocked by inbound STOP reply."
         else:
