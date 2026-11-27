@@ -8,7 +8,7 @@ import { expect, test } from "@playwright/test";
 test("open Settings modal and navigate to Settings page", async ({ page }) => {
   const leadsTable = page.getByRole("button", { name: "Leads Table", exact: true });
   const profileButton = page.locator('button[title="Captain Profile & Settings"]:visible');
-  const openSettingsMenuItem = page.getByRole("button", { name: /System Settings/i });
+  const openSettingsMenuItem = page.locator("button:has(svg.lucide-settings):visible").last();
   const allSettingsButton = page.getByRole("button", { name: /All settings/i });
   const sidebarSettingsHeading = page.getByText("Hustle & Blueprint", { exact: true });
 

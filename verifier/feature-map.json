@@ -209,10 +209,6 @@
       "files": [
         "frontend/src/features/cockpit/AutopilotCockpitView.tsx",
         "frontend/src/features/cockpit/CockpitOverviewDashboard.tsx",
-        "frontend/src/features/cockpit/AttentionVelocityDashboard.tsx",
-        "frontend/src/features/cockpit/CockpitSupervisorBar.tsx",
-        "frontend/src/features/cockpit/NodeInspectionDrawer.tsx",
-        "frontend/src/features/cockpit/PipelineNodeNetwork.tsx",
         "frontend/src/features/cockpit/types.ts",
         "frontend/src/features/cockpit/DesignTokens.ts",
         "backend/app/api/v1/routes/pipeline.py",
@@ -572,7 +568,6 @@
       "files": [
         "frontend/src/features/modals/AssistantDrawer.tsx",
         "frontend/src/features/modals/AssistantChatDrawer.tsx",
-        "frontend/src/features/modals/ProblemReportModal.tsx",
         "backend/app/api/v1/routes/assistant.py",
         "backend/app/services/assistant_service.py",
         "backend/app/services/agent_tools.py",
