@@ -573,7 +573,9 @@ class LeadService:
         }
 
     @staticmethod
-    def auto_transition_unreplied_to_closed_lost(db: Session, hustle_id: Optional[int] = None) -> List[Lead]:
+    def auto_transition_unreplied_to_closed_lost(
+        db: Session, hustle_id: Optional[int] = None, dry_run: bool = False
+    ) -> List[Lead]:
         """Item 3.2: 7-day auto-lost rule.
 
         If a lead was contacted/followed up and no reply was received within 7 days,
@@ -641,24 +643,25 @@ class LeadService:
                         fup_time = pkg_tz
 
             if eligible:
-                lead.status = "CLOSED_LOST"
-                if lost_stage:
-                    lead.stage_id = lost_stage.id
-                elif lead.hustle_id:
-                    hustle_lost = db.query(Stage).filter(Stage.hustle_id == lead.hustle_id, Stage.is_lost == True).first()
-                    if hustle_lost:
-                        lead.stage_id = hustle_lost.id
-                else:
-                    any_lost = db.query(Stage).filter(Stage.is_lost == True).first()
-                    if any_lost:
-                        lead.stage_id = any_lost.id
+                if not dry_run:
+                    lead.status = "CLOSED_LOST"
+                    if lost_stage:
+                        lead.stage_id = lost_stage.id
+                    elif lead.hustle_id:
+                        hustle_lost = db.query(Stage).filter(Stage.hustle_id == lead.hustle_id, Stage.is_lost == True).first()
+                        if hustle_lost:
+                            lead.stage_id = hustle_lost.id
+                    else:
+                        any_lost = db.query(Stage).filter(Stage.is_lost == True).first()
+                        if any_lost:
+                            lead.stage_id = any_lost.id
 
-                lead.needs_followup = False
-                lead.next_action = "Auto-closed: No reply received 7 days after follow-up"
-                lead.what_changed_summary = "Auto-transitioned to CLOSED_LOST (unreplied after 7 days)."
+                    lead.needs_followup = False
+                    lead.next_action = "Auto-closed: No reply received 7 days after follow-up"
+                    lead.what_changed_summary = "Auto-transitioned to CLOSED_LOST (unreplied after 7 days)."
                 transitioned.append(lead)
 
-        if transitioned:
+        if transitioned and not dry_run:
             db.commit()
             get_cache_manager().invalidate_prefix("cockpit:")
             get_cache_manager().invalidate_prefix("leads:")

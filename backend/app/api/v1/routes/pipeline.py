@@ -368,11 +368,21 @@ def get_cockpit_attention(hustle_id: int = Query(1), db: Session = Depends(get_d
 
 
 @router.post("/autopilot/auto-close-unreplied")
-def auto_close_unreplied(hustle_id: Optional[int] = Query(None), db: Session = Depends(get_db)):
+def auto_close_unreplied(
+    hustle_id: int = Query(...),
+    dry_run: bool = Query(False),
+    db: Session = Depends(get_db),
+):
     """Explicitly transition unreplied leads (>7 days) to CLOSED_LOST."""
     from app.services.lead_service import LeadService
 
-    transitioned = LeadService.auto_transition_unreplied_to_closed_lost(db, hustle_id=hustle_id)
-    return {"transitioned": len(transitioned), "lead_ids": [lead.id for lead in transitioned]}
+    transitioned = LeadService.auto_transition_unreplied_to_closed_lost(
+        db, hustle_id=hustle_id, dry_run=dry_run
+    )
+    return {
+        "transitioned": len(transitioned),
+        "lead_ids": [lead.id for lead in transitioned],
+        "dry_run": dry_run,
+    }
 
 

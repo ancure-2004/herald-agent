@@ -543,7 +543,7 @@ def ensure_hustle_lead_batches(
     )
 
     def is_lead_lost(l: Lead) -> bool:
-        if (l.status or "").upper() in ("CLOSED_LOST", "LOST") or l.stage_id == 8:
+        if (l.status or "").upper() in ("CLOSED_LOST", "LOST") or l.is_lost:
             return True
         if l.stage_rel and (l.stage_rel.slug in ("lost", "closed_lost") or l.stage_rel.is_lost):
             return True
@@ -811,7 +811,7 @@ def build_cockpit_batch_payload(db: Session, hustle_id: int = 1, batch_id: Optio
 
     clinics_out: List[Dict[str, Any]] = []
     for l in leads:
-        if (l.status or "").upper() in ("CLOSED_LOST", "LOST") or l.stage_id == 8 or (l.stage_rel and l.stage_rel.is_lost):
+        if (l.status or "").upper() in ("CLOSED_LOST", "LOST") or l.is_lost:
             continue
         pkg = l.packages[-1] if l.packages else None
         pitches = build_pitch_messages(l, pkg, base_url=base_url)

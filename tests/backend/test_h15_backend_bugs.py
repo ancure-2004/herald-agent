@@ -124,13 +124,78 @@ def test_cockpit_state_get_does_not_write(client):
     assert old_lead.status == "ACTIVE"
     assert old_lead.stage_id == contacted_stage_id
 
-    # Explicit POST action should transition the eligible lead
+    # Dry-run writes nothing
+    dry_resp = client.post("/api/autopilot/auto-close-unreplied?hustle_id=1&dry_run=true")
+    assert dry_resp.status_code == 200
+    assert dry_resp.json()["dry_run"] is True
+    assert dry_resp.json()["transitioned"] >= 1
+    db_session.expire_all()
+    db_session.refresh(old_lead)
+    assert old_lead.status == "ACTIVE"
+
+    # Missing hustle_id is rejected (422)
+    assert client.post("/api/autopilot/auto-close-unreplied").status_code == 422
+
+    # Seed 3 leads that must be skipped: inbound reply, do_not_contact, archived
+    replied_lead = Lead(
+        hustle_id=1,
+        stage_id=contacted_stage_id,
+        slug=f"replied-skip-{uid}",
+        name="Replied Skip",
+        status="ACTIVE",
+        next_followup_at=datetime.now(timezone.utc) - timedelta(days=10),
+        next_action="Follow up",
+        next_action_due_at=datetime.now(timezone.utc) - timedelta(days=10),
+    )
+    dnc_lead = Lead(
+        hustle_id=1,
+        stage_id=contacted_stage_id,
+        slug=f"dnc-skip-{uid}",
+        name="DNC Skip",
+        status="ACTIVE",
+        do_not_contact=True,
+        next_followup_at=datetime.now(timezone.utc) - timedelta(days=10),
+        next_action="Follow up",
+        next_action_due_at=datetime.now(timezone.utc) - timedelta(days=10),
+    )
+    archived_lead = Lead(
+        hustle_id=1,
+        stage_id=contacted_stage_id,
+        slug=f"archived-skip-{uid}",
+        name="Archived Skip",
+        status="ACTIVE",
+        is_archived=True,
+        next_followup_at=datetime.now(timezone.utc) - timedelta(days=10),
+        next_action="Follow up",
+        next_action_due_at=datetime.now(timezone.utc) - timedelta(days=10),
+    )
+    db_session.add_all([replied_lead, dnc_lead, archived_lead])
+    db_session.commit()
+    db_session.refresh(replied_lead)
+    db_session.add(
+        Message(
+            lead_id=replied_lead.id,
+            channel="whatsapp",
+            direction="inbound",
+            text="Yes interested",
+            created_at=datetime.now(timezone.utc) - timedelta(days=9),
+        )
+    )
+    db_session.commit()
+
+    # Explicit POST action should transition the eligible lead and skip the 3 guarded leads
     post_resp = client.post("/api/autopilot/auto-close-unreplied?hustle_id=1")
     assert post_resp.status_code == 200
     db_session.expire_all()
     db_session.refresh(old_lead)
+    db_session.refresh(replied_lead)
+    db_session.refresh(dnc_lead)
+    db_session.refresh(archived_lead)
     assert old_lead.status == "CLOSED_LOST"
     assert old_lead.is_lost is True
+    assert replied_lead.status == "ACTIVE"
+    assert dnc_lead.status == "ACTIVE"
+    assert archived_lead.status == "ACTIVE"
 
 
 def test_leads_list_returns_messages_and_facts(client):
