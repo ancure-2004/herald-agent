@@ -92,19 +92,24 @@ def _isolate_recorder_dir(monkeypatch, tmp_path):
 @pytest.fixture(autouse=True)
 def _sync_message_worker_threads(monkeypatch):
     """Run message_service background threads synchronously so they never race TestClient teardown."""
-    import app.services.message_service as msg_svc
+    import threading
 
-    class _SyncThread:
-        def __init__(self, target=None, args=(), kwargs=None, daemon=None):
-            self._target = target
-            self._args = args
-            self._kwargs = kwargs or {}
+    orig_thread = threading.Thread
 
-        def start(self):
-            if self._target is not None:
-                self._target(*self._args, **self._kwargs)
+    def _guarded_thread(target=None, args=(), kwargs=None, daemon=None, **extra):
+        if (
+            target is not None
+            and getattr(target, "__module__", "") == "app.services.message_service"
+            and getattr(target, "__name__", "") == "_worker"
+        ):
+            class _SyncThread:
+                def start(self):
+                    target(*args, **(kwargs or {}))
 
-    monkeypatch.setattr(msg_svc.threading, "Thread", _SyncThread)
+            return _SyncThread()
+        return orig_thread(target=target, args=args, kwargs=kwargs, daemon=daemon, **extra)
+
+    monkeypatch.setattr(threading, "Thread", _guarded_thread)
 
 
 @pytest.fixture()
