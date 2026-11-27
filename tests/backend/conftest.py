@@ -91,25 +91,33 @@ def _isolate_recorder_dir(monkeypatch, tmp_path):
 
 @pytest.fixture(autouse=True)
 def _sync_message_worker_threads(monkeypatch):
-    """Run message_service background threads synchronously so they never race TestClient teardown."""
+    """Run message_service._worker synchronously without patching Thread.start globally."""
     import threading
 
-    orig_start = threading.Thread.start
+    orig_thread = threading.Thread
 
-    def _guarded_start(self):
-        target = getattr(self, "_target", None)
+    class _SyncThread:
+        def __init__(self, target=None, args=(), kwargs=None):
+            self._target = target
+            self._args = args
+            self._kwargs = kwargs or {}
+
+        def start(self):
+            self._target(*self._args, **self._kwargs)
+
+    def _thread_factory(*args, **kwargs):
+        target = kwargs.get("target") if "target" in kwargs else (args[1] if len(args) > 1 else None)
         if (
             target is not None
             and getattr(target, "__module__", "") == "app.services.message_service"
             and getattr(target, "__name__", "") == "_worker"
         ):
-            args = getattr(self, "_args", ())
-            kwargs = getattr(self, "_kwargs", {}) or {}
-            target(*args, **kwargs)
-            return None
-        return orig_start(self)
+            t_args = kwargs.get("args", ())
+            t_kwargs = kwargs.get("kwargs", {})
+            return _SyncThread(target=target, args=t_args, kwargs=t_kwargs)
+        return orig_thread(*args, **kwargs)
 
-    monkeypatch.setattr(threading.Thread, "start", _guarded_start)
+    monkeypatch.setattr(threading, "Thread", _thread_factory)
 
 
 @pytest.fixture()

@@ -1,7 +1,10 @@
 import os
 import sys
+import tempfile
 from typing import Any, Dict, Generator, Optional
 import pytest
+
+os.environ.setdefault("HERALD_RECORDER_DIR", tempfile.mkdtemp(prefix="herald-e2e-recorder-"))
 
 # Ensure backend and tests roots are on sys.path
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../backend"))

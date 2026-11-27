@@ -76,7 +76,7 @@ class BatchRecorderAdapter:
     """Manages batch.json generation, canonical naming, and Playwright recording subprocesses."""
 
     def __init__(self, recorder_dir: Optional[Path] = None):
-        self.recorder_dir = Path(recorder_dir or DENTAL_RECORDER_DIR).resolve()
+        self.recorder_dir = Path(recorder_dir or os.environ.get("HERALD_RECORDER_DIR") or DENTAL_RECORDER_DIR).resolve()
         self.batch_json_path = self.recorder_dir / "batch.json"
         self.recordings_dir = self.recorder_dir / "recordings"
 
