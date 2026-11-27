@@ -76,10 +76,6 @@ class CockpitService:
         if cached is not None:
             return cached
 
-        # Run 7-day auto-lost transition check
-        from app.services.lead_service import LeadService
-        LeadService.auto_transition_unreplied_to_closed_lost(db, hustle_id=hustle_id)
-
         # Query all active non-archived, non-DNC leads for hustle
         leads = (
             db.query(Lead)
@@ -104,8 +100,8 @@ class CockpitService:
         call_preparation: List[Dict[str, Any]] = []
 
         for lead in leads:
-            is_won = bool(lead.stage_rel and lead.stage_rel.is_won) or (lead.status or "").upper() in ("WON", "CLOSED_WON") or lead.stage_id == 7
-            is_lost = bool(lead.stage_rel and lead.stage_rel.is_lost) or (lead.status or "").upper() in ("CLOSED_LOST", "LOST") or lead.stage_id == 8
+            is_won = bool(lead.stage_rel and lead.stage_rel.is_won) or (lead.status or "").upper() in ("WON", "CLOSED_WON")
+            is_lost = bool(lead.stage_rel and lead.stage_rel.is_lost) or (lead.status or "").upper() in ("CLOSED_LOST", "LOST")
             if is_won or is_lost:
                 continue
 

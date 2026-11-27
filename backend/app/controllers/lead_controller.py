@@ -23,8 +23,6 @@ class LeadController:
         offset: Optional[int] = None,
         cursor: Optional[int] = None,
     ) -> Union[List[Lead], Dict[str, Any]]:
-        # Run 7-day auto-lost transition check before listing
-        LeadService.auto_transition_unreplied_to_closed_lost(db, hustle_id=hustle_id)
         return LeadService.list_leads(
             db=db,
             hustle_id=hustle_id,

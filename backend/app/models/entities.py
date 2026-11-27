@@ -147,8 +147,6 @@ class Lead(Base):
             return True
         if self.stage_rel and self.stage_rel.is_lost:
             return True
-        if self.stage_id == 8:
-            return True
         return bool(self.is_archived or self.do_not_contact)
 
     @property
@@ -156,8 +154,6 @@ class Lead(Base):
         if (self.status or "").upper() in ("WON", "CLOSED_WON"):
             return True
         if self.stage_rel and self.stage_rel.is_won:
-            return True
-        if self.stage_id == 7:
             return True
         return False
 
