@@ -1,0 +1,9 @@
+# Shrink-only allowed list for existing immutability lint findings on main.
+# Keyed by: <file> | <message> | <1-based occurrence index>
+# Do not add new entries; remove entries as existing violations are fixed.
+backend/app/api/v1/routes/leads.py | Hard delete of lead via .delete('/leads/{lead_id}') | 1
+backend/app/api/v1/routes/messages.py | Delete of append-only row via .delete('/messages/{message_id}') | 1
+backend/app/services/lead_service.py | Mutation of append-only table via db.query(Message).delete() | 1
+backend/app/services/lead_service.py | Bulk hard delete of Lead via query(Lead).delete() | 1
+backend/app/services/pipeline_service.py | Bulk hard delete of Lead via query(Lead).delete() | 1
+backend/app/services/pipeline_service.py | Mutation of append-only table via db.query(RunLog).filter(RunLog.job_type.like('%test%')).delete() | 1
