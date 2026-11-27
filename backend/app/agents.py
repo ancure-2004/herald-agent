@@ -786,10 +786,6 @@ def build_cockpit_batch_payload(db: Session, hustle_id: int = 1, batch_id: Optio
     """
     base_url = os.getenv("DEMO_ENGINE_BASE_URL", "http://localhost:3001")
 
-    # Run 7-day auto-lost transition check
-    from app.services.lead_service import LeadService
-    LeadService.auto_transition_unreplied_to_closed_lost(db, hustle_id=hustle_id)
-
     # Ensure all leads have batch assignments; get active batch meta
     batch_meta = ensure_hustle_lead_batches(db, hustle_id)
     valid_batch_ids = {b["batch_id"] for b in batch_meta["batches"]}

@@ -73,10 +73,10 @@ class LeadRepository:
     ) -> Union[List[Lead], Dict[str, Any]]:
         q = db.query(Lead).options(
             joinedload(Lead.stage_rel),
-            noload(Lead.facts),
-            noload(Lead.packages),
-            noload(Lead.messages),
-            noload(Lead.events),
+            selectinload(Lead.facts),
+            selectinload(Lead.packages),
+            selectinload(Lead.messages),
+            selectinload(Lead.events),
             selectinload(Lead.commitments),
             noload(Lead.calls),
             noload(Lead.outbox_items),

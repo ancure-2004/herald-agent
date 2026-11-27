@@ -648,10 +648,10 @@ class LeadService:
                     hustle_lost = db.query(Stage).filter(Stage.hustle_id == lead.hustle_id, Stage.is_lost == True).first()
                     if hustle_lost:
                         lead.stage_id = hustle_lost.id
-                    else:
-                        lead.stage_id = 8
                 else:
-                    lead.stage_id = 8
+                    any_lost = db.query(Stage).filter(Stage.is_lost == True).first()
+                    if any_lost:
+                        lead.stage_id = any_lost.id
 
                 lead.needs_followup = False
                 lead.next_action = "Auto-closed: No reply received 7 days after follow-up"

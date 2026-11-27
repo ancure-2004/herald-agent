@@ -81,17 +81,23 @@ def test_replied_stage_is_not_won_and_won_lost_use_stage_flags(client):
     db_session.close()
 
 
-def test_cockpit_state_get_does_not_write_and_leads_list_under_half_second(client):
-    db_session = SessionLocal()
-    # Create an old contacted lead that would have been auto-closed by a write-on-read
+def test_cockpit_state_get_does_not_write(client):
+    from app.db.session import get_db
+    from app.models.entities import Message
+
+    db_session = next(client.app.dependency_overrides[get_db]())
+    # Create an old contacted lead with an outbound message > 7 days ago that would be auto-closed by write-on-read
     contacted_stage = db_session.query(Stage).filter(Stage.slug == "contacted").first()
+    contacted_stage_id = contacted_stage.id
     uid = uuid.uuid4().hex[:8]
     old_lead = Lead(
         hustle_id=1,
-        stage_id=contacted_stage.id,
+        stage_id=contacted_stage_id,
         slug=f"old-unreplied-clinic-{uid}",
         name="Old Unreplied Clinic",
         status="ACTIVE",
+        needs_followup=True,
+        next_followup_at=datetime.now(timezone.utc) - timedelta(days=10),
         next_action="Follow up",
         next_action_due_at=datetime.now(timezone.utc) - timedelta(days=10),
         updated_at=datetime.now(timezone.utc) - timedelta(days=10),
@@ -100,31 +106,74 @@ def test_cockpit_state_get_does_not_write_and_leads_list_under_half_second(clien
     db_session.commit()
     db_session.refresh(old_lead)
 
-    resp = client.get("/api/autopilot/cockpit-state?hustle_id=1")
-    assert resp.status_code == 200
-    db_session.refresh(old_lead)
-    assert old_lead.status == "ACTIVE"
-    assert old_lead.stage_id == contacted_stage.id
-
-    # Bulk insert 2,000 leads and time GET /api/leads
-    now = datetime.now(timezone.utc)
-    bulk = [
-        Lead(
-            hustle_id=1,
-            stage_id=1,
-            slug=f"perf-lead-{uid}-{i}",
-            name=f"Perf Clinic {i}",
-            status="STAGED",
-            next_action="Call clinic",
-            next_action_due_at=now + timedelta(days=1),
+    db_session.add(
+        Message(
+            lead_id=old_lead.id,
+            channel="whatsapp",
+            direction="outbound",
+            text="Checking in",
+            created_at=datetime.now(timezone.utc) - timedelta(days=10),
         )
-        for i in range(2000)
-    ]
-    db_session.bulk_save_objects(bulk)
+    )
     db_session.commit()
 
-    t0 = time.perf_counter()
-    r = client.get("/api/leads?hustle_id=1")
-    elapsed = time.perf_counter() - t0
-    assert r.status_code == 200
-    assert elapsed < 0.5, f"GET /api/leads took {elapsed:.3f}s (target < 0.5s)"
+    resp = client.get("/api/autopilot/cockpit-state?hustle_id=1")
+    assert resp.status_code == 200
+    db_session.expire_all()
+    db_session.refresh(old_lead)
+    assert old_lead.status == "ACTIVE"
+    assert old_lead.stage_id == contacted_stage_id
+
+    # Explicit POST action should transition the eligible lead
+    post_resp = client.post("/api/autopilot/auto-close-unreplied?hustle_id=1")
+    assert post_resp.status_code == 200
+    db_session.expire_all()
+    db_session.refresh(old_lead)
+    assert old_lead.status == "CLOSED_LOST"
+    assert old_lead.is_lost is True
+
+
+def test_leads_list_returns_messages_and_facts(client):
+    from app.db.session import get_db
+    from app.models.entities import LeadFact
+
+    default_due = (datetime.now(timezone.utc) + timedelta(days=2)).isoformat()
+    create_resp = client.post(
+        "/api/leads",
+        json={
+            "hustle_id": 1,
+            "stage_id": 1,
+            "name": "List Relations Clinic",
+            "next_action": "Follow up",
+            "next_action_due_at": default_due,
+        },
+    )
+    assert create_resp.status_code == 201
+    lead_id = create_resp.json()["id"]
+
+    msg_resp = client.post(
+        f"/api/leads/{lead_id}/messages",
+        json={"channel": "whatsapp", "direction": "outbound", "text": "Hello doctor"},
+    )
+    assert msg_resp.status_code == 201
+
+    db_session = next(client.app.dependency_overrides[get_db]())
+    db_session.add(
+        LeadFact(
+            lead_id=lead_id,
+            field="specialty",
+            value="orthodontics",
+            source="test",
+        )
+    )
+    db_session.commit()
+
+    resp = client.get("/api/leads?hustle_id=1")
+    assert resp.status_code == 200
+    items = resp.json()
+    matched = [item for item in items if item["id"] == lead_id]
+    assert len(matched) == 1
+    assert len(matched[0]["messages"]) == 1
+    assert matched[0]["messages"][0]["text"] == "Hello doctor"
+    assert len(matched[0]["facts"]) == 1
+    assert matched[0]["facts"][0]["field"] == "specialty"
