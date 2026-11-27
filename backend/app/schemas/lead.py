@@ -51,6 +51,9 @@ class LeadCreate(BaseSchema):
     automation_enabled: bool = True
     needs_followup: bool = False
     next_followup_at: Optional[datetime] = None
+    fit_score: Optional[int] = None
+    fit_reasons: List[str] = Field(default_factory=list)
+    intent_score: Optional[int] = None
     facts: List[LeadFactCreate] = Field(default_factory=list)
 
 

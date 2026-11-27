@@ -13,10 +13,10 @@ except ImportError:
     pass  # python-dotenv not installed; .env values must come from the shell environment
 
 from functools import lru_cache
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 MONOREPO_ROOT = BACKEND_DIR.parent
 
 
@@ -41,11 +41,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = Field(
         default="dev-insecure-secret-key-change-in-production-32b", description="Secret key for signing/tokens"
     )
-    CORS_ORIGINS: List[str] = Field(
+    CORS_ORIGINS: Annotated[List[str], NoDecode] = Field(
         default=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"],
         description="Allowed CORS origin domains",
     )
-    ALLOWED_HOSTS: List[str] = Field(
+    ALLOWED_HOSTS: Annotated[List[str], NoDecode] = Field(
         default=["localhost", "127.0.0.1", "0.0.0.0", "testserver"],
         description="Allowed host headers",
     )
@@ -134,8 +134,12 @@ class Settings(BaseSettings):
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: object) -> List[str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",") if i.strip()]
+        if isinstance(v, str):
+            stripped = v.strip()
+            if stripped.startswith("["):
+                import json
+                return [str(i).strip() for i in json.loads(stripped) if str(i).strip()]
+            return [i.strip() for i in stripped.split(",") if i.strip()]
         elif isinstance(v, (list, tuple)):
             return list(v)
         return ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"]

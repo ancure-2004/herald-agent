@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Union
 
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import Session, joinedload, noload, selectinload
 
 from app.models.entities import Lead, LeadFact, Message, Stage
 from app.services.cache_manager import get_cache_manager
@@ -71,7 +71,16 @@ class LeadRepository:
         offset: Optional[int] = None,
         cursor: Optional[int] = None,
     ) -> Union[List[Lead], Dict[str, Any]]:
-        q = db.query(Lead).options(*LeadRepository._lead_load_options())
+        q = db.query(Lead).options(
+            joinedload(Lead.stage_rel),
+            selectinload(Lead.facts),
+            selectinload(Lead.packages),
+            selectinload(Lead.messages),
+            selectinload(Lead.events),
+            selectinload(Lead.commitments),
+            noload(Lead.calls),
+            noload(Lead.outbox_items),
+        )
 
         if hustle_id is not None:
             q = q.filter(Lead.hustle_id == hustle_id)

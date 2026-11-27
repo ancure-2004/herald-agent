@@ -555,6 +555,37 @@ export const CockpitOverviewDashboard: React.FC<CockpitOverviewDashboardProps> =
               </span>
             </div>
 
+            {/* Close Unreplied (7+ days) Button */}
+            <button
+              type="button"
+              data-testid="close-unreplied-button"
+              onClick={async () => {
+                try {
+                  const dry = await apiFetch<{ transitioned: number }>(
+                    `/api/autopilot/auto-close-unreplied?hustle_id=${activeHustleId}&dry_run=true`,
+                    { method: "POST" }
+                  );
+                  if (
+                    !window.confirm(
+                      `Close ${dry.transitioned} unreplied lead(s) (7+ days)?`
+                    )
+                  ) {
+                    return;
+                  }
+                  await apiFetch(
+                    `/api/autopilot/auto-close-unreplied?hustle_id=${activeHustleId}`,
+                    { method: "POST" }
+                  );
+                  await handleManualRefresh();
+                } catch {
+                  // surfaced by apiFetch
+                }
+              }}
+              className="px-2.5 h-7 rounded-full bg-white/10 hover:bg-white/20 text-[11px] font-medium text-white/85 transition-colors cursor-pointer"
+            >
+              Close unreplied (7+ days)
+            </button>
+
             {/* Real Refresh Button */}
             <button
               type="button"
