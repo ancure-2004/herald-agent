@@ -300,3 +300,24 @@ function gone(pid: number): boolean {
     return true;
   }
 }
+
+test("with VERIFY_JOURNEYS set, only the journeys check runs, and only the journeys of the features it names", () => {
+  const root = journeyFixture();
+  const r = journeyRun(root, [], { VERIFY_JOURNEYS: "journeys/results/demo.journey-Shows-the-demo-chromium/after-click" });
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^journeys: pass/m);
+  for (const other of ["typecheck", "backend-tests", "e2e", "app-health", "feature-map", "load"]) {
+    assert.doesNotMatch(r.stdout, new RegExp(`^${other}:`, "m"), `${other} does not run`);
+  }
+  const rec = playwrightRecord(root);
+  assert.ok(rec.args.includes("verifier/journeys/demo.journey.ts"), rec.args.join(" "));
+  assert.ok(!rec.args.includes("verifier/journeys/other.journey.ts"), "a journey the list does not name does not run");
+});
+
+test("a VERIFY_JOURNEYS entry naming no journey on this commit runs none and passes, starting no herald", () => {
+  const root = journeyFixture();
+  const r = journeyRun(root, [], { VERIFY_JOURNEYS: "journeys/results/brand-new.journey-New-chromium/shot,journeys/results/demolition.journey-X-chromium/shot" });
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^journeys: pass \(no listed journey exists on this commit\)/m);
+  assert.equal(journeyHerald(r.evidence), false, "no herald started");
+});

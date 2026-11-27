@@ -12,6 +12,7 @@ import type { Check, CheckResult } from "./check.ts";
 import { evidenceDir, writeLog, writeSummary } from "./evidence.ts";
 import { killAllNow } from "./launch.ts";
 import { cleanEnv, refusals, writeStubs } from "./safety.ts";
+import { listedJourneys } from "./checks/journeys.ts";
 import { putBack, trackedStatus, writeTrackedChanges } from "./tracked-files.ts";
 
 /** The herald root: the folder holding `verify`, the parent of verifier/. */
@@ -65,7 +66,9 @@ async function main(): Promise<number> {
     return 2;
   }
   const full = args.includes("--full");
-  const checks = await loadChecks();
+  const all = await loadChecks();
+  /** A run with VERIFY_JOURNEYS (Guild's "before" run on the base commit) wants those journeys' screenshots only, so only the journeys check runs. */
+  const checks = listedJourneys(process.env as Record<string, string>) ? all.filter((c) => c.name === "journeys") : all;
   const runDir = mkdtempSync(join(tmpdir(), "verify-run-"));
   try {
     const dir = evidenceDir(process.env);
