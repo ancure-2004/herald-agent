@@ -74,6 +74,21 @@ def _guard_no_agy_cli(monkeypatch, request):
     monkeypatch.setattr(asyncio, "create_subprocess_shell", _guarded_shell)
 
 
+@pytest.fixture(autouse=True)
+def _isolate_recorder_dir(monkeypatch, tmp_path):
+    """Ensure backend tests never write to tracked files in engines/dental-batch-recorder/."""
+    from app.autopilot.adapters.recorder import BatchRecorderAdapter
+
+    orig_init = BatchRecorderAdapter.__init__
+
+    def _isolated_init(self, recorder_dir=None, *args, **kwargs):
+        if recorder_dir is None:
+            recorder_dir = tmp_path / "recorder"
+        return orig_init(self, recorder_dir=recorder_dir, *args, **kwargs)
+
+    monkeypatch.setattr(BatchRecorderAdapter, "__init__", _isolated_init)
+
+
 @pytest.fixture()
 def client(monkeypatch):
     import app.db.session as dbsession
