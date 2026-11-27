@@ -190,7 +190,11 @@ export function DashboardCharts({ leads, setActiveTab }: DashboardChartsProps) {
   const donutCircumference = 2 * Math.PI * donutR;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-[472px] lg:min-h-[242px]">
+    <div
+      data-testid="overview-charts"
+      data-state={leads.length > 0 ? "loaded" : "empty"}
+      className="grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-[472px] lg:min-h-[242px]"
+    >
       {/* Left Combo Chart (8 Cols) */}
       <div className="lg:col-span-8 p-3 sm:p-3.5 rounded-2xl bg-[#1C1D1F] text-white border border-[#2A2B2E] shadow-sm space-y-2 flex flex-col justify-between h-[226px] sm:h-[242px]">
         {/* Header */}

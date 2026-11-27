@@ -944,7 +944,7 @@ export function SettingsModal() {
               </div>
             )}
 
-            {/* 4. MCP & AI PROVIDER */}
+            {/* 4. MCP & INTEGRATIONS */}
             {activeCategory === "mcp" && (
               <div className="space-y-6">
                 {/* AI Provider Selector Grid */}

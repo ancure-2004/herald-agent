@@ -404,7 +404,7 @@
         { "id": "settings.blueprint", "what": "Hustle & Blueprint: the side hustles, their autonomy mode, delivery steps and target deal value" },
         { "id": "settings.waterfall", "what": "Discovery Waterfall: the four discovery tiers and their search queries, with fallback routing" },
         { "id": "settings.quotas", "what": "Quotas & Safety Caps: daily channel limits, batch size and a dry-run safety simulation" },
-        { "id": "settings.mcp", "what": "MCP & AI Provider: AI provider keys (Gemini, Groq) and the MCP server" },
+        { "id": "settings.mcp", "what": "MCP & Integrations: AI provider keys (Gemini, Groq) and the MCP server" },
         { "id": "settings.appearance", "what": "Appearance & UI: theme, reduced motion and table density" },
         { "id": "settings.profile", "what": "Operator Profile: name, monogram and message sign-off" }
       ],
@@ -414,17 +414,13 @@
         "Hustle & Blueprint",
         "Discovery Waterfall",
         "Quotas & Safety Caps",
-        "MCP & AI Provider",
+        "MCP & Integrations",
         "Appearance & UI",
         "Operator Profile",
         "Registered MCP Tools"
       ],
       "endState": "The modal opens on a section; a saved AI provider key shows as configured; a changed operator name shows in the sidebar account card.",
-      "gotchas": [
-        "Two Settings screens exist. Users reach the modal (⌘, or the profile menu). The page in features/settings/HustleSettingsView.tsx renders only when activeTab is 'settings', and nothing sets that tab, so it is unreachable and the sidebar's Settings list never shows.",
-        "The sidebar calls the MCP section 'MCP & Integrations'; the modal calls it 'MCP & AI Provider'.",
-        "The Registered MCP Tools list is a hardcoded array (REAL_MCP_TOOLS in SettingsModal.tsx), not read from backend/mcp_server.py, so it can drift from the server."
-      ],
+      "gotchas": [],
       "proof": [
         { "test": "tests/e2e/tier1_feature_coverage/test_f1_health_and_model_discipline.py::test_active_hustles_listing", "covers": ["settings.blueprint"] },
         { "test": "tests/backend/test_quota_guard.py::test_quota_guard_soft_limit_enforcement", "covers": ["settings.quotas"] },

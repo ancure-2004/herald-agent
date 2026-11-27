@@ -25,7 +25,6 @@ Each domain contains self-contained components that interact with the CRM throug
 - **`modals`**:
   - `LeadDetailModal`: Intelligence dossier, verified facts, proof package links, timeline, and mandatory next step lock.
   - `AddLeadModal`: Manual clinic lead intake with initial next step validation.
-  - `ProblemReportModal`: Diagnostic brief generator capturing telemetry for Antigravity IDE.
   - `CommandPaletteModal`: Quick ⌘K navigation and lead jumping overlay.
   - `AssistantDrawer`: Floating Ask & Do AI copilot with 1-click action undo.
 
