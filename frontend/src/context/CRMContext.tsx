@@ -178,8 +178,6 @@ interface CRMContextType {
   setSettingsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   newLeadModalOpen: boolean;
   setNewLeadModalOpen: (b: boolean) => void;
-  problemModalOpen: boolean;
-  setProblemModalOpen: (b: boolean) => void;
   logCallModalOpen: boolean;
   setLogCallModalOpen: (b: boolean) => void;
   logCallLeadId: number | null;
@@ -359,7 +357,6 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const [cmdSearchQuery, setCmdSearchQuery] = useState<string>("");
   const [settingsModalOpen, setSettingsModalOpen] = useState<boolean>(false);
   const [newLeadModalOpen, setNewLeadModalOpen] = useState<boolean>(false);
-  const [problemModalOpen, setProblemModalOpen] = useState<boolean>(false);
   const [logCallModalOpen, setLogCallModalOpen] = useState<boolean>(false);
   const [logCallLeadId, setLogCallLeadId] = useState<number | null>(null);
   const [logReplyModalOpen, setLogReplyModalOpen] = useState<boolean>(false);
@@ -1159,8 +1156,6 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     setSettingsModalOpen,
     newLeadModalOpen,
     setNewLeadModalOpen,
-    problemModalOpen,
-    setProblemModalOpen,
     logCallModalOpen,
     setLogCallModalOpen,
     logCallLeadId,
@@ -1263,7 +1258,6 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     settingsModalOpen,
     setSettingsModalOpen,
     newLeadModalOpen,
-    problemModalOpen,
     logCallModalOpen,
     logCallLeadId,
     openLogCallModal,
