@@ -7,6 +7,9 @@ backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../ba
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
 
+# Force in-memory SQLite before any app module is imported so tests never touch personal_os.db
+os.environ["DATABASE_URL"] = "sqlite://"
+
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -22,6 +25,53 @@ from mock_seed import seed_initial_data as mock_seed_initial_data
 # while production app/seed.py remains completely clean and unpolluted.
 production_seed.seed_initial_data = mock_seed_initial_data
 seed_initial_data = mock_seed_initial_data
+
+
+def _is_agy_command(args) -> bool:
+    if isinstance(args, str):
+        parts = args.strip().split()
+        return bool(parts) and os.path.basename(parts[0]) == "agy"
+    if isinstance(args, (list, tuple)) and len(args) > 0:
+        return os.path.basename(str(args[0])) == "agy"
+    return False
+
+
+@pytest.fixture(autouse=True)
+def _guard_no_agy_cli(monkeypatch, request):
+    """Fail any test that attempts to start the real agy CLI."""
+    import subprocess
+    import asyncio
+
+    nodeid = request.node.nodeid
+
+    def _wrap_sync(orig):
+        def _guarded(args, *pargs, **kwargs):
+            if _is_agy_command(args):
+                pytest.fail(f"Test {nodeid} attempted to start the agy CLI: {args!r}")
+            return orig(args, *pargs, **kwargs)
+        return _guarded
+
+    for fn_name in ("run", "Popen", "call", "check_call", "check_output"):
+        orig = getattr(subprocess, fn_name)
+        monkeypatch.setattr(subprocess, fn_name, _wrap_sync(orig))
+
+    orig_exec = asyncio.create_subprocess_exec
+
+    async def _guarded_exec(program, *args, **kwargs):
+        if _is_agy_command([program, *args]):
+            pytest.fail(f"Test {nodeid} attempted to start the agy CLI: {program!r}")
+        return await orig_exec(program, *args, **kwargs)
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", _guarded_exec)
+
+    orig_shell = asyncio.create_subprocess_shell
+
+    async def _guarded_shell(cmd, *args, **kwargs):
+        if _is_agy_command(cmd):
+            pytest.fail(f"Test {nodeid} attempted to start the agy CLI: {cmd!r}")
+        return await orig_shell(cmd, *args, **kwargs)
+
+    monkeypatch.setattr(asyncio, "create_subprocess_shell", _guarded_shell)
 
 
 @pytest.fixture()
