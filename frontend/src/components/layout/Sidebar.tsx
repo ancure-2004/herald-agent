@@ -157,6 +157,7 @@ export function Sidebar() {
       <div className="space-y-0.5 pt-0.5">
         <button
           type="button"
+          data-testid="profile-menu-settings-button"
           onClick={() => {
             setSettingsModalOpen(true);
             setProfileMenuOpen(false);

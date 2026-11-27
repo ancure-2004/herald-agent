@@ -24,7 +24,7 @@ test("open profile menu and navigate to sprint view", async ({ page }, testInfo)
   });
 
   await test.step("capture screenshot of the open profile menu", async () => {
-    await expect(page.getByRole("heading").first()).toBeVisible();
+    await expect(page.getByText("Priority Clinic Pipeline")).toBeVisible({ timeout: 30_000 });
     await page.screenshot({ path: testInfo.outputPath("profile-menu.png") });
   });
 
