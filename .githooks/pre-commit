@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# herald's pre-commit hook, switched on by ./setup (core.hooksPath). It stays tight, seconds not minutes: the Gate
+# runs everything heavy once per Attempt.
+# 1. Every staged file is linted with checks/lint (the same per-file lint the agents' Rail runs).
+# 2. On a guild/* branch (an agent's Ticket), staged changes to the files that guide or check every agent are refused:
+#    playbooks/, .githooks/ and ./setup. Note the change under FOUND instead.
+set -euo pipefail
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+branch="$(git symbolic-ref --quiet --short HEAD || true)"
+
+case "$branch" in
+  guild/*)
+    refused="$(git diff --cached --name-only | grep -E '^(playbooks/|\.githooks/|setup$)' || true)"
+    if [ -n "$refused" ]; then
+      echo "pre-commit: on $branch these files are not yours to change; list the change under FOUND instead:" >&2
+      echo "$refused" | sed 's/^/  /' >&2
+      exit 1
+    fi
+    ;;
+esac
+
+while IFS= read -r -d '' file; do
+  [ -f "$file" ] || continue
+  if ! checks/lint "$file"; then
+    echo "pre-commit: checks/lint failed on $file (exit 2 means a tool is missing: run ./setup)" >&2
+    exit 1
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
