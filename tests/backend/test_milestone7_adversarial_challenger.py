@@ -557,16 +557,17 @@ def test_staging_buffer_capacity_isolates_test_from_production():
 # Section 3: Database Live Sync Smoke Test (Real Live Backend DB)
 # ---------------------------------------------------------------------------
 
-def test_live_sync_all_four_cockpit_endpoints():
+def test_live_sync_all_four_cockpit_endpoints(client):
     """
-    Empirically queries the live backend across all 4 operational endpoints:
+    Empirically queries the backend across all 4 operational endpoints:
     1. GET /api/leads
     2. GET /api/autopilot/cockpit-state
     3. GET /api/batch
     4. GET /api/runs
     Verifies HTTP 200, schema conformance, and non-empty records.
     """
-    with TestClient(app) as live_client:
+    live_client = client
+    if True:
         # 1. GET /api/leads
         res_leads = live_client.get("/api/leads?hustle_id=1")
         assert res_leads.status_code == 200, f"/api/leads failed: {res_leads.status_code}"

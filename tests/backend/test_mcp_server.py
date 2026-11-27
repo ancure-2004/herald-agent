@@ -217,6 +217,29 @@ def test_mcp_send_message_safety(client, monkeypatch):
 
 def test_mcp_log_call_and_activity(client, monkeypatch):
     """Verify logging a call and reading it through get_lead_activity."""
+    from app.services.ai_service import AIService, LLMProvider
+
+    class _StubProvider(LLMProvider):
+        def generate_structured(self, prompt, schema=None, **kwargs):
+            return {
+                "summary": "Spoke to Dr. Activity about modern demo and pricing.",
+                "interests": ["Modern demo"],
+                "objections": [],
+                "commitments": [{"what": "Send pricing details", "by_when": "Tomorrow"}],
+                "next_steps": ["Follow up on pricing"],
+                "prep_brief": "Share pricing tiers.",
+            }
+
+        def generate_text(self, prompt, **kwargs):
+            return "Stubbed"
+
+        def generate_json(self, prompt, schema=None, **kwargs):
+            return self.generate_structured(prompt, schema=schema, **kwargs)
+
+        def test_connection(self):
+            return {"status": "ok", "provider": "stub"}
+
+    monkeypatch.setattr(AIService, "get_provider", classmethod(lambda cls, *a, **kw: _StubProvider()))
     monkeypatch.setattr(mcp, "SessionLocal", client.get_db_session)
     session = client.get_db_session()
     try:

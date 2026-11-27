@@ -215,9 +215,9 @@ def test_manual_reply_stop_activates_dnc_and_clears_needs_followup(client):
     res = client.post(f"/api/leads/{lead_id}/messages/log-reply", json=payload)
     assert res.status_code in (200, 201)
 
-    lead_res = client.get(f"/api/leads?search={lead['name']}")
+    lead_res = client.get(f"/api/leads/{lead_id}")
     assert lead_res.status_code == 200
-    updated_lead = next(l for l in lead_res.json() if l["id"] == lead_id)
+    updated_lead = lead_res.json()
     assert updated_lead["do_not_contact"] is True
     assert updated_lead["needs_followup"] is False
 
