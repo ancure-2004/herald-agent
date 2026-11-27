@@ -11,8 +11,23 @@ def temp_rag_store(tmp_path):
     return store
 
 
-def test_embedding_service_lazy_load_and_unload():
+def test_embedding_service_lazy_load_and_unload(monkeypatch):
     """Verifies EmbeddingService lazy-loads only on request and unloads with gc.collect()."""
+    import sys
+    import types
+
+    if "fastembed" not in sys.modules:
+        class _DummyTextEmbedding:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def embed(self, texts):
+                return [[0.1] * 384 for _ in texts]
+
+        dummy_mod = types.ModuleType("fastembed")
+        dummy_mod.TextEmbedding = _DummyTextEmbedding
+        monkeypatch.setitem(sys.modules, "fastembed", dummy_mod)
+
     # Guarantee starting state is unloaded
     EmbeddingService.unload_model()
     assert EmbeddingService._model_instance is None

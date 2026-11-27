@@ -148,6 +148,8 @@ def test_call_brief_endpoint_no_fallback(client, monkeypatch):
 
 def test_local_cli_provider_envelope_parsing(monkeypatch):
     """Verifies LocalCLIProvider parses both standard agy envelope shapes and passes prompt directly."""
+    import shutil
+    monkeypatch.setattr(shutil, "which", lambda cmd: "/usr/local/bin/agy" if cmd == "agy" else None)
     provider = LocalCLIProvider()
     
     dummy_schema = {

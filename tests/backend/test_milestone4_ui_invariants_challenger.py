@@ -66,6 +66,49 @@ def challenger_client(monkeypatch):
     app.dependency_overrides.clear()
 
 
+def _stub_ai_service(monkeypatch):
+    """Stub AIService.get_provider so AI-dependent tests run without external keys or agy CLI."""
+    from app.services.ai_service import AIService, LLMProvider
+
+    class _StubProvider(LLMProvider):
+        def generate_structured(self, prompt, schema=None, **kwargs):
+            props = (schema or {}).get("properties", {})
+            p_low = (prompt or "").lower()
+            if "suggestions" in props or "suggestions" in p_low or "reply" in p_low:
+                return {
+                    "suggestions": [
+                        {"category": "Direct Answer", "text": "Happy to share root canal pricing and call after 4 PM.", "tone": "professional"},
+                        {"category": "Value", "text": "We can add a transparent treatment pricing section right away.", "tone": "warm"},
+                        {"category": "Quick", "text": "Sounds great, I will call you after 4 PM today!", "tone": "concise"},
+                    ]
+                }
+            if "summary" in props or "objections" in p_low:
+                return {
+                    "summary": "Discussed OPD booking integration and maintenance costs.",
+                    "interests": ["Clean layout", "Direct WhatsApp OPD booking"],
+                    "objections": ["Website maintenance costs", "Staff training"],
+                    "commitments": [{"what": "Deliver 3-minute video guide by Wednesday", "by_when": "Wednesday"}],
+                    "next_steps": ["Follow-up demo call Thursday at 3 PM"],
+                    "prep_brief": "Focus on low-maintenance workflow and simple staff onboarding.",
+                }
+            return {
+                "prep_brief": "Review domain verification steps and address clinic setup questions.",
+                "past_commitments": ["Send domain verification steps"],
+                "key_objections": ["Clinic domain setup"],
+            }
+
+        def generate_text(self, prompt, **kwargs):
+            return "Stubbed AI response"
+
+        def generate_json(self, prompt, schema=None, **kwargs):
+            return self.generate_structured(prompt, schema=schema, **kwargs)
+
+        def test_connection(self):
+            return {"status": "ok", "provider": "stub"}
+
+    monkeypatch.setattr(AIService, "get_provider", classmethod(lambda cls, *a, **kw: _StubProvider()))
+
+
 # ============================================================================
 # 1. WHATSAPP MESSAGE SEND TESTS (R2, F10)
 # ============================================================================
@@ -229,11 +272,12 @@ def test_whatsapp_send_channel_restriction_enforcement(challenger_client):
 # 2. MANUAL REPLY LOGGING TESTS (R2, F11)
 # ============================================================================
 
-def test_manual_reply_logging_multiline_paste_and_suggestions(challenger_client):
+def test_manual_reply_logging_multiline_paste_and_suggestions(challenger_client, monkeypatch):
     """Asserts multi-line paste splits into discrete ordered messages, sets status to REPLIED,
 
     clears needs_followup, and returns exactly 3 AI suggestions.
     """
+    _stub_ai_service(monkeypatch)
     client, SessionLocal = challenger_client
 
     leads_res = client.get("/api/leads")
@@ -375,8 +419,9 @@ def test_manual_reply_stop_activates_dnc_and_clears_followup(challenger_client):
 # 3. CALLS MANAGEMENT & PREP BRIEF SYNTHESIS TESTS (R3, F2, F8, F9)
 # ============================================================================
 
-def test_calls_logging_structures_five_sections(challenger_client):
+def test_calls_logging_structures_five_sections(challenger_client, monkeypatch):
     """Asserts that POST /api/leads/{id}/calls with raw text returns 5 structured sections in <10s."""
+    _stub_ai_service(monkeypatch)
     client, SessionLocal = challenger_client
 
     leads_res = client.get("/api/leads")
@@ -432,8 +477,9 @@ def test_calls_logging_structures_five_sections(challenger_client):
         db.close()
 
 
-def test_call_prep_brief_synthesis_endpoint(challenger_client):
+def test_call_prep_brief_synthesis_endpoint(challenger_client, monkeypatch):
     """Asserts that GET /api/leads/{id}/call-brief returns a pre-call prep brief combining notes and chat."""
+    _stub_ai_service(monkeypatch)
     client, SessionLocal = challenger_client
 
     leads_res = client.get("/api/leads")
