@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+"""
+Check: Data immutability & append-only audit trail (AGENTS.md §2 rule 5).
+Flags:
+  - Hard delete of a lead (db.delete(lead), db.query(Lead).delete(), DELETE FROM leads)
+  - Update or delete of messages or runs rows (db.query(Message|RunLog).(update|delete),
+    DELETE/UPDATE FROM messages|runs)
+Existing violations can be listed in checks/allowed_immutability_violations.txt (shrink-only).
+"""
+import ast
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+ALLOWLIST_PATH = Path(__file__).resolve().parent / "allowed_immutability_violations.txt"
+
+SQL_PATTERNS = [
+    (re.compile(r"\bDELETE\s+FROM\s+leads\b", re.IGNORECASE), "SQL hard delete of leads"),
+    (re.compile(r"\bDELETE\s+FROM\s+messages\b", re.IGNORECASE), "SQL delete of append-only messages"),
+    (re.compile(r"\bUPDATE\s+messages\b", re.IGNORECASE), "SQL update of append-only messages"),
+    (re.compile(r"\bDELETE\s+FROM\s+runs\b", re.IGNORECASE), "SQL delete of append-only runs"),
+    (re.compile(r"\bUPDATE\s+runs\b", re.IGNORECASE), "SQL update of append-only runs"),
+]
+
+
+def _load_allowlist() -> set[str]:
+    if not ALLOWLIST_PATH.exists():
+        return set()
+    return {
+        line.strip()
+        for line in ALLOWLIST_PATH.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    }
+
+
+def scan_file(path: Path) -> list[tuple[int, str]]:
+    violations: list[tuple[int, str]] = []
+    source = path.read_text(encoding="utf-8")
+
+    # 1. SQL string patterns
+    for lineno, line in enumerate(source.splitlines(), start=1):
+        for pat, msg in SQL_PATTERNS:
+            if pat.search(line):
+                violations.append((lineno, msg))
+
+    # 2. Python AST patterns
+    try:
+        tree = ast.parse(source, filename=str(path))
+    except SyntaxError:
+        return violations
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            attr = node.func.attr
+            # session.delete(lead) / db.delete(lead)
+            if attr == "delete" and node.args:
+                arg_src = ast.unparse(node.args[0]).lower()
+                if "lead" in arg_src:
+                    violations.append((node.lineno, f"Hard delete of lead via .{attr}({arg_src})"))
+                elif any(k in arg_src for k in ("msg", "message", "run")):
+                    violations.append((node.lineno, f"Delete of append-only row via .{attr}({arg_src})"))
+
+            # db.query(Lead|Message|RunLog)...delete() / .update()
+            if attr in ("delete", "update") and not node.args or (attr == "update" and len(node.args) == 1):
+                chain_src = ast.unparse(node.func.value)
+                if "query(Lead)" in chain_src and attr == "delete":
+                    violations.append((node.lineno, "Bulk hard delete of Lead via query(Lead).delete()"))
+                if ("query(Message)" in chain_src or "query(RunLog)" in chain_src) and attr in ("delete", "update"):
+                    violations.append((node.lineno, f"Mutation of append-only table via {chain_src}.{attr}()"))
+
+    return violations
+
+
+def main(argv: list[str]) -> int:
+    targets = [Path(a) for a in argv] if argv else sorted((ROOT / "backend" / "app").rglob("*.py"))
+    allowlist = set() if argv else _load_allowlist()
+
+    found: list[str] = []
+    for path in targets:
+        rel = str(path.resolve().relative_to(ROOT)) if path.resolve().is_relative_to(ROOT) else str(path)
+        for lineno, msg in scan_file(path):
+            entry = f"{rel}:{lineno}: {msg}"
+            if entry not in allowlist:
+                found.append(entry)
+
+    if found:
+        for item in found:
+            print(f"ERROR: {item}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
