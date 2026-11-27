@@ -67,7 +67,7 @@ const SETTINGS_CATEGORIES: CategoryMeta[] = [
   },
   {
     id: "mcp",
-    label: "MCP & AI Provider",
+    label: "MCP & Integrations",
     description: "AI Provider keys (Gemini / Groq) and Antigravity stdio MCP server",
     icon: Cpu,
     group: "system",
@@ -88,76 +88,11 @@ const SETTINGS_CATEGORIES: CategoryMeta[] = [
   },
 ];
 
-// SSOT Registered MCP tools from backend/mcp_server.py (v2.0.0)
-const REAL_MCP_TOOLS = [
-  {
-    name: "add_lead",
-    description:
-      "Ingest a single new lead directly into CRM with duplicate contact checks (phone/IG) and auto-slugging.",
-    schema:
-      "name, doctor_name?, locality?, city?, address?, primary_phone?, email?, instagram_handle?, preferred_channel?, next_action?, deal_value_inr?, hustle_id?",
-  },
-  {
-    name: "bulk_add_leads",
-    description:
-      "Bulk ingest multiple leads with deduplication, atomic database commit, and per-lead success/skip reporting.",
-    schema: "leads, hustle_id?",
-  },
-  {
-    name: "send_message",
-    description:
-      "Draft or send an external outreach message with explicit safety check (requires confirmed=True to transmit).",
-    schema: "lead_id, text, channel?, confirmed?",
-  },
-  {
-    name: "log_call",
-    description:
-      "Log a completed call note for a lead, automatically generating structured summaries and next steps.",
-    schema: "lead_id, raw_text, duration_seconds?, outcome?",
-  },
-  {
-    name: "run_discovery",
-    description:
-      "Run lead discovery waterfall (Google Places -> Serper -> Brave -> Playwright) with locality/query targeting and stop_after stages.",
-    schema: "locality?, limit?, stop_after?, hustle_id?",
-  },
-  {
-    name: "run_demo_factory",
-    description:
-      "Trigger the Autopilot Demo Factory to scaffold websites, validate gates, and record Playwright demo videos for staged leads.",
-    schema: "batch_id?, batch_size?, testing_mode?, hustle_id?",
-  },
-  {
-    name: "run_batch_outreach",
-    description:
-      "Execute batch outreach across WhatsApp, Instagram, or Email with dry_run safety verification.",
-    schema: "channel?, batch_id?, dry_run?, clinic_id?, hustle_id?",
-  },
-  {
-    name: "list_leads",
-    description:
-      "List CRM leads with stage_id, locality, or text search filters ordered by intent and fit scores.",
-    schema: "stage_id?, locality?, search?, limit?, hustle_id?",
-  },
-  {
-    name: "get_lead_dossier",
-    description:
-      "Retrieve comprehensive lead details including verified facts, packages, commitments, and demo URLs.",
-    schema: "lead_id",
-  },
-  {
-    name: "move_lead_stage",
-    description:
-      "Move a lead to a new Kanban stage with strict SSOT stage/status syncing and optional next action update.",
-    schema: "lead_id, stage_id, next_action?",
-  },
-  {
-    name: "get_lead_activity",
-    description:
-      "Retrieve full activity timeline and audit log for a lead: past call logs, message history, tracking events, and terminal logs.",
-    schema: "lead_id, limit?",
-  },
-];
+interface McpToolInfo {
+  name: string;
+  description: string;
+  schema: string;
+}
 
 export function SettingsModal() {
   const {
@@ -172,6 +107,7 @@ export function SettingsModal() {
     setThemeMode,
     operatorProfile,
     updateOperatorProfile,
+    setActiveTab,
   } = useCRM();
 
   const [mounted, setMounted] = useState<boolean>(false);
@@ -214,6 +150,21 @@ export function SettingsModal() {
 
   // MCP Snippet Copied State
   const [mcpCopied, setMcpCopied] = useState<boolean>(false);
+  const [mcpTools, setMcpTools] = useState<McpToolInfo[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ tools: McpToolInfo[] }>("/api/mcp-tools")
+      .then((res) => {
+        if (!cancelled && Array.isArray(res?.tools)) {
+          setMcpTools(res.tools);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // AI Provider & Key Settings State
   const [aiProvider, setAiProvider] = useState<"auto" | "local_cli" | "gemini" | "groq">("auto");
@@ -515,6 +466,19 @@ export function SettingsModal() {
                   </button>
                 );
               })}
+            </div>
+            <div className="pt-3 mt-3 border-t border-slate-200/80 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setSettingsModalOpen(false);
+                  setActiveTab("settings");
+                }}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-all cursor-pointer"
+              >
+                <span>All settings</span>
+                <span aria-hidden="true">→</span>
+              </button>
             </div>
           </div>
 
@@ -1183,13 +1147,13 @@ export function SettingsModal() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Registered MCP Tools ({REAL_MCP_TOOLS.length})
+                      Registered MCP Tools ({mcpTools.length})
                     </span>
                     <span className="text-[10px] font-mono text-slate-400">SSOT: backend/mcp_server.py</span>
                   </div>
 
                   <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
-                    {REAL_MCP_TOOLS.map((tool) => (
+                    {mcpTools.map((tool) => (
                       <div
                         key={tool.name}
                         className="p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/60 dark:border-zinc-700/60 flex flex-col gap-1 text-xs"
