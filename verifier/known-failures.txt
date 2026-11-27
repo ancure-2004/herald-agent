@@ -12,7 +12,6 @@ test_autopilot_discovery_phase1_fixes.py::test_local_pool_locality_tagging_and_f
 test_events.py::test_terminal_logs_endpoint  # rq-herald-backend-tests-on-main-in-a-clean-48
 test_milestone2_services.py::test_manual_reply_stop_activates_dnc_and_clears_needs_followup  # rq-herald-backend-tests-on-main-in-a-clean-48
 test_milestone4_ui_invariants_challenger.py::test_call_prep_brief_synthesis_endpoint  # rq-herald-backend-tests-on-main-in-a-clean-48 rq-herald-backend-tests-call-the-real-agy-c-5b
-test_milestone7_adversarial_challenger.py::test_live_sync_all_four_cockpit_endpoints  # rq-herald-backend-tests-on-main-in-a-clean-48
 test_mcp_server.py::test_mcp_log_call_and_activity  # rq-herald-backend-tests-call-the-real-agy-c-5b
 test_milestone4_ui_invariants_challenger.py::test_manual_reply_logging_multiline_paste_and_suggestions  # rq-herald-backend-tests-call-the-real-agy-c-5b
 test_milestone4_ui_invariants_challenger.py::test_calls_logging_structures_five_sections  # rq-herald-backend-tests-call-the-real-agy-c-5b
