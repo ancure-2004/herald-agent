@@ -180,7 +180,7 @@ export function Sidebar() {
         >
           <div className="flex items-center gap-2.5">
             <Clock className="w-4 h-4 text-amber-400" />
-            <span>Day Schedule</span>
+            <span>Evening Sprint</span>
           </div>
           <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300" />
         </button>
