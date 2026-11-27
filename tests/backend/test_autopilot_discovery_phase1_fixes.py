@@ -107,11 +107,12 @@ def test_google_places_raw_caching(test_db):
         assert mock_search.call_count == 1  # Unchanged!
 
 
-def test_google_quota_429_circuit_breaker():
+def test_google_quota_429_circuit_breaker(monkeypatch):
     """
     When Google Places encounters HTTP 429, it sets quota_exhausted=True.
     CandidateStream catches this and immediately halts querying Google for subsequent localities.
     """
+    monkeypatch.setenv("GOOGLE_PLACES_API_KEY", "test-dummy-key")
     GooglePlacesProvider.reset_quota_status()
     loc1 = Locality(label="Locality 1", city="Noida", state="UP", bbox=(0, 0, 0, 0))
     loc2 = Locality(label="Locality 2", city="Noida", state="UP", bbox=(0, 0, 0, 0))
@@ -154,11 +155,16 @@ def test_local_pool_locality_tagging_and_filtering():
     assert is_candidate_in_locality({"locality": "Noida Sector 62"}, "Malviya Nagar") is False
 
     # Filtered by locality
-    results = provider.search_candidates("dental clinic", locality=loc, locality_specified=True)
-    assert len(results) > 0
-    for r in results:
-        assert r.locality == "Malviya Nagar"
-        assert "malviya" in (r.address + r.name + r.locality).lower()
+    sample_pool = [
+        {"title": "Malviya Dental Care", "address": "B-4, Malviya Nagar, New Delhi", "locality": "Malviya Nagar"},
+        {"title": "Noida Smile Studio", "address": "Sector 62, Noida", "locality": "Noida Sector 62"},
+    ]
+    with patch("app.autopilot.discovery.local_pool.playwright_maps_fallback_pool", return_value=sample_pool):
+        results = provider.search_candidates("dental clinic", locality=loc, locality_specified=True)
+        assert len(results) > 0
+        for r in results:
+            assert r.locality == "Malviya Nagar"
+            assert "malviya" in (r.address + r.name + r.locality).lower()
 
     # Unfiltered pool scanning: first call scans, second call returns []
     LocalPoolProvider.reset_pool_status()

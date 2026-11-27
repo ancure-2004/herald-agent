@@ -6,7 +6,7 @@ from app.services.event_bus import emit_terminal_log
 def test_terminal_logs_endpoint(client):
     """Verifies that terminal logs can be retrieved via endpoint."""
     emit_terminal_log("TEST", "Unit test message for terminal logs")
-    res = client.get("/api/terminal/logs")
+    res = client.get("/api/terminal/logs", params={"limit": 500})
     assert res.status_code == 200
     logs = res.json()
     assert isinstance(logs, list)
