@@ -77,7 +77,7 @@ class LeadRepository:
             noload(Lead.packages),
             noload(Lead.messages),
             noload(Lead.events),
-            noload(Lead.commitments),
+            selectinload(Lead.commitments),
             noload(Lead.calls),
             noload(Lead.outbox_items),
         )
