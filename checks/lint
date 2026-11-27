@@ -10,26 +10,32 @@ if [ ! -f "$FILE" ]; then
   exit 0
 fi
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="${HERALD_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 ABS_FILE="$(realpath "$FILE")"
 REL_FILE="${ABS_FILE#"$ROOT/"}"
 
 case "$REL_FILE" in
-  frontend/*.ts|frontend/*.tsx|frontend/*.js)
-    OUT="$(cd "$ROOT/frontend" && ./node_modules/.bin/eslint --format json "$ABS_FILE" 2>/dev/null || true)"
-    ;;
-  checks/examples/*.ts|checks/examples/*.tsx|checks/examples/*.js)
-    OUT="$(cd "$ROOT/frontend" && ./node_modules/.bin/eslint --format json --stdin --stdin-filename "$ROOT/frontend/src/$(basename "$ABS_FILE")" < "$ABS_FILE" 2>/dev/null || true)"
-    ;;
-esac
-
-case "$REL_FILE" in
-  frontend/*.ts|frontend/*.tsx|frontend/*.js|checks/examples/*.ts|checks/examples/*.tsx|checks/examples/*.js)
+  frontend/*.ts|frontend/*.tsx|frontend/*.js|frontend/*.jsx|frontend/*.mjs|checks/examples/*.ts|checks/examples/*.tsx|checks/examples/*.js|checks/examples/*.jsx|checks/examples/*.mjs)
+    ESLINT_BIN="$ROOT/frontend/node_modules/.bin/eslint"
+    if [ ! -x "$ESLINT_BIN" ]; then
+      echo "lint: eslint missing (run ./setup)" >&2
+      exit 2
+    fi
+    RC=0
+    case "$REL_FILE" in
+      frontend/*)
+        OUT="$(cd "$ROOT/frontend" && "$ESLINT_BIN" --format json "$ABS_FILE")" || RC=$?
+        ;;
+      checks/examples/*)
+        OUT="$(cd "$ROOT/frontend" && "$ESLINT_BIN" --format json --stdin --stdin-filename "$ROOT/frontend/src/$(basename "$ABS_FILE")" < "$ABS_FILE")" || RC=$?
+        ;;
+    esac
     if [ -z "$OUT" ]; then
-      exit 0
+      exit "$RC"
     fi
     node -e '
       const results = JSON.parse(process.argv[1]);
+      const rc = Number(process.argv[3]);
       let hasError = false;
       for (const r of results) {
         for (const m of r.messages || []) {
@@ -40,25 +46,34 @@ case "$REL_FILE" in
           }
         }
       }
-      process.exit(hasError ? 1 : 0);
-    ' "$OUT" "$REL_FILE"
+      if (hasError) process.exit(1);
+      process.exit(rc);
+    ' "$OUT" "$REL_FILE" "$RC"
     ;;
   *.py)
-    OUT="$(cd "$ROOT/backend" && "$ROOT/backend/.venv/bin/ruff" check --output-format json "$ABS_FILE" 2>/dev/null || true)"
-    if [ -z "$OUT" ] || [ "$OUT" = "[]" ]; then
-      exit 0
+    RUFF_BIN="$ROOT/backend/.venv/bin/ruff"
+    PY_BIN="$ROOT/backend/.venv/bin/python"
+    if [ ! -x "$RUFF_BIN" ] || [ ! -x "$PY_BIN" ]; then
+      echo "lint: ruff missing (run ./setup)" >&2
+      exit 2
     fi
-    "$ROOT/backend/.venv/bin/python" -c '
+    RC=0
+    OUT="$(cd "$ROOT/backend" && "$RUFF_BIN" check --output-format json "$ABS_FILE")" || RC=$?
+    if [ -z "$OUT" ] || [ "$OUT" = "[]" ]; then
+      exit "$RC"
+    fi
+    "$PY_BIN" -c '
 import json, sys
 items = json.loads(sys.argv[1])
+rc = int(sys.argv[3])
 for item in items:
     line = item.get("location", {}).get("row", 1)
     code = item.get("code", "")
     msg = item.get("message", "")
     prefix = f"{code}: " if code else ""
     print(f"{sys.argv[2]}:{line}: {prefix}{msg}")
-sys.exit(1 if items else 0)
-' "$OUT" "$REL_FILE"
+sys.exit(1 if items else rc)
+' "$OUT" "$REL_FILE" "$RC"
     ;;
   *)
     exit 0
