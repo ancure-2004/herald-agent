@@ -253,7 +253,6 @@ export type {
   CockpitStateResponse,
   NodeInspectionData,
   BatchRunMetrics,
-  OutreachTelemetryState,
   OutreachLogEntry,
   DeliverabilityStatus,
   VerificationDetails,

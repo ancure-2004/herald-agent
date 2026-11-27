@@ -34,7 +34,7 @@ export const CALLS: CallSpec[] = [
   /** Also the Kanban board's data: the board and the Leads Table read the one list the app loads at start (CRMContext.tsx:536). */
   { label: "leads list and Kanban board data", path: "/api/leads?hustle_id=1&smart_view=all_active", source: "frontend/src/context/CRMContext.tsx:536", limits: CALL_LIMITS },
   { label: "cockpit state", path: "/api/autopilot/cockpit-state?hustle_id=1", source: "frontend/src/api/autopilotApi.ts:75", limits: CALL_LIMITS },
-  { label: "attention lists", path: "/api/cockpit/attention?hustle_id=1", source: "frontend/src/features/cockpit/AttentionVelocityDashboard.tsx:72", limits: CALL_LIMITS },
+  { label: "attention lists", path: "/api/cockpit/attention?hustle_id=1", source: "frontend/src/features/cockpit/AutopilotCockpitView.tsx", limits: CALL_LIMITS },
   { label: "inbox threads", path: "/api/leads/1/messages", source: "frontend/src/api/messagesApi.ts:31", limits: CALL_LIMITS },
   { label: "call briefs list", path: "/api/leads/1/calls", source: "frontend/src/features/calls/CallsManagementView.tsx:291", limits: CALL_LIMITS },
 ];

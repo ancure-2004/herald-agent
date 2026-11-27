@@ -89,50 +89,6 @@ export interface BatchRunMetrics {
   };
 }
 
-export interface OutreachTelemetryState {
-  whatsapp: {
-    status: "ACTIVE" | "PAUSED" | "LIMIT_REACHED";
-    windowState: string;
-    sentToday: number;
-    dailyLimit: number;
-    pacingDelay: string;
-    currentTarget: {
-      name: string;
-      doctor: string;
-      phone: string;
-      action: string;
-      demoSlug: string;
-    };
-  };
-  email: {
-    status: "ACTIVE" | "WARMING" | "PAUSED";
-    domainWarmup: string;
-    sentToday: number;
-    dailyLimit: number;
-    pacingDelay: string;
-    currentTarget: {
-      name: string;
-      doctor: string;
-      email: string;
-      action: string;
-      choicePage: string;
-    };
-  };
-  instagram: {
-    status: "STANDBY" | "TRIGGERED" | "OFF";
-    protocolRule: string;
-    sentToday: number;
-    dailyLimit: number;
-    lastTriggerReason: string;
-    fallbackLead: {
-      name: string;
-      handle: string;
-      action: string;
-      videoAttached: boolean;
-    };
-  };
-}
-
 export interface OutreachLogEntry {
   id: string;
   timestamp: string;

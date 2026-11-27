@@ -71,10 +71,6 @@ const AddLeadModal = dynamic(
   { ssr: false }
 );
 
-const ProblemReportModal = dynamic(
-  () => import("@/features/modals/ProblemReportModal").then((mod) => mod.ProblemReportModal),
-  { ssr: false }
-);
 
 const LogCallModal = dynamic(
   () => import("@/features/modals/LogCallModal").then((mod) => mod.LogCallModal),
@@ -96,7 +92,6 @@ function CRMContent() {
     cmdKOpen,
     selectedLeadId,
     newLeadModalOpen,
-    problemModalOpen,
     logCallModalOpen,
     logReplyModalOpen,
   } = useCRM();
@@ -170,7 +165,6 @@ function CRMContent() {
       {cmdKOpen && <CommandPaletteModal />}
       {Boolean(selectedLeadId) && <LeadDetailModal />}
       {newLeadModalOpen && <AddLeadModal />}
-      {problemModalOpen && <ProblemReportModal />}
       {logCallModalOpen && <LogCallModal />}
       {logReplyModalOpen && <LogReplyModal />}
       {!isCockpit && <AssistantDrawer />}
