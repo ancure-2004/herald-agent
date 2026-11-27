@@ -94,22 +94,22 @@ def _sync_message_worker_threads(monkeypatch):
     """Run message_service background threads synchronously so they never race TestClient teardown."""
     import threading
 
-    orig_thread = threading.Thread
+    orig_start = threading.Thread.start
 
-    def _guarded_thread(target=None, args=(), kwargs=None, daemon=None, **extra):
+    def _guarded_start(self):
+        target = getattr(self, "_target", None)
         if (
             target is not None
             and getattr(target, "__module__", "") == "app.services.message_service"
             and getattr(target, "__name__", "") == "_worker"
         ):
-            class _SyncThread:
-                def start(self):
-                    target(*args, **(kwargs or {}))
+            args = getattr(self, "_args", ())
+            kwargs = getattr(self, "_kwargs", {}) or {}
+            target(*args, **kwargs)
+            return None
+        return orig_start(self)
 
-            return _SyncThread()
-        return orig_thread(target=target, args=args, kwargs=kwargs, daemon=daemon, **extra)
-
-    monkeypatch.setattr(threading, "Thread", _guarded_thread)
+    monkeypatch.setattr(threading.Thread, "start", _guarded_start)
 
 
 @pytest.fixture()
