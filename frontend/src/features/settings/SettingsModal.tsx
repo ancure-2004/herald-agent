@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Select } from "@/components/ui/Select";
+import { apiFetch } from "@/lib/api/client";
 import {
   X,
   Sparkles,
