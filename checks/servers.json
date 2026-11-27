@@ -1,0 +1,3 @@
+{
+  "servers": ["uvicorn", "start.sh", "npm run dev", "npm start", "npm run start", "next dev", "next start"]
+}

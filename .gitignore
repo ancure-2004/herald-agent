@@ -15,6 +15,7 @@ dist
 
 # Python cache & artifacts
 __pycache__
+*.egg-info/
 *.py[cod]
 *$py.class
 *.so
