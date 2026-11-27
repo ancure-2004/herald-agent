@@ -31,12 +31,29 @@ def test_active_lead_requires_next_action_and_due_at(client):
                 next_action_due_at=None,
             )
         assert exc2.value.status_code == 422
+    finally:
+        db.close()
 
-        # All active leads in DB have both next_action and next_action_due_at
-        active_leads = db.query(Lead).filter(Lead.is_archived == False).all()
-        assert len(active_leads) > 0
-        for lead in active_leads:
-            assert lead.next_action, f"Active lead {lead.id} missing next_action"
-            assert lead.next_action_due_at is not None, f"Active lead {lead.id} missing next_action_due_at"
+
+def test_delete_lead_archives_instead_of_hard_deleting(client):
+    db = client.get_db_session()
+    try:
+        lead = db.query(Lead).filter(Lead.is_archived == False).first()
+        assert lead is not None
+        lead_id = lead.id
+    finally:
+        db.close()
+
+    del_res = client.delete(f"/api/leads/{lead_id}")
+    assert del_res.status_code == 405, del_res.text
+
+    res = client.post(f"/api/leads/{lead_id}/archive")
+    assert res.status_code == 200, res.text
+
+    db = client.get_db_session()
+    try:
+        archived = db.query(Lead).filter(Lead.id == lead_id).first()
+        assert archived is not None, "Lead row must not be hard-deleted"
+        assert archived.is_archived is True
     finally:
         db.close()

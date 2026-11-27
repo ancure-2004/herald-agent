@@ -10,10 +10,12 @@ Existing violations can be listed in checks/allowed_immutability_violations.txt 
 import ast
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ALLOWLIST_PATH = Path(__file__).resolve().parent / "allowed_immutability_violations.txt"
+ALLOWLIST_CAP = 6
 
 SQL_PATTERNS = [
     (re.compile(r"\bDELETE\s+FROM\s+leads\b", re.IGNORECASE), "SQL hard delete of leads"),
@@ -24,14 +26,14 @@ SQL_PATTERNS = [
 ]
 
 
-def _load_allowlist() -> set[str]:
+def _load_allowlist() -> list[str]:
     if not ALLOWLIST_PATH.exists():
-        return set()
-    return {
+        return []
+    return [
         line.strip()
         for line in ALLOWLIST_PATH.read_text(encoding="utf-8").splitlines()
         if line.strip() and not line.strip().startswith("#")
-    }
+    ]
 
 
 def scan_file(path: Path) -> list[tuple[int, str]]:
@@ -56,13 +58,13 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
             # session.delete(lead) / db.delete(lead)
             if attr == "delete" and node.args:
                 arg_src = ast.unparse(node.args[0]).lower()
-                if "lead" in arg_src:
+                if re.search(r"\b(lead|leads)\b", arg_src):
                     violations.append((node.lineno, f"Hard delete of lead via .{attr}({arg_src})"))
-                elif any(k in arg_src for k in ("msg", "message", "run")):
+                elif re.search(r"\b(msg|message|messages|run|runs|run_log)\b", arg_src):
                     violations.append((node.lineno, f"Delete of append-only row via .{attr}({arg_src})"))
 
             # db.query(Lead|Message|RunLog)...delete() / .update()
-            if attr in ("delete", "update") and not node.args or (attr == "update" and len(node.args) == 1):
+            if attr in ("delete", "update") and (not node.args or (attr == "update" and len(node.args) == 1)):
                 chain_src = ast.unparse(node.func.value)
                 if "query(Lead)" in chain_src and attr == "delete":
                     violations.append((node.lineno, "Bulk hard delete of Lead via query(Lead).delete()"))
@@ -74,15 +76,35 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
 
 def main(argv: list[str]) -> int:
     targets = [Path(a) for a in argv] if argv else sorted((ROOT / "backend" / "app").rglob("*.py"))
-    allowlist = set() if argv else _load_allowlist()
+    allowlist_entries = [] if argv else _load_allowlist()
 
+    if not argv and len(allowlist_entries) > ALLOWLIST_CAP:
+        print(
+            f"ERROR: allowlist has {len(allowlist_entries)} entries, exceeding ALLOWLIST_CAP={ALLOWLIST_CAP}",
+            file=sys.stderr,
+        )
+        return 1
+
+    allowlist = set(allowlist_entries)
+    seen_allowlisted: set[str] = set()
     found: list[str] = []
+
     for path in targets:
         rel = str(path.resolve().relative_to(ROOT)) if path.resolve().is_relative_to(ROOT) else str(path)
+        occ_counts: Counter[tuple[str, str]] = Counter()
         for lineno, msg in scan_file(path):
-            entry = f"{rel}:{lineno}: {msg}"
-            if entry not in allowlist:
-                found.append(entry)
+            occ_counts[(rel, msg)] += 1
+            key = f"{rel} | {msg} | {occ_counts[(rel, msg)]}"
+            if key in allowlist:
+                seen_allowlisted.add(key)
+            else:
+                found.append(f"{rel}:{lineno}: {msg} (key: {key})")
+
+    stale = sorted(allowlist - seen_allowlisted)
+    if stale and not argv:
+        for item in stale:
+            print(f"ERROR: stale allowlist entry (no longer a violation): {item}", file=sys.stderr)
+        return 1
 
     if found:
         for item in found:
