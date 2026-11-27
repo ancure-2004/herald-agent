@@ -49,9 +49,27 @@ export function featureOf(file: string): string {
   return basename(file).slice(0, -SUFFIX.length);
 }
 
-/** The journeys this run runs: every file under --full or when every feature changed, else those of the changed features. */
+/**
+ * The journeys a caller asked for in VERIFY_JOURNEYS (comma-separated), or undefined when it is unset or empty. Guild sets it
+ * for its "before" run on the base commit: each entry is a screenshot path from the branch's run without its extension (for
+ * example `journeys/results/<feature>.journey-<title>-chromium/<shot>`), and the run must write the same paths under
+ * VERIFY_EVIDENCE_DIR. The base checkout has no changes, so without the list no journey would run there.
+ */
+export function listedJourneys(env: Record<string, string>): string[] | undefined {
+  const entries = (env.VERIFY_JOURNEYS ?? "").split(",").map((e) => e.trim()).filter((e) => e !== "");
+  return entries.length === 0 ? undefined : entries;
+}
+
+/** Whether a listed entry names this feature's journey: one of its path parts is the feature id or starts with `<feature>.journey`. */
+function names(entries: string[], feature: string): boolean {
+  return entries.some((e) => e.split("/").some((part) => part === feature || part.startsWith(`${feature}.journey`)));
+}
+
+/** The journeys this run runs: those VERIFY_JOURNEYS names when set, else every file under --full or when every feature changed, else those of the changed features. */
 function selectJourneys(ctx: CheckContext): string[] {
   const all = journeyFiles(ctx.root);
+  const listed = listedJourneys(ctx.env);
+  if (listed) return all.filter((file) => names(listed, featureOf(file)));
   if (ctx.full || ctx.changed.allFeatures) return all;
   return all.filter((file) => ctx.changed.features.includes(featureOf(file)));
 }
@@ -144,7 +162,7 @@ async function run(ctx: CheckContext): Promise<CheckResult> {
   const base = { name: "journeys", command: `playwright test <journeys> --config ${CONFIG}`, durationMs: 0 };
   const files = selectJourneys(ctx);
   if (files.length === 0) {
-    const message = ctx.full ? "no journey exists" : "no changed feature has a journey";
+    const message = listedJourneys(ctx.env) ? "no listed journey exists on this commit" : ctx.full ? "no journey exists" : "no changed feature has a journey";
     return { ...base, status: "pass", exitCode: 0, output: "", message };
   }
   if (!existsSync(join(ctx.root, PLAYWRIGHT_PACKAGE)) || !existsSync(join(ctx.root, PLAYWRIGHT))) {
