@@ -21,3 +21,11 @@ def test_lint_immutability_accepts_good_example():
 def test_lint_immutability_passes_on_backend_app_with_shrink_only_allowlist():
     res = subprocess.run([sys.executable, str(LINT_SCRIPT)], capture_output=True, text=True)
     assert res.returncode == 0, f"lint-immutability failed on backend/app:\n{res.stderr}"
+
+
+def test_lint_immutability_allows_update_on_non_append_only_model(tmp_path):
+    sample = tmp_path / "sample.py"
+    sample.write_text("def ok(db, data):\n    db.query(Lead).update(data)\n    data.update({'a': 1})\n")
+    res = subprocess.run([sys.executable, str(LINT_SCRIPT), str(sample)], capture_output=True, text=True)
+    assert res.returncode == 0, f"Expected non-append-only .update() to pass, got:\n{res.stderr}"
+
