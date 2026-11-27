@@ -6,29 +6,27 @@
 
 ---
 
-## 1. Core CRM & Lead Lifecycle
+## 1. Core CRM & Lead Lifecycle (Management — 5 Sidebar Tabs)
+- **Overview (`frontend/src/features/dashboard/DashboardView.tsx`):**
+  - High-level CRM metrics, pipeline velocity, and conversion summaries.
+- **Inbox / WhatsApp (`frontend/src/features/inbox/WhatsAppInboxView.tsx`, `LogReplyModal.tsx`):**
+  - Centralized reply tracking and message thread inspection backed by `backend/app/services/message_service.py` and `backend/app/repositories/message_repo.py`.
 - **Kanban Board (`frontend/src/features/board/KanbanBoardView.tsx`, `KanbanColumn.tsx`, `LeadCard.tsx`):**
   - Drag-and-drop stage progression across the sales pipeline.
   - Card density tuned for quick scanning of clinic/business name, city, niche, score, and outreach status.
 - **Leads Table (`frontend/src/features/table/LeadsTableView.tsx`):**
   - Tabular view of all CRM leads with filtering, sorting, and quick-action triggers.
   - Integrated with `LeadDetailModal.tsx` and `AddLeadModal.tsx`.
-- **Calls Management (`frontend/src/features/calls/CallsManagementView.tsx`, `LogCallModal.tsx`):**
+- **Call Briefs (`frontend/src/features/calls/CallsManagementView.tsx`, `LogCallModal.tsx`):**
   - Call logging, follow-up scheduling, and call-outcome tracking backed by `backend/app/services/call_service.py`.
-- **WhatsApp / Outreach Inbox (`frontend/src/features/inbox/WhatsAppInboxView.tsx`, `LogReplyModal.tsx`):**
-  - Centralized reply tracking and message thread inspection backed by `backend/app/services/message_service.py` and `backend/app/repositories/message_repo.py`.
 - **Evening Sprint (`frontend/src/features/sprint/EveningSprintView.tsx`):**
-  - Focused daily execution view for high-priority follow-ups and sprint targets.
-- **Dashboard (`frontend/src/features/dashboard/DashboardView.tsx`):**
-  - High-level CRM metrics, pipeline velocity, and conversion summaries.
+  - Focused daily execution view for high-priority follow-ups and sprint targets (accessible from the operator profile menu).
 
 ---
 
-## 2. Autopilot Cockpit Overview
-- **Cockpit Shell (`frontend/src/features/cockpit/AutopilotCockpitView.tsx`, `CockpitOverviewDashboard.tsx`, `CockpitSupervisorBar.tsx`):**
-  - Unified command center for autonomous discovery, demo generation, and outreach.
-  - **Pipeline Node Network (`PipelineNodeNetwork.tsx`, `NodeInspectionDrawer.tsx`):** Visualizes active pipeline stages and lets operators inspect node-level state and logs.
-  - **Attention & Velocity (`AttentionVelocityDashboard.tsx`):** Surfaces bottlenecks, throughput, and items requiring human-in-the-loop review.
+## 2. Autopilot Cockpit (4 Sidebar Tabs)
+- **Cockpit Shell (`frontend/src/features/cockpit/AutopilotCockpitView.tsx`, `CockpitOverviewDashboard.tsx`):**
+  - Unified command center for autonomous discovery, demo generation, and outreach across 4 tabs: **Attention & Velocity**, **Discovery Engine**, **Demo Factory**, and **Outreach Automation**.
   - **Live Log Terminal (`frontend/src/components/ui/LiveLogTerminal.tsx`):** Real-time SSE-backed log streaming from `backend/app/services/sse_publisher.py` and `backend/app/services/event_bus.py`.
 
 ---
