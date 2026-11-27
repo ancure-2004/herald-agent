@@ -79,7 +79,7 @@ def _stub_ai_service(monkeypatch):
                     "suggestions": [
                         {"category": "Direct Answer", "text": "Happy to share root canal pricing and call after 4 PM.", "tone": "professional"},
                         {"category": "Value Reframe", "text": "We can add a transparent treatment pricing section right away.", "tone": "warm"},
-                        {"category": "Quick", "text": "Sounds great, I will call you after 4 PM today!", "tone": "concise"},
+                        {"category": "Quick OPD Check-in", "text": "Sounds great, I will call you after 4 PM today!", "tone": "concise"},
                     ]
                 }
             if "summary" in props or "objections" in p_low:

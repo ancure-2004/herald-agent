@@ -75,7 +75,8 @@ def _guard_no_agy_cli(monkeypatch, request):
 
 
 @pytest.fixture()
-def client():
+def client(monkeypatch):
+    import app.db.session as dbsession
     test_engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
@@ -96,6 +97,7 @@ def client():
             session.close()
 
     app.dependency_overrides[get_db] = override_get_db
+    monkeypatch.setattr(dbsession, "SessionLocal", TestingSessionLocal)
     c = TestClient(app)
     c.get_db_session = TestingSessionLocal
     with c:
