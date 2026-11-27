@@ -90,6 +90,21 @@ def _isolate_recorder_dir(monkeypatch, tmp_path):
 
 
 @pytest.fixture(autouse=True)
+def _disable_local_cli_provider(monkeypatch):
+    """Ensure tests never pick LocalCLIProvider (agy) regardless of PATH."""
+    import shutil
+
+    orig_which = shutil.which
+
+    def _which_no_agy(cmd, *args, **kwargs):
+        if cmd == "agy":
+            return None
+        return orig_which(cmd, *args, **kwargs)
+
+    monkeypatch.setattr(shutil, "which", _which_no_agy)
+
+
+@pytest.fixture(autouse=True)
 def _sync_message_worker_threads(monkeypatch):
     """Run message_service._worker synchronously without patching Thread.start globally."""
     import threading
