@@ -19,4 +19,4 @@ tests/e2e/tier2_boundary_cases/test_boundary_calls.py::test_boundary_huge_call_t
 tests/e2e/tier3_cross_feature/test_pairwise_interactions.py::test_cross_call_logging_enriches_prep_brief_and_cockpit  # rq-herald-backend-tests-call-the-real-agy-c-5b
 tests/e2e/tier4_real_world/test_real_world_workflows.py::test_workflow_1_full_dental_clinic_outreach_cycle  # rq-herald-backend-tests-call-the-real-agy-c-5b
 tests/e2e/tier4_real_world/test_real_world_workflows.py::test_workflow_2_raw_call_to_brief_to_next_outreach  # rq-herald-backend-tests-call-the-real-agy-c-5b
-tests/backend/test_ai_features_phase3.py::test_embedding_service_lazy_load_and_unload  # requires fastembed model download (not in requirements.txt)
+test_ai_features_phase3.py::test_embedding_service_lazy_load_and_unload  # requires fastembed model download (not in requirements.txt)
