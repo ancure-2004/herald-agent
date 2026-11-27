@@ -1,7 +1,7 @@
 /**
  * The Verifier's entry: runs every check in checks/ with a clean environment,
  * a throwaway database and stubs for paid AI commands, warns when the checks
- * changed tracked files, writes Evidence, and exits 0, 1 or 2.
+ * changed tracked files (putting back the ones the checks changed), writes Evidence, and exits 0, 1 or 2.
  */
 import { mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -12,7 +12,7 @@ import type { Check, CheckResult } from "./check.ts";
 import { evidenceDir, writeLog, writeSummary } from "./evidence.ts";
 import { killAllNow } from "./launch.ts";
 import { cleanEnv, refusals, writeStubs } from "./safety.ts";
-import { trackedStatus, writeTrackedChanges } from "./tracked-files.ts";
+import { putBack, trackedStatus, writeTrackedChanges } from "./tracked-files.ts";
 
 /** The herald root: the folder holding `verify`, the parent of verifier/. */
 const ROOT = join(import.meta.dirname, "..");
@@ -82,7 +82,7 @@ async function main(): Promise<number> {
       writeLog(dir, r);
       report(r);
     }
-    const warning = writeTrackedChanges(before, after, dir);
+    const warning = writeTrackedChanges(before, after, dir, putBack(ROOT, before, after, env));
     if (warning) console.log(warning);
     writeSummary(dir, results, exitCode, changed);
     console.log(`evidence: ${dir}`);

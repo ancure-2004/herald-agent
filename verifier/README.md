@@ -64,7 +64,7 @@ Every check runs with `PATH` starting at a stub folder, `stub-bin/`, inside the 
 
 ### Tracked-file warning
 
-`git status --porcelain` runs before and after the checks. If the two outputs differ, `verify` prints `warning: checks changed tracked files: <paths>` and writes the differing lines to `tracked-changes.txt` in Evidence. This is a warning only: the exit code does not change and nothing is restored. Outside a git repo the watch is skipped.
+`git status --porcelain` runs before and after the checks. If the two outputs differ, `verify` writes the differing lines to `tracked-changes.txt` in Evidence and prints a warning. A tracked file that was clean before the checks and changed by them is put back with `git checkout --` (`warning: checks changed tracked files (put back): <paths>`), so a run leaves the checkout as it found it; Guild's Gate refuses a step that changes a Ticket's files. A file already changed before the checks is left as it is (`warning: checks changed tracked files: <paths>`). The exit code does not change. Outside a git repo the watch is skipped.
 
 ## Fast set and `--full`
 

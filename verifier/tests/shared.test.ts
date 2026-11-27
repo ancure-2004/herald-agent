@@ -6,7 +6,7 @@ import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { cleanup, exists, makeFixture, readEvidence, runVerify } from "./fixture.ts";
 
 after(cleanup);
@@ -35,14 +35,26 @@ function git(root: string, ...args: string[]): void {
   assert.equal(r.status, 0, r.stderr);
 }
 
-test("a check that changes a tracked file prints the warning, writes tracked-changes.txt, and keeps exit 0", () => {
+test("a check that changes a tracked file prints the warning, writes tracked-changes.txt, puts the file back, and keeps exit 0", () => {
   const root = makeFixture({ typecheck: "exit 0", pytest: 'echo "1 passed" && echo two >> ../data.txt && exit 0', files: { "data.txt": "one\n" } });
   git(root, "init", "-q");
   git(root, "add", "-A");
   git(root, "commit", "-q", "-m", "fixture");
   const r = runVerify(root);
   assert.equal(r.code, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /^warning: checks changed tracked files: data\.txt$/m);
+  assert.match(r.stdout, /^warning: checks changed tracked files \(put back\): data\.txt$/m);
   assert.ok(r.evidence, "last stdout line is `evidence: <path>`");
   assert.match(readEvidence(r.evidence, "tracked-changes.txt"), /data\.txt/);
+  assert.equal(readFileSync(join(root, "data.txt"), "utf8"), "one\n", "the file is as it was before the checks");
+});
+
+test("a tracked file already changed before the checks is never put back, so a Worker's change survives", () => {
+  const root = makeFixture({ typecheck: "exit 0", pytest: 'echo "1 passed" && echo three >> ../data.txt && exit 0', files: { "data.txt": "one\n" } });
+  git(root, "init", "-q");
+  git(root, "add", "-A");
+  git(root, "commit", "-q", "-m", "fixture");
+  writeFileSync(join(root, "data.txt"), "one\ntwo\n");
+  const r = runVerify(root);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.equal(readFileSync(join(root, "data.txt"), "utf8"), "one\ntwo\nthree\n", "the Worker's change and the check's are both left");
 });
