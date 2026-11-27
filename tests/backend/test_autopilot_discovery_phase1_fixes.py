@@ -169,10 +169,12 @@ def test_local_pool_locality_tagging_and_filtering():
     # Unfiltered pool scanning: first call scans, second call returns []
     LocalPoolProvider.reset_pool_status()
     p2 = LocalPoolProvider()
-    all_res = p2.search_candidates("dental clinic", locality=loc, locality_specified=False)
-    assert len(all_res) == 216
-    second_res = p2.search_candidates("dental clinic", locality=loc, locality_specified=False)
-    assert len(second_res) == 0  # Re-evaluation skipped!
+    full_pool = [{"title": f"Clinic {i}", "address": "Delhi"} for i in range(216)]
+    with patch("app.autopilot.discovery.local_pool.playwright_maps_fallback_pool", return_value=full_pool):
+        all_res = p2.search_candidates("dental clinic", locality=loc, locality_specified=False)
+        assert len(all_res) == 216
+        second_res = p2.search_candidates("dental clinic", locality=loc, locality_specified=False)
+        assert len(second_res) == 0  # Re-evaluation skipped!
 
 
 def test_runner_search_query_uses_micro_locality(test_db):
