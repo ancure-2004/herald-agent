@@ -89,7 +89,7 @@ if [ -z "$PYTHON_BIN" ] || [ ! -x "$UVICORN_BIN" ]; then
 
   echo "--> Installing backend dependencies..."
   "$PYTHON_BIN" -m pip install --quiet --upgrade pip
-  "$PYTHON_BIN" -m pip install --quiet -r "$BACKEND_DIR/requirements.txt" pydantic-settings slowapi
+  "$PYTHON_BIN" -m pip install --quiet -e "$BACKEND_DIR"
 fi
 
 # Final sanity check for uvicorn
