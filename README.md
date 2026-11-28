@@ -127,7 +127,7 @@ See [docs/vision.md](docs/vision.md) for the long-term Herald Agent roadmap.
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -e ".[dev]"
 cp .env.example .env
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
@@ -175,8 +175,7 @@ herald/
 │   │   ├── schemas/         # Pydantic validation schemas
 │   │   └── services/        # Pipeline, RAG, agent tools, and safety services
 │   ├── tests/               # Backend pytest suite
-│   ├── mcp_server.py        # Model Context Protocol v2.0.0 server
-│   └── requirements.txt
+│   └── mcp_server.py        # Model Context Protocol v2.0.0 server
 ├── frontend/
 │   ├── src/
 │   │   ├── app/             # Next.js App Router root layout & views
