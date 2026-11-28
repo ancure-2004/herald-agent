@@ -7,7 +7,10 @@ cd "$(dirname "$0")"
 
 echo "setup: backend venv"
 python3 -m venv backend/.venv
-(cd backend && .venv/bin/pip install --quiet --disable-pip-version-check -e ".[dev]" -r requirements.txt)
+# requirements.txt is optional: once backend/pyproject.toml lists every dependency, the file is deleted (H-21).
+if [ -f backend/requirements.txt ]; then extra="-r requirements.txt"; else extra=""; fi
+# shellcheck disable=SC2086
+(cd backend && .venv/bin/pip install --quiet --disable-pip-version-check -e ".[dev]" $extra)
 
 echo "setup: frontend packages"
 (cd frontend && npm ci --no-audit --no-fund --loglevel=error)
